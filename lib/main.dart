@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:menu_chat/adv.dart';
 
 Future<Null> main() async {
   runApp(MyApp());
@@ -49,7 +50,8 @@ class MenuState extends State<Menu> {
                 ];
 
   @override
-  void initState() {
+  void initState()
+  {
     super.initState();
     _marcas = new List<Widget>();
     for (String o in _brands) {
@@ -86,14 +88,6 @@ class MenuChatApp extends StatefulWidget {
 class _MenuAppChatState extends State<MenuChatApp>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
-  List<Widget> marcas = <Widget>[
-             RaisedButton( child: Text("Alfa Romeo")
-                         , onPressed: () => print("pressed")),
-             RaisedButton( child: Text("BMW")
-                         , onPressed: () => print("pressed")),
-             RaisedButton( child: Text("Fiat")
-                         , onPressed: () => print("pressed")),
-          ];
 
   @override
   void initState() {
@@ -128,7 +122,7 @@ class _MenuAppChatState extends State<MenuChatApp>
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          Tab(text: "Anuncios"),
+          Adv(),
           Menu(),
           Tab(text: "Chat list"),
         ],
