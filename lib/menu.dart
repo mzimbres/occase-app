@@ -42,6 +42,8 @@ class MenuState extends State<Menu> {
                 "Palio",
                 ];
 
+  int _selectedIndex = 1;
+
   @override
   void initState()
   {
@@ -50,7 +52,9 @@ class MenuState extends State<Menu> {
     for (String o in _brands) {
        _marcas.add(RaisedButton(
                    child: BrandItem(o),
-                   onPressed: () {setState(update);}
+                   onPressed: () {setState(update);},
+                   color: const Color(0xFFFFFF),
+                   highlightColor: const Color(0xFFFFFF)
                    ));
     }
     //_marcas = _brands;
@@ -64,12 +68,30 @@ class MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
-     return ListView(
+     return Scaffold(
+           body: ListView(
                  shrinkWrap: true,
                  padding: const EdgeInsets.all(20.0),
                  children: this._marcas
-          );
+           ),
+           bottomNavigationBar: BottomNavigationBar(
+               items: <BottomNavigationBarItem>[
+               BottomNavigationBarItem(
+                     icon: Icon(Icons.home), title: Text('Localizacao')),
+               BottomNavigationBarItem(
+                     icon: Icon(Icons.business), title: Text('Modelos')),
+           ],
+           currentIndex: _selectedIndex,
+           fixedColor: Colors.deepPurple,
+           onTap: _onItemTapped,
+           ),
+           );
   }
+   void _onItemTapped(int index) {
+   setState(() {
+     _selectedIndex = index;
+   });
+ }
 }
 
 

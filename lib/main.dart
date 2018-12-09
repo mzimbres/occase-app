@@ -52,7 +52,7 @@ class _MenuAppChatState extends State<MenuChatApp>
           indicatorColor: Colors.white,
           tabs: <Widget>[
             Tab(text: "ANUNCIOS"),
-            Tab( text: "TABELA",),
+            Tab( text: "FILTROS",),
             Tab( text: "CHATS",),
           ],
         ),
