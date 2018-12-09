@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/adv.dart';
+import 'package:menu_chat/menu.dart';
 
 Future<Null> main() async {
   runApp(MyApp());
@@ -19,62 +20,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: MenuChatApp(),
     );
-  }
-}
-
-class Menu extends StatefulWidget {
-  @override
-  MenuState createState() => new MenuState();
-}
-
-class MenuState extends State<Menu> {
-  List<Widget> _marcas;
-  List<String> _brands = <String>[
-                "Alfa Romeo",
-                "BMW",
-                "Fiat",
-                "Volkswagen",
-                "Mercedes",
-                "Ford",
-                "Chevrolet",
-                "Citroen",
-                "Peugeot",
-                "Ferrari",
-                "Dodge",
-                "Rolls Roice",
-             ];
-
-  List<String> _models =
-        <String>[ "Uno mil",
-                "Palio",
-                ];
-
-  @override
-  void initState()
-  {
-    super.initState();
-    _marcas = new List<Widget>();
-    for (String o in _brands) {
-       _marcas.add(RaisedButton(
-                   child: Text(o),
-                   onPressed: () {setState(update);}
-                   ));
-    }
-    //_marcas = _brands;
-  }
-
-  void update()
-  {
-     print("pressed2");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-     return ListView(
-                 shrinkWrap: true,
-                 padding: const EdgeInsets.all(20.0),
-                 children: this._marcas
-          );
   }
 }
 
