@@ -15,6 +15,31 @@ class BrandItem extends StatelessWidget {
   }
 }
 
+class MenuScreen extends StatelessWidget {
+   final List<Widget> _brands = new List<Widget>();
+   MenuScreen(List<String> items)
+   {
+      //this._brands = new List<Widget>();
+      for (String o in items) {
+         this._brands.add(RaisedButton(
+                     child: BrandItem(o),
+                     //onPressed: update,
+                     color: const Color(0xFFFFFF),
+                     highlightColor: const Color(0xFFFFFF)
+         ));
+      }
+   }
+
+   @override
+   Widget build(BuildContext context) {
+      return ListView(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.all(20.0),
+                    children: this._brands
+              );
+   }
+}
+
 class Menu extends StatefulWidget {
   @override
   MenuState createState() => new MenuState();
@@ -37,43 +62,54 @@ class MenuState extends State<Menu> {
                 "Rolls Roice",
              ];
 
-  List<String> _models =
-        <String>[ "Uno mil",
-                "Palio",
-                ];
+  List<String> _models = <String>[
+     "Uno mil",
+     "Palio",
+  ];
 
   int _selectedIndex = 1;
 
   @override
   void initState()
   {
-    super.initState();
-    _marcas = new List<Widget>();
-    for (String o in _brands) {
-       _marcas.add(RaisedButton(
-                   child: BrandItem(o),
-                   onPressed: () {setState(update);},
-                   color: const Color(0xFFFFFF),
-                   highlightColor: const Color(0xFFFFFF)
-                   ));
-    }
-    //_marcas = _brands;
+     super.initState();
+     _marcas = new List<Widget>();
+     for (String o in _brands) {
+        _marcas.add(RaisedButton(
+                    child: BrandItem(o),
+                    onPressed: update,
+                    color: const Color(0xFFFFFF),
+                    highlightColor: const Color(0xFFFFFF)
+        ));
+     }
+     //_marcas = _brands;
   }
 
   void update()
   {
-     print("pressed2");
-     //_marcas.clear();
+     setState(() {
+        //_marcas.clear();
+        for (String o in _models) {
+           _marcas.add(RaisedButton(
+                       child: BrandItem(o),
+                       onPressed: () {print("nada");},
+                       color: const Color(0xFFFFFF),
+                       highlightColor: const Color(0xFFFFFF)
+           ));
+        }
+        print("pressed2");
+     });
   }
 
   @override
   Widget build(BuildContext context) {
      return Scaffold(
-           body: ListView(
-                 shrinkWrap: true,
-                 padding: const EdgeInsets.all(20.0),
-                 children: this._marcas
-           ),
+           body: MenuScreen(this._brands),
+           //body: ListView(
+           //      shrinkWrap: true,
+           //      padding: const EdgeInsets.all(20.0),
+           //      children: this._marcas
+           //),
            bottomNavigationBar: BottomNavigationBar(
                items: <BottomNavigationBarItem>[
                BottomNavigationBarItem(
