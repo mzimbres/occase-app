@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xff25D366),
       ),
       debugShowCheckedModeBanner: false,
-      home: WhatsAppHome(),
+      home: MenuChatApp(),
     );
   }
 }
@@ -27,37 +27,44 @@ class Menu extends StatefulWidget {
 }
 
 class MenuState extends State<Menu> {
-  List<Widget> _marcas = <Widget>[
-                RaisedButton( child: Text("Alfa Romeo")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("BMW")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Fiat")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Volkswagen")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Mercedes")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Ford")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Chevrolet")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Citroen")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Peugeot")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Ferrari")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Dodge")
-                            , onPressed: () => print("pressed")),
-                RaisedButton( child: Text("Rolls Roice")
-                            , onPressed: () => print("pressed")),
+  List<Widget> _marcas;
+  List<String> _brands = <String>[
+                "Alfa Romeo",
+                "BMW",
+                "Fiat",
+                "Volkswagen",
+                "Mercedes",
+                "Ford",
+                "Chevrolet",
+                "Citroen",
+                "Peugeot",
+                "Ferrari",
+                "Dodge",
+                "Rolls Roice",
              ];
 
-  //@override
-  //void initState() {
-  //  super.initState();
-  //}
+  List<String> _models =
+        <String>[ "Uno mil",
+                "Palio",
+                ];
+
+  @override
+  void initState() {
+    super.initState();
+    _marcas = new List<Widget>();
+    for (String o in _brands) {
+       _marcas.add(RaisedButton(
+                   child: Text(o),
+                   onPressed: () {setState(update);}
+                   ));
+    }
+    //_marcas = _brands;
+  }
+
+  void update()
+  {
+     print("pressed2");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,14 +76,14 @@ class MenuState extends State<Menu> {
   }
 }
 
-class WhatsAppHome extends StatefulWidget {
-  WhatsAppHome();
+class MenuChatApp extends StatefulWidget {
+  MenuChatApp();
 
   @override
-  _WhatsAppHomeState createState() => new _WhatsAppHomeState();
+  _MenuAppChatState createState() => new _MenuAppChatState();
 }
 
-class _WhatsAppHomeState extends State<WhatsAppHome>
+class _MenuAppChatState extends State<MenuChatApp>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
   List<Widget> marcas = <Widget>[
