@@ -51,8 +51,8 @@ class _MenuAppChatState extends State<MenuChatApp>
           controller: _tabController,
           indicatorColor: Colors.white,
           tabs: <Widget>[
-            Tab(text: "ANUNCIOS"),
             Tab( text: "FILTROS",),
+            Tab(text: "ANUNCIOS"),
             Tab( text: "CHATS",),
           ],
         ),
@@ -67,18 +67,10 @@ class _MenuAppChatState extends State<MenuChatApp>
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          Adv(),
           Menu(),
+          Adv(),
           Tab(text: "Chat list"),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).accentColor,
-        child: Icon(
-          Icons.message,
-          color: Colors.white,
-        ),
-        onPressed: () => print("open chats"),
       ),
     );
   }
