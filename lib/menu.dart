@@ -74,6 +74,8 @@ class MenuState extends State<Menu> {
       "Palio",
    ];
 
+   List<MenuScreen> screens;
+
    int _selectedIndex = 1;
 
    @override
@@ -82,7 +84,6 @@ class MenuState extends State<Menu> {
       super.initState();
    }
 
-   List<MenuScreen> screens;
 
    MenuState()
    {
@@ -94,13 +95,35 @@ class MenuState extends State<Menu> {
    @override
    Widget build(BuildContext context) {
       return Scaffold(
-            body: MenuScreen(this._brands),
+
+            //body: MenuScreen(this._brands),
+            body: new Stack(
+                    children: new List<Widget>.generate(screens.length, (int index) {
+                      return new IgnorePointer(
+                        ignoring: index != _selectedIndex,
+                        child: new Opacity(
+                          opacity: _selectedIndex == index ? 1.0 : 0.0,
+                          child: new Navigator(
+                            onGenerateRoute: (RouteSettings settings) {
+                              return new MaterialPageRoute(
+                                builder: (_) => screens[index],
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+
+            
             bottomNavigationBar: BottomNavigationBar(
                   items: <BottomNavigationBarItem>[
                      BottomNavigationBarItem(
                            icon: Icon(Icons.home), title: Text('Localizacao')),
                      BottomNavigationBarItem(
                            icon: Icon(Icons.business), title: Text('Modelos')),
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.business), title: Text('Salvar')),
                   ],
                   currentIndex: _selectedIndex,
                   fixedColor: Colors.deepPurple,
