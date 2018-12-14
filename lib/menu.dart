@@ -18,17 +18,15 @@ class BrandItem extends StatelessWidget {
 }
 
 class MenuScreen extends StatefulWidget {
-  List<List<String>> _items;
-  int _index;
-  MenuScreen(this._items, this._index);
+  MenuTree _items;
+  MenuScreen(this._items);
   @override
-  MenuScreenState createState() => new MenuScreenState(_items, _index);
+  MenuScreenState createState() => new MenuScreenState(_items);
 }
 
 class MenuScreenState extends State<MenuScreen> {
-   List<List<String>> _items;
-   int _index;
-   MenuScreenState(this._items, this._index);
+   MenuTree _items;
+   MenuScreenState(this._items);
 
    @override
    void initState()
@@ -40,21 +38,18 @@ class MenuScreenState extends State<MenuScreen> {
    Widget build(BuildContext context)
    {
       List<Widget> _brands = new List<Widget>();
-      for (String o in this._items[_index]) {
+      for (MenuNode o in this._items.st.last.children) {
          _brands.add(RaisedButton(
-                     child: BrandItem(o),
+                     child: BrandItem(o.name),
                      onPressed: () {
-                        if (_index == 0) {
-                           Navigator.of(context).push(
-                                 MaterialPageRoute(
-                                       builder: (context) {
-                                          return MenuScreen(_items, 1);
-                                       }
-                                 ),
-                           );
-                        } else {
-                           Navigator.pop(context);
-                        }
+                        _items.st.add(o);
+                        Navigator.of(context).push(
+                              MaterialPageRoute(
+                                    builder: (context) {
+                                       return MenuScreen(_items);
+                                    }
+                              ),
+                        );
                      },
                      color: const Color(0xFFFFFF),
                      //highlightColor: const Color(0xFFFFFF)
@@ -87,10 +82,11 @@ class MenuState extends State<Menu> {
 
    MenuState()
    {
-      List<List<String>> loc = LocationFactory();
+      MenuTree tree = LocationFactory();
+      print("===================");
       screens = new List<MenuScreen>();
-      screens.add(MenuScreen(loc, 0));
-      screens.add(MenuScreen(loc, 0));
+      screens.add(MenuScreen(tree));
+      screens.add(MenuScreen(tree));
    }
 
    @override
