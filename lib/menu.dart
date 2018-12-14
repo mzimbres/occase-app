@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
 
-class BrandItem extends StatelessWidget {
+class TreeItem extends StatelessWidget {
   final String _brand;
 
-  BrandItem(this._brand);
+  TreeItem(this._brand);
 
   @override
   Widget build(BuildContext context) {
@@ -39,22 +39,38 @@ class MenuScreenState extends State<MenuScreen> {
    {
       List<Widget> _brands = new List<Widget>();
       for (MenuNode o in this._items.st.last.children) {
-         _brands.add(RaisedButton(
-                     child: BrandItem(o.name),
-                     onPressed: () {
-                        _items.st.add(o);
-                        Navigator.of(context).push(
-                              MaterialPageRoute(
-                                    builder: (context) {
-                                       return MenuScreen(_items);
-                                    }
-                              ),
-                        );
-                     },
-                     color: const Color(0xFFFFFF),
-                     //highlightColor: const Color(0xFFFFFF)
-         ));
+         Widget w;
+         if (o.isLeaf()) {
+            w = CheckboxListTile(
+                  title: Text(o.name),
+                  subtitle: Text(" Inscritos"),
+                  value: true,
+                  onChanged: (bool newValue){
+                     String code = o.code;
+                     print('$code ===> $newValue');
+                  }
+            );
+
+         } else {
+            w = RaisedButton(
+                  child: TreeItem(o.name),
+                  onPressed: () {
+                     _items.st.add(o);
+                     Navigator.of(context).push(
+                           MaterialPageRoute(
+                                 builder: (context) {
+                                    return MenuScreen(_items);
+                                 }
+                           ),
+                     );
+                  },
+                  color: const Color(0xFFFFFF),
+                  //highlightColor: const Color(0xFFFFFF)
+            );
+         }
+         _brands.add(w);
       }
+
       return ListView(
             shrinkWrap: true,
             padding: const EdgeInsets.all(20.0),
