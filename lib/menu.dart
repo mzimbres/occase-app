@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:menu_chat/menu_tree.dart';
 
 class BrandItem extends StatelessWidget {
   final String _brand;
@@ -11,19 +12,9 @@ class BrandItem extends StatelessWidget {
         leading: new CircleAvatar(child: new Text("M")),
         title: new Text(_brand),
         dense: true,
-        //subtitle: new Text("What can we do")
+        subtitle: new Text("15 Modelos")
         );
   }
-}
-
-class MenuNode {
-   String name;
-   List<MenuNode> children;
-}
-
-class MenuTree {
-   MenuNode root;
-   List<MenuNode> st;
 }
 
 class MenuScreen extends StatefulWidget {
@@ -96,34 +87,10 @@ class MenuState extends State<Menu> {
 
    MenuState()
    {
-      List<String> _brands = <String>[
-         "Alfa Romeo",
-         "BMW",
-         "Fiat",
-         "Volkswagen",
-         "Mercedes",
-         "Ford",
-         "Chevrolet",
-         "Citroen",
-         "Peugeot",
-         "Ferrari",
-         "Dodge",
-         "Rolls Roice",
-      ];
-
-      List<String> _models = <String>[
-         "Uno mil",
-         "Palio",
-         "Premio",
-      ];
-
-      List<List<String>> a1 = new List<List<String>>();
-      a1.add(_brands);
-      a1.add(_models);
-
+      List<List<String>> loc = LocationFactory();
       screens = new List<MenuScreen>();
-      screens.add(MenuScreen(a1, 0));
-      screens.add(MenuScreen(a1, 0));
+      screens.add(MenuScreen(loc, 0));
+      screens.add(MenuScreen(loc, 0));
    }
 
    @override
