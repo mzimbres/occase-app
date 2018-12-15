@@ -52,7 +52,6 @@ class MenuState extends State<Menu> {
       menus = List<MenuTree>();
       menus.add(LocationFactory());
       menus.add(ModelsFactory());
-      menus.add(ModelsFactory());
    }
 
    @override
@@ -68,7 +67,7 @@ class MenuState extends State<Menu> {
                setState(() { });
                return false;
             },
-            child: createScreen(context, menus[_selectedIndex]),
+            child: createScreen(context),
       );
    }
 
@@ -78,7 +77,50 @@ class MenuState extends State<Menu> {
       });
    }
 
-   Widget createScreen(BuildContext context, MenuTree tree)
+   Widget scaffIt(Widget w)
+   {
+      return Scaffold(
+            body: w,
+            bottomNavigationBar: BottomNavigationBar(
+                  items: <BottomNavigationBarItem>[
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.home), title: Text('Localizacao')),
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.business), title: Text('Modelos')),
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.business), title: Text('Salvar')),
+                  ],
+
+                  currentIndex: _selectedIndex,
+                  fixedColor: Colors.deepPurple,
+                  onTap: _onItemTapped,
+            ),
+      );
+   }
+
+   Widget createScreen(BuildContext context)
+   {
+      if (_selectedIndex == 2) {
+         return scaffIt(Center(child:RaisedButton(
+                           child: Text( "Enviar",
+                           style: TextStyle(
+                                 fontWeight: FontWeight.bold,
+                                 fontSize: Consts.mainFontSize )
+                           ),
+                           onPressed: () {
+                              print("Sending hashes to server");
+                           },
+                           //color: const Color(0xFFFFFF),
+                           //highlightColor: const Color(0xFFFFFF)
+         )
+         ));
+      }
+
+      return scaffIt(createScreenMenu(context, menus[_selectedIndex]));
+      
+   }
+
+   Widget createScreenMenu(BuildContext context, MenuTree tree)
    {
       List<Widget> items = new List<Widget>();
       for (MenuNode o in tree.st.last.children) {
@@ -115,26 +157,11 @@ class MenuState extends State<Menu> {
          }
          items.add(w);
       }
-
-      return Scaffold(
-            body: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(20.0),
-                  children: items,
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-                  items: <BottomNavigationBarItem>[
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.home), title: Text('Localizacao')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Modelos')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Salvar')),
-                  ],
-                  currentIndex: _selectedIndex,
-                  fixedColor: Colors.deepPurple,
-                  onTap: _onItemTapped,
-            ),
+      
+      return ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(20.0),
+            children: items,
       );
    }
 }
