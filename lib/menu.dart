@@ -118,10 +118,9 @@ class MenuState extends State<Menu> {
 
    MenuState()
    {
-      MenuTree tree = LocationFactory();
       screens = new List<MenuScreen>();
-      screens.add(MenuScreen(tree));
-      screens.add(MenuScreen(tree));
+      screens.add(MenuScreen(LocationFactory()));
+      screens.add(MenuScreen(ModelsFactory()));
    }
 
    @override

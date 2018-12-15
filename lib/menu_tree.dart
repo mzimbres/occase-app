@@ -59,3 +59,34 @@ MenuTree LocationFactory()
    return MenuTree(root);
 }
 
+MenuTree ModelsFactory()
+{
+
+   MenuNode root = MenuNode("Carros", "");
+
+   MenuNode c1 = MenuNode("Fiat", "00");
+   c1.children.add(MenuNode("Palio", "00.00"));
+   c1.children.add(MenuNode("Fiat 147", "00.01"));
+   c1.children.add(MenuNode("Uno", "00.02"));
+   root.children.add(c1);
+
+   MenuNode c2 = MenuNode("Ford", "01");
+   c2.children.add(MenuNode("Corsa", "01.00"));
+   c2.children.add(MenuNode("Todos", "01.00"));
+   root.children.add(c2);
+
+   MenuNode c3 = MenuNode("Volkswagen", "02");
+   c3.children.add(MenuNode("Fusca", "02.00"));
+   c3.children.add(MenuNode("Saveiro", "02.01"));
+   root.children.add(c3);
+
+   MenuNode c4 = MenuNode("Chevrolet", "03");
+   c4.children.add(MenuNode("Fiesta", "03.00"));
+   root.children.add(c4);
+
+   MenuNode c5 = MenuNode("Honda", "04");
+   c5.children.add(MenuNode("Hyunday", "04.00"));
+   root.children.add(c5);
+
+   return MenuTree(root);
+}
