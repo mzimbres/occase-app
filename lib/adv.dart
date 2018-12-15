@@ -1,42 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:menu_chat/constants.dart';
 
 class Adv extends StatefulWidget {
   @override
   AdvState createState() => new AdvState();
 }
 
+Text createText(String str)
+{
+   return Text(str,
+         textAlign: TextAlign.left,
+         overflow: TextOverflow.ellipsis,
+         style: TextStyle(
+               fontWeight: FontWeight.bold,
+               fontSize: Consts.mainFontSize
+         )
+   );
+}
+
+List<Text> headerFactory()
+{
+   List<Text> r = List<Text>();
+   r.add(createText("Marca: Volkswagen"));
+   r.add(createText("Modelo: Brasilia"));
+   r.add(createText("Ano: 1985/86"));
+   r.add(createText("Preco Fipe: 1200"));
+   r.add(createText("Anunciante: Paulinho Nacimento"));
+   return r;
+}
+
 class AdvState extends State<Adv> {
    final Card header1 = new Card(
-         child: new Column(
+         child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: <Widget>[
-                  new Text("Marca: Volkswagen"),
-                  new Text("Modelo: Brasilia"),
-                  new Text("Ano: 1985/86"),
-                  new Text("Preco Fipe: 1200"),
-                  new Text("Anunciante: Paulinho Nacimento",
-                        textAlign: TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                              fontWeight: FontWeight.bold),),
-               ],
+               children: headerFactory(),
          ),
    );
 
    final Card header2 = new Card(
          child: new Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: <Widget>[
-                  new Text("Marca: Chevrolet"),
-                  new Text("Modelo: Belina"),
-                  new Text("Ano: 1990/91"),
-                  new Text("Preco Fipe: 800R"),
-                  new Text("Anunciante: Petrocelis",
-                        textAlign: TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                              fontWeight: FontWeight.bold),),
-               ],
+               children: headerFactory(),
          ),
    );
 

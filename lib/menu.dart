@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
+import 'package:menu_chat/constants.dart';
 
 class TreeItem extends StatelessWidget {
   final String name;
@@ -18,13 +19,13 @@ class TreeItem extends StatelessWidget {
               name,
               style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18.0 )
+                    fontSize: Consts.mainFontSize )
               ),
         dense: true,
         subtitle: Text(
               msg,
               style: TextStyle(
-                    fontSize: 15.0)
+                    fontSize: Consts.subFontSize)
               )
         );
   }
@@ -87,7 +88,7 @@ class MenuState extends State<Menu> {
                   title: Text(
                         o.name,
                         style: TextStyle(
-                              fontSize: 18.0
+                              fontSize: Consts.mainFontSize
                         )
                   ),
                   //subtitle: Text(" Inscritos"),
