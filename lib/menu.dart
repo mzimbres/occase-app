@@ -43,16 +43,18 @@ class MenuScreenState extends State<MenuScreen> {
          if (o.isLeaf()) {
             w = CheckboxListTile(
                   title: Text(o.name),
-                  subtitle: Text(" Inscritos"),
-                  value: true,
+                  //subtitle: Text(" Inscritos"),
+                  value: o.status,
                   onChanged: (bool newValue){
                      String code = o.code;
+                     o.status = newValue;
                      print('$code ===> $newValue');
+                     setState(() { }); // Triggers redraw with new value.
                   }
             );
 
          } else {
-            w = RaisedButton(
+            w = FlatButton(
                   child: TreeItem(o.name),
                   onPressed: () {
                      _items.st.add(o);
@@ -99,7 +101,6 @@ class MenuState extends State<Menu> {
    MenuState()
    {
       MenuTree tree = LocationFactory();
-      print("===================");
       screens = new List<MenuScreen>();
       screens.add(MenuScreen(tree));
       screens.add(MenuScreen(tree));
