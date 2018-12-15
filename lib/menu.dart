@@ -86,9 +86,9 @@ class MenuState extends State<Menu> {
                      BottomNavigationBarItem(
                            icon: Icon(Icons.home), title: Text('Localizacao')),
                      BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Modelos')),
+                           icon: Icon(Icons.directions_car), title: Text('Modelos')),
                      BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Salvar')),
+                           icon: Icon(Icons.send), title: Text('Enviar')),
                   ],
 
                   currentIndex: _selectedIndex,
