@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
 
 class TreeItem extends StatelessWidget {
-  final String _brand;
+  final String name;
+  String msg;
 
-  TreeItem(this._brand);
+  TreeItem(this.name, int n)
+  {
+     msg = '${n} items';
+  }
 
   @override
   Widget build(BuildContext context) {
     return new ListTile(
         leading: new CircleAvatar(child: new Text("M")),
-        title: new Text(_brand),
+        title: new Text(name),
         dense: true,
-        subtitle: new Text("15 Modelos")
+        subtitle: new Text(msg)
         );
   }
 }
@@ -55,7 +59,7 @@ class MenuScreenState extends State<MenuScreen> {
 
          } else {
             w = FlatButton(
-                  child: TreeItem(o.name),
+                  child: TreeItem(o.name, o.children.length),
                   onPressed: () {
                      _items.st.add(o);
                      Navigator.of(context).push(
