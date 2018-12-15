@@ -126,40 +126,46 @@ class MenuState extends State<Menu> {
 
    @override
    Widget build(BuildContext context) {
-      return Scaffold(
-            body: new Stack(
-                    children: List<Widget>.generate(screens.length, (int index) {
-                      return IgnorePointer(
-                        ignoring: index != _selectedIndex,
-                        child: Opacity(
-                          opacity: _selectedIndex == index ? 1.0 : 0.0,
-                          child: Navigator(
-                            onGenerateRoute: (RouteSettings settings) {
-                              return MaterialPageRoute(
-                                builder: (_) => screens[index],
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    }),
+      return WillPopScope(
+            onWillPop: () async {
+               print("===============");
+               return false;
+            },
+            child:Scaffold(
+                  body: Stack(
+                        children: List<Widget>.generate(screens.length, (int index) {
+                           return IgnorePointer(
+                                 ignoring: index != _selectedIndex,
+                                 child: Opacity(
+                                       opacity: _selectedIndex == index ? 1.0 : 0.0,
+                                       child: Navigator(
+                                             onGenerateRoute: (RouteSettings settings) {
+                                                return MaterialPageRoute(
+                                                      builder: (_) => screens[index],
+                                                );
+                                             },
+                                       ),
+                                 ),
+                           );
+                        }),
                   ),
 
-            
-            bottomNavigationBar: BottomNavigationBar(
-                  items: <BottomNavigationBarItem>[
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.home), title: Text('Localizacao')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Modelos')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.business), title: Text('Salvar')),
-                  ],
-                  currentIndex: _selectedIndex,
-                  fixedColor: Colors.deepPurple,
-                  onTap: _onItemTapped,
-            ),
-      );
+
+                  bottomNavigationBar: BottomNavigationBar(
+                        items: <BottomNavigationBarItem>[
+                           BottomNavigationBarItem(
+                                 icon: Icon(Icons.home), title: Text('Localizacao')),
+                           BottomNavigationBarItem(
+                                 icon: Icon(Icons.business), title: Text('Modelos')),
+                           BottomNavigationBarItem(
+                                 icon: Icon(Icons.business), title: Text('Salvar')),
+                        ],
+                        currentIndex: _selectedIndex,
+                        fixedColor: Colors.deepPurple,
+                        onTap: _onItemTapped,
+                  ),
+                  )
+                        );
    }
    void _onItemTapped(int index) {
       setState(() {
