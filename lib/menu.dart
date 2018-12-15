@@ -30,16 +30,14 @@ class TreeItem extends StatelessWidget {
   }
 }
 
-class MenuScreen extends StatefulWidget {
-  MenuTree _items;
-  MenuScreen(this._items);
+class Menu extends StatefulWidget {
   @override
-  MenuScreenState createState() => new MenuScreenState(_items);
+  MenuState createState() => new MenuState();
 }
 
-class MenuScreenState extends State<MenuScreen> {
-   MenuTree _items;
-   MenuScreenState(this._items);
+class MenuState extends State<Menu> {
+   int _selectedIndex = 0;
+   List<MenuTree> menus;
 
    @override
    void initState()
@@ -47,11 +45,42 @@ class MenuScreenState extends State<MenuScreen> {
       super.initState();
    }
 
-   @override
-   Widget build(BuildContext context)
+
+   MenuState()
    {
-      List<Widget> _brands = new List<Widget>();
-      for (MenuNode o in this._items.st.last.children) {
+      menus = List<MenuTree>();
+      menus.add(LocationFactory());
+      menus.add(ModelsFactory());
+      menus.add(ModelsFactory());
+   }
+
+   @override
+   Widget build(BuildContext context) {
+      return WillPopScope(
+            onWillPop: () async {
+               //Navigator.of(context).pop();
+               if (menus[_selectedIndex].st.length == 1) {
+                  return true;
+               }
+
+               menus[_selectedIndex].st.removeLast();
+               setState(() { });
+               return false;
+            },
+            child: createScreen(context, menus[_selectedIndex]),
+      );
+   }
+
+   void _onItemTapped(int index) {
+      setState(() {
+         _selectedIndex = index;
+      });
+   }
+
+   Widget createScreen(BuildContext context, MenuTree tree)
+   {
+      List<Widget> items = new List<Widget>();
+      for (MenuNode o in tree.st.last.children) {
          Widget w;
          if (o.isLeaf()) {
             w = CheckboxListTile(
@@ -67,7 +96,7 @@ class MenuScreenState extends State<MenuScreen> {
                      String code = o.code;
                      o.status = newValue;
                      print('$code ===> $newValue');
-                     setState(() { }); // Triggers redraw with new value.
+                     setState(() { });
                   }
             );
 
@@ -75,101 +104,37 @@ class MenuScreenState extends State<MenuScreen> {
             w = FlatButton(
                   child: TreeItem(o.name, o.children.length),
                   onPressed: () {
-                     _items.st.add(o);
-                     Navigator.of(context).push(
-                           MaterialPageRoute(
-                                 builder: (context) {
-                                    return MenuScreen(_items);
-                                 }
-                           ),
-                     );
+                       print("I am calling non leaf on pressed");
+                       menus[_selectedIndex].st.add(o);
+                       setState(() { }); // Triggers redraw with new value.
                   },
                   color: const Color(0xFFFFFF),
-                  //highlightColor: const Color(0xFFFFFF)
+                  highlightColor: const Color(0xFFFFFF)
             );
          }
-         _brands.add(w);
+         items.add(w);
       }
 
-      return ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20.0),
-            children: _brands
+      return Scaffold(
+            body: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(20.0),
+                  children: items,
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+                  items: <BottomNavigationBarItem>[
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.home), title: Text('Localizacao')),
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.business), title: Text('Modelos')),
+                     BottomNavigationBarItem(
+                           icon: Icon(Icons.business), title: Text('Salvar')),
+                  ],
+                  currentIndex: _selectedIndex,
+                  fixedColor: Colors.deepPurple,
+                  onTap: _onItemTapped,
+            ),
       );
-   }
-}
-
-class Menu extends StatefulWidget {
-  @override
-  MenuState createState() => new MenuState();
-}
-
-class MenuState extends State<Menu> {
-   List<Widget> _marcas;
-   List<MenuScreen> screens;
-   int _selectedIndex = 1;
-
-   @override
-   void initState()
-   {
-      super.initState();
-   }
-
-
-   MenuState()
-   {
-      screens = new List<MenuScreen>();
-      screens.add(MenuScreen(LocationFactory()));
-      screens.add(MenuScreen(ModelsFactory()));
-   }
-
-   @override
-   Widget build(BuildContext context) {
-      return WillPopScope(
-            onWillPop: () async {
-               print("===============");
-               return false;
-            },
-            child:Scaffold(
-                  body: Stack(
-                        children: List<Widget>.generate(screens.length, (int index) {
-                           return IgnorePointer(
-                                 ignoring: index != _selectedIndex,
-                                 child: Opacity(
-                                       opacity: _selectedIndex == index ? 1.0 : 0.0,
-                                       child: Navigator(
-                                             onGenerateRoute: (RouteSettings settings) {
-                                                return MaterialPageRoute(
-                                                      builder: (_) => screens[index],
-                                                );
-                                             },
-                                       ),
-                                 ),
-                           );
-                        }),
-                  ),
-
-
-                  bottomNavigationBar: BottomNavigationBar(
-                        items: <BottomNavigationBarItem>[
-                           BottomNavigationBarItem(
-                                 icon: Icon(Icons.home), title: Text('Localizacao')),
-                           BottomNavigationBarItem(
-                                 icon: Icon(Icons.business), title: Text('Modelos')),
-                           BottomNavigationBarItem(
-                                 icon: Icon(Icons.business), title: Text('Salvar')),
-                        ],
-                        currentIndex: _selectedIndex,
-                        fixedColor: Colors.deepPurple,
-                        onTap: _onItemTapped,
-                  ),
-                  )
-                        );
-   }
-   void _onItemTapped(int index) {
-      setState(() {
-         _selectedIndex = index;
-      });
    }
 }
 
