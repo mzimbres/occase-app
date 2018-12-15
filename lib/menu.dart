@@ -13,10 +13,18 @@ class TreeItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new ListTile(
-        leading: new CircleAvatar(child: new Text("M")),
-        title: new Text(name),
+        leading: CircleAvatar(child: Text("M")),
+        title: Text(
+              name,
+              style: TextStyle(
+                    fontSize: 20.0 )
+              ),
         dense: true,
-        subtitle: new Text(msg)
+        subtitle: Text(
+              msg,
+              style: TextStyle(
+                    fontSize: 15.0)
+              )
         );
   }
 }
@@ -46,7 +54,12 @@ class MenuScreenState extends State<MenuScreen> {
          Widget w;
          if (o.isLeaf()) {
             w = CheckboxListTile(
-                  title: Text(o.name),
+                  title: Text(
+                        o.name,
+                        style: TextStyle(
+                              fontSize: 20.0
+                        )
+                  ),
                   //subtitle: Text(" Inscritos"),
                   value: o.status,
                   onChanged: (bool newValue){
