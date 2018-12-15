@@ -17,7 +17,8 @@ class TreeItem extends StatelessWidget {
         title: Text(
               name,
               style: TextStyle(
-                    fontSize: 20.0 )
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18.0 )
               ),
         dense: true,
         subtitle: Text(
@@ -57,7 +58,7 @@ class MenuScreenState extends State<MenuScreen> {
                   title: Text(
                         o.name,
                         style: TextStyle(
-                              fontSize: 20.0
+                              fontSize: 18.0
                         )
                   ),
                   //subtitle: Text(" Inscritos"),
