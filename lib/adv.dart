@@ -63,8 +63,31 @@ class AdvState extends State<Adv> {
            elevation: 0.0,
      );
 
+     CheckboxListTile save = CheckboxListTile(
+           title: Text( "Salvar",
+                 style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                       fontSize: Consts.mainFontSize
+                 )
+           ),
+           //subtitle: Text(" Inscritos"),
+           //secondary: const Icon(Icons.save),
+           value: false,
+           onChanged: (bool newValue){
+              print('Anuncio salvo');
+              //setState(() { });
+           }
+     );
+
+     Card c3 = Card(
+           child:  save,
+           color: Consts.advHeaderColor,
+           margin: EdgeInsets.all(Consts.advInnerMarging),
+           elevation: 0.0,
+     );
+
      Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-           children: <Card>[c1, c2],
+           children: <Widget>[c1, c2, c3],
      );
 
      Card adv1 = Card(
