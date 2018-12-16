@@ -47,7 +47,7 @@ class AdvState extends State<Adv> {
   {
      Card c1 = Card(
            child: headerFactory(context),
-           color: Colors.teal[100],
+           color: Consts.advHeaderColor,
            margin: EdgeInsets.all(5.0),
            elevation: 0.0,
      );
@@ -57,7 +57,7 @@ class AdvState extends State<Adv> {
 
      Card c2 = Card(
            child: createText(context, "Descricao: ", msg),
-           color: Colors.teal[300],
+           color: Consts.advMsgColor,
            margin: EdgeInsets.all(5.0),
            elevation: 0.0,
      );
@@ -68,7 +68,7 @@ class AdvState extends State<Adv> {
 
      Card adv1 = Card(
            child: h1,
-           color: Colors.teal[300],
+           color: Consts.advMsgColor,
            margin: EdgeInsets.all(5.0),
            elevation: 0.0,
      );
