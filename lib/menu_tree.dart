@@ -25,68 +25,94 @@ class MenuTree {
    }
 }
 
+MenuNode makeNode(String state, List<String> cities)
+{
+   MenuNode node = MenuNode(state, "00.02");
+
+   for (String s in cities) {
+      node.children.add(MenuNode(s, "00.01.09"));
+   }
+
+   return node;
+}
+
 MenuTree LocationFactory()
 {
-
    MenuNode root = MenuNode("Brasil", "");
-
-   MenuNode c1 = MenuNode("Sao Paulo", "00");
-   c1.children.add(MenuNode("Atibaia", "00.00"));
-   c1.children.add(MenuNode("Braganca", "00.01"));
-   root.children.add(c1);
-
-   MenuNode c2 = MenuNode("Amazonas", "01");
-   c2.children.add(MenuNode("Outras", "01.00"));
-   root.children.add(c2);
-
-   MenuNode c3 = MenuNode("Amapa", "02");
-   c3.children.add(MenuNode("Macapa", "02.00"));
-   c3.children.add(MenuNode("Outras", "02.01"));
-   root.children.add(c3);
-
-   MenuNode c4 = MenuNode("Pernambuco", "03");
-   c4.children.add(MenuNode("Outras", "03.00"));
-   root.children.add(c4);
-
-   MenuNode c5 = MenuNode("Rio Grande do Sul", "04");
-   c5.children.add(MenuNode("Outras", "04.00"));
-   root.children.add(c5);
-
-   MenuNode c6 = MenuNode("Santa Catarina", "05");
-   c6.children.add(MenuNode("Outras", "05.00"));
-   root.children.add(c6);
-
+   root.children.add(makeNode("Acre", <String>["Porto Velho", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Outras"]));
+   root.children.add(makeNode("Alagoas", <String>["Maceio", "Arapiraca", "Rio Largo", "Palmeira dos Índios", "União dos Palmares", "Outras"]));
+   root.children.add(makeNode("Amapa", <String>["Macapa", "Santana", "Laranjal do Jari", "Oiapoque", "Mazagão", "Outras"]));
+   root.children.add(makeNode("Amazonas", <String>["Manaus", "Parintins", "Itacoatiara", "Manacapuru", "Coari", "Outras"]));
+   root.children.add(makeNode("Bahia", <String>["Salvador", "Feira de Santana", "Vitória da Conquista", "Camaçari", "Itabuna", "Outras"]));
+   root.children.add(makeNode("Ceará", <String>["Fortaleza", "Caucaia", "Juazeiro do Norte", "Maracanaú", "Sobral", "Outras"]));
+   root.children.add(makeNode("Distrito Federal", <String>["Brasilia"]));
+   root.children.add(makeNode("Espirito Santo", <String>["Vitoria", "Vila Velha", "Cariacica", "Serra", "Outras"]));
+   root.children.add(makeNode("Goias", <String>["Goiânia", "Outras"]));
+   root.children.add(makeNode("Maranhao", <String>["Sao Luis", "Outras"]));
+   root.children.add(makeNode("Mato Grosso", <String>["Cuiaba", "Outras"]));
+   root.children.add(makeNode("Mato Grosso do Sul", <String>["Campo Grande", "Outras"]));
+   root.children.add(makeNode("Minas Gerais", <String>["Belo Horizonte", "Outras"]));
+   root.children.add(makeNode("Pará", <String>["Belém", "Outras"]));
+   root.children.add(makeNode("Paraíba", <String>["Joao Pessoa", "Outras"]));
+   root.children.add(makeNode("Pernambuco", <String>["Recife", "Outras"]));
+   root.children.add(makeNode("Piaui", <String>["Terizina", "Outras"]));
+   root.children.add(makeNode("Rio de Janeiro", <String>["Rio de Janeiro", "Outras"]));
+   root.children.add(makeNode("Rio Grande do Norte", <String>["Natal", "Outras"]));
+   root.children.add(makeNode("Rio Grande do Sul", <String>["Porto Alegre", "Outras"]));
+   root.children.add(makeNode("Rondônia", <String>["Porto Velho", "Outras"]));
+   root.children.add(makeNode("Rorâima", <String>["Boa Vista", "Outras"]));
+   root.children.add(makeNode("Santa Catarina", <String>["Florianópolis", "Outras"]));
+   root.children.add(makeNode("Sao Paulo", <String>["Sao Paulo", "Outras"]));
+   root.children.add(makeNode("Sergipe", <String>["Aracaju", "Outras"]));
+   root.children.add(makeNode("Tocantins", <String>["Palmas", "Outras"]));
    return MenuTree(root);
 }
 
 MenuTree ModelsFactory()
 {
-
-   MenuNode root = MenuNode("Carros", "");
-
-   MenuNode c1 = MenuNode("Fiat", "00");
-   c1.children.add(MenuNode("Palio", "00.00"));
-   c1.children.add(MenuNode("Fiat 147", "00.01"));
-   c1.children.add(MenuNode("Uno", "00.02"));
-   root.children.add(c1);
-
-   MenuNode c2 = MenuNode("Ford", "01");
-   c2.children.add(MenuNode("Corsa", "01.00"));
-   c2.children.add(MenuNode("Todos", "01.00"));
-   root.children.add(c2);
-
-   MenuNode c3 = MenuNode("Volkswagen", "02");
-   c3.children.add(MenuNode("Fusca", "02.00"));
-   c3.children.add(MenuNode("Saveiro", "02.01"));
-   root.children.add(c3);
-
-   MenuNode c4 = MenuNode("Chevrolet", "03");
-   c4.children.add(MenuNode("Fiesta", "03.00"));
-   root.children.add(c4);
-
-   MenuNode c5 = MenuNode("Honda", "04");
-   c5.children.add(MenuNode("Hyunday", "04.00"));
-   root.children.add(c5);
-
+   MenuNode root = MenuNode("Brasil", "");
+   root.children.add(makeNode("Acura", <String>["Porto Velho", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Outras"]));
+   root.children.add(makeNode("Agrale", <String>["Maceio", "Arapiraca", "Rio Largo", "Palmeira dos Índios", "União dos Palmares", "Outras"]));
+   root.children.add(makeNode("Alpha Romeo", <String>["Macapa", "Santana", "Laranjal do Jari", "Oiapoque", "Mazagão", "Outras"]));
+   root.children.add(makeNode("AM Gen", <String>["Manaus", "Parintins", "Itacoatiara", "Manacapuru", "Coari", "Outras"]));
+   root.children.add(makeNode("Asia Motors", <String>["Salvador", "Feira de Santana", "Vitória da Conquista", "Camaçari", "Itabuna", "Outras"]));
+   root.children.add(makeNode("Aston Martin", <String>["Fortaleza", "Caucaia", "Juazeiro do Norte", "Maracanaú", "Sobral", "Outras"]));
+   root.children.add(makeNode("Audi", <String>["Brasilia"]));
+   root.children.add(makeNode("Baby", <String>["Vitoria", "Vila Velha", "Cariacica", "Serra", "Outras"]));
+   root.children.add(makeNode("BMW", <String>["Goiânia", "Outras"]));
+   root.children.add(makeNode("BRM", <String>["Sao Luis", "Outras"]));
+   root.children.add(makeNode("Bugre", <String>["Cuiaba", "Outras"]));
+   root.children.add(makeNode("Cadilac", <String>["Campo Grande", "Outras"]));
+   root.children.add(makeNode("CBT Jipe", <String>["Belo Horizonte", "Outras"]));
+   root.children.add(makeNode("Chana", <String>["Belém", "Outras"]));
+   root.children.add(makeNode("Changan", <String>["Joao Pessoa", "Outras"]));
+   root.children.add(makeNode("Chery", <String>["Recife", "Outras"]));
+   root.children.add(makeNode("Chrysler", <String>["Terizina", "Outras"]));
+   root.children.add(makeNode("Citroen", <String>["Rio de Janeiro", "Outras"]));
+   root.children.add(makeNode("Cross Lander", <String>["Natal", "Outras"]));
+   root.children.add(makeNode("Daewoo", <String>["Porto Alegre", "Outras"]));
+   root.children.add(makeNode("Daihatsu", <String>["Porto Velho", "Outras"]));
+   root.children.add(makeNode("Dodge", <String>["Boa Vista", "Outras"]));
+   root.children.add(makeNode("Effa", <String>["Florianópolis", "Outras"]));
+   root.children.add(makeNode("Engesa", <String>["Sao Paulo", "Outras"]));
+   root.children.add(makeNode("Envemo", <String>["Aracaju", "Outras"]));
+   root.children.add(makeNode("Fiat", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Fibravam", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Ford", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Foton", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Fyber", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Geely", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("GM - Chevrolet", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Greate Wall", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Gurgel", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Hafei", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Honda", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Hyunday", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Isuzu", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Iveco", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Jaca", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Jaguar", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Jeep", <String>["Palmas", "Outras"]));
+   root.children.add(makeNode("Jinbey", <String>["Palmas", "Outras"]));
    return MenuTree(root);
 }
