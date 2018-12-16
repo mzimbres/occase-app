@@ -20,7 +20,7 @@ RichText createText(BuildContext context, String key, String value)
    );
 }
 
-Column headerFactory(BuildContext context)
+Padding headerFactory(BuildContext context)
 {
    List<RichText> r = List<RichText>();
    r.add(createText(context, "Marca: ",      "Volkswagen"));
@@ -29,9 +29,10 @@ Column headerFactory(BuildContext context)
    r.add(createText(context, "Preco Fipe: ", "1200"));
    r.add(createText(context, "Anunciante: ", "Paulinho Nacimento"));
 
-   return Column( crossAxisAlignment: CrossAxisAlignment.stretch,
-         children: r,
-   );
+   return Padding( padding: EdgeInsets.all(8.0),
+         child: Column( crossAxisAlignment: CrossAxisAlignment.stretch,
+               children: r,
+         ));
 }
 
 class AdvState extends State<Adv> {
@@ -48,7 +49,7 @@ class AdvState extends State<Adv> {
      Card c1 = Card(
            child: headerFactory(context),
            color: Consts.advHeaderColor,
-           margin: EdgeInsets.all(5.0),
+           margin: EdgeInsets.all(Consts.advInnerMarging),
            elevation: 0.0,
      );
 
@@ -58,7 +59,7 @@ class AdvState extends State<Adv> {
      Card c2 = Card(
            child: createText(context, "Descricao: ", msg),
            color: Consts.advMsgColor,
-           margin: EdgeInsets.all(5.0),
+           margin: EdgeInsets.all(Consts.advInnerMarging),
            elevation: 0.0,
      );
 
@@ -69,7 +70,7 @@ class AdvState extends State<Adv> {
      Card adv1 = Card(
            child: h1,
            color: Consts.advMsgColor,
-           margin: EdgeInsets.all(5.0),
+           margin: EdgeInsets.all(Consts.advMarging),
            elevation: 0.0,
      );
 
@@ -83,11 +84,12 @@ class AdvState extends State<Adv> {
      cards.add(adv1);
      cards.add(adv1);
 
-     return Scaffold(body:ListView(
+     return Scaffold( body: ListView(
                  shrinkWrap: true,
-                 padding: const EdgeInsets.all(20.0),
+                 padding: const EdgeInsets.all(10.0),
                  children: cards
      ),
+           backgroundColor: Consts.scaffoldBackground,
 
            floatingActionButton: FloatingActionButton(
                  backgroundColor: Theme.of(context).accentColor,
