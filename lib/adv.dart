@@ -6,60 +6,73 @@ class Adv extends StatefulWidget {
   AdvState createState() => new AdvState();
 }
 
-Text createText(String str)
+RichText createText(BuildContext context, String key, String value)
 {
-   return Text(str,
-         textAlign: TextAlign.left,
-         overflow: TextOverflow.ellipsis,
-         style: TextStyle(
-               fontWeight: FontWeight.bold,
-               fontSize: Consts.mainFontSize
-         )
+   //return Text(str,
+   //      textAlign: TextAlign.left,
+   //      overflow: TextOverflow.ellipsis,
+   //      style: TextStyle(
+   //            fontWeight: FontWeight.bold,
+   //            fontSize: Consts.mainFontSize
+   //      )
+   //);
+
+   return RichText(
+         text: TextSpan(
+               text: key,
+               //style: DefaultTextStyle.of(context).style,
+               style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: Consts.mainFontSize),
+               children: <TextSpan>[
+                  TextSpan(text: value, style: TextStyle(fontWeight: FontWeight.normal)),
+               ],
+         ),
    );
 }
 
-List<Text> headerFactory()
+List<RichText> headerFactory(BuildContext context)
 {
-   List<Text> r = List<Text>();
-   r.add(createText("Marca: Volkswagen"));
-   r.add(createText("Modelo: Brasilia"));
-   r.add(createText("Ano: 1985/86"));
-   r.add(createText("Preco Fipe: 1200"));
-   r.add(createText("Anunciante: Paulinho Nacimento"));
+   List<RichText> r = List<RichText>();
+   r.add(createText(context, "Marca",      ": Volkswagen"));
+   r.add(createText(context, "Modelo",     ": Brasilia"));
+   r.add(createText(context, "Ano",        ": 1985/86"));
+   r.add(createText(context, "Preco Fipe", ": 1200"));
+   r.add(createText(context, "Anunciante", ": Paulinho Nacimento"));
    return r;
 }
 
 class AdvState extends State<Adv> {
-   final Card header1 = new Card(
-         child: Column(
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: headerFactory(),
-         ),
-   );
-
-   final Card header2 = new Card(
-         child: new Column(
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: headerFactory(),
-         ),
-   );
-
-   final List<Card> cards = new List<Card>();
-
-  @override
-  void initState()
-  {
-     this.cards.add(this.header1);
-     this.cards.add(this.header2);
-  }
+  //@override
+  //void initState()
+  //{
+  //   cards.add(this.header1);
+  //   cards.add(this.header2);
+  //}
 
   @override
   Widget build(BuildContext context)
   {
+     final Card header1 = new Card(
+           child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                 children: headerFactory(context),
+           ),
+     );
+
+     final Card header2 = new Card(
+           child: new Column(
+                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                 children: headerFactory(context),
+           ),
+     );
+
+     final List<Card> cards = new List<Card>();
+     cards.add(header1);
+     cards.add(header2);
+
      return Scaffold(body:ListView(
                  shrinkWrap: true,
                  padding: const EdgeInsets.all(20.0),
-                 children: this.cards
+                 children: cards
      ),
 
            floatingActionButton: FloatingActionButton(
