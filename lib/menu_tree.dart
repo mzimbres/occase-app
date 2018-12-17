@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:menu_chat/constants.dart';
 
 class MenuNode {
    String name;
@@ -36,8 +38,36 @@ MenuNode makeNode(String state, List<String> cities)
    return node;
 }
 
+void buildTree(String msg)
+{
+   //MenuNode rootNode = MenuNode();
+
+   Map<String, dynamic> menu = jsonDecode(msg);
+
+   List<dynamic> arr = menu["menu"];
+   //print("Menu array size: ${arr.length}");
+
+   //while (arr != null) {
+      for (var o in arr) {
+         Map<String, dynamic> sub = o;
+         MenuNode node = MenuNode(sub["name"], sub["hash"]);
+         //rootNode.children.add(node);
+         print("${node.name} ===> ${node.code}");
+      }
+   //}
+
+   //root.forEach((k, v) => print(v));
+
+
+   //Map<String, dynamic> root = jsonDecode(arr.first);
+   //var root = jsonDecode(arr.first);
+   //print("Root sub size: ${root.length}");
+}
+
 MenuTree LocationFactory()
 {
+   buildTree(Consts.menu);
+
    MenuNode root = MenuNode("Brasil", "");
    root.children.add(makeNode("Acre", <String>["Porto Velho", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Outras"]));
    root.children.add(makeNode("Alagoas", <String>["Maceio", "Arapiraca", "Rio Largo", "Palmeira dos Índios", "União dos Palmares", "Outras"]));
