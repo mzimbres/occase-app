@@ -89,17 +89,34 @@ ListView createMenuListView(BuildContext context, MenuNode o,
    );
 }
 
+Center createSendScreen()
+{
+   return Center(child:RaisedButton(
+               child: Text( "Enviar",
+                     style: TextStyle(
+                           fontWeight: FontWeight.bold,
+                           fontSize: Consts.mainFontSize )
+               ),
+               onPressed: () {
+                  print("Sending hashes to server");
+               },
+               //color: const Color(0xFFFFFF),
+               //highlightColor: const Color(0xFFFFFF)
+   )
+   );
+}
+
 class Menu extends StatefulWidget {
    List<MenuTree> _menus;
 
    Menu(this._menus);
 
    @override
-   MenuState createState() => new MenuState(_menus);
+   MenuState createState() => MenuState(_menus);
 }
 
 class MenuState extends State<Menu> {
-   int _selectedIndex = 0;
+   int _BotBarIdx = 0;
    List<MenuTree> _menus;
 
    @override
@@ -114,11 +131,11 @@ class MenuState extends State<Menu> {
    Widget build(BuildContext context) {
       return WillPopScope(
             onWillPop: () async {
-               if (_menus[_selectedIndex].st.length == 1) {
+               if (_menus[_BotBarIdx].st.length == 1) {
                   return true;
                }
 
-               _menus[_selectedIndex].st.removeLast();
+               _menus[_BotBarIdx].st.removeLast();
                setState(() { });
                return false;
             },
@@ -126,54 +143,45 @@ class MenuState extends State<Menu> {
       );
    }
 
-   void _onItemTapped(int index) {
+   void _onBotBarTapped(int index) {
       setState(() {
-         _selectedIndex = index;
+         _BotBarIdx = index;
       });
    }
 
    Widget createScreen(BuildContext context)
    {
-      if (_selectedIndex == 2) {
-         return wrappOnScaff(Center(child:RaisedButton(
-                           child: Text( "Enviar",
-                                 style: TextStyle(
-                                       fontWeight: FontWeight.bold,
-                                       fontSize: Consts.mainFontSize )
-                           ),
-                           onPressed: () {
-                              print("Sending hashes to server");
-                           },
-                           //color: const Color(0xFFFFFF),
-                           //highlightColor: const Color(0xFFFFFF)
-         )
-         ), _onItemTapped, _selectedIndex);
+      if (_BotBarIdx == 2) {
+         return wrappOnScaff(
+               createSendScreen(),
+               _onBotBarTapped,
+               _BotBarIdx);
       }
 
       return wrappOnScaff(
             createMenuListView(
                   context,
-                  _menus[_selectedIndex].st.last,
+                  _menus[_BotBarIdx].st.last,
                   _onLeafPressed,
                   _onNodePressed),
-            _onItemTapped,
-            _selectedIndex);
+            _onBotBarTapped,
+            _BotBarIdx);
    }
 
    void _onLeafPressed(bool newValue, int i)
    {
-      MenuNode o = _menus[_selectedIndex].st.last.children[i];
+      MenuNode o = _menus[_BotBarIdx].st.last.children[i];
       String code = o.code;
-      o.status = newValue;
       print('$code ===> $newValue');
+      o.status = newValue;
       setState(() { });
    }
 
    void _onNodePressed(int i)
    {
-      MenuNode o = _menus[_selectedIndex].st.last.children[i];
       print("I am calling a non leaf onPressed");
-      _menus[_selectedIndex].st.add(o);
+      MenuNode o = _menus[_BotBarIdx].st.last.children[i];
+      _menus[_BotBarIdx].st.add(o);
       setState(() { }); // Triggers redraw.
    }
 }
