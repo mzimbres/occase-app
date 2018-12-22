@@ -58,7 +58,6 @@ class MenuState extends State<Menu> {
    Widget build(BuildContext context) {
       return WillPopScope(
             onWillPop: () async {
-               //Navigator.of(context).pop();
                if (menus[_selectedIndex].st.length == 1) {
                   return true;
                }
@@ -116,52 +115,55 @@ class MenuState extends State<Menu> {
          ));
       }
 
-      return scaffIt( ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(20.0),
-                  children: createScreenMenu(context, menus[_selectedIndex]),
-      ));
+      return scaffIt(
+            //ListView(
+            //      shrinkWrap: true,
+            //      padding: const EdgeInsets.all(20.0),
+            //      children: createScreenMenu(context, menus[_selectedIndex]),
+            //)
+            ListView.builder(
+               padding: const EdgeInsets.all(8.0),
+               itemCount: menus[_selectedIndex].st.last.children.length,
+               itemBuilder: (BuildContext context, int i) {
+                  return createScreenMenu(context,
+                        menus[_selectedIndex].st.last.children[i]);
+                  },
+            ),
+      );
    }
 
-   List<Widget> createScreenMenu(BuildContext context, MenuTree tree)
+   Widget createScreenMenu(BuildContext context, MenuNode o)
    {
-      List<Widget> items = List<Widget>();
-      for (MenuNode o in tree.st.last.children) {
-         Widget w;
-         if (o.isLeaf()) {
-            w = CheckboxListTile(
-                  title: Text(
-                        o.name,
-                        style: TextStyle(
-                              fontSize: Consts.mainFontSize
-                        )
-                  ),
-                  //subtitle: Text(" Inscritos"),
-                  value: o.status,
-                  onChanged: (bool newValue){
-                     String code = o.code;
-                     o.status = newValue;
-                     print('$code ===> $newValue');
-                     setState(() { });
-                  }
-            );
+      if (o.isLeaf()) {
+         return CheckboxListTile(
+               title: Text(
+                     o.name,
+                     style: TextStyle(
+                           fontSize: Consts.mainFontSize
+                     )
+               ),
+               //subtitle: Text(" Inscritos"),
+               value: o.status,
+               onChanged: (bool newValue){
+                  String code = o.code;
+                  o.status = newValue;
+                  print('$code ===> $newValue');
+                  setState(() { });
+               }
+         );
 
-         } else {
-            w = FlatButton(
-                  child: TreeItem(o.name, o.children.length),
-                  onPressed: () {
-                       print("I am calling non leaf on pressed");
-                       menus[_selectedIndex].st.add(o);
-                       setState(() { }); // Triggers redraw with new value.
-                  },
-                  color: const Color(0xFFFFFF),
-                  highlightColor: const Color(0xFFFFFF)
-            );
-         }
-         items.add(w);
       }
-
-      return items;
+      
+      return FlatButton(
+            child: TreeItem(o.name, o.children.length),
+            onPressed: () {
+               print("I am calling non leaf on pressed");
+               menus[_selectedIndex].st.add(o);
+               setState(() { }); // Triggers redraw.
+            },
+            color: const Color(0xFFFFFF),
+            highlightColor: const Color(0xFFFFFF)
+      );
    }
 }
 
