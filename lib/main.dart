@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/adv.dart';
 import 'package:menu_chat/menu.dart';
+import 'package:menu_chat/constants.dart';
 
 Future<Null> main() async {
   runApp(MyApp());
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "MenuChat",
+      title: Consts.appName,
       theme: ThemeData(
         primaryColor: Color(0xff075E54),
         accentColor: Color(0xff25D366),
@@ -27,7 +28,7 @@ class MenuChatApp extends StatefulWidget {
   MenuChatApp();
 
   @override
-  _MenuAppChatState createState() => new _MenuAppChatState();
+  _MenuAppChatState createState() => _MenuAppChatState();
 }
 
 class _MenuAppChatState extends State<MenuChatApp>
@@ -38,14 +39,14 @@ class _MenuAppChatState extends State<MenuChatApp>
   void initState() {
     // TODO: implement initState
     super.initState();
-    _tabController = new TabController(vsync: this, initialIndex: 1, length: 3);
+    _tabController = TabController(vsync: this, initialIndex: 1, length: 3);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("FipeChat"),
+        title: Text(Consts.appName),
         elevation: 0.7,
         bottom: TabBar(
           controller: _tabController,

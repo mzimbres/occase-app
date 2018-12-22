@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
+import 'package:menu_chat/menu.dart';
 
 class KeyValuePair {
    String key;
@@ -29,18 +30,20 @@ Padding headerFactory(BuildContext context,
       r.add(createHeaderLine(context, o));
    }
 
-   return Padding( padding: EdgeInsets.all(8.0),
+   return Padding( padding: EdgeInsets.all(4.0),
          child: Column( crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
          ));
 }
 
 class AdvData {
-     List<KeyValuePair> headerEntries;
-     String msg;
+     List<KeyValuePair> locHeaderList;
+     List<KeyValuePair> prodHeaderList;
+     List<KeyValuePair> descList;
      bool saved;
 
-     AdvData(this.headerEntries, this.msg, this.saved);
+     AdvData(this.locHeaderList, this.prodHeaderList,
+           this.descList, this.saved);
 }
 
 class Adv extends StatefulWidget {
@@ -53,18 +56,25 @@ class AdvState extends State<Adv> {
 
    AdvState()
    {
-      List<KeyValuePair> headerEntries = List<KeyValuePair>();
-      headerEntries.add(KeyValuePair("Marca: ",      "Volkswagen"));
-      headerEntries.add(KeyValuePair("Modelo: ",     "Brasilia"));
-      headerEntries.add(KeyValuePair("Ano: ",        "1985/86"));
-      headerEntries.add(KeyValuePair("Preco Fipe: ", "1200"));
-      headerEntries.add(KeyValuePair("Anunciante: ", "Paulinho Nascimento"));
+      List<KeyValuePair> locHeaderList = List<KeyValuePair>();
+      locHeaderList.add(KeyValuePair("Estado: ",      "Sao Paulo"));
+      locHeaderList.add(KeyValuePair("Cidade: ",     "Atibaia"));
+
+      List<KeyValuePair> prodHeaderList = List<KeyValuePair>();
+      prodHeaderList.add(KeyValuePair("Marca: ",      "Volkswagen"));
+      prodHeaderList.add(KeyValuePair("Modelo: ",     "Brasilia"));
+      prodHeaderList.add(KeyValuePair("Ano: ",        "1985/86"));
+      prodHeaderList.add(KeyValuePair("Preco Fipe: ", "1200"));
+      prodHeaderList.add(KeyValuePair("Anunciante: ", "Paulinho Nascimento"));
 
       String msg = "Carro em bom estado de conservacao. Único dono. ";
-      msg += "Documentos em dia (Paulinho garante). ";
+      msg += "Documentos em dia. ";
       msg += "Guarantia de um mês.";
 
-      data1 = AdvData(headerEntries, msg, false);
+      List<KeyValuePair> descList = List<KeyValuePair>();
+      descList.add(KeyValuePair("Descricao: ", msg));
+
+      data1 = AdvData(locHeaderList, prodHeaderList, descList, false);
    }
 
    @override
@@ -75,16 +85,22 @@ class AdvState extends State<Adv> {
    Card createAdvWidget(BuildContext context, AdvData data)
    {
       Card c1 = Card(
-            child: headerFactory(context, data.headerEntries),
-            color: Consts.advHeaderColor,
+            child: headerFactory(context, data.locHeaderList),
+            color: Consts.advLocHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,
       );
 
       Card c2 = Card(
-            child: createHeaderLine(context,
-                  KeyValuePair("Descricao: ", data.msg)),
-            color: Consts.advMsgColor,
+            child: headerFactory(context, data.prodHeaderList),
+            color: Consts.advProdHeaderColor,
+            margin: EdgeInsets.all(Consts.advInnerMarging),
+            elevation: 0.0,
+      );
+
+      Card c3 = Card(
+            child: headerFactory(context, data.descList),
+            color: Consts.advProdHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,
       );
@@ -106,16 +122,15 @@ class AdvState extends State<Adv> {
             }
       );
 
-      Card c3 = Card(
+      Card c4 = Card(
             child:  save,
-            color: Consts.advHeaderColor,
+            color: Consts.advProdHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,
       );
 
       Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[c1, c2, c3],
-      );
+            children: <Widget>[c1, c2, c3, c4],);
 
       Card adv1 = Card(
             child: h1,
@@ -132,7 +147,7 @@ class AdvState extends State<Adv> {
   {
      return Scaffold( body:
            ListView.builder(
-                 padding: const EdgeInsets.all(8.0),
+                 padding: const EdgeInsets.all(0.0),
                  //itemCount: cards.length
                  itemBuilder: (BuildContext context, int index) {
                     return createAdvWidget(context, data1);
