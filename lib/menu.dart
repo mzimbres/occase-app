@@ -129,43 +129,38 @@ class MenuState extends State<Menu> {
 
    @override
    Widget build(BuildContext context) {
-      return WillPopScope(
-            onWillPop: () async {
-               if (_menus[_BotBarIdx].st.length == 1) {
-                  return true;
-               }
 
-               _menus[_BotBarIdx].st.removeLast();
-               setState(() { });
-               return false;
-            },
-            child: createScreen(context),
-      );
-   }
-
-   void _onBotBarTapped(int index) {
-      setState(() {
-         _BotBarIdx = index;
-      });
-   }
-
-   Widget createScreen(BuildContext context)
-   {
+      Widget w;
       if (_BotBarIdx == 2) {
-         return wrappOnScaff(
-               createSendScreen(),
-               _onBotBarTapped,
-               _BotBarIdx);
-      }
-
-      return wrappOnScaff(
-            createMenuListView(
+         w = createSendScreen();
+      } else {
+         w = createMenuListView(
                   context,
                   _menus[_BotBarIdx].st.last,
                   _onLeafPressed,
-                  _onNodePressed),
-            _onBotBarTapped,
-            _BotBarIdx);
+                  _onNodePressed);
+      }
+
+      return WillPopScope(
+            onWillPop: () async { return _onWillPop();},
+            child: wrappOnScaff(w, _onBotBarTapped, _BotBarIdx),
+      );
+   }
+
+   bool _onWillPop()
+   {
+      if (_menus[_BotBarIdx].st.length == 1) {
+         return true;
+      }
+
+      _menus[_BotBarIdx].st.removeLast();
+      setState(() { });
+      return false;
+   }
+
+   void _onBotBarTapped(int index)
+   {
+      setState(() { _BotBarIdx = index; });
    }
 
    void _onLeafPressed(bool newValue, int i)
@@ -182,7 +177,7 @@ class MenuState extends State<Menu> {
       print("I am calling a non leaf onPressed");
       MenuNode o = _menus[_BotBarIdx].st.last.children[i];
       _menus[_BotBarIdx].st.add(o);
-      setState(() { }); // Triggers redraw.
+      setState(() { });
    }
 }
 
