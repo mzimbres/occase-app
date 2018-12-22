@@ -40,6 +40,7 @@ class MenuChatState extends State<MenuChat>
    AdvData data1;
    bool _onSelection = false;
    int _BotBarIdx = 0; // Used on menu screens.
+   List<String> _advAppBarMsg;
 
    void _onAdvSelection(bool newValue, AdvData data)
    {
@@ -74,6 +75,10 @@ class MenuChatState extends State<MenuChat>
       data1 = SimulateAdvData();
       _onSelection = false;
       _BotBarIdx = 0;
+      _advAppBarMsg = List<String>(3);
+      _advAppBarMsg[0] = "Escolha uma localizacao";
+      _advAppBarMsg[1] = "Escolha um modelo";
+      _advAppBarMsg[2] = "Verificacao e envio";
    }
 
    bool _onWillPopMenu()
@@ -154,7 +159,7 @@ class MenuChatState extends State<MenuChat>
                onWillPop: () async { return _onWillPopMenu();},
                child: Scaffold(
                      appBar: AppBar(
-                           title: Text("Escolha uma localizacao"),
+                           title: Text(_advAppBarMsg[_BotBarIdx]),
                            elevation: 0.7,
                      ),
                      body: w,
