@@ -33,10 +33,26 @@ class MenuChat extends StatefulWidget {
 }
 
 class MenuChatState extends State<MenuChat>
-with SingleTickerProviderStateMixin {
+      with SingleTickerProviderStateMixin {
    TabController _tabController;
-   List<List<MenuNode>> filterMenu;
-   List<List<MenuNode>> advMenu;
+   List<List<MenuNode>> _filterMenus;
+   List<List<MenuNode>> _advMenus;
+   AdvData data1;
+   bool _onSelection = false;
+
+   void _onAdvSelection(bool newValue, AdvData data)
+   {
+      print('Anuncio salvo');
+      data.saved = newValue;
+      setState(() { });
+   }
+
+   void _onNewAdv()
+   {
+      print("Open menu selection.");
+      _onSelection = true;
+      setState(() { });
+   }
 
    MenuChatState()
    {
@@ -46,13 +62,16 @@ with SingleTickerProviderStateMixin {
       List<MenuNode> locMenu = LocationFactory();
       List<MenuNode> modelsMenu = ModelsFactory();
 
-      filterMenu = List<List<MenuNode>>();
-      filterMenu.add(locMenu);
-      filterMenu.add(modelsMenu);
+      _filterMenus = List<List<MenuNode>>();
+      _filterMenus.add(locMenu);
+      _filterMenus.add(modelsMenu);
 
-      advMenu = List<List<MenuNode>>();
-      advMenu.add(locMenu);
-      advMenu.add(modelsMenu);
+      _advMenus = List<List<MenuNode>>();
+      _advMenus.add(locMenu);
+      _advMenus.add(modelsMenu);
+
+      data1 = SimulateAdvData();
+      _onSelection = false;
    }
 
    @override
@@ -69,6 +88,14 @@ with SingleTickerProviderStateMixin {
    }
 
    Widget createApp(BuildContext context) {
+
+      Widget w;
+      if (_onSelection) {
+         w = Menu(_advMenus);
+      } else {
+         w = createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
+      }
+
       return Scaffold(
             appBar: AppBar(
                   title: Text(Consts.appName),
@@ -93,9 +120,7 @@ with SingleTickerProviderStateMixin {
       body: TabBarView(
             controller: _tabController,
             children: <Widget>[
-               Menu(filterMenu),
-               Adv(advMenu),
-               Tab(text: "Chat list"),
+               Menu(_filterMenus), w, Tab(text: "Chat list"),
             ],
       ),
       );
