@@ -50,6 +50,7 @@ class Adv extends StatefulWidget {
 
 class AdvState extends State<Adv> {
    AdvData data1;
+
    AdvState()
    {
       List<KeyValuePair> headerEntries = List<KeyValuePair>();
@@ -125,26 +126,18 @@ class AdvState extends State<Adv> {
 
       return adv1;
    }
+
   @override
   Widget build(BuildContext context)
   {
-     Card adv1 = createAdvWidget(context, data1);
-
-     final List<Card> cards = List<Card>();
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-     cards.add(adv1);
-
-     return Scaffold( body: ListView(
-                 shrinkWrap: true,
-                 padding: const EdgeInsets.all(10.0),
-                 children: cards
-     ),
+     return Scaffold( body:
+           ListView.builder(
+                 padding: const EdgeInsets.all(8.0),
+                 //itemCount: cards.length
+                 itemBuilder: (BuildContext context, int index) {
+                    return createAdvWidget(context, data1);
+                 },
+           ),
            backgroundColor: Consts.scaffoldBackground,
 
            floatingActionButton: FloatingActionButton(
