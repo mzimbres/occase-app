@@ -13,10 +13,9 @@ class TreeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new ListTile(
+    return ListTile(
         leading: CircleAvatar(child: Text("M")),
-        title: Text(
-              name,
+        title: Text( name,
               style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: Consts.mainFontSize )
@@ -29,6 +28,27 @@ class TreeItem extends StatelessWidget {
               )
         );
   }
+}
+
+Widget wrappOnScaff(Widget w, Function onTapped, int i)
+{
+   return Scaffold(
+         body: w,
+         bottomNavigationBar: BottomNavigationBar(
+               items: <BottomNavigationBarItem>[
+                  BottomNavigationBarItem(
+                        icon: Icon(Icons.home), title: Text('Localizacao')),
+                  BottomNavigationBarItem(
+                        icon: Icon(Icons.directions_car), title: Text('Modelos')),
+                  BottomNavigationBarItem(
+                        icon: Icon(Icons.send), title: Text('Enviar')),
+               ],
+
+               currentIndex: i,
+               fixedColor: Colors.deepPurple,
+               onTap: onTapped,
+         ),
+   );
 }
 
 class Menu extends StatefulWidget {
@@ -74,35 +94,14 @@ class MenuState extends State<Menu> {
       });
    }
 
-   Widget scaffIt(Widget w)
-   {
-      return Scaffold(
-            body: w,
-            bottomNavigationBar: BottomNavigationBar(
-                  items: <BottomNavigationBarItem>[
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.home), title: Text('Localizacao')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.directions_car), title: Text('Modelos')),
-                     BottomNavigationBarItem(
-                           icon: Icon(Icons.send), title: Text('Enviar')),
-                  ],
-
-                  currentIndex: _selectedIndex,
-                  fixedColor: Colors.deepPurple,
-                  onTap: _onItemTapped,
-            ),
-      );
-   }
-
    Widget createScreen(BuildContext context)
    {
       if (_selectedIndex == 2) {
-         return scaffIt(Center(child:RaisedButton(
+         return wrappOnScaff(Center(child:RaisedButton(
                            child: Text( "Enviar",
-                           style: TextStyle(
-                                 fontWeight: FontWeight.bold,
-                                 fontSize: Consts.mainFontSize )
+                                 style: TextStyle(
+                                       fontWeight: FontWeight.bold,
+                                       fontSize: Consts.mainFontSize )
                            ),
                            onPressed: () {
                               print("Sending hashes to server");
@@ -110,19 +109,18 @@ class MenuState extends State<Menu> {
                            //color: const Color(0xFFFFFF),
                            //highlightColor: const Color(0xFFFFFF)
          )
-         ));
+         ), _onItemTapped, _selectedIndex);
       }
 
-      return scaffIt(
+      return wrappOnScaff(
             ListView.builder(
-               padding: const EdgeInsets.all(8.0),
-               itemCount: menus[_selectedIndex].st.last.children.length,
-               itemBuilder: (BuildContext context, int i) {
-                  return createScreenMenu(context,
-                        menus[_selectedIndex].st.last.children[i]);
+                  padding: const EdgeInsets.all(8.0),
+                  itemCount: menus[_selectedIndex].st.last.children.length,
+                  itemBuilder: (BuildContext context, int i) {
+                     return createScreenMenu(context,
+                           menus[_selectedIndex].st.last.children[i]);
                   },
-            ),
-      );
+            ), _onItemTapped, _selectedIndex);
    }
 
    Widget createScreenMenu(BuildContext context, MenuNode o)
