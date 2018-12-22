@@ -107,7 +107,7 @@ Center createSendScreen()
 }
 
 class Menu extends StatefulWidget {
-   List<MenuTree> _menus;
+   List<List<MenuNode>> _menus;
 
    Menu(this._menus);
 
@@ -117,7 +117,7 @@ class Menu extends StatefulWidget {
 
 class MenuState extends State<Menu> {
    int _BotBarIdx = 0;
-   List<MenuTree> _menus;
+   List<List<MenuNode>> _menus;
 
    @override
    void initState()
@@ -136,7 +136,7 @@ class MenuState extends State<Menu> {
       } else {
          w = createMenuListView(
                   context,
-                  _menus[_BotBarIdx].st.last,
+                  _menus[_BotBarIdx].last,
                   _onLeafPressed,
                   _onNodePressed);
       }
@@ -149,11 +149,11 @@ class MenuState extends State<Menu> {
 
    bool _onWillPopMenu()
    {
-      if (_menus[_BotBarIdx].st.length == 1) {
+      if (_menus[_BotBarIdx].length == 1) {
          return true;
       }
 
-      _menus[_BotBarIdx].st.removeLast();
+      _menus[_BotBarIdx].removeLast();
       setState(() { });
       return false;
    }
@@ -165,7 +165,7 @@ class MenuState extends State<Menu> {
 
    void _onLeafPressed(bool newValue, int i)
    {
-      MenuNode o = _menus[_BotBarIdx].st.last.children[i];
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
@@ -175,8 +175,8 @@ class MenuState extends State<Menu> {
    void _onNodePressed(int i)
    {
       print("I am calling a non leaf onPressed");
-      MenuNode o = _menus[_BotBarIdx].st.last.children[i];
-      _menus[_BotBarIdx].st.add(o);
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
+      _menus[_BotBarIdx].add(o);
       setState(() { });
    }
 }

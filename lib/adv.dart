@@ -151,20 +151,20 @@ Widget createAdvScreen(BuildContext context, AdvData data,
 }
 
 class Adv extends StatefulWidget {
-   List<MenuTree> _menus;
+   List<List<MenuNode>> _advMenus;
    
-   Adv(this._menus);
+   Adv(this._advMenus);
 
    @override
-   AdvState createState() => AdvState(_menus);
+   AdvState createState() => AdvState(_advMenus);
 }
 
 class AdvState extends State<Adv> {
-   List<MenuTree> _menus;
+   List<List<MenuNode>> _advMenus;
    AdvData data1;
    bool _onSelection = false;
 
-   AdvState(this._menus)
+   AdvState(this._advMenus)
    {
       data1 = SimulateAdvData();
       _onSelection = false;
@@ -193,9 +193,10 @@ class AdvState extends State<Adv> {
    Widget build(BuildContext context)
    {
       if (_onSelection) {
-         return Menu(_menus);
+         return Menu(_advMenus);
       }
 
       return createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
    }
 }
+

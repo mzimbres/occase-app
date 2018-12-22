@@ -18,15 +18,6 @@ class MenuNode {
    }
 }
 
-class MenuTree {
-   List<MenuNode> st = List<MenuNode>();
-
-   MenuTree(MenuNode root)
-   {
-      st.add(root);
-   }
-}
-
 MenuNode makeNode(String state, List<String> cities)
 {
    MenuNode node = MenuNode(state, "00.02");
@@ -64,7 +55,7 @@ void buildTree(String msg)
    //print("Root sub size: ${root.length}");
 }
 
-MenuTree LocationFactory()
+List<MenuNode> LocationFactory()
 {
    buildTree(Consts.menu);
 
@@ -95,10 +86,12 @@ MenuTree LocationFactory()
    root.children.add(makeNode("Sao Paulo", <String>["Sao Paulo", "Outras"]));
    root.children.add(makeNode("Sergipe", <String>["Aracaju", "Outras"]));
    root.children.add(makeNode("Tocantins", <String>["Palmas", "Outras"]));
-   return MenuTree(root);
+   List<MenuNode> ret = List<MenuNode>();
+   ret.add(root);
+   return ret;
 }
 
-MenuTree ModelsFactory()
+List<MenuNode> ModelsFactory()
 {
    MenuNode root = MenuNode("Brasil", "");
    root.children.add(makeNode("Acura", <String>["Porto Velho", "Cruzeiro do Sul", "Sena Madureira", "Tarauacá", "Feijó", "Outras"]));
@@ -144,5 +137,7 @@ MenuTree ModelsFactory()
    root.children.add(makeNode("Jaguar", <String>["Palmas", "Outras"]));
    root.children.add(makeNode("Jeep", <String>["Palmas", "Outras"]));
    root.children.add(makeNode("Jinbey", <String>["Palmas", "Outras"]));
-   return MenuTree(root);
+   List<MenuNode> ret = List<MenuNode>();
+   ret.add(root);
+   return ret;
 }

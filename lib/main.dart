@@ -35,13 +35,24 @@ class MenuChat extends StatefulWidget {
 class MenuChatState extends State<MenuChat>
 with SingleTickerProviderStateMixin {
    TabController _tabController;
-   List<MenuTree> menus;
+   List<List<MenuNode>> filterMenu;
+   List<List<MenuNode>> advMenu;
 
    MenuChatState()
    {
-      menus = List<MenuTree>();
-      menus.add(LocationFactory());
-      menus.add(ModelsFactory());
+      // I will use the same menus on both the filter and adv stacks.
+      // I see no reason for duplication state. It also reduces memory
+      // consumption, though I do not know how much.
+      List<MenuNode> locMenu = LocationFactory();
+      List<MenuNode> modelsMenu = ModelsFactory();
+
+      filterMenu = List<List<MenuNode>>();
+      filterMenu.add(locMenu);
+      filterMenu.add(modelsMenu);
+
+      advMenu = List<List<MenuNode>>();
+      advMenu.add(locMenu);
+      advMenu.add(modelsMenu);
    }
 
    @override
@@ -82,8 +93,8 @@ with SingleTickerProviderStateMixin {
       body: TabBarView(
             controller: _tabController,
             children: <Widget>[
-               Menu(menus),
-               Adv(menus),
+               Menu(filterMenu),
+               Adv(advMenu),
                Tab(text: "Chat list"),
             ],
       ),
