@@ -116,13 +116,16 @@ class MenuState extends State<Menu> {
          ));
       }
 
-      return scaffIt(createScreenMenu(context, menus[_selectedIndex]));
-      
+      return scaffIt( ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.all(20.0),
+                  children: createScreenMenu(context, menus[_selectedIndex]),
+      ));
    }
 
-   Widget createScreenMenu(BuildContext context, MenuTree tree)
+   List<Widget> createScreenMenu(BuildContext context, MenuTree tree)
    {
-      List<Widget> items = new List<Widget>();
+      List<Widget> items = List<Widget>();
       for (MenuNode o in tree.st.last.children) {
          Widget w;
          if (o.isLeaf()) {
@@ -157,12 +160,8 @@ class MenuState extends State<Menu> {
          }
          items.add(w);
       }
-      
-      return ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(20.0),
-            children: items,
-      );
+
+      return items;
    }
 }
 
