@@ -144,7 +144,24 @@ class MenuChatState extends State<MenuChat>
       if (_onSelection) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createSendScreen();
+            w = Center(child:RaisedButton(
+                        child: Text( "Enviar",
+                              style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: Consts.mainFontSize )
+                        ),
+                        onPressed: ()
+                        {
+                           // Have to clean menu tree state.
+                           print("Sending adv to server.");
+                           _onSelection = false;
+                           _BotBarIdx = 0;
+                           setState(() { });
+                        },
+                        //color: const Color(0xFFFFFF),
+                        //highlightColor: const Color(0xFFFFFF)
+            )
+            );
          } else {
             w = createMenuListView(
                   context,
