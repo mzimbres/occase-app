@@ -73,6 +73,7 @@ class MenuChatState extends State<MenuChat>
 
       data1 = SimulateAdvData();
       _onSelection = false;
+      _BotBarIdx = 0;
    }
 
    bool _onWillPopMenu()
@@ -88,6 +89,15 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
+   int _advIndexHelper(int i)
+   {
+      if (i == 0) return 1;
+      if (i == 1) return 2;
+      return 1;
+
+      // Assert we do not get here.
+   }
+
    void _onBotBarTapped(int index)
    {
       setState(() { _BotBarIdx = index; });
@@ -99,6 +109,7 @@ class MenuChatState extends State<MenuChat>
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
+      _BotBarIdx = _advIndexHelper(_BotBarIdx);
       setState(() { });
    }
 
@@ -136,6 +147,8 @@ class MenuChatState extends State<MenuChat>
                   _onLeafPressed,
                   _onNodePressed);
          }
+
+         print("Current index $_BotBarIdx");
 
          return WillPopScope(
                onWillPop: () async { return _onWillPopMenu();},
