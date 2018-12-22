@@ -51,6 +51,29 @@ Widget wrappOnScaff(Widget w, Function onTapped, int i)
    );
 }
 
+
+Widget createMenuItem(BuildContext context, MenuNode o,
+      Function onLeafPressed, Function onNodePressed)
+{
+   if (o.isLeaf()) {
+      return CheckboxListTile(
+            title: Text( o.name,
+                  style: TextStyle(fontSize: Consts.mainFontSize)
+            ),
+            value: o.status,
+            onChanged: onLeafPressed
+      );
+
+   }
+   
+   return FlatButton(
+         child: TreeItem(o.name, o.children.length),
+         color: const Color(0xFFFFFF),
+         highlightColor: const Color(0xFFFFFF),
+         onPressed: onNodePressed,
+   );
+}
+
 class Menu extends StatefulWidget {
    List<MenuTree> menus;
 
@@ -117,45 +140,30 @@ class MenuState extends State<Menu> {
                   padding: const EdgeInsets.all(8.0),
                   itemCount: menus[_selectedIndex].st.last.children.length,
                   itemBuilder: (BuildContext context, int i) {
-                     return createScreenMenu(context,
-                           menus[_selectedIndex].st.last.children[i]);
+                     return createMenuItem(
+                           context, menus[_selectedIndex].st.last.children[i],
+                           (bool newValue) { _onLeadPressed(newValue, i);},
+                           () { _onNodePressed(i); }
+                     );
                   },
             ), _onItemTapped, _selectedIndex);
    }
 
-   Widget createScreenMenu(BuildContext context, MenuNode o)
+   void _onLeadPressed(bool newValue, int i)
    {
-      if (o.isLeaf()) {
-         return CheckboxListTile(
-               title: Text(
-                     o.name,
-                     style: TextStyle(
-                           fontSize: Consts.mainFontSize
-                     )
-               ),
-               //subtitle: Text(" Inscritos"),
-               value: o.status,
-               onChanged: (bool newValue){
-                  String code = o.code;
-                  o.status = newValue;
-                  print('$code ===> $newValue');
-                  setState(() { });
-               }
-         );
+      MenuNode o = menus[_selectedIndex].st.last.children[i];
+      String code = o.code;
+      o.status = newValue;
+      print('$code ===> $newValue');
+      setState(() { });
+   }
 
-      }
-      
-      return FlatButton(
-            child: TreeItem(o.name, o.children.length),
-            onPressed: () {
-               print("I am calling non leaf on pressed");
-               menus[_selectedIndex].st.add(o);
-               setState(() { }); // Triggers redraw.
-            },
-            color: const Color(0xFFFFFF),
-            highlightColor: const Color(0xFFFFFF)
-      );
+   void _onNodePressed(int i)
+   {
+      MenuNode o = menus[_selectedIndex].st.last.children[i];
+      print("I am calling non leaf on pressed");
+      menus[_selectedIndex].st.add(o);
+      setState(() { }); // Triggers redraw.
    }
 }
-
 
