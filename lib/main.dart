@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/adv.dart';
 import 'package:menu_chat/menu.dart';
+import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 
 Future<Null> main() async {
@@ -19,21 +20,29 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xff25D366),
       ),
       debugShowCheckedModeBanner: false,
-      home: MenuChatApp(),
+      home: MenuChat(),
     );
   }
 }
 
-class MenuChatApp extends StatefulWidget {
-  MenuChatApp();
+class MenuChat extends StatefulWidget {
+  MenuChat();
 
   @override
-  _MenuAppChatState createState() => _MenuAppChatState();
+  MenuChatState createState() => MenuChatState();
 }
 
-class _MenuAppChatState extends State<MenuChatApp>
+class MenuChatState extends State<MenuChat>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
+   List<MenuTree> menus;
+
+   MenuChatState()
+   {
+      menus = List<MenuTree>();
+      menus.add(LocationFactory());
+      menus.add(ModelsFactory());
+   }
 
   @override
   void initState() {
@@ -68,7 +77,7 @@ class _MenuAppChatState extends State<MenuChatApp>
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          Menu(),
+          Menu(menus),
           Adv(),
           Tab(text: "Chat list"),
         ],

@@ -32,8 +32,12 @@ class TreeItem extends StatelessWidget {
 }
 
 class Menu extends StatefulWidget {
-  @override
-  MenuState createState() => new MenuState();
+   List<MenuTree> menus;
+
+   Menu(this.menus);
+
+   @override
+   MenuState createState() => new MenuState(menus);
 }
 
 class MenuState extends State<Menu> {
@@ -46,13 +50,7 @@ class MenuState extends State<Menu> {
       super.initState();
    }
 
-
-   MenuState()
-   {
-      menus = List<MenuTree>();
-      menus.add(LocationFactory());
-      menus.add(ModelsFactory());
-   }
+   MenuState(this.menus);
 
    @override
    Widget build(BuildContext context) {
