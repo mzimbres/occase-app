@@ -127,6 +127,29 @@ Card createAdvWidget(BuildContext context, AdvData data,
    return adv1;
 }
 
+Widget createAdvScreen(BuildContext context, AdvData data,
+                       Function onAdvSelection,
+                       Function onNewAdv)
+{
+   return Scaffold( body:
+         ListView.builder(
+               padding: const EdgeInsets.all(0.0),
+               //itemCount: cards.length
+               itemBuilder: (BuildContext context, int index)
+               {
+                  return createAdvWidget(context, data, onAdvSelection);
+               },
+         ),
+
+         backgroundColor: Consts.scaffoldBackground,
+         floatingActionButton: FloatingActionButton(
+               backgroundColor: Theme.of(context).accentColor,
+               child: Icon(Icons.message, color: Colors.white),
+               onPressed: onNewAdv,
+         ),
+   );
+}
+
 class Adv extends StatefulWidget {
    List<MenuTree> _menus;
    
@@ -159,36 +182,20 @@ class AdvState extends State<Adv> {
       setState(() { });
    }
 
-  @override
-  Widget build(BuildContext context)
-  {
-     if (_onSelection) {
-        return Menu(_menus);
-     }
+   void _onNewAdv()
+   {
+      print("Open menu selection.");
+      _onSelection = true;
+      setState(() { });
+   }
 
-     return Scaffold( body:
-           ListView.builder(
-                 padding: const EdgeInsets.all(0.0),
-                 //itemCount: cards.length
-                 itemBuilder: (BuildContext context, int index)
-                 {
-                    return createAdvWidget(context, data1, _onAdvSelection);
-                 },
-           ),
-           backgroundColor: Consts.scaffoldBackground,
+   @override
+   Widget build(BuildContext context)
+   {
+      if (_onSelection) {
+         return Menu(_menus);
+      }
 
-           floatingActionButton: FloatingActionButton(
-                 backgroundColor: Theme.of(context).accentColor,
-                 child: Icon(
-                       Icons.message,
-                       color: Colors.white,
-                 ),
-                 onPressed: () {
-                    print("Open menu selection.");
-                    _onSelection = true;
-                    setState(() { });
-                 },
-           ),
-     );
-  }
+      return createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
+   }
 }
