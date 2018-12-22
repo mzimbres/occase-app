@@ -12,21 +12,22 @@ class TreeItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ListTile(
-        leading: CircleAvatar(child: Text("M")),
-        title: Text( name,
-              style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: Consts.mainFontSize )
-              ),
-        dense: true,
-        subtitle: Text(
-              msg,
-              style: TextStyle(
-                    fontSize: Consts.subFontSize)
-              )
-        );
+  Widget build(BuildContext context)
+  {
+     return ListTile(
+           leading: CircleAvatar(child: Text("M")),
+           title: Text( name,
+                 style: TextStyle(
+                       fontWeight: FontWeight.bold,
+                       fontSize: Consts.mainFontSize )
+           ),
+           dense: true,
+           subtitle: Text(
+                 msg,
+                 style: TextStyle(
+                       fontSize: Consts.subFontSize)
+           )
+     );
   }
 }
 
