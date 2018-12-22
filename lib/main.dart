@@ -89,41 +89,47 @@ class MenuChatState extends State<MenuChat>
 
    Widget createApp(BuildContext context) {
 
-      Widget w;
+      Widget advScreen;
       if (_onSelection) {
-         w = Menu(_advMenus);
+         return Scaffold(
+               appBar: AppBar(
+                     title: Text("Escolha uma localizacao"),
+                     elevation: 0.7,
+               ),
+               body: Menu(_advMenus)
+         );
       } else {
-         w = createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
+         advScreen = createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
+         return Scaffold(
+               appBar: AppBar(
+                     title: Text(Consts.appName),
+                     elevation: 0.7,
+                     bottom: TabBar(
+                           controller: _tabController,
+                           indicatorColor: Colors.white,
+                           tabs: <Widget>[
+                              Tab(text: "FILTROS",),
+                              Tab(text: "ANUNCIOS"),
+                              Tab(text: "CHATS",),
+                           ],
+                     ),
+                     actions: <Widget>[
+                        Icon(Icons.search),
+                        Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                        ),
+                        Icon(Icons.more_vert)
+                     ],
+               ),
+         body: TabBarView(
+               controller: _tabController,
+               children: <Widget>[
+                  Menu(_filterMenus), advScreen, Tab(text: "Chat list"),
+               ],
+         ),
+         );
       }
 
-      return Scaffold(
-            appBar: AppBar(
-                  title: Text(Consts.appName),
-                  elevation: 0.7,
-                  bottom: TabBar(
-                        controller: _tabController,
-                        indicatorColor: Colors.white,
-                        tabs: <Widget>[
-                           Tab(text: "FILTROS",),
-                           Tab(text: "ANUNCIOS"),
-                           Tab(text: "CHATS",),
-                        ],
-                  ),
-                  actions: <Widget>[
-                     Icon(Icons.search),
-                     Padding(
-                           padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                     ),
-                     Icon(Icons.more_vert)
-                  ],
-            ),
-      body: TabBarView(
-            controller: _tabController,
-            children: <Widget>[
-               Menu(_filterMenus), w, Tab(text: "Chat list"),
-            ],
-      ),
-      );
    }
 }
 
