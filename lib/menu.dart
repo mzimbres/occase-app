@@ -74,18 +74,33 @@ Widget createMenuItem(BuildContext context, MenuNode o,
    );
 }
 
-class Menu extends StatefulWidget {
-   List<MenuTree> menus;
+ListView createMenuListView(BuildContext context, MenuNode o,
+      Function onLeafPressed, Function onNodePressed)
+{
+   return ListView.builder(
+         padding: const EdgeInsets.all(8.0),
+         itemCount: o.children.length,
+         itemBuilder: (BuildContext context, int i) {
+            return createMenuItem( context, o.children[i],
+                  (bool newValue) { onLeafPressed(newValue, i);},
+                  () { onNodePressed(i); }
+            );
+         },
+   );
+}
 
-   Menu(this.menus);
+class Menu extends StatefulWidget {
+   List<MenuTree> _menus;
+
+   Menu(this._menus);
 
    @override
-   MenuState createState() => new MenuState(menus);
+   MenuState createState() => new MenuState(_menus);
 }
 
 class MenuState extends State<Menu> {
    int _selectedIndex = 0;
-   List<MenuTree> menus;
+   List<MenuTree> _menus;
 
    @override
    void initState()
@@ -93,17 +108,17 @@ class MenuState extends State<Menu> {
       super.initState();
    }
 
-   MenuState(this.menus);
+   MenuState(this._menus);
 
    @override
    Widget build(BuildContext context) {
       return WillPopScope(
             onWillPop: () async {
-               if (menus[_selectedIndex].st.length == 1) {
+               if (_menus[_selectedIndex].st.length == 1) {
                   return true;
                }
 
-               menus[_selectedIndex].st.removeLast();
+               _menus[_selectedIndex].st.removeLast();
                setState(() { });
                return false;
             },
@@ -136,22 +151,18 @@ class MenuState extends State<Menu> {
       }
 
       return wrappOnScaff(
-            ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
-                  itemCount: menus[_selectedIndex].st.last.children.length,
-                  itemBuilder: (BuildContext context, int i) {
-                     return createMenuItem(
-                           context, menus[_selectedIndex].st.last.children[i],
-                           (bool newValue) { _onLeadPressed(newValue, i);},
-                           () { _onNodePressed(i); }
-                     );
-                  },
-            ), _onItemTapped, _selectedIndex);
+            createMenuListView(
+                  context,
+                  _menus[_selectedIndex].st.last,
+                  _onLeafPressed,
+                  _onNodePressed),
+            _onItemTapped,
+            _selectedIndex);
    }
 
-   void _onLeadPressed(bool newValue, int i)
+   void _onLeafPressed(bool newValue, int i)
    {
-      MenuNode o = menus[_selectedIndex].st.last.children[i];
+      MenuNode o = _menus[_selectedIndex].st.last.children[i];
       String code = o.code;
       o.status = newValue;
       print('$code ===> $newValue');
@@ -160,9 +171,9 @@ class MenuState extends State<Menu> {
 
    void _onNodePressed(int i)
    {
-      MenuNode o = menus[_selectedIndex].st.last.children[i];
-      print("I am calling non leaf on pressed");
-      menus[_selectedIndex].st.add(o);
+      MenuNode o = _menus[_selectedIndex].st.last.children[i];
+      print("I am calling a non leaf onPressed");
+      _menus[_selectedIndex].st.add(o);
       setState(() { }); // Triggers redraw.
    }
 }
