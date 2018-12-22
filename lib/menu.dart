@@ -128,8 +128,8 @@ class MenuState extends State<Menu> {
    MenuState(this._menus);
 
    @override
-   Widget build(BuildContext context) {
-
+   Widget build(BuildContext context)
+   {
       Widget w;
       if (_BotBarIdx == 2) {
          w = createSendScreen();

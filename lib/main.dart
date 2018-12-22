@@ -78,7 +78,7 @@ class MenuChatState extends State<MenuChat>
         controller: _tabController,
         children: <Widget>[
           Menu(menus),
-          Adv(),
+          Adv(menus),
           Tab(text: "Chat list"),
         ],
       ),

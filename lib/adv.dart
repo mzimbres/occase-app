@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
+import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 
 class KeyValuePair {
    String key;
    String value;
    KeyValuePair(this.key, this.value);
+}
+
+class AdvData {
+     List<KeyValuePair> locHeaderList;
+     List<KeyValuePair> prodHeaderList;
+     List<KeyValuePair> descList;
+     bool saved;
+
+     AdvData(this.locHeaderList, this.prodHeaderList,
+             this.descList, this.saved);
 }
 
 RichText createHeaderLine(BuildContext context, KeyValuePair pair)
@@ -36,25 +47,21 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
-class AdvData {
-     List<KeyValuePair> locHeaderList;
-     List<KeyValuePair> prodHeaderList;
-     List<KeyValuePair> descList;
-     bool saved;
-
-     AdvData(this.locHeaderList, this.prodHeaderList,
-           this.descList, this.saved);
-}
-
 class Adv extends StatefulWidget {
-  @override
-  AdvState createState() => new AdvState();
+   List<MenuTree> _menus;
+   
+   Adv(this._menus);
+
+   @override
+   AdvState createState() => AdvState(_menus);
 }
 
 class AdvState extends State<Adv> {
+   List<MenuTree> _menus;
    AdvData data1;
+   bool _onSelection = false;
 
-   AdvState()
+   AdvState(this._menus)
    {
       List<KeyValuePair> locHeaderList = List<KeyValuePair>();
       locHeaderList.add(KeyValuePair("Estado: ",      "Sao Paulo"));
@@ -75,6 +82,7 @@ class AdvState extends State<Adv> {
       descList.add(KeyValuePair("Descricao: ", msg));
 
       data1 = AdvData(locHeaderList, prodHeaderList, descList, false);
+      _onSelection = false;
    }
 
    @override
@@ -145,6 +153,10 @@ class AdvState extends State<Adv> {
   @override
   Widget build(BuildContext context)
   {
+     if (_onSelection) {
+        return Menu(_menus);
+     }
+
      return Scaffold( body:
            ListView.builder(
                  padding: const EdgeInsets.all(0.0),
@@ -161,7 +173,11 @@ class AdvState extends State<Adv> {
                        Icons.message,
                        color: Colors.white,
                  ),
-                 onPressed: () => print("open chats"),
+                 onPressed: () {
+                    print("Open menu selection.");
+                    _onSelection = true;
+                    setState(() { });
+                 },
            ),
      );
   }
