@@ -19,6 +19,29 @@ class AdvData {
              this.descList, this.saved);
 }
 
+AdvData SimulateAdvData()
+{
+   List<KeyValuePair> locHeaderList = List<KeyValuePair>();
+   locHeaderList.add(KeyValuePair("Estado: ",      "Sao Paulo"));
+   locHeaderList.add(KeyValuePair("Cidade: ",     "Atibaia"));
+
+   List<KeyValuePair> prodHeaderList = List<KeyValuePair>();
+   prodHeaderList.add(KeyValuePair("Marca: ",      "Volkswagen"));
+   prodHeaderList.add(KeyValuePair("Modelo: ",     "Brasilia"));
+   prodHeaderList.add(KeyValuePair("Ano: ",        "1985/86"));
+   prodHeaderList.add(KeyValuePair("Preco Fipe: ", "1200"));
+   prodHeaderList.add(KeyValuePair("Anunciante: ", "Paulinho Nascimento"));
+
+   String msg = "Carro em bom estado de conservacao. Único dono. ";
+   msg += "Documentos em dia. ";
+   msg += "Guarantia de um mês.";
+
+   List<KeyValuePair> descList = List<KeyValuePair>();
+   descList.add(KeyValuePair("Descricao: ", msg));
+
+   return AdvData(locHeaderList, prodHeaderList, descList, false);
+}
+
 RichText createHeaderLine(BuildContext context, KeyValuePair pair)
 {
    return RichText(
@@ -47,6 +70,63 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
+Card createAdvWidget(BuildContext context, AdvData data,
+                     Function onAdvSelection)
+{
+   Card c1 = Card(
+         child: headerFactory(context, data.locHeaderList),
+         color: Consts.advLocHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMarging),
+         elevation: 0.0,
+   );
+
+   Card c2 = Card(
+         child: headerFactory(context, data.prodHeaderList),
+         color: Consts.advProdHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMarging),
+         elevation: 0.0,
+   );
+
+   Card c3 = Card(
+         child: headerFactory(context, data.descList),
+         color: Consts.advProdHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMarging),
+         elevation: 0.0,
+   );
+
+   CheckboxListTile save = CheckboxListTile(
+         title: Text( "Salvar",
+               style: TextStyle(
+                     fontWeight: FontWeight.bold,
+                     fontSize: Consts.mainFontSize
+               )
+         ),
+         //subtitle: Text(" Inscritos"),
+         //secondary: const Icon(Icons.save),
+         value: data.saved,
+         onChanged: (bool newValue) {onAdvSelection(newValue, data);}
+   );
+
+   Card c4 = Card(
+         child:  save,
+         color: Consts.advProdHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMarging),
+         elevation: 0.0,
+   );
+
+   Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+         children: <Widget>[c1, c2, c3, c4],);
+
+   Card adv1 = Card(
+         child: h1,
+         color: Consts.advMsgColor,
+         margin: EdgeInsets.all(Consts.advMarging),
+         elevation: 0.0,
+   );
+
+   return adv1;
+}
+
 class Adv extends StatefulWidget {
    List<MenuTree> _menus;
    
@@ -63,25 +143,7 @@ class AdvState extends State<Adv> {
 
    AdvState(this._menus)
    {
-      List<KeyValuePair> locHeaderList = List<KeyValuePair>();
-      locHeaderList.add(KeyValuePair("Estado: ",      "Sao Paulo"));
-      locHeaderList.add(KeyValuePair("Cidade: ",     "Atibaia"));
-
-      List<KeyValuePair> prodHeaderList = List<KeyValuePair>();
-      prodHeaderList.add(KeyValuePair("Marca: ",      "Volkswagen"));
-      prodHeaderList.add(KeyValuePair("Modelo: ",     "Brasilia"));
-      prodHeaderList.add(KeyValuePair("Ano: ",        "1985/86"));
-      prodHeaderList.add(KeyValuePair("Preco Fipe: ", "1200"));
-      prodHeaderList.add(KeyValuePair("Anunciante: ", "Paulinho Nascimento"));
-
-      String msg = "Carro em bom estado de conservacao. Único dono. ";
-      msg += "Documentos em dia. ";
-      msg += "Guarantia de um mês.";
-
-      List<KeyValuePair> descList = List<KeyValuePair>();
-      descList.add(KeyValuePair("Descricao: ", msg));
-
-      data1 = AdvData(locHeaderList, prodHeaderList, descList, false);
+      data1 = SimulateAdvData();
       _onSelection = false;
    }
 
@@ -90,64 +152,11 @@ class AdvState extends State<Adv> {
    {
    }
 
-   Card createAdvWidget(BuildContext context, AdvData data)
+   void _onAdvSelection(bool newValue, AdvData data)
    {
-      Card c1 = Card(
-            child: headerFactory(context, data.locHeaderList),
-            color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
-            elevation: 0.0,
-      );
-
-      Card c2 = Card(
-            child: headerFactory(context, data.prodHeaderList),
-            color: Consts.advProdHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
-            elevation: 0.0,
-      );
-
-      Card c3 = Card(
-            child: headerFactory(context, data.descList),
-            color: Consts.advProdHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
-            elevation: 0.0,
-      );
-
-      CheckboxListTile save = CheckboxListTile(
-            title: Text( "Salvar",
-                  style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Consts.mainFontSize
-                  )
-            ),
-            //subtitle: Text(" Inscritos"),
-            //secondary: const Icon(Icons.save),
-            value: data.saved,
-            onChanged: (bool newValue){
-               print('Anuncio salvo');
-               data.saved = newValue;
-               setState(() { });
-            }
-      );
-
-      Card c4 = Card(
-            child:  save,
-            color: Consts.advProdHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
-            elevation: 0.0,
-      );
-
-      Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[c1, c2, c3, c4],);
-
-      Card adv1 = Card(
-            child: h1,
-            color: Consts.advMsgColor,
-            margin: EdgeInsets.all(Consts.advMarging),
-            elevation: 0.0,
-      );
-
-      return adv1;
+      print('Anuncio salvo');
+      data.saved = newValue;
+      setState(() { });
    }
 
   @override
@@ -161,8 +170,9 @@ class AdvState extends State<Adv> {
            ListView.builder(
                  padding: const EdgeInsets.all(0.0),
                  //itemCount: cards.length
-                 itemBuilder: (BuildContext context, int index) {
-                    return createAdvWidget(context, data1);
+                 itemBuilder: (BuildContext context, int index)
+                 {
+                    return createAdvWidget(context, data1, _onAdvSelection);
                  },
            ),
            backgroundColor: Consts.scaffoldBackground,

@@ -142,12 +142,12 @@ class MenuState extends State<Menu> {
       }
 
       return WillPopScope(
-            onWillPop: () async { return _onWillPop();},
+            onWillPop: () async { return _onWillPopMenu();},
             child: wrappOnScaff(w, _onBotBarTapped, _BotBarIdx),
       );
    }
 
-   bool _onWillPop()
+   bool _onWillPopMenu()
    {
       if (_menus[_BotBarIdx].st.length == 1) {
          return true;

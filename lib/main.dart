@@ -33,8 +33,8 @@ class MenuChat extends StatefulWidget {
 }
 
 class MenuChatState extends State<MenuChat>
-    with SingleTickerProviderStateMixin {
-  TabController _tabController;
+with SingleTickerProviderStateMixin {
+   TabController _tabController;
    List<MenuTree> menus;
 
    MenuChatState()
@@ -44,45 +44,50 @@ class MenuChatState extends State<MenuChat>
       menus.add(ModelsFactory());
    }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _tabController = TabController(vsync: this, initialIndex: 1, length: 3);
-  }
+   @override
+   void initState()
+   {
+      super.initState();
+      _tabController = TabController(vsync: this, initialIndex: 1, length: 3);
+   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(Consts.appName),
-        elevation: 0.7,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          tabs: <Widget>[
-            Tab( text: "FILTROS",),
-            Tab(text: "ANUNCIOS"),
-            Tab( text: "CHATS",),
-          ],
-        ),
-        actions: <Widget>[
-          Icon(Icons.search),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-          ),
-          Icon(Icons.more_vert)
-        ],
-      ),
+   @override
+   Widget build(BuildContext context)
+   {
+      return createApp(context);
+   }
+
+   Widget createApp(BuildContext context) {
+      return Scaffold(
+            appBar: AppBar(
+                  title: Text(Consts.appName),
+                  elevation: 0.7,
+                  bottom: TabBar(
+                        controller: _tabController,
+                        indicatorColor: Colors.white,
+                        tabs: <Widget>[
+                           Tab(text: "FILTROS",),
+                           Tab(text: "ANUNCIOS"),
+                           Tab(text: "CHATS",),
+                        ],
+                  ),
+                  actions: <Widget>[
+                     Icon(Icons.search),
+                     Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                     ),
+                     Icon(Icons.more_vert)
+                  ],
+            ),
       body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          Menu(menus),
-          Adv(menus),
-          Tab(text: "Chat list"),
-        ],
+            controller: _tabController,
+            children: <Widget>[
+               Menu(menus),
+               Adv(menus),
+               Tab(text: "Chat list"),
+            ],
       ),
-    );
-  }
+      );
+   }
 }
 
