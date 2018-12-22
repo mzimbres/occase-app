@@ -99,7 +99,11 @@ class MenuChatState extends State<MenuChat>
                body: Menu(_advMenus)
          );
       } else {
-         advScreen = createAdvScreen(context, data1, _onAdvSelection, _onNewAdv);
+         List<Widget> widgets = <Widget>[
+            Menu(_filterMenus), 
+            createAdvScreen(context, data1, _onAdvSelection, _onNewAdv),
+            Tab(text: "Chat list"),
+         ];
          return Scaffold(
                appBar: AppBar(
                      title: Text(Consts.appName),
@@ -121,13 +125,7 @@ class MenuChatState extends State<MenuChat>
                         Icon(Icons.more_vert)
                      ],
                ),
-         body: TabBarView(
-               controller: _tabController,
-               children: <Widget>[
-                  Menu(_filterMenus), advScreen, Tab(text: "Chat list"),
-               ],
-         ),
-         );
+         body: TabBarView(controller: _tabController, children: widgets,),);
       }
 
    }
