@@ -36,10 +36,9 @@ class MenuChat extends StatefulWidget {
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
-   List<List<MenuNode>> _filterMenus;
-   List<List<MenuNode>> _advMenus;
+   List<List<MenuNode>> _menus;
    AdvData data1;
-   bool _onSelection = false;
+   bool _onNewAdvPressed = false;
    int _BotBarIdx = 0; // Used on menu screens.
    List<String> _advAppBarMsg;
 
@@ -53,28 +52,19 @@ class MenuChatState extends State<MenuChat>
    void _onNewAdv()
    {
       print("Open menu selection.");
-      _onSelection = true;
+      _onNewAdvPressed = true;
       setState(() { });
    }
 
    MenuChatState()
    {
-      // I will use the same menu objects on both the filter and adv
-      // stacks.  I see no reason for duplication state. It also
-      // reduces memory consumption, though I do not know how much.
-      List<MenuNode> locMenu = LocationFactory();
-      List<MenuNode> modelsMenu = ModelsFactory();
-
-      _filterMenus = List<List<MenuNode>>();
-      _filterMenus.add(locMenu);
-      _filterMenus.add(modelsMenu);
-
-      _advMenus = List<List<MenuNode>>();
-      _advMenus.add(locMenu);
-      _advMenus.add(modelsMenu);
+      _menus = List<List<MenuNode>>();
+      _menus.add(LocationFactory());
+      _menus.add(ModelsFactory());
 
       data1 = SimulateAdvData();
-      _onSelection = false;
+
+      _onNewAdvPressed = false;
       _BotBarIdx = 0;
       _advAppBarMsg = List<String>(3);
       _advAppBarMsg[0] = "Escolha uma localizacao";
@@ -84,13 +74,13 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopMenu()
    {
-      if (_advMenus[_BotBarIdx].length == 1) {
-         _onSelection = false;
+      if (_menus[_BotBarIdx].length == 1) {
+         _onNewAdvPressed = false;
          setState(() { });
          return false;
       }
 
-      _advMenus[_BotBarIdx].removeLast();
+      _menus[_BotBarIdx].removeLast();
       setState(() { });
       return false;
    }
@@ -111,13 +101,13 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafPressed(bool newValue, int i)
    {
-      MenuNode o = _advMenus[_BotBarIdx].last.children[i];
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
 
-      while (_advMenus[_BotBarIdx].length != 1) {
-         _advMenus[_BotBarIdx].removeLast();
+      while (_menus[_BotBarIdx].length != 1) {
+         _menus[_BotBarIdx].removeLast();
       }
 
       _BotBarIdx = _advIndexHelper(_BotBarIdx);
@@ -127,8 +117,8 @@ class MenuChatState extends State<MenuChat>
    void _onNodePressed(int i)
    {
       print("I am calling a adv non leaf onPressed");
-      MenuNode o = _advMenus[_BotBarIdx].last.children[i];
-      _advMenus[_BotBarIdx].add(o);
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
+      _menus[_BotBarIdx].add(o);
       setState(() { });
    }
 
@@ -147,7 +137,7 @@ class MenuChatState extends State<MenuChat>
 
    Widget createApp(BuildContext context)
    {
-      if (_onSelection) {
+      if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
             w = Center(child:RaisedButton(
@@ -160,7 +150,7 @@ class MenuChatState extends State<MenuChat>
                         {
                            // Have to clean menu tree state.
                            print("Sending adv to server.");
-                           _onSelection = false;
+                           _onNewAdvPressed = false;
                            _BotBarIdx = 0;
                            setState(() { });
                         },
@@ -171,7 +161,7 @@ class MenuChatState extends State<MenuChat>
          } else {
             w = createMenuListView(
                   context,
-                  _advMenus[_BotBarIdx].last,
+                  _menus[_BotBarIdx].last,
                   _onAdvLeafPressed,
                   _onNodePressed);
          }
@@ -205,7 +195,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       List<Widget> widgets = <Widget>[
-         Menu(_filterMenus), 
+         Menu(_menus), 
          createAdvScreen(context, data1, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];
