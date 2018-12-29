@@ -6,7 +6,8 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 
-Future<Null> main() async {
+Future<Null> main() async
+{
   runApp(MyApp());
 }
 
@@ -108,12 +109,17 @@ class MenuChatState extends State<MenuChat>
       setState(() { _BotBarIdx = index; });
    }
 
-   void _onLeafPressed(bool newValue, int i)
+   void _onAdvLeafPressed(bool newValue, int i)
    {
       MenuNode o = _advMenus[_BotBarIdx].last.children[i];
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
+
+      while (_advMenus[_BotBarIdx].length != 1) {
+         _advMenus[_BotBarIdx].removeLast();
+      }
+
       _BotBarIdx = _advIndexHelper(_BotBarIdx);
       setState(() { });
    }
@@ -166,7 +172,7 @@ class MenuChatState extends State<MenuChat>
             w = createMenuListView(
                   context,
                   _advMenus[_BotBarIdx].last,
-                  _onLeafPressed,
+                  _onAdvLeafPressed,
                   _onNodePressed);
          }
 
