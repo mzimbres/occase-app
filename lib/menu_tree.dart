@@ -5,6 +5,7 @@ class MenuNode {
    String name;
    String code;
    bool status;
+
    List<MenuNode> children = List<MenuNode>();
 
    MenuNode([this.name, this.code])
@@ -29,12 +30,9 @@ MenuNode makeNode(String state, List<String> cities)
    return node;
 }
 
-MenuNode buildTree(String msg)
+MenuNode buildTree(String dataRaw)
 {
-   Map<String, dynamic> menu = jsonDecode(msg);
-   String dataRaw = menu["data"];
    List<String> data = dataRaw.split("=");
-   print("Number of lines: ${data.length}");
    List<MenuNode> st = List<MenuNode>();
    int last_depth = 0;
    MenuNode root;
@@ -54,9 +52,8 @@ MenuNode buildTree(String msg)
       }
 
       if (depth > last_depth) {
-         if (last_depth + 1 != depth) {
+         if (last_depth + 1 != depth)
             return null;
-         }
 
          // We found the child of the last node pushed on the stack.
          MenuNode p = MenuNode(name);
@@ -65,8 +62,8 @@ MenuNode buildTree(String msg)
          ++last_depth;
       } else if (depth < last_depth) {
          // Now we have to pop that number of nodes from the stack
-         // until we get to the node that is should be the parent of
-         // the current line.
+         // until we get to the node that should be the parent of the
+         // current line.
          int delta_depth = last_depth - depth;
          for (int i = 0; i < delta_depth; ++i)
             st.removeLast();
@@ -86,8 +83,6 @@ MenuNode buildTree(String msg)
          st.add(p);
          // Last depth stays equal.
       }
-
-      //print("Depth: $depth. Name: " + name);
    }
 
    return root;
@@ -95,10 +90,12 @@ MenuNode buildTree(String msg)
 
 List<MenuNode> ModelsFactory()
 {
-   MenuNode root2 = buildTree(Consts.menu);
-   List<MenuNode> ret2 = List<MenuNode>();
-   ret2.add(root2);
-   return ret2;
+   Map<String, dynamic> menu = jsonDecode(Consts.menu);
+   String dataRaw = menu["data"];
+   MenuNode root = buildTree(dataRaw);
+   List<MenuNode> ret = List<MenuNode>();
+   ret.add(root);
+   return ret;
 }
 
 List<MenuNode> LocationFactory()
