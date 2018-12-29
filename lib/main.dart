@@ -36,10 +36,28 @@ class MenuChat extends StatefulWidget {
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
+
+   // The outermost list is an array with the length equal to the
+   // number of menus there are. The inner most list is actually a
+   // stack whose first element is the menu root node. When menu
+   // entries are selected we push those items on the stack. Used both
+   // on the filter and on the advertizement screens.
    List<List<MenuNode>> _menus;
+
    AdvData data1;
+
+   // A flag that is set to true when the floating button (new
+   // advertisement) is clicked. It must be carefully set to false
+   // when that screens are left.
    bool _onNewAdvPressed = false;
-   int _BotBarIdx = 0; // Used on menu screens.
+
+   // The index of the tab we are currently in in the *new
+   // advertisement screen*. For example 0 for the localization menu,
+   // 1 for the models menu etc.
+   int _BotBarIdx = 0;
+
+   // The text shown on the app bar for each tab on the *new
+   // advertisement screen.*
    List<String> _advAppBarMsg;
 
    void _onAdvSelection(bool newValue, AdvData data)
@@ -58,9 +76,9 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      _menus = List<List<MenuNode>>();
-      _menus.add(LocationFactory());
-      _menus.add(ModelsFactory());
+      _menus = List<List<MenuNode>>(2);
+      _menus[0] = LocationFactory();
+      _menus[1] = ModelsFactory();
 
       data1 = SimulateAdvData();
 
