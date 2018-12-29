@@ -7,7 +7,7 @@ class MenuNode {
    bool status;
    List<MenuNode> children = List<MenuNode>();
 
-   MenuNode(this.name, this.code)
+   MenuNode([this.name, this.code])
    {
       status = false;
    }
@@ -29,22 +29,74 @@ MenuNode makeNode(String state, List<String> cities)
    return node;
 }
 
-void buildTree(String msg)
+MenuNode buildTree(String msg)
 {
-   //MenuNode rootNode = MenuNode();
-
    Map<String, dynamic> menu = jsonDecode(msg);
+   String dataRaw = menu["data"];
+   List<String> data = dataRaw.split("=");
+   List<MenuNode> st = List<MenuNode>();
+   int last_depth = 0;
+   MenuNode root;
+   for (String line in data) {
+      if (line.isEmpty)
+         return null;
 
-   List<dynamic> arr = menu["menu"];
-   //print("Menu array size: ${arr.length}");
+      List<String> fields = line.split(";");
+
+      int depth = int.parse(fields.first);
+      String name = fields.last;
+
+      if (root == null) {
+         root = MenuNode(name);
+         st.add(root);
+         continue;
+      }
+
+      if (depth > last_depth) {
+         if (last_depth + 1 != depth)
+            return null;
+
+         // We found the child of the last node pushed on the stack.
+         MenuNode p = MenuNode(name);
+         st.last.children.add(p);
+         st.add(p);
+         ++last_depth;
+      } else if (depth < last_depth) {
+         // Now we have to pop that number of nodes from the stack
+         // until we get to the node that is should be the parent of
+         // the current line.
+         int delta_depth = last_depth - depth;
+         for (int i = 0; i < delta_depth; ++i)
+            st.removeLast();
+
+         st.removeLast();
+
+         // Now we can add the new node.
+         MenuNode p = MenuNode(name);
+         st.last.children.add(p);
+         st.add(p);
+
+         last_depth = depth;
+      } else {
+         st.removeLast();
+         MenuNode p = MenuNode(name);
+         st.last.children.add(p);
+         st.add(p);
+         // Last depth stays equal.
+      }
+
+      print("Depth: $depth. Name: " + name);
+   }
+
+   return root;
 
    //while (arr != null) {
-      for (var o in arr) {
-         Map<String, dynamic> sub = o;
-         MenuNode node = MenuNode(sub["name"], sub["hash"]);
-         //rootNode.children.add(node);
-         print("${node.name} ===> ${node.code}");
-      }
+      //for (var o in arr) {
+      //   Map<String, dynamic> sub = o;
+      //   MenuNode node = MenuNode(sub["name"], sub["hash"]);
+      //   //rootNode.children.add(node);
+      //   print("${node.name} ===> ${node.code}");
+      //}
    //}
 
    //root.forEach((k, v) => print(v));
