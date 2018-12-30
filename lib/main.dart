@@ -154,7 +154,9 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int index)
    {
-      restoreMenuStack(_menus[_BotBarIdx]);
+      if ((_BotBarIdx + 1) != TextConsts.newAdvTab.length)
+         restoreMenuStack(_menus[_BotBarIdx]);
+
       setState(() { _BotBarIdx = index; });
    }
 
@@ -176,6 +178,15 @@ class MenuChatState extends State<MenuChat>
       print("I am calling a adv non leaf onPressed");
       MenuNode o = _menus[_BotBarIdx].last.children[i];
       _menus[_BotBarIdx].add(o);
+      setState(() { });
+   }
+
+   void _onFilterLeafNodePressed(bool newValue, int i)
+   {
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
+      String code = o.code;
+      print('$code ===> $newValue');
+      o.status = newValue;
       setState(() { });
    }
 
@@ -272,15 +283,6 @@ class MenuChatState extends State<MenuChat>
             ),
             body: TabBarView(controller: _tabController, children: widgets,),
       );
-   }
-
-   void _onFilterLeafNodePressed(bool newValue, int i)
-   {
-      MenuNode o = _menus[_BotBarIdx].last.children[i];
-      String code = o.code;
-      print('$code ===> $newValue');
-      o.status = newValue;
-      setState(() { });
    }
 }
 
