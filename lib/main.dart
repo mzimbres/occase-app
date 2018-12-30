@@ -118,18 +118,6 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   MenuChatState()
-   {
-      _menus = List<List<MenuNode>>(2);
-      _menus[0] = menuReader(Consts.locMenu);
-      _menus[1] = menuReader(Consts.modelsMenu);
-
-      data1 = SimulateAdvData();
-
-      _onNewAdvPressed = false;
-      _BotBarIdx = 0;
-   }
-
    bool _onWillPopMenu()
    {
       if (_menus[_BotBarIdx].length == 1) {
@@ -190,6 +178,18 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   MenuChatState()
+   {
+      _menus = List<List<MenuNode>>(2);
+      _menus[0] = menuReader(Consts.locMenu);
+      _menus[1] = menuReader(Consts.modelsMenu);
+
+      data1 = SimulateAdvData();
+
+      _onNewAdvPressed = false;
+      _BotBarIdx = 0;
+   }
+
    @override
    void initState()
    {
@@ -227,11 +227,13 @@ class MenuChatState extends State<MenuChat>
             )
             );
          } else {
+            final int d = _menus[_BotBarIdx].length;
             w = createMenuListView(
                   context,
                   _menus[_BotBarIdx].last,
                   _onAdvLeafPressed,
-                  _onNodePressed);
+                  _onNodePressed,
+                  d == Consts.maxAdvDepth);
          }
 
          AppBar appBar = AppBar(
@@ -246,11 +248,14 @@ class MenuChatState extends State<MenuChat>
       if (_BotBarIdx == 2) {
          w2 = createSendScreen();
       } else {
+         final int d = _menus[_BotBarIdx].length;
+         print("Current depth: $d.");
          w2 = createMenuListView(
                   context,
                   _menus[_BotBarIdx].last,
                   _onFilterLeafNodePressed,
-                  _onNodePressed);
+                  _onNodePressed,
+                  d == Consts.maxFilterDepth);
       }
 
       List<Widget> widgets = <Widget>[

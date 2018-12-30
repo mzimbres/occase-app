@@ -32,9 +32,10 @@ class TreeItem extends StatelessWidget {
 }
 
 Widget createMenuItem(BuildContext context, MenuNode o,
-      Function onLeafPressed, Function onNodePressed)
+      Function onLeafPressed, Function onNodePressed,
+      bool makeLeaf)
 {
-   if (o.isLeaf()) {
+   if (o.isLeaf() || makeLeaf) {
       return CheckboxListTile(
             title: Text( o.name,
                   style: TextStyle(fontSize: Consts.mainFontSize)
@@ -54,7 +55,7 @@ Widget createMenuItem(BuildContext context, MenuNode o,
 }
 
 ListView createMenuListView(BuildContext context, MenuNode o,
-      Function onLeafPressed, Function onNodePressed)
+      Function onLeafPressed, Function onNodePressed, bool makeLeaf)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(8.0),
@@ -62,7 +63,8 @@ ListView createMenuListView(BuildContext context, MenuNode o,
          itemBuilder: (BuildContext context, int i) {
             return createMenuItem( context, o.children[i],
                   (bool newValue) { onLeafPressed(newValue, i);},
-                  () { onNodePressed(i); }
+                  () { onNodePressed(i); },
+                  makeLeaf
             );
          },
    );
