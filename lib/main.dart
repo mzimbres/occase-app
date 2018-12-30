@@ -35,7 +35,7 @@ class MenuChat extends StatefulWidget {
 }
 
 // Returns the widget for the *new adv screen*.
-Widget createNewAdvScreen(
+Widget createMenuScreen(
       BuildContext context,
       Widget widget,
       Widget appBar,
@@ -212,11 +212,12 @@ class MenuChatState extends State<MenuChat>
                   _onNodePressed);
          }
 
+         AppBar appBar = AppBar(
+               title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
+                     elevation: 0.7, toolbarOpacity : 1.0);
 
-         return createNewAdvScreen( context, w,
-               AppBar(title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
-                     elevation: 0.7, toolbarOpacity : 1.0),
-               _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+         return createMenuScreen( context, w, appBar, _onWillPopMenu,
+               _onBotBarTapped, _BotBarIdx);
       }
 
       Widget w2;
@@ -230,9 +231,9 @@ class MenuChatState extends State<MenuChat>
                   _onNodePressed);
       }
 
-      ;
       List<Widget> widgets = <Widget>[
-         createFilterScreen(w2, _onWillPopMenu, _onBotBarTapped, _BotBarIdx), 
+         createMenuScreen(context, w2, null, _onWillPopMenu,
+               _onBotBarTapped, _BotBarIdx),
          createAdvTab(context, data1, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];

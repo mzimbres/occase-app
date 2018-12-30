@@ -31,31 +31,6 @@ class TreeItem extends StatelessWidget {
   }
 }
 
-Widget
-createFilterScreen(Widget w, Function onWillPopMenu,
-                   Function onTapped, int i)
-{
-   return WillPopScope(
-         onWillPop: () async { return onWillPopMenu();},
-         child: Scaffold(body: w,
-               bottomNavigationBar: BottomNavigationBar(
-                     items: <BottomNavigationBarItem>[
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.home), title: Text('Localizacao')),
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.directions_car), title: Text('Modelos')),
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.send), title: Text('Enviar')),
-                     ],
-
-                     currentIndex: i,
-                     fixedColor: Colors.deepPurple,
-                     onTap: onTapped,
-               ),
-         ));
-}
-
-
 Widget createMenuItem(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {
