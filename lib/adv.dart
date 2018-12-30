@@ -127,9 +127,9 @@ Card createAdvWidget(BuildContext context, AdvData data,
    return adv1;
 }
 
-Widget createAdvScreen(BuildContext context, AdvData data,
-                       Function onAdvSelection,
-                       Function onNewAdv)
+Widget createAdvTab(BuildContext context, AdvData data,
+                    Function onAdvSelection,
+                    Function onNewAdv)
 {
    return Scaffold( body:
          ListView.builder(

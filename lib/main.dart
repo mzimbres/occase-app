@@ -34,6 +34,41 @@ class MenuChat extends StatefulWidget {
   MenuChatState createState() => MenuChatState();
 }
 
+// Returns the widget for the *new adv screen*.
+Widget createNewAdvScreen(BuildContext context, Widget w,
+                          Function onWillPopMenu,
+                          Function onBotBarTapped,
+                          String appBarMsg, int i)
+{
+   return WillPopScope(
+         onWillPop: () async { return onWillPopMenu();},
+         child: Scaffold(
+               appBar: AppBar(
+                     title: Text(appBarMsg),
+                     elevation: 0.7,
+               ),
+               body: w,
+               bottomNavigationBar: BottomNavigationBar(
+                     items: <BottomNavigationBarItem>[
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.home),
+                              title: Text(TextConsts.newAdvTab[0])),
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.directions_car),
+                              title: Text(TextConsts.newAdvTab[1])),
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.send),
+                              title: Text(TextConsts.newAdvTab[2])),
+                     ],
+
+                     currentIndex: i,
+                     fixedColor: Colors.deepPurple,
+                     onTap: onBotBarTapped,
+               )
+         )
+      );
+}
+
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
@@ -177,40 +212,15 @@ class MenuChatState extends State<MenuChat>
                   _onNodePressed);
          }
 
-         print("Current index $_BotBarIdx");
 
-         return WillPopScope(
-               onWillPop: () async { return _onWillPopMenu();},
-               child: Scaffold(
-                     appBar: AppBar(
-                           title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
-                           elevation: 0.7,
-                     ),
-                     body: w,
-                     bottomNavigationBar: BottomNavigationBar(
-                           items: <BottomNavigationBarItem>[
-                              BottomNavigationBarItem(
-                                    icon: Icon(Icons.home),
-                                    title: Text(TextConsts.newAdvTab[0])),
-                              BottomNavigationBarItem(
-                                    icon: Icon(Icons.directions_car),
-                                    title: Text(TextConsts.newAdvTab[1])),
-                              BottomNavigationBarItem(
-                                    icon: Icon(Icons.send),
-                                    title: Text(TextConsts.newAdvTab[2])),
-                           ],
-
-                           currentIndex: _BotBarIdx,
-                           fixedColor: Colors.deepPurple,
-                           onTap: _onBotBarTapped,
-                     )
-               )
-            );
+         return createNewAdvScreen(
+               context, w, _onWillPopMenu, _onBotBarTapped,
+               TextConsts.advAppBarMsg[_BotBarIdx], _BotBarIdx);
       }
 
       List<Widget> widgets = <Widget>[
          Menu(_menus), 
-         createAdvScreen(context, data1, _onAdvSelection, _onNewAdv),
+         createAdvTab(context, data1, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];
 
