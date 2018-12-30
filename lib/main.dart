@@ -153,11 +153,14 @@ class MenuChatState extends State<MenuChat>
       MenuNode o = _menus[_BotBarIdx].last.children[i];
       _menus[_BotBarIdx].add(o);
 
+      List<KeyValuePair> header = List<KeyValuePair>();
+
       // Let us read the corresponding header.
       final int length = _menus[_BotBarIdx].length;
       for (int i = 1; i < length; ++i) {
-         String name = _menus[_BotBarIdx][i].name;
-         print(TextConsts.menuDepthNames[_BotBarIdx][i] + ": " + name);
+         String key = TextConsts.menuDepthNames[_BotBarIdx][i];
+         String value = _menus[_BotBarIdx][i].name;
+         header.add(KeyValuePair(key, value));
       }
 
       restoreMenuStack(_menus[_BotBarIdx]);
@@ -168,7 +171,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onNodePressed(int i)
    {
-      print("I am calling a adv non leaf onPressed");
+      //print("I am calling a adv non leaf onPressed");
       MenuNode o = _menus[_BotBarIdx].last.children[i];
       _menus[_BotBarIdx].add(o);
       setState(() { });
