@@ -77,8 +77,8 @@ class MenuChatState extends State<MenuChat>
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
-      _menus[0] = LocationFactory();
-      _menus[1] = ModelsFactory();
+      _menus[0] = menuReader(Consts.locMenu);
+      _menus[1] = menuReader(Consts.modelsMenu);
 
       data1 = SimulateAdvData();
 
