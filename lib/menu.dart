@@ -31,25 +31,28 @@ class TreeItem extends StatelessWidget {
   }
 }
 
-Widget wrappOnScaff(Widget w, Function onTapped, int i)
+Widget
+createFilterScreen(Widget w, Function onWillPopMenu,
+                   Function onTapped, int i)
 {
-   return Scaffold(
-         body: w,
-         bottomNavigationBar: BottomNavigationBar(
-               items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(
-                        icon: Icon(Icons.home), title: Text('Localizacao')),
-                  BottomNavigationBarItem(
-                        icon: Icon(Icons.directions_car), title: Text('Modelos')),
-                  BottomNavigationBarItem(
-                        icon: Icon(Icons.send), title: Text('Enviar')),
-               ],
+   return WillPopScope(
+         onWillPop: () async { return onWillPopMenu();},
+         child: Scaffold(body: w,
+               bottomNavigationBar: BottomNavigationBar(
+                     items: <BottomNavigationBarItem>[
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.home), title: Text('Localizacao')),
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.directions_car), title: Text('Modelos')),
+                        BottomNavigationBarItem(
+                              icon: Icon(Icons.send), title: Text('Enviar')),
+                     ],
 
-               currentIndex: i,
-               fixedColor: Colors.deepPurple,
-               onTap: onTapped,
-         ),
-   );
+                     currentIndex: i,
+                     fixedColor: Colors.deepPurple,
+                     onTap: onTapped,
+               ),
+         ));
 }
 
 
@@ -142,10 +145,8 @@ class MenuState extends State<Menu> {
                   _onNodePressed);
       }
 
-      return WillPopScope(
-            onWillPop: () async { return _onWillPopMenu();},
-            child: wrappOnScaff(w, _onBotBarTapped, _BotBarIdx),
-      );
+      return createFilterScreen(w, _onWillPopMenu, _onBotBarTapped,
+                               _BotBarIdx);
    }
 
    bool _onWillPopMenu()

@@ -36,9 +36,9 @@ class MenuChat extends StatefulWidget {
 
 // Returns the widget for the *new adv screen*.
 Widget createNewAdvScreen(BuildContext context, Widget w,
-                          Function onWillPopMenu,
-                          Function onBotBarTapped,
-                          String appBarMsg, int i)
+      Function onWillPopMenu,
+      Function onBotBarTapped,
+      String appBarMsg, int i)
 {
    return WillPopScope(
          onWillPop: () async { return onWillPopMenu();},
@@ -65,8 +65,8 @@ Widget createNewAdvScreen(BuildContext context, Widget w,
                      fixedColor: Colors.deepPurple,
                      onTap: onBotBarTapped,
                )
-         )
-      );
+               )
+               );
 }
 
 class MenuChatState extends State<MenuChat>
