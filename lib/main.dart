@@ -219,8 +219,20 @@ class MenuChatState extends State<MenuChat>
                _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
       }
 
+      Widget w2;
+      if (_BotBarIdx == 2) {
+         w2 = createSendScreen();
+      } else {
+         w2 = createMenuListView(
+                  context,
+                  _menus[_BotBarIdx].last,
+                  _onFilterLeafNodePressed,
+                  _onNodePressed);
+      }
+
+      ;
       List<Widget> widgets = <Widget>[
-         Menu(_menus), 
+         createFilterScreen(w2, _onWillPopMenu, _onBotBarTapped, _BotBarIdx), 
          createAdvTab(context, data1, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];
@@ -248,6 +260,15 @@ class MenuChatState extends State<MenuChat>
             ),
             body: TabBarView(controller: _tabController, children: widgets,),
       );
+   }
+
+   void _onFilterLeafNodePressed(bool newValue, int i)
+   {
+      MenuNode o = _menus[_BotBarIdx].last.children[i];
+      String code = o.code;
+      print('$code ===> $newValue');
+      o.status = newValue;
+      setState(() { });
    }
 }
 
