@@ -35,19 +35,19 @@ class MenuChat extends StatefulWidget {
 }
 
 // Returns the widget for the *new adv screen*.
-Widget createNewAdvScreen(BuildContext context, Widget w,
+Widget createNewAdvScreen(
+      BuildContext context,
+      Widget widget,
+      Widget appBar,
       Function onWillPopMenu,
       Function onBotBarTapped,
-      String appBarMsg, int i)
+      int i)
 {
    return WillPopScope(
          onWillPop: () async { return onWillPopMenu();},
          child: Scaffold(
-               appBar: AppBar(
-                     title: Text(appBarMsg),
-                     elevation: 0.7,
-               ),
-               body: w,
+               appBar: appBar,
+               body: widget,
                bottomNavigationBar: BottomNavigationBar(
                      items: <BottomNavigationBarItem>[
                         BottomNavigationBarItem(
@@ -213,9 +213,10 @@ class MenuChatState extends State<MenuChat>
          }
 
 
-         return createNewAdvScreen(
-               context, w, _onWillPopMenu, _onBotBarTapped,
-               TextConsts.advAppBarMsg[_BotBarIdx], _BotBarIdx);
+         return createNewAdvScreen( context, w,
+               AppBar(title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
+                     elevation: 0.7, toolbarOpacity : 1.0),
+               _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
       }
 
       List<Widget> widgets = <Widget>[
