@@ -69,6 +69,15 @@ Widget createMenuScreen(
                );
 }
 
+void restoreMenuStack(List<MenuNode> st)
+{
+   if (st.isEmpty)
+      return;
+
+   while (st.length != 1)
+      st.removeLast();
+}
+
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
@@ -103,6 +112,9 @@ class MenuChatState extends State<MenuChat>
    {
       print("Open menu selection.");
       _onNewAdvPressed = true;
+      restoreMenuStack(_menus[0]);
+      restoreMenuStack(_menus[1]);
+      _BotBarIdx = 0;
       setState(() { });
    }
 
@@ -142,6 +154,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int index)
    {
+      restoreMenuStack(_menus[_BotBarIdx]);
       setState(() { _BotBarIdx = index; });
    }
 
@@ -152,9 +165,7 @@ class MenuChatState extends State<MenuChat>
       print('$code ===> $newValue');
       o.status = newValue;
 
-      while (_menus[_BotBarIdx].length != 1) {
-         _menus[_BotBarIdx].removeLast();
-      }
+      restoreMenuStack(_menus[_BotBarIdx]);
 
       _BotBarIdx = _advIndexHelper(_BotBarIdx);
       setState(() { });
