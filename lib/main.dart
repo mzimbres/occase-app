@@ -5,6 +5,7 @@ import 'package:menu_chat/adv.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
+import 'package:menu_chat/text_constants.dart';
 
 Future<Null> main() async
 {
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: Consts.appName,
+      title: TextConsts.appName,
       theme: ThemeData(
         primaryColor: Color(0xff075E54),
         accentColor: Color(0xff25D366),
@@ -56,10 +57,6 @@ class MenuChatState extends State<MenuChat>
    // 1 for the models menu etc.
    int _BotBarIdx = 0;
 
-   // The text shown on the app bar for each tab on the *new
-   // advertisement screen.*
-   List<String> _advAppBarMsg;
-
    void _onAdvSelection(bool newValue, AdvData data)
    {
       print('Anuncio salvo');
@@ -84,10 +81,6 @@ class MenuChatState extends State<MenuChat>
 
       _onNewAdvPressed = false;
       _BotBarIdx = 0;
-      _advAppBarMsg = List<String>(3);
-      _advAppBarMsg[0] = "Escolha uma localizacao";
-      _advAppBarMsg[1] = "Escolha um modelo";
-      _advAppBarMsg[2] = "Verificacao e envio";
    }
 
    bool _onWillPopMenu()
@@ -190,18 +183,21 @@ class MenuChatState extends State<MenuChat>
                onWillPop: () async { return _onWillPopMenu();},
                child: Scaffold(
                      appBar: AppBar(
-                           title: Text(_advAppBarMsg[_BotBarIdx]),
+                           title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
                            elevation: 0.7,
                      ),
                      body: w,
                      bottomNavigationBar: BottomNavigationBar(
                            items: <BottomNavigationBarItem>[
                               BottomNavigationBarItem(
-                                    icon: Icon(Icons.home), title: Text('Localizacao')),
+                                    icon: Icon(Icons.home),
+                                    title: Text(TextConsts.newAdvTab[0])),
                               BottomNavigationBarItem(
-                                    icon: Icon(Icons.directions_car), title: Text('Modelos')),
+                                    icon: Icon(Icons.directions_car),
+                                    title: Text(TextConsts.newAdvTab[1])),
                               BottomNavigationBarItem(
-                                    icon: Icon(Icons.send), title: Text('Enviar')),
+                                    icon: Icon(Icons.send),
+                                    title: Text(TextConsts.newAdvTab[2])),
                            ],
 
                            currentIndex: _BotBarIdx,
@@ -220,15 +216,15 @@ class MenuChatState extends State<MenuChat>
 
       return Scaffold(
             appBar: AppBar(
-                  title: Text(Consts.appName),
+                  title: Text(TextConsts.appName),
                   elevation: 0.7,
                   bottom: TabBar(
                         controller: _tabController,
                         indicatorColor: Colors.white,
                         tabs: <Widget>[
-                           Tab(text: "FILTROS",),
-                           Tab(text: "ANUNCIOS"),
-                           Tab(text: "CHATS",),
+                           Tab(text: TextConsts.tabNames[0],),
+                           Tab(text: TextConsts.tabNames[1]),
+                           Tab(text: TextConsts.tabNames[2]),
                         ],
                   ),
                   actions: <Widget>[

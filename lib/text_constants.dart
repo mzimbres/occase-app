@@ -1,0 +1,21 @@
+
+class TextConsts {
+   static final String appName = "CarMenu";
+
+   // Text used for the main tabs.
+   static final List<String> tabNames =
+         <String>["FILTROS", "ANUNCIOS", "CHATS"];
+
+   // Text used in the *new advertisement screens* on the bottom
+   // navigation bar.
+   static final List<String> newAdvTab =
+         <String>['Localizacao', 'Modelos', 'Enviar'];
+
+   // The text shown on the app bar for each tab on the *new
+   // advertisement screen.*
+   static final List<String> advAppBarMsg =
+      <String>["Escolha uma localizacao", "Escolha um modelo",
+               "Verificacao e envio"];
+
+}
+
