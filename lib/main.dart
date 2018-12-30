@@ -151,9 +151,14 @@ class MenuChatState extends State<MenuChat>
    void _onAdvLeafPressed(bool newValue, int i)
    {
       MenuNode o = _menus[_BotBarIdx].last.children[i];
-      String code = o.code;
-      print('$code ===> $newValue');
-      o.status = newValue;
+      _menus[_BotBarIdx].add(o);
+
+      // Let us read the corresponding header.
+      final int length = _menus[_BotBarIdx].length;
+      for (int i = 1; i < length; ++i) {
+         String name = _menus[_BotBarIdx][i].name;
+         print(TextConsts.menuDepthNames[_BotBarIdx][i] + ": " + name);
+      }
 
       restoreMenuStack(_menus[_BotBarIdx]);
 

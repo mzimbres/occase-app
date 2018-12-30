@@ -17,5 +17,11 @@ class TextConsts {
       <String>["Escolha uma localizacao", "Escolha um modelo",
                "Verificacao e envio"];
 
+   // The name of the fields at each menu depth.
+   static final List<List<String>> menuDepthNames =
+   <List<String>>[
+      <String>["Pais",   "Estado", "Cidade", "Bairro"],
+      <String>["Carros", "Marca",  "Modelo", "Ano", "Combustivel", "Preco Fipe"]
+   ];
 }
 
