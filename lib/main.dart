@@ -89,7 +89,7 @@ class MenuChatState extends State<MenuChat>
    // on the filter and on the advertizement screens.
    List<List<MenuNode>> _menus;
 
-   AdvData data1;
+   AdvData advInput;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -163,7 +163,7 @@ class MenuChatState extends State<MenuChat>
          header.add(KeyValuePair(key, ": " + value));
       }
 
-      data1.infos[_BotBarIdx] = header;
+      advInput.infos[_BotBarIdx] = header;
 
       restoreMenuStack(_menus[_BotBarIdx]);
 
@@ -194,13 +194,13 @@ class MenuChatState extends State<MenuChat>
       _menus[0] = menuReader(Consts.locMenu);
       _menus[1] = menuReader(Consts.modelsMenu);
 
-      data1 = SimulateAdvData();
+      advInput = SimulateAdvData();
 
       _onNewAdvPressed = false;
       _BotBarIdx = 0;
    }
 
-   void onAdvSendPressed()
+   void onAdvSendPressed(bool, AdvData)
    {
       // Have to clean menu tree state.
       print("Sending adv to server.");
@@ -227,7 +227,7 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createAdvWidget(context, data1, onAdvSendPressed);
+            w = createAdvWidget(context, advInput, onAdvSendPressed);
          } else {
             final int d = _menus[_BotBarIdx].length;
             w = createMenuListView(
@@ -263,7 +263,7 @@ class MenuChatState extends State<MenuChat>
       List<Widget> widgets = <Widget>[
          createMenuScreen(context, w2, null, _onWillPopMenu,
                _onBotBarTapped, _BotBarIdx),
-         createAdvTab(context, data1, _onAdvSelection, _onNewAdv),
+         createAdvTab(context, advInput, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];
 
