@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
+import 'package:menu_chat/text_constants.dart';
 
 class KeyValuePair {
    String key;
@@ -10,13 +11,15 @@ class KeyValuePair {
 }
 
 class AdvData {
-     List<KeyValuePair> locHeaderList;
-     List<KeyValuePair> prodHeaderList;
-     List<KeyValuePair> descList;
+     List<List<KeyValuePair>> infos;
      bool saved;
 
-     AdvData(this.locHeaderList, this.prodHeaderList,
-             this.descList, this.saved);
+     AdvData()
+     {
+        int length = TextConsts.advAppBarMsg.length;
+        infos = List<List<KeyValuePair>>(length);
+        saved = false;
+     }
 }
 
 AdvData SimulateAdvData()
@@ -39,7 +42,12 @@ AdvData SimulateAdvData()
    List<KeyValuePair> descList = List<KeyValuePair>();
    descList.add(KeyValuePair("Descricao: ", msg));
 
-   return AdvData(locHeaderList, prodHeaderList, descList, false);
+   AdvData advData = AdvData();
+   advData.infos[0] = locHeaderList;
+   advData.infos[1] = prodHeaderList;
+   advData.infos[2] = descList;
+
+   return advData;
 }
 
 RichText createHeaderLine(BuildContext context, KeyValuePair pair)
@@ -73,26 +81,17 @@ Padding headerFactory(BuildContext context,
 Card createAdvWidget(BuildContext context, AdvData data,
                      Function onAdvSelection)
 {
-   Card c1 = Card(
-         child: headerFactory(context, data.locHeaderList),
-         color: Consts.advLocHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMarging),
-         elevation: 0.0,
-   );
+   List<Card> list = List<Card>();
+   for (List<KeyValuePair> o in data.infos) {
+      Card c = Card(
+            child: headerFactory(context, o),
+            color: Consts.advLocHeaderColor,
+            margin: EdgeInsets.all(Consts.advInnerMarging),
+            elevation: 0.0,
+      );
 
-   Card c2 = Card(
-         child: headerFactory(context, data.prodHeaderList),
-         color: Consts.advProdHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMarging),
-         elevation: 0.0,
-   );
-
-   Card c3 = Card(
-         child: headerFactory(context, data.descList),
-         color: Consts.advProdHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMarging),
-         elevation: 0.0,
-   );
+      list.add(c);
+   }
 
    CheckboxListTile save = CheckboxListTile(
          title: Text( "Salvar",
@@ -114,8 +113,10 @@ Card createAdvWidget(BuildContext context, AdvData data,
          elevation: 0.0,
    );
 
+   list.add(c4);
+
    Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-         children: <Widget>[c1, c2, c3, c4],);
+         children: list);
 
    Card adv1 = Card(
          child: h1,
