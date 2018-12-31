@@ -160,8 +160,10 @@ class MenuChatState extends State<MenuChat>
       for (int i = 1; i < length; ++i) {
          String key = TextConsts.menuDepthNames[_BotBarIdx][i];
          String value = _menus[_BotBarIdx][i].name;
-         header.add(KeyValuePair(key, value));
+         header.add(KeyValuePair(key, ": " + value));
       }
+
+      data1.infos[_BotBarIdx] = header;
 
       restoreMenuStack(_menus[_BotBarIdx]);
 
@@ -198,6 +200,15 @@ class MenuChatState extends State<MenuChat>
       _BotBarIdx = 0;
    }
 
+   void onAdvSendPressed()
+   {
+      // Have to clean menu tree state.
+      print("Sending adv to server.");
+      _onNewAdvPressed = false;
+      _BotBarIdx = 0;
+      setState(() { });
+   }
+
    @override
    void initState()
    {
@@ -216,24 +227,7 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = Center(child:RaisedButton(
-                        child: Text( "Enviar",
-                              style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: Consts.mainFontSize )
-                        ),
-                        onPressed: ()
-                        {
-                           // Have to clean menu tree state.
-                           print("Sending adv to server.");
-                           _onNewAdvPressed = false;
-                           _BotBarIdx = 0;
-                           setState(() { });
-                        },
-                        //color: const Color(0xFFFFFF),
-                        //highlightColor: const Color(0xFFFFFF)
-            )
-            );
+            w = createAdvWidget(context, data1, onAdvSendPressed);
          } else {
             final int d = _menus[_BotBarIdx].length;
             w = createMenuListView(
