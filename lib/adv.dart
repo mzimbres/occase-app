@@ -160,20 +160,18 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
       itemBuilder: (BuildContext context, int i)
       {
          ++i;
-         if (o.children[i].isLeaf()) {
-            MenuNode child = o.children[i];
-            return CheckboxListTile(
-                  title: Text( child.name,
-                        style: TextStyle(fontSize: Consts.mainFontSize)
-                  ),
-                  value: child.status,
-                  onChanged: (bool newValue) { onLeafPressed(newValue, i);},
+         MenuNode child = o.children[i];
+         if (child.isLeaf()) {
+            return FlatButton(
+                  child: TreeItem(child.name, child.children.length),
+                  color: const Color(0xFFFFFF),
+                  highlightColor: const Color(0xFFFFFF),
+                  onPressed: () { onLeafPressed(i);},
             );
          }
          
-         MenuNode child = o.children[i];
          return FlatButton(
-               child: TreeItem(child.name, child.children.length),
+               child: TreeItem(child.name, child.children.length - 1),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },

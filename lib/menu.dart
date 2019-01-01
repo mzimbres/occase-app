@@ -3,32 +3,35 @@ import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 
 class TreeItem extends StatelessWidget {
-  final String name;
-  String msg;
+   final String name;
+   String msg;
 
-  TreeItem(this.name, int n)
-  {
-     msg = '${n} items';
-  }
+   TreeItem(this.name, int n)
+   {
+      msg = "";
+      if (n != 0 && n != 1)
+         msg = '${n} items';
+   }
 
-  @override
-  Widget build(BuildContext context)
-  {
-     return ListTile(
-           leading: CircleAvatar(child: Text("M")),
-           title: Text( name,
-                 style: TextStyle(
-                       fontWeight: FontWeight.bold,
-                       fontSize: Consts.mainFontSize )
-           ),
-           dense: true,
-           subtitle: Text(
-                 msg,
-                 style: TextStyle(
-                       fontSize: Consts.subFontSize)
-           )
-     );
-  }
+   @override
+   Widget build(BuildContext context)
+   {
+      Text subtitle;
+      if (!msg.isEmpty)
+         subtitle = Text( msg,
+               style: TextStyle( fontSize: Consts.subFontSize));
+
+      return ListTile(
+            leading: CircleAvatar(child: Text("M")),
+            title: Text( name,
+                  style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: Consts.mainFontSize )
+            ),
+            dense: false,
+            subtitle: subtitle
+         );
+   }
 }
 
 ListView createMenuListView(BuildContext context, MenuNode o,
@@ -71,7 +74,7 @@ ListView createMenuListView(BuildContext context, MenuNode o,
          
          MenuNode child = o.children[i + 1];
          return FlatButton(
-               child: TreeItem(child.name, child.children.length),
+               child: TreeItem(child.name, child.children.length - 1),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i + 1); },
