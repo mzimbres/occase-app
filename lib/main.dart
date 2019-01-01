@@ -249,7 +249,8 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createNewAdvWidget(context, advInput, _onAdvSendPressed);
+            w = createNewAdvWidget(context, advInput,
+                  _onAdvSendPressed, TextConsts.newAdvButtonText);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,

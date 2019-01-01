@@ -155,10 +155,10 @@ Card createAdvWidget(BuildContext context, AdvData data,
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
-                        Function onPressed)
+                        Function onPressed, String label)
 {
    RaisedButton b = RaisedButton(
-      child: Text(TextConsts.newAdvButtonText),
+      child: Text(label),
       //color: const Color(0xFFFFFF),
       //highlightColor: const Color(0xFFFFFF),
       onPressed: onPressed,
@@ -234,7 +234,8 @@ Widget createChatTab(BuildContext context, List<AdvData> data,
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createNewAdvWidget(context, data[i], onChat);
+            return createNewAdvWidget(context, data[i], onChat,
+                  TextConsts.chatButtonText);
          },
    );
 }
