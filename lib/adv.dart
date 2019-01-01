@@ -8,6 +8,11 @@ class KeyValuePair {
    String key;
    String value;
    KeyValuePair(this.key, this.value);
+
+   KeyValuePair clone()
+   {
+      return KeyValuePair(this.key, this.value);
+   }
 }
 
 class AdvData {
@@ -16,12 +21,26 @@ class AdvData {
 
      AdvData()
      {
+        print("---------");
         int length = TextConsts.advAppBarMsg.length;
         infos = List<List<KeyValuePair>>(length);
         for (int i = 0; i < length; ++i)
            infos[i] = List<KeyValuePair>();
 
         saved = false;
+     }
+
+     AdvData clone()
+     {
+         AdvData ret = AdvData();
+         for (int i = 0; i < this.infos.length; ++i) {
+            for (int j = 0; j < this.infos[i].length; ++j) {
+               ret.infos[i].add(this.infos[i][j].clone());
+            }
+         }
+
+         ret.saved = this.saved;
+         return ret;
      }
 }
 
@@ -83,10 +102,8 @@ Padding headerFactory(BuildContext context,
 
 Card advAssembler(BuildContext context, AdvData data, Widget button)
 {
-   print("============================================");
    List<Card> list = List<Card>();
    for (List<KeyValuePair> o in data.infos) {
-      print("===> ${o.length}");
       Card c = Card(
             child: headerFactory(context, o),
             color: Consts.advLocHeaderColor,
@@ -96,7 +113,6 @@ Card advAssembler(BuildContext context, AdvData data, Widget button)
 
       list.add(c);
    }
-   print("============================================");
 
    list.add(button);
 
