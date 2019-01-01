@@ -213,6 +213,11 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onChat()
+   {
+      print("On chat clicked.");
+   }
+
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
@@ -277,7 +282,7 @@ class MenuChatState extends State<MenuChat>
          createMenuScreen(context, w2, null, _onWillPopMenu,
                _onBotBarTapped, _BotBarIdx),
          createAdvTab(context, advList, _onAdvSelection, _onNewAdv),
-         Tab(text: "Chat list"),
+         createChatTab(context, advList, _onChat),
       ];
 
       return Scaffold(

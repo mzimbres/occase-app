@@ -155,27 +155,13 @@ Card createAdvWidget(BuildContext context, AdvData data,
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
-                        Function onAdvSendPressed)
+                        Function onPressed)
 {
-
-   //CheckboxListTile save = CheckboxListTile(
-   //      title: Text( TextConsts.advButtonText,
-   //            style: TextStyle(
-   //                  fontWeight: FontWeight.bold,
-   //                  fontSize: Consts.mainFontSize
-   //            )
-   //      ),
-   //      //subtitle: Text(" Inscritos"),
-   //      //secondary: const Icon(Icons.save),
-   //      value: data.saved,
-   //      onChanged: (bool newValue) {onAdvSelection(newValue, data);}
-   //);
-
    RaisedButton b = RaisedButton(
       child: Text(TextConsts.newAdvButtonText),
       //color: const Color(0xFFFFFF),
       //highlightColor: const Color(0xFFFFFF),
-      onPressed: onAdvSendPressed,
+      onPressed: onPressed,
    );
 
    Card c4 = Card(
@@ -237,6 +223,19 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                onPressed: () { onNodePressed(i); },
          );
       },
+   );
+}
+
+Widget createChatTab(BuildContext context, List<AdvData> data,
+      Function onChat)
+{
+   return ListView.builder(
+         padding: const EdgeInsets.all(0.0),
+         itemCount: data.length,
+         itemBuilder: (BuildContext context, int i)
+         {
+            return createNewAdvWidget(context, data[i], onChat);
+         },
    );
 }
 
