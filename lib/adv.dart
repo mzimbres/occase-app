@@ -151,3 +151,34 @@ Widget createAdvTab(BuildContext context, AdvData data,
    );
 }
 
+ListView createAdvMenuListView(BuildContext context, MenuNode o,
+      Function onLeafPressed, Function onNodePressed)
+{
+   return ListView.builder(
+      padding: const EdgeInsets.all(8.0),
+      itemCount: o.children.length - 1,
+      itemBuilder: (BuildContext context, int i)
+      {
+         ++i;
+         if (o.children[i].isLeaf()) {
+            MenuNode child = o.children[i];
+            return CheckboxListTile(
+                  title: Text( child.name,
+                        style: TextStyle(fontSize: Consts.mainFontSize)
+                  ),
+                  value: child.status,
+                  onChanged: (bool newValue) { onLeafPressed(newValue, i);},
+            );
+         }
+         
+         MenuNode child = o.children[i];
+         return FlatButton(
+               child: TreeItem(child.name, child.children.length),
+               color: const Color(0xFFFFFF),
+               highlightColor: const Color(0xFFFFFF),
+               onPressed: () { onNodePressed(i); },
+         );
+      },
+   );
+}
+

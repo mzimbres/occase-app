@@ -238,13 +238,10 @@ class MenuChatState extends State<MenuChat>
          if (_BotBarIdx == 2) {
             w = createAdvWidget(context, advInput, onAdvSendPressed);
          } else {
-            final int d = _menus[_BotBarIdx].length;
-            w = createMenuListView(
-                  context,
+            w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,
                   _onAdvLeafPressed,
-                  _onNodePressed,
-                  d == Consts.maxAdvDepth);
+                  _onNodePressed);
          }
 
          AppBar appBar = AppBar(
