@@ -21,7 +21,6 @@ class AdvData {
 
      AdvData()
      {
-        print("---------");
         int length = TextConsts.advAppBarMsg.length;
         infos = List<List<KeyValuePair>>(length);
         for (int i = 0; i < length; ++i)
@@ -127,32 +126,6 @@ Card advAssembler(BuildContext context, AdvData data, Widget button)
    return adv1;
 }
 
-Card createAdvWidget(BuildContext context, AdvData data,
-                     Function onAdvSelection)
-{
-
-   CheckboxListTile save = CheckboxListTile(
-         title: Text( TextConsts.advButtonText,
-               style: TextStyle(
-                     fontWeight: FontWeight.bold,
-                     fontSize: Consts.mainFontSize
-               )
-         ),
-         //subtitle: Text(" Inscritos"),
-         //secondary: const Icon(Icons.save),
-         value: data.saved,
-         onChanged: (bool newValue) {onAdvSelection(newValue, data);}
-   );
-
-   Card c4 = Card(
-         child:  save,
-         color: Consts.advProdHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMarging),
-         elevation: 0.0,
-   );
-
-   return advAssembler(context, data, c4);
-}
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label)
@@ -184,7 +157,9 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                itemCount: data.length,
                itemBuilder: (BuildContext context, int i)
                {
-                  return createAdvWidget(context, data[i], onAdvSelection);
+                  return createNewAdvWidget(context, data[i],
+                        () {onAdvSelection(data[i]);},
+                        TextConsts.advButtonText);
                },
          ),
 

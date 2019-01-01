@@ -91,6 +91,7 @@ class MenuChatState extends State<MenuChat>
 
    AdvData advInput;
    List<AdvData> advList;
+   List<AdvData> chatList;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -102,10 +103,11 @@ class MenuChatState extends State<MenuChat>
    // 1 for the models menu etc.
    int _BotBarIdx = 0;
 
-   void _onAdvSelection(bool newValue, AdvData data)
+   void _onAdvSelection(AdvData data)
    {
       print('Anuncio salvo');
-      data.saved = newValue;
+      chatList.add(data);
+      advList.remove(data);
       setState(() { });
    }
 
@@ -229,6 +231,7 @@ class MenuChatState extends State<MenuChat>
 
       advInput = AdvData();
       advList = List<AdvData>();
+      chatList = List<AdvData>();
    }
 
    @override
@@ -283,7 +286,7 @@ class MenuChatState extends State<MenuChat>
          createMenuScreen(context, w2, null, _onWillPopMenu,
                _onBotBarTapped, _BotBarIdx),
          createAdvTab(context, advList, _onAdvSelection, _onNewAdv),
-         createChatTab(context, advList, _onChat),
+         createChatTab(context, chatList, _onChat),
       ];
 
       return Scaffold(
