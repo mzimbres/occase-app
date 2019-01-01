@@ -17,7 +17,6 @@ class KeyValuePair {
 
 class AdvData {
      List<List<KeyValuePair>> infos;
-     bool saved;
 
      AdvData()
      {
@@ -25,8 +24,6 @@ class AdvData {
         infos = List<List<KeyValuePair>>(length);
         for (int i = 0; i < length; ++i)
            infos[i] = List<KeyValuePair>();
-
-        saved = false;
      }
 
      AdvData clone()
@@ -38,7 +35,6 @@ class AdvData {
             }
          }
 
-         ret.saved = this.saved;
          return ret;
      }
 }
