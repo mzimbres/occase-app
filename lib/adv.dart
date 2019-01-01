@@ -78,8 +78,7 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
-Card advAssembler(BuildContext context, AdvData data,
-                  Function onAdvSelection, Widget button)
+Card advAssembler(BuildContext context, AdvData data, Widget button)
 {
    List<Card> list = List<Card>();
    for (List<KeyValuePair> o in data.infos) {
@@ -130,7 +129,41 @@ Card createAdvWidget(BuildContext context, AdvData data,
          elevation: 0.0,
    );
 
-   return advAssembler(context, data, onAdvSelection, c4);
+   return advAssembler(context, data, c4);
+}
+
+Card createNewAdvWidget(BuildContext context, AdvData data,
+                        Function onAdvSendPressed)
+{
+
+   //CheckboxListTile save = CheckboxListTile(
+   //      title: Text( TextConsts.advButtonText,
+   //            style: TextStyle(
+   //                  fontWeight: FontWeight.bold,
+   //                  fontSize: Consts.mainFontSize
+   //            )
+   //      ),
+   //      //subtitle: Text(" Inscritos"),
+   //      //secondary: const Icon(Icons.save),
+   //      value: data.saved,
+   //      onChanged: (bool newValue) {onAdvSelection(newValue, data);}
+   //);
+
+   RaisedButton b = RaisedButton(
+      child: Text(TextConsts.newAdvButtonText),
+      //color: const Color(0xFFFFFF),
+      //highlightColor: const Color(0xFFFFFF),
+      onPressed: onAdvSendPressed,
+   );
+
+   Card c4 = Card(
+      child:  b,
+      color: Consts.advProdHeaderColor,
+      margin: EdgeInsets.all(Consts.advInnerMarging),
+      elevation: 0.0,
+   );
+
+   return advAssembler(context, data, c4);
 }
 
 Widget createAdvTab(BuildContext context, AdvData data,

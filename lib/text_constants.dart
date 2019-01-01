@@ -26,5 +26,6 @@ class TextConsts {
 
    // Text used in the adv screen to save the adv for chat.
    static final String advButtonText = "Salvar/Contactar";
+   static final String newAdvButtonText = "Enviar";
 }
 

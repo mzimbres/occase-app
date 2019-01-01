@@ -209,7 +209,7 @@ class MenuChatState extends State<MenuChat>
       _BotBarIdx = 0;
    }
 
-   void onAdvSendPressed(bool, AdvData)
+   void onAdvSendPressed()
    {
       // Have to clean menu tree state.
       print("Sending adv to server.");
@@ -236,7 +236,7 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createAdvWidget(context, advInput, onAdvSendPressed);
+            w = createNewAdvWidget(context, advInput, onAdvSendPressed);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,
