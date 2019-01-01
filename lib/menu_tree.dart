@@ -44,6 +44,10 @@ MenuNode buildTree(String dataRaw)
          if (last_depth + 1 != depth)
             return MenuNode();
 
+         if (st.last.children.isEmpty) {
+            st.last.children.add(MenuNode('Todos'));
+         }
+
          // We found the child of the last node pushed on the stack.
          MenuNode p = MenuNode(name);
          st.last.children.add(p);

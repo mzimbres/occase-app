@@ -34,13 +34,32 @@ class TreeItem extends StatelessWidget {
 ListView createMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed, bool makeLeaf)
 {
+/*
+   To support the "Todos" field in the menu checkbox we have to add
+   some relatively complex logic.
+   First we note that the "Todos" checkbox should appear in all
+   screens that present checkboxes, namely, when
+   
+   1. makeLeaf is true, or
+   2. isLeaf is true for more than one node.
+
+   In those cases the builder will go through all node children
+   otherwise the first should be skipped.
+*/
+   int shift = 1;
+   bool useAllChildren = false;
+   if (makeLeaf || o.children.last.isLeaf()) {
+      shift = 0;
+      useAllChildren = true;
+   }
+
    return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: o.children.length,
+      itemCount: o.children.length - shift,
       itemBuilder: (BuildContext context, int i)
       {
-         MenuNode child = o.children[i];
-         if (child.isLeaf() || makeLeaf) {
+         if (useAllChildren) {
+            MenuNode child = o.children[i];
             return CheckboxListTile(
                   title: Text( child.name,
                         style: TextStyle(fontSize: Consts.mainFontSize)
@@ -50,11 +69,12 @@ ListView createMenuListView(BuildContext context, MenuNode o,
             );
          }
          
+         MenuNode child = o.children[i + 1];
          return FlatButton(
                child: TreeItem(child.name, child.children.length),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onNodePressed(i); },
+               onPressed: () { onNodePressed(i + 1); },
          );
       },
    );
