@@ -90,6 +90,7 @@ class MenuChatState extends State<MenuChat>
    List<List<MenuNode>> _menus;
 
    AdvData advInput;
+   List<AdvData> advList;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -197,25 +198,32 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onAdvSendPressed()
+   {
+      // Have to clean menu tree state.
+      print("Sending adv to server.");
+      _onNewAdvPressed = false;
+      _BotBarIdx = 0;
+
+      // TODO: This line is needed only in the prototype. Later when
+      // we connect the app in the server to adv that has been
+      // published we get sent back to us by the server.
+      advList.add(advInput);
+
+      setState(() { });
+   }
+
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
       _menus[0] = menuReader(Consts.locMenu);
       _menus[1] = menuReader(Consts.modelsMenu);
 
-      advInput = SimulateAdvData();
-
       _onNewAdvPressed = false;
       _BotBarIdx = 0;
-   }
 
-   void onAdvSendPressed()
-   {
-      // Have to clean menu tree state.
-      print("Sending adv to server.");
-      _onNewAdvPressed = false;
-      _BotBarIdx = 0;
-      setState(() { });
+      advInput = AdvData();
+      advList = List<AdvData>();
    }
 
    @override
@@ -236,7 +244,7 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createNewAdvWidget(context, advInput, onAdvSendPressed);
+            w = createNewAdvWidget(context, advInput, _onAdvSendPressed);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,
@@ -268,7 +276,7 @@ class MenuChatState extends State<MenuChat>
       List<Widget> widgets = <Widget>[
          createMenuScreen(context, w2, null, _onWillPopMenu,
                _onBotBarTapped, _BotBarIdx),
-         createAdvTab(context, advInput, _onAdvSelection, _onNewAdv),
+         createAdvTab(context, advList, _onAdvSelection, _onNewAdv),
          Tab(text: "Chat list"),
       ];
 

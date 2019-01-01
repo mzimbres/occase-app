@@ -18,6 +18,9 @@ class AdvData {
      {
         int length = TextConsts.advAppBarMsg.length;
         infos = List<List<KeyValuePair>>(length);
+        for (int i = 0; i < length; ++i)
+           infos[i] = List<KeyValuePair>();
+
         saved = false;
      }
 }
@@ -80,8 +83,10 @@ Padding headerFactory(BuildContext context,
 
 Card advAssembler(BuildContext context, AdvData data, Widget button)
 {
+   print("============================================");
    List<Card> list = List<Card>();
    for (List<KeyValuePair> o in data.infos) {
+      print("===> ${o.length}");
       Card c = Card(
             child: headerFactory(context, o),
             color: Consts.advLocHeaderColor,
@@ -91,6 +96,7 @@ Card advAssembler(BuildContext context, AdvData data, Widget button)
 
       list.add(c);
    }
+   print("============================================");
 
    list.add(button);
 
@@ -166,17 +172,17 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
    return advAssembler(context, data, c4);
 }
 
-Widget createAdvTab(BuildContext context, AdvData data,
+Widget createAdvTab(BuildContext context, List<AdvData> data,
                     Function onAdvSelection,
                     Function onNewAdv)
 {
    return Scaffold( body:
          ListView.builder(
                padding: const EdgeInsets.all(0.0),
-               //itemCount: cards.length
-               itemBuilder: (BuildContext context, int index)
+               itemCount: data.length,
+               itemBuilder: (BuildContext context, int i)
                {
-                  return createAdvWidget(context, data, onAdvSelection);
+                  return createAdvWidget(context, data[i], onAdvSelection);
                },
          ),
 
