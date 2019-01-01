@@ -22,7 +22,7 @@ class TreeItem extends StatelessWidget {
                style: TextStyle( fontSize: Consts.subFontSize));
 
       return ListTile(
-            leading: CircleAvatar(child: Text("M")),
+            leading: CircleAvatar(child: Text(name[0])),
             title: Text( name,
                   style: TextStyle(
                         fontWeight: FontWeight.bold,
