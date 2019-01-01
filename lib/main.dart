@@ -181,6 +181,15 @@ class MenuChatState extends State<MenuChat>
 
    void _onFilterLeafNodePressed(bool newValue, int i)
    {
+      if (i == 0) {
+         for (MenuNode p in _menus[_BotBarIdx].last.children) {
+            p.status = newValue;
+         }
+
+         setState(() { });
+         return;
+      }
+
       MenuNode o = _menus[_BotBarIdx].last.children[i];
       String code = o.code;
       print('$code ===> $newValue');

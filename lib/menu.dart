@@ -31,42 +31,32 @@ class TreeItem extends StatelessWidget {
   }
 }
 
-Widget createMenuItem(BuildContext context, MenuNode o,
-      Function onLeafPressed, Function onNodePressed,
-      bool makeLeaf)
-{
-   if (o.isLeaf() || makeLeaf) {
-      return CheckboxListTile(
-            title: Text( o.name,
-                  style: TextStyle(fontSize: Consts.mainFontSize)
-            ),
-            value: o.status,
-            onChanged: onLeafPressed
-      );
-
-   }
-   
-   return FlatButton(
-         child: TreeItem(o.name, o.children.length),
-         color: const Color(0xFFFFFF),
-         highlightColor: const Color(0xFFFFFF),
-         onPressed: onNodePressed,
-   );
-}
-
 ListView createMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed, bool makeLeaf)
 {
    return ListView.builder(
-         padding: const EdgeInsets.all(8.0),
-         itemCount: o.children.length,
-         itemBuilder: (BuildContext context, int i) {
-            return createMenuItem( context, o.children[i],
-                  (bool newValue) { onLeafPressed(newValue, i);},
-                  () { onNodePressed(i); },
-                  makeLeaf
+      padding: const EdgeInsets.all(8.0),
+      itemCount: o.children.length,
+      itemBuilder: (BuildContext context, int i)
+      {
+         MenuNode child = o.children[i];
+         if (child.isLeaf() || makeLeaf) {
+            return CheckboxListTile(
+                  title: Text( child.name,
+                        style: TextStyle(fontSize: Consts.mainFontSize)
+                  ),
+                  value: child.status,
+                  onChanged: (bool newValue) { onLeafPressed(newValue, i);},
             );
-         },
+         }
+         
+         return FlatButton(
+               child: TreeItem(child.name, child.children.length),
+               color: const Color(0xFFFFFF),
+               highlightColor: const Color(0xFFFFFF),
+               onPressed: () { onNodePressed(i); },
+         );
+      },
    );
 }
 
