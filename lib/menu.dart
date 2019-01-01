@@ -9,8 +9,9 @@ class TreeItem extends StatelessWidget {
    TreeItem(this.name, int n)
    {
       msg = "";
-      if (n != 0 && n != 1)
-         msg = '${n} items';
+      //if (n != 0 && n != 1)
+      if (n != 0)
+         msg = '${n} item(s)';
    }
 
    @override
