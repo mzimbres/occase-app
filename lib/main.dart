@@ -257,7 +257,6 @@ class MenuChatState extends State<MenuChat>
          w2 = createSendScreen();
       } else {
          final int d = _menus[_BotBarIdx].length;
-         print("Current depth: $d.");
          w2 = createMenuListView(
                   context,
                   _menus[_BotBarIdx].last,

@@ -23,5 +23,8 @@ class TextConsts {
       <String>["Pais",   "Estado", "Cidade", "Bairro"],
       <String>["Carros", "Marca",  "Modelo", "Ano", "Combustivel", "Preco Fipe"]
    ];
+
+   // Text used in the adv screen to save the adv for chat.
+   static final String advButtonText = "Salvar/Contactar";
 }
 

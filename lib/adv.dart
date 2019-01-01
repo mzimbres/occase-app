@@ -78,8 +78,8 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
-Card createAdvWidget(BuildContext context, AdvData data,
-                     Function onAdvSelection)
+Card advAssembler(BuildContext context, AdvData data,
+                  Function onAdvSelection, Widget button)
 {
    List<Card> list = List<Card>();
    for (List<KeyValuePair> o in data.infos) {
@@ -93,8 +93,25 @@ Card createAdvWidget(BuildContext context, AdvData data,
       list.add(c);
    }
 
+   list.add(button);
+
+   Card adv1 = Card(
+         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: list),
+         color: Consts.advMsgColor,
+         margin: EdgeInsets.all(Consts.advMarging),
+         elevation: 0.0,
+   );
+
+   return adv1;
+}
+
+Card createAdvWidget(BuildContext context, AdvData data,
+                     Function onAdvSelection)
+{
+
    CheckboxListTile save = CheckboxListTile(
-         title: Text( "Salvar",
+         title: Text( TextConsts.advButtonText,
                style: TextStyle(
                      fontWeight: FontWeight.bold,
                      fontSize: Consts.mainFontSize
@@ -113,19 +130,7 @@ Card createAdvWidget(BuildContext context, AdvData data,
          elevation: 0.0,
    );
 
-   list.add(c4);
-
-   Column h1 = Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-         children: list);
-
-   Card adv1 = Card(
-         child: h1,
-         color: Consts.advMsgColor,
-         margin: EdgeInsets.all(Consts.advMarging),
-         elevation: 0.0,
-   );
-
-   return adv1;
+   return advAssembler(context, data, onAdvSelection, c4);
 }
 
 Widget createAdvTab(BuildContext context, AdvData data,
