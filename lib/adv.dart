@@ -118,11 +118,15 @@ Card advAssembler(BuildContext context, AdvData data,
    }
 
    if (provideTextField) {
+      // TODO: Set a max length.
       Card textInput = Card(
             child: TextField(  onChanged: (text) {
                print("First text field: $text"); },
                //keyboardType: TextInputType.multiline,
-               maxLines: 4),
+               maxLines: 3,
+               decoration: InputDecoration(
+                     hintText: TextConsts.newAdvDescDeco),
+               ),
             color: Consts.advLocHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,

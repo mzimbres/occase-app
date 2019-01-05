@@ -28,5 +28,7 @@ class TextConsts {
    static final String advButtonText = "Salvar/Contactar";
    static final String newAdvButtonText = "Enviar";
    static final String chatButtonText = "Chat";
+
+   static final String newAdvDescDeco = "Digitar informacoes adicionais";
 }
 
