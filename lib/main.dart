@@ -93,7 +93,7 @@ class MenuChatState extends State<MenuChat>
    // on the filter and on the advertizement screens.
    List<List<MenuNode>> _menus;
 
-   AdvData advInput;
+   AdvData _advInput;
    List<AdvData> advList;
    List<AdvData> chatList;
 
@@ -186,7 +186,7 @@ class MenuChatState extends State<MenuChat>
          header.add(KeyValuePair(key, ": " + value));
       }
 
-      advInput.infos[_BotBarIdx] = header;
+      _advInput.infos[_BotBarIdx] = header;
 
       restoreMenuStack(_menus[_BotBarIdx]);
 
@@ -237,15 +237,15 @@ class MenuChatState extends State<MenuChat>
 
       final String key = "Descricao";
       final String value = _newAdvTextCtrl.text;
-      advInput.infos.last.add(KeyValuePair(key, ": " + value));
+      _advInput.infos.last.add(KeyValuePair(key, ": " + value));
 
       // TODO: This line is needed only in the prototype. Later when
       // we connect the app in the server to adv that has been
       // published we get sent back to us by the server.
-      advList.add(advInput.clone());
+      advList.add(_advInput.clone());
 
       _newAdvTextCtrl.text = "";
-      advInput = AdvData();
+      _advInput = AdvData();
 
       setState(() { });
    }
@@ -264,7 +264,7 @@ class MenuChatState extends State<MenuChat>
       _onNewAdvPressed = false;
       _BotBarIdx = 0;
 
-      advInput = AdvData();
+      _advInput = AdvData();
       advList = List<AdvData>();
       chatList = List<AdvData>();
    }
@@ -287,24 +287,40 @@ class MenuChatState extends State<MenuChat>
    Widget build(BuildContext context)
    {
       if (_onNewAdvPressed) {
-         Widget w;
+         Widget widget;
          if (_BotBarIdx == 2) {
-            w = createNewAdvWidget(context, advInput, _onAdvSendPressed,
-                  TextConsts.newAdvButtonText, _newAdvTextCtrl);
+            widget = createNewAdvWidget(
+                        context,
+                        _advInput,
+                        _onAdvSendPressed,
+                        TextConsts.newAdvButtonText,
+                        _newAdvTextCtrl
+                     );
          } else {
-            w = createAdvMenuListView(context,
-                  _menus[_BotBarIdx].last,
-                  _onAdvLeafPressed,
-                  _onNodePressed);
+            widget = createAdvMenuListView(
+                        context,
+                        _menus[_BotBarIdx].last,
+                        _onAdvLeafPressed,
+                        _onNodePressed
+                     );
          }
 
          AppBar appBar = AppBar(
                title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
-                     elevation: 0.7, toolbarOpacity : 1.0);
+               elevation: 0.7,
+               toolbarOpacity : 1.0
+         );
 
-         return createBotBarScreen(context, w, appBar,
-               TextConsts.newAdvTabIcons, TextConsts.newAdvTab,
-               _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+         return createBotBarScreen(
+                   context,
+                   widget,
+                   appBar,
+                   TextConsts.newAdvTabIcons,
+                   TextConsts.newAdvTab,
+                   _onWillPopMenu,
+                   _onBotBarTapped,
+                   _BotBarIdx
+                );
       }
 
       Widget w2;
@@ -321,12 +337,18 @@ class MenuChatState extends State<MenuChat>
       }
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
-      widgets[0] = createBotBarScreen(context, w2, null,
-            TextConsts.newAdvTabIcons, TextConsts.newAdvTab,
-            _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+      widgets[0] = createBotBarScreen(
+                      context,
+                      w2,
+                      null,
+                      TextConsts.newAdvTabIcons,
+                      TextConsts.newAdvTab,
+                      _onWillPopMenu,
+                      _onBotBarTapped,
+                      _BotBarIdx
+                   );
 
       widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
-      //widgets[2] = createChatTab(context, chatList, _onChat);
       widgets[2] = createBotBarScreen(context,
                       createChatTab(context, chatList, _onChat),
                       null,
