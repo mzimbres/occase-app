@@ -244,16 +244,11 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext context)
    {
-      return createApp(context);
-   }
-
-   Widget createApp(BuildContext context)
-   {
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
             w = createNewAdvWidget(context, advInput,
-                  _onAdvSendPressed, TextConsts.newAdvButtonText);
+                  _onAdvSendPressed, TextConsts.newAdvButtonText, true);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,

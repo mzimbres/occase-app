@@ -95,18 +95,39 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
-Card advAssembler(BuildContext context, AdvData data, Widget button)
+Card advAssembler(BuildContext context, AdvData data,
+                  Widget button, bool provideTextField)
 {
+   // This function assumes the description fields is the last in the
+   // array.
    List<Card> list = List<Card>();
-   for (List<KeyValuePair> o in data.infos) {
+
+   int length = data.infos.length;
+   if (provideTextField )
+      --length;
+
+   for (int i = 0; i < length; ++i) {
       Card c = Card(
-            child: headerFactory(context, o),
+            child: headerFactory(context, data.infos[i]),
             color: Consts.advLocHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,
       );
 
       list.add(c);
+   }
+
+   if (provideTextField) {
+      Card textInput = Card(
+            child: TextField(  onChanged: (text) {
+               print("First text field: $text"); },
+               //keyboardType: TextInputType.multiline,
+               maxLines: 4),
+            color: Consts.advLocHeaderColor,
+            margin: EdgeInsets.all(Consts.advInnerMarging),
+            elevation: 0.0,
+      );
+      list.add(textInput);
    }
 
    list.add(button);
@@ -124,7 +145,8 @@ Card advAssembler(BuildContext context, AdvData data, Widget button)
 
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
-                        Function onPressed, String label)
+                        Function onPressed, String label,
+                        bool provideTextField)
 {
    RaisedButton b = RaisedButton(
       child: Text(label),
@@ -140,7 +162,7 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4);
+   return advAssembler(context, data, c4, provideTextField);
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> data,
@@ -155,7 +177,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                {
                   return createNewAdvWidget(context, data[i],
                         () {onAdvSelection(data[i]);},
-                        TextConsts.advButtonText);
+                        TextConsts.advButtonText, false);
                },
          ),
 
@@ -206,7 +228,7 @@ Widget createChatTab(BuildContext context, List<AdvData> data,
          itemBuilder: (BuildContext context, int i)
          {
             return createNewAdvWidget(context, data[i], onChat,
-                  TextConsts.chatButtonText);
+                  TextConsts.chatButtonText, false);
          },
    );
 }
