@@ -35,27 +35,23 @@ class MenuChat extends StatefulWidget {
 }
 
 // Returns the widget for the *new adv screen*.
-Widget createMenuScreen(
+Widget createBotBarScreen(
       BuildContext context,
-      Widget widget,
+      Widget scafBody,
       Widget appBar,
+      List<IconData> icons,
       Function onWillPopMenu,
       Function onBotBarTapped,
       int i)
 {
    final int length = TextConsts.newAdvTab.length;
 
-   List<Icon> icons = List<Icon>(length);
-   icons[0] = Icon(Icons.home);
-   icons[1] = Icon(Icons.directions_car);
-   icons[2] = Icon(Icons.send);
-
    List<BottomNavigationBarItem> items =
          List<BottomNavigationBarItem>(length);
 
    for (int i = 0; i < length; ++i) {
       items[i] = BottomNavigationBarItem(
-               icon: icons[i],
+               icon: Icon(icons[i]),
                title: Text(TextConsts.newAdvTab[i])
       );
    }
@@ -64,7 +60,7 @@ Widget createMenuScreen(
           onWillPop: () async { return onWillPopMenu();},
           child: Scaffold(
                appBar: appBar,
-               body: widget,
+               body: scafBody,
                bottomNavigationBar: BottomNavigationBar(
                      items: items,
                      currentIndex: i,
@@ -296,8 +292,9 @@ class MenuChatState extends State<MenuChat>
                title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
                      elevation: 0.7, toolbarOpacity : 1.0);
 
-         return createMenuScreen(context, w, appBar, _onWillPopMenu,
-               _onBotBarTapped, _BotBarIdx);
+         return createBotBarScreen(context, w, appBar,
+               TextConsts.newAdvTabIcons,
+               _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
       }
 
       Widget w2;
@@ -314,7 +311,9 @@ class MenuChatState extends State<MenuChat>
       }
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
-      widgets[0] = createMenuScreen(context, w2, null, _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+      widgets[0] = createBotBarScreen(context, w2, null,
+            TextConsts.newAdvTabIcons, _onWillPopMenu, _onBotBarTapped,
+            _BotBarIdx);
       widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
       widgets[2] = createChatTab(context, chatList, _onChat);
 

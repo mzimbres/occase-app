@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 
 class TextConsts {
    static final String appName = "CarMenu";
@@ -10,6 +11,9 @@ class TextConsts {
    // navigation bar.
    static final List<String> newAdvTab =
          <String>['Localizacao', 'Modelos', 'Enviar'];
+
+   static List<IconData> newAdvTabIcons =
+         <IconData>[Icons.home, Icons.directions_car, Icons.send];
 
    // The text shown on the app bar for each tab on the *new
    // advertisement screen.*
