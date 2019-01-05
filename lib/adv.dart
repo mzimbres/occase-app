@@ -120,8 +120,18 @@ Card advAssembler(BuildContext context, AdvData data,
    if (provideTextField) {
       // TODO: Set a max length.
       Card textInput = Card(
-            child: TextField(  onChanged: (text) {
-               print("First text field: $text"); },
+            child: TextField(
+               // Using this prevents the user from tipying newline,
+               // It may be better later to just use onChanged to save
+               // the text in a variable and trigger the assignment
+               // on data.info ... in the send button. This is more
+               // complicated than I want to do now.
+               textInputAction: TextInputAction.go,
+               onSubmitted: (value)
+               {
+                  String key = "Descricao";
+                  data.infos.last.add(KeyValuePair(key, ": " + value));
+               },
                //keyboardType: TextInputType.multiline,
                maxLines: null,
                decoration: InputDecoration(
