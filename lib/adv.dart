@@ -225,16 +225,23 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Widget createChatTab(BuildContext context, List<AdvData> data,
-      Function onChat)
+Widget createChatTab(
+         BuildContext context,
+         List<AdvData> data,
+         Function onChat,
+         String buttonText)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createNewAdvWidget(context, data[i], onChat,
-                  TextConsts.chatButtonText, null);
+            return createNewAdvWidget(
+                      context,
+                      data[i],
+                      onChat,
+                      buttonText,
+                      null);
          },
    );
 }

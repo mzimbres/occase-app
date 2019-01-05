@@ -27,13 +27,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MenuChat extends StatefulWidget {
-  MenuChat();
-
-  @override
-  MenuChatState createState() => MenuChatState();
-}
-
 // Returns the widget for the *new adv screen*.
 Widget createBotBarScreen(
       BuildContext context,
@@ -82,6 +75,22 @@ void restoreMenuStack(List<MenuNode> st)
       st.removeLast();
 }
 
+int advIndexHelper(int i)
+{
+   if (i == 0) return 1;
+   if (i == 1) return 2;
+   return 1;
+
+   // Assert we do not get here.
+}
+
+class MenuChat extends StatefulWidget {
+  MenuChat();
+
+  @override
+  MenuChatState createState() => MenuChatState();
+}
+
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
@@ -93,9 +102,22 @@ class MenuChatState extends State<MenuChat>
    // on the filter and on the advertizement screens.
    List<List<MenuNode>> _menus;
 
+   // The user own adv.
    AdvData _advInput;
-   List<AdvData> advList;
-   List<AdvData> chatList;
+
+   // The list of advs received from the server.
+   List<AdvData> _advsFromServer;
+
+   // The list of advs the user found interesting. The are moved from
+   // the list of ads received from the server.
+   List<AdvData> _advsUserSelected;
+
+   // Advs the user wrote itself and sent to the server. One issue we
+   // have to observe here is that we will send _advInput to the
+   // server and if the user is subscribed to the channel the adv
+   // belongs to, we will receive it back from the server and we
+   // should not display it or duplicate it on this list.
+   List<AdvData> _advsFromUser;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -115,8 +137,8 @@ class MenuChatState extends State<MenuChat>
    void _onAdvSelection(AdvData data)
    {
       print('Anuncio salvo');
-      chatList.add(data);
-      advList.remove(data);
+      _advsUserSelected.add(data);
+      _advsFromServer.remove(data);
       setState(() { });
    }
 
@@ -142,15 +164,6 @@ class MenuChatState extends State<MenuChat>
       _menus[_BotBarIdx].removeLast();
       setState(() { });
       return false;
-   }
-
-   int _advIndexHelper(int i)
-   {
-      if (i == 0) return 1;
-      if (i == 1) return 2;
-      return 1;
-
-      // Assert we do not get here.
    }
 
    void _onBotBarTapped(int i)
@@ -190,7 +203,7 @@ class MenuChatState extends State<MenuChat>
 
       restoreMenuStack(_menus[_BotBarIdx]);
 
-      _BotBarIdx = _advIndexHelper(_BotBarIdx);
+      _BotBarIdx = advIndexHelper(_BotBarIdx);
    }
 
    void _onNodePressed(int i)
@@ -239,10 +252,19 @@ class MenuChatState extends State<MenuChat>
       final String value = _newAdvTextCtrl.text;
       _advInput.infos.last.add(KeyValuePair(key, ": " + value));
 
+      //________
+      //
       // TODO: This line is needed only in the prototype. Later when
       // we connect the app in the server to adv that has been
       // published we get sent back to us by the server.
-      advList.add(_advInput.clone());
+      _advsFromServer.add(_advInput.clone());
+
+      // The following code may also have to be removed to avoid
+      // duplicates. See comments in the declaration of _advsFromUser
+
+      _advsFromUser.add(_advInput.clone());
+
+      //_______
 
       _newAdvTextCtrl.text = "";
       _advInput = AdvData();
@@ -265,8 +287,9 @@ class MenuChatState extends State<MenuChat>
       _BotBarIdx = 0;
 
       _advInput = AdvData();
-      advList = List<AdvData>();
-      chatList = List<AdvData>();
+      _advsFromServer = List<AdvData>();
+      _advsUserSelected = List<AdvData>();
+      _advsFromUser = List<AdvData>();
    }
 
    @override
@@ -323,23 +346,24 @@ class MenuChatState extends State<MenuChat>
                 );
       }
 
-      Widget w2;
+      Widget filterTabWidget;
       if (_BotBarIdx == 2) {
-         w2 = createSendScreen();
+         filterTabWidget = createSendScreen();
       } else {
          final int d = _menus[_BotBarIdx].length;
-         w2 = createMenuListView(
-                  context,
-                  _menus[_BotBarIdx].last,
-                  _onFilterLeafNodePressed,
-                  _onNodePressed,
-                  d == Consts.maxFilterDepth);
+         filterTabWidget = createMenuListView(
+                             context,
+                             _menus[_BotBarIdx].last,
+                             _onFilterLeafNodePressed,
+                             _onNodePressed,
+                             d == Consts.maxFilterDepth);
       }
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
+
       widgets[0] = createBotBarScreen(
                       context,
-                      w2,
+                      filterTabWidget,
                       null,
                       TextConsts.newAdvTabIcons,
                       TextConsts.newAdvTab,
@@ -348,9 +372,23 @@ class MenuChatState extends State<MenuChat>
                       _BotBarIdx
                    );
 
-      widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
+      widgets[1] = createAdvTab(
+                      context,
+                      _advsFromServer,
+                      _onAdvSelection,
+                      _onNewAdv
+                   );
+
+      String buttonText = TextConsts.chatButtonText;
+      if (_chatBotBarIdx == 0)
+         buttonText = TextConsts.ownAdvButtonText;
+
       widgets[2] = createBotBarScreen(context,
-                      createChatTab(context, chatList, _onChat),
+                      createChatTab(
+                            context,
+                            _advsUserSelected,
+                            _onChat,
+                            buttonText),
                       null,
                       TextConsts.chatIcons,
                       TextConsts.chatIconTexts,

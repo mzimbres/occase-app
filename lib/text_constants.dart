@@ -5,14 +5,14 @@ class TextConsts {
 
    // Text used for the main tabs.
    static final List<String> tabNames =
-         <String>["FILTROS", "ANUNCIOS", "CHATS"];
+         <String>["FILTROS", "ANUNCIOS", "CONVERSAS"];
 
    //______________
 
    // Text used in the *new advertisement screens* on the bottom
    // navigation bar.
    static final List<String> newAdvTab =
-         <String>['Localizacao', 'Modelos', 'Enviar'];
+         <String>['Localizacao', 'Modelos', 'Salvar/Enviar'];
 
    static List<IconData> newAdvTabIcons =
          <IconData>[Icons.home, Icons.directions_car, Icons.send];
@@ -20,10 +20,10 @@ class TextConsts {
 
    // Text used in the chat screen.
    static final List<String> chatIconTexts =
-         <String>['Meus anúncios', 'Meus interesses'];
+         <String>['Meus anúncios', 'Favoritos'];
 
    static List<IconData> chatIcons =
-         <IconData>[Icons.home, Icons.directions_car];
+         <IconData>[Icons.home, Icons.favorite_border];
 
    //______________
 
@@ -41,10 +41,11 @@ class TextConsts {
    ];
 
    // Text used in the adv screen to save the adv for chat.
-   static final String advButtonText = "Mover para chats";
+   static final String advButtonText = "Mover para favoritos";
    static final String newAdvButtonText = "Enviar";
-   static final String chatButtonText = "Chat";
+   static final String chatButtonText = "Conversar";
+   static final String ownAdvButtonText = "Ver interessados";
 
-   static final String newAdvDescDeco = "Digitar informacoes adicionais";
+   static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 }
 
