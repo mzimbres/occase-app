@@ -227,13 +227,13 @@ class MenuChatState extends State<MenuChat>
       final String value = _newAdvTextCtrl.text;
       advInput.infos.last.add(KeyValuePair(key, ": " + value));
 
-      // TODO: Use the adv and call AdvData::clear that must still be
-      // implemented.
-
       // TODO: This line is needed only in the prototype. Later when
       // we connect the app in the server to adv that has been
       // published we get sent back to us by the server.
       advList.add(advInput.clone());
+
+      _newAdvTextCtrl.text = "";
+      advInput = AdvData();
 
       setState(() { });
    }
