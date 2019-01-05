@@ -154,8 +154,8 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
 {
    RaisedButton b = RaisedButton(
       child: Text(label),
-      //color: const Color(0xFFFFFF),
-      //highlightColor: const Color(0xFFFFFF),
+      color: const Color(0xff075E54),
+      highlightColor: const Color(0xff075E54),
       onPressed: onPressed,
    );
 
