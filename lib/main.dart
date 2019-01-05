@@ -220,6 +220,14 @@ class MenuChatState extends State<MenuChat>
       print("On chat clicked.");
    }
 
+   // Function called when the description text is entered in the *new
+   // adv* screen.
+   void _onTextFieldPressed(String value)
+   {
+      String key = "Descricao";
+      advInput.infos.last.add(KeyValuePair(key, ": " + value));
+   }
+
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
@@ -247,8 +255,8 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
-            w = createNewAdvWidget(context, advInput,
-                  _onAdvSendPressed, TextConsts.newAdvButtonText, true);
+            w = createNewAdvWidget(context, advInput, _onAdvSendPressed,
+                  TextConsts.newAdvButtonText, _onTextFieldPressed);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,
