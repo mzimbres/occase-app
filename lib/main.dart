@@ -307,12 +307,10 @@ class MenuChatState extends State<MenuChat>
                   d == Consts.maxFilterDepth);
       }
 
-      List<Widget> widgets = <Widget>[
-         createMenuScreen(context, w2, null, _onWillPopMenu,
-               _onBotBarTapped, _BotBarIdx),
-         createAdvTab(context, advList, _onAdvSelection, _onNewAdv),
-         createChatTab(context, chatList, _onChat),
-      ];
+      List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
+      widgets[0] = createMenuScreen(context, w2, null, _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+      widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
+      widgets[2] = createChatTab(context, chatList, _onChat);
 
       return Scaffold(
             appBar: AppBar(
@@ -335,7 +333,7 @@ class MenuChatState extends State<MenuChat>
                      Icon(Icons.more_vert)
                   ],
             ),
-            body: TabBarView(controller: _tabController, children: widgets,),
+            body: TabBarView(controller: _tabController, children: widgets)
       );
    }
 }
