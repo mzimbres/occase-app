@@ -103,6 +103,9 @@ class MenuChatState extends State<MenuChat>
    // 1 for the models menu etc.
    int _BotBarIdx = 0;
 
+   // The *new adv* text controler
+   TextEditingController _newAdvTextCtrl = TextEditingController();
+
    void _onAdvSelection(AdvData data)
    {
       print('Anuncio salvo');
@@ -217,10 +220,15 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvSendPressed()
    {
-      // Have to clean menu tree state.
-      print("Sending adv to server.");
       _onNewAdvPressed = false;
       _BotBarIdx = 0;
+
+      final String key = "Descricao";
+      final String value = _newAdvTextCtrl.text;
+      advInput.infos.last.add(KeyValuePair(key, ": " + value));
+
+      // TODO: Use the adv and call AdvData::clear that must still be
+      // implemented.
 
       // TODO: This line is needed only in the prototype. Later when
       // we connect the app in the server to adv that has been
@@ -233,14 +241,6 @@ class MenuChatState extends State<MenuChat>
    void _onChat()
    {
       print("On chat clicked.");
-   }
-
-   // Function called when the description text is entered in the *new
-   // adv* screen.
-   void _onTextFieldPressed(String value)
-   {
-      String key = "Descricao";
-      advInput.infos.last.add(KeyValuePair(key, ": " + value));
    }
 
    MenuChatState()
@@ -265,13 +265,20 @@ class MenuChatState extends State<MenuChat>
    }
 
    @override
+   void dispose()
+   {
+     _newAdvTextCtrl.dispose();
+     super.dispose();
+   }
+
+   @override
    Widget build(BuildContext context)
    {
       if (_onNewAdvPressed) {
          Widget w;
          if (_BotBarIdx == 2) {
             w = createNewAdvWidget(context, advInput, _onAdvSendPressed,
-                  TextConsts.newAdvButtonText, _onTextFieldPressed);
+                  TextConsts.newAdvButtonText, _newAdvTextCtrl);
          } else {
             w = createAdvMenuListView(context,
                   _menus[_BotBarIdx].last,

@@ -96,14 +96,14 @@ Padding headerFactory(BuildContext context,
 }
 
 Card advAssembler(BuildContext context, AdvData data,
-                  Widget button, Function onTextFieldPressed)
+                  Widget button, TextEditingController newAdvTextCtrl)
 {
    // This function assumes the description fields is the last in the
    // array.
    List<Card> list = List<Card>();
 
    int length = data.infos.length;
-   if (onTextFieldPressed != null )
+   if (newAdvTextCtrl != null )
       --length;
 
    for (int i = 0; i < length; ++i) {
@@ -117,17 +117,13 @@ Card advAssembler(BuildContext context, AdvData data,
       list.add(c);
    }
 
-   if (onTextFieldPressed != null) {
+   if (newAdvTextCtrl != null) {
       // TODO: Set a max length.
       Card textInput = Card(
             child: TextField(
-               // Using this prevents the user from tipying newline,
-               // It may be better later to just use onChanged to save
-               // the text in a variable and trigger the assignment
-               // on data.info ... in the send button. This is more
-               // complicated than I want to do now.
-               textInputAction: TextInputAction.go,
-               onSubmitted: onTextFieldPressed,
+               controller: newAdvTextCtrl,
+               //textInputAction: TextInputAction.go,
+               //onSubmitted: onTextFieldPressed,
                keyboardType: TextInputType.multiline,
                maxLines: null,
                decoration: InputDecoration(
@@ -156,7 +152,7 @@ Card advAssembler(BuildContext context, AdvData data,
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label,
-                        Function onTextFieldPressed)
+                        TextEditingController newAdvTextCtrl)
 {
    RaisedButton b = RaisedButton(
       child: Text(label),
@@ -172,7 +168,7 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, onTextFieldPressed);
+   return advAssembler(context, data, c4, newAdvTextCtrl);
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> data,
