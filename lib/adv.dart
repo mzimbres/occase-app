@@ -160,8 +160,8 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
    );
 
    Card c4 = Card(
-      child:  b,
-      color: Consts.advProdHeaderColor,
+      child: b,
+      color: Consts.advMsgColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );
