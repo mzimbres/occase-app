@@ -40,7 +40,8 @@ Widget createBotBarScreen(
       Widget scafBody,
       Widget appBar,
       List<IconData> icons,
-      Function onWillPopMenu,
+      List<String> iconLabels,
+      Function onWillPop,
       Function onBotBarTapped,
       int i)
 {
@@ -52,12 +53,12 @@ Widget createBotBarScreen(
    for (int i = 0; i < length; ++i) {
       items[i] = BottomNavigationBarItem(
                icon: Icon(icons[i]),
-               title: Text(TextConsts.newAdvTab[i])
+               title: Text(iconLabels[i])
       );
    }
 
    return WillPopScope(
-          onWillPop: () async { return onWillPopMenu();},
+          onWillPop: () async { return onWillPop();},
           child: Scaffold(
                appBar: appBar,
                body: scafBody,
@@ -293,7 +294,7 @@ class MenuChatState extends State<MenuChat>
                      elevation: 0.7, toolbarOpacity : 1.0);
 
          return createBotBarScreen(context, w, appBar,
-               TextConsts.newAdvTabIcons,
+               TextConsts.newAdvTabIcons, TextConsts.newAdvTab,
                _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
       }
 
@@ -312,8 +313,9 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
       widgets[0] = createBotBarScreen(context, w2, null,
-            TextConsts.newAdvTabIcons, _onWillPopMenu, _onBotBarTapped,
-            _BotBarIdx);
+            TextConsts.newAdvTabIcons, TextConsts.newAdvTab,
+            _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
+
       widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
       widgets[2] = createChatTab(context, chatList, _onChat);
 
