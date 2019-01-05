@@ -45,7 +45,8 @@ Widget createBotBarScreen(
       Function onBotBarTapped,
       int i)
 {
-   final int length = TextConsts.newAdvTab.length;
+   assert(icons.length == iconLabels.length);
+   final int length = icons.length;
 
    List<BottomNavigationBarItem> items =
          List<BottomNavigationBarItem>(length);
@@ -106,6 +107,8 @@ class MenuChatState extends State<MenuChat>
    // 1 for the models menu etc.
    int _BotBarIdx = 0;
 
+   int _chatBotBarIdx = 0;
+
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
 
@@ -124,6 +127,7 @@ class MenuChatState extends State<MenuChat>
       restoreMenuStack(_menus[0]);
       restoreMenuStack(_menus[1]);
       _BotBarIdx = 0;
+      _chatBotBarIdx = 0;
       setState(() { });
    }
 
@@ -149,12 +153,17 @@ class MenuChatState extends State<MenuChat>
       // Assert we do not get here.
    }
 
-   void _onBotBarTapped(int index)
+   void _onBotBarTapped(int i)
    {
       if ((_BotBarIdx + 1) != TextConsts.newAdvTab.length)
          restoreMenuStack(_menus[_BotBarIdx]);
 
-      setState(() { _BotBarIdx = index; });
+      setState(() { _BotBarIdx = i; });
+   }
+
+   void _onChatBotBarTapped(int i)
+   {
+      setState(() { _chatBotBarIdx = i; });
    }
 
    void _onAdvLeafPressed(int i)
@@ -317,7 +326,16 @@ class MenuChatState extends State<MenuChat>
             _onWillPopMenu, _onBotBarTapped, _BotBarIdx);
 
       widgets[1] = createAdvTab(context, advList, _onAdvSelection, _onNewAdv);
-      widgets[2] = createChatTab(context, chatList, _onChat);
+      //widgets[2] = createChatTab(context, chatList, _onChat);
+      widgets[2] = createBotBarScreen(context,
+                      createChatTab(context, chatList, _onChat),
+                      null,
+                      TextConsts.chatIcons,
+                      TextConsts.chatIconTexts,
+                      () {print("Implement me");},
+                      _onChatBotBarTapped,
+                      _chatBotBarIdx);
+
 
       return Scaffold(
             appBar: AppBar(

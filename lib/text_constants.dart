@@ -7,6 +7,8 @@ class TextConsts {
    static final List<String> tabNames =
          <String>["FILTROS", "ANUNCIOS", "CHATS"];
 
+   //______________
+
    // Text used in the *new advertisement screens* on the bottom
    // navigation bar.
    static final List<String> newAdvTab =
@@ -14,6 +16,16 @@ class TextConsts {
 
    static List<IconData> newAdvTabIcons =
          <IconData>[Icons.home, Icons.directions_car, Icons.send];
+   //______________
+
+   // Text used in the chat screen.
+   static final List<String> chatIconTexts =
+         <String>['Meus anúncios', 'Meus interesses'];
+
+   static List<IconData> chatIcons =
+         <IconData>[Icons.home, Icons.directions_car];
+
+   //______________
 
    // The text shown on the app bar for each tab on the *new
    // advertisement screen.*
