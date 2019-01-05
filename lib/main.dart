@@ -155,7 +155,12 @@ class MenuChatState extends State<MenuChat>
    {
       MenuNode o = _menus[_BotBarIdx].last.children[i];
       _menus[_BotBarIdx].add(o);
+      _onAdvLeafReached();
+      setState(() { });
+   }
 
+   void _onAdvLeafReached()
+   {
       List<KeyValuePair> header = List<KeyValuePair>();
 
       // Let us read the corresponding header.
@@ -171,14 +176,24 @@ class MenuChatState extends State<MenuChat>
       restoreMenuStack(_menus[_BotBarIdx]);
 
       _BotBarIdx = _advIndexHelper(_BotBarIdx);
-      setState(() { });
    }
 
    void _onNodePressed(int i)
    {
-      //print("I am calling a adv non leaf onPressed");
-      MenuNode o = _menus[_BotBarIdx].last.children[i];
-      _menus[_BotBarIdx].add(o);
+      do {
+         MenuNode o = _menus[_BotBarIdx].last.children[i];
+         _menus[_BotBarIdx].add(o);
+         i = 1;
+      } while (_menus[_BotBarIdx].last.children.length == 2);
+
+      final int length = _menus[_BotBarIdx].last.children.length;
+
+      assert(length != 1);
+
+      if (length == 0) {
+         _onAdvLeafReached();
+      }
+
       setState(() { });
    }
 
