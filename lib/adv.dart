@@ -123,7 +123,7 @@ Card advAssembler(BuildContext context, AdvData data,
             child: TextField(  onChanged: (text) {
                print("First text field: $text"); },
                //keyboardType: TextInputType.multiline,
-               maxLines: 3,
+               maxLines: null,
                decoration: InputDecoration(
                      hintText: TextConsts.newAdvDescDeco),
                ),
