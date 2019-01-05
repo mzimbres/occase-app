@@ -43,30 +43,36 @@ Widget createMenuScreen(
       Function onBotBarTapped,
       int i)
 {
+   final int length = TextConsts.newAdvTab.length;
+
+   List<Icon> icons = List<Icon>(length);
+   icons[0] = Icon(Icons.home);
+   icons[1] = Icon(Icons.directions_car);
+   icons[2] = Icon(Icons.send);
+
+   List<BottomNavigationBarItem> items =
+         List<BottomNavigationBarItem>(length);
+
+   for (int i = 0; i < length; ++i) {
+      items[i] = BottomNavigationBarItem(
+               icon: icons[i],
+               title: Text(TextConsts.newAdvTab[i])
+      );
+   }
+
    return WillPopScope(
-         onWillPop: () async { return onWillPopMenu();},
-         child: Scaffold(
+          onWillPop: () async { return onWillPopMenu();},
+          child: Scaffold(
                appBar: appBar,
                body: widget,
                bottomNavigationBar: BottomNavigationBar(
-                     items: <BottomNavigationBarItem>[
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.home),
-                              title: Text(TextConsts.newAdvTab[0])),
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.directions_car),
-                              title: Text(TextConsts.newAdvTab[1])),
-                        BottomNavigationBarItem(
-                              icon: Icon(Icons.send),
-                              title: Text(TextConsts.newAdvTab[2])),
-                     ],
-
+                     items: items,
                      currentIndex: i,
                      fixedColor: Colors.deepPurple,
                      onTap: onBotBarTapped,
-               )
-               )
-               );
+            )
+         )
+    );
 }
 
 void restoreMenuStack(List<MenuNode> st)
@@ -290,7 +296,7 @@ class MenuChatState extends State<MenuChat>
                title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
                      elevation: 0.7, toolbarOpacity : 1.0);
 
-         return createMenuScreen( context, w, appBar, _onWillPopMenu,
+         return createMenuScreen(context, w, appBar, _onWillPopMenu,
                _onBotBarTapped, _BotBarIdx);
       }
 
