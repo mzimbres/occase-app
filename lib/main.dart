@@ -127,9 +127,21 @@ class MenuChatState extends State<MenuChat>
    // The index of the tab we are currently in in the *new
    // advertisement screen*. For example 0 for the localization menu,
    // 1 for the models menu etc.
-   int _BotBarIdx = 0;
+   int _botBarIdx = 0;
 
+   // Stores the last tapped botton bar of *chats* screen. See that
+   // without this variable we cannot know which of the two chat
+   // screens we are currently in. It should be only used when both
+   // _currentFavChat and _currentFavChat are -1.
    int _chatBotBarIdx = 0;
+
+   // Stores the current chat index on favorites chat screen, -1 means
+   // we are not in this screen.
+   int _currentFavChat = -1;
+
+   // Similar to _currentFavChat but corresponds to the *my own advs*
+   // screen.
+   int _currentOwnChat = -1;
 
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
@@ -148,30 +160,30 @@ class MenuChatState extends State<MenuChat>
       _onNewAdvPressed = true;
       restoreMenuStack(_menus[0]);
       restoreMenuStack(_menus[1]);
-      _BotBarIdx = 0;
+      _botBarIdx = 0;
       _chatBotBarIdx = 0;
       setState(() { });
    }
 
    bool _onWillPopMenu()
    {
-      if (_menus[_BotBarIdx].length == 1) {
+      if (_menus[_botBarIdx].length == 1) {
          _onNewAdvPressed = false;
          setState(() { });
          return false;
       }
 
-      _menus[_BotBarIdx].removeLast();
+      _menus[_botBarIdx].removeLast();
       setState(() { });
       return false;
    }
 
    void _onBotBarTapped(int i)
    {
-      if ((_BotBarIdx + 1) != TextConsts.newAdvTab.length)
-         restoreMenuStack(_menus[_BotBarIdx]);
+      if ((_botBarIdx + 1) != TextConsts.newAdvTab.length)
+         restoreMenuStack(_menus[_botBarIdx]);
 
-      setState(() { _BotBarIdx = i; });
+      setState(() { _botBarIdx = i; });
    }
 
    void _onChatBotBarTapped(int i)
@@ -181,8 +193,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafPressed(int i)
    {
-      MenuNode o = _menus[_BotBarIdx].last.children[i];
-      _menus[_BotBarIdx].add(o);
+      MenuNode o = _menus[_botBarIdx].last.children[i];
+      _menus[_botBarIdx].add(o);
       _onAdvLeafReached();
       setState(() { });
    }
@@ -192,29 +204,29 @@ class MenuChatState extends State<MenuChat>
       List<KeyValuePair> header = List<KeyValuePair>();
 
       // Let us read the corresponding header.
-      final int length = _menus[_BotBarIdx].length;
+      final int length = _menus[_botBarIdx].length;
       for (int i = 1; i < length; ++i) {
-         String key = TextConsts.menuDepthNames[_BotBarIdx][i];
-         String value = _menus[_BotBarIdx][i].name;
+         String key = TextConsts.menuDepthNames[_botBarIdx][i];
+         String value = _menus[_botBarIdx][i].name;
          header.add(KeyValuePair(key, ": " + value));
       }
 
-      _advInput.infos[_BotBarIdx] = header;
+      _advInput.infos[_botBarIdx] = header;
 
-      restoreMenuStack(_menus[_BotBarIdx]);
+      restoreMenuStack(_menus[_botBarIdx]);
 
-      _BotBarIdx = advIndexHelper(_BotBarIdx);
+      _botBarIdx = advIndexHelper(_botBarIdx);
    }
 
    void _onNodePressed(int i)
    {
       do {
-         MenuNode o = _menus[_BotBarIdx].last.children[i];
-         _menus[_BotBarIdx].add(o);
+         MenuNode o = _menus[_botBarIdx].last.children[i];
+         _menus[_botBarIdx].add(o);
          i = 1;
-      } while (_menus[_BotBarIdx].last.children.length == 2);
+      } while (_menus[_botBarIdx].last.children.length == 2);
 
-      final int length = _menus[_BotBarIdx].last.children.length;
+      final int length = _menus[_botBarIdx].last.children.length;
 
       assert(length != 1);
 
@@ -228,7 +240,7 @@ class MenuChatState extends State<MenuChat>
    void _onFilterLeafNodePressed(bool newValue, int i)
    {
       if (i == 0) {
-         for (MenuNode p in _menus[_BotBarIdx].last.children) {
+         for (MenuNode p in _menus[_botBarIdx].last.children) {
             p.status = newValue;
          }
 
@@ -236,7 +248,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      MenuNode o = _menus[_BotBarIdx].last.children[i];
+      MenuNode o = _menus[_botBarIdx].last.children[i];
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
@@ -246,7 +258,7 @@ class MenuChatState extends State<MenuChat>
    void _onAdvSendPressed()
    {
       _onNewAdvPressed = false;
-      _BotBarIdx = 0;
+      _botBarIdx = 0;
 
       final String key = "Descricao";
       final String value = _newAdvTextCtrl.text;
@@ -284,7 +296,7 @@ class MenuChatState extends State<MenuChat>
       _menus[1] = menuReader(Consts.modelsMenu);
 
       _onNewAdvPressed = false;
-      _BotBarIdx = 0;
+      _botBarIdx = 0;
 
       _advInput = AdvData();
       _advsFromServer = List<AdvData>();
@@ -311,7 +323,7 @@ class MenuChatState extends State<MenuChat>
    {
       if (_onNewAdvPressed) {
          Widget widget;
-         if (_BotBarIdx == 2) {
+         if (_botBarIdx == 2) {
             Widget widget_tmp = createNewAdvWidget(
                         context,
                         _advInput,
@@ -332,14 +344,14 @@ class MenuChatState extends State<MenuChat>
          } else {
             widget = createAdvMenuListView(
                         context,
-                        _menus[_BotBarIdx].last,
+                        _menus[_botBarIdx].last,
                         _onAdvLeafPressed,
                         _onNodePressed
                      );
          }
 
          AppBar appBar = AppBar(
-               title: Text(TextConsts.advAppBarMsg[_BotBarIdx]),
+               title: Text(TextConsts.advAppBarMsg[_botBarIdx]),
                elevation: 0.7,
                toolbarOpacity : 1.0
          );
@@ -352,18 +364,31 @@ class MenuChatState extends State<MenuChat>
                    TextConsts.newAdvTab,
                    _onWillPopMenu,
                    _onBotBarTapped,
-                   _BotBarIdx
+                   _botBarIdx
                 );
       }
 
+      final bool b1 = _currentFavChat != -1;
+      final bool b2 = _currentOwnChat != -1;
+      if (_tabController == 2 && (b1 || b2)) {
+         // They are not allowed to be both diffrent from -1 at the
+         // same time.
+         assert(!(b1 && b2));
+         if (_currentFavChat != -1) {
+            // We are in the favorite advs screen, where pressing the
+            // chat button in any of the advs leads us to the chat
+            // screen with the advertizer.
+         }
+      }
+
       Widget filterTabWidget;
-      if (_BotBarIdx == 2) {
+      if (_botBarIdx == 2) {
          filterTabWidget = createSendScreen();
       } else {
-         final int d = _menus[_BotBarIdx].length;
+         final int d = _menus[_botBarIdx].length;
          filterTabWidget = createMenuListView(
                              context,
-                             _menus[_BotBarIdx].last,
+                             _menus[_botBarIdx].last,
                              _onFilterLeafNodePressed,
                              _onNodePressed,
                              d == Consts.maxFilterDepth);
@@ -379,7 +404,7 @@ class MenuChatState extends State<MenuChat>
                       TextConsts.newAdvTab,
                       _onWillPopMenu,
                       _onBotBarTapped,
-                      _BotBarIdx
+                      _botBarIdx
                    );
 
       widgets[1] = createAdvTab(
