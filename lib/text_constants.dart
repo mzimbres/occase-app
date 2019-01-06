@@ -23,7 +23,7 @@ class TextConsts {
          <String>['Meus anúncios', 'Favoritos'];
 
    static List<IconData> chatIcons =
-         <IconData>[Icons.home, Icons.favorite_border];
+         <IconData>[Icons.list, Icons.star_border];
 
    //______________
 
@@ -47,5 +47,7 @@ class TextConsts {
    static final String ownAdvButtonText = "Ver interessados";
 
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
+
+   static final IconData newAdvIcon = Icons.mode_edit;
 }
 

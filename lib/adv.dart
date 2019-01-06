@@ -156,7 +156,7 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
 {
    RaisedButton b = RaisedButton(
       child: Text(label),
-      color: const Color(0xff075E54),
+      color: Theme.of(context).accentColor,
       highlightColor: const Color(0xff075E54),
       onPressed: onPressed,
    );
@@ -190,7 +190,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
          backgroundColor: Consts.scaffoldBackground,
          floatingActionButton: FloatingActionButton(
                backgroundColor: Theme.of(context).accentColor,
-               child: Icon(Icons.message, color: Colors.white),
+               child: Icon(TextConsts.newAdvIcon, color: Colors.white),
                onPressed: onNewAdv,
          ),
    );

@@ -312,13 +312,23 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget widget;
          if (_BotBarIdx == 2) {
-            widget = createNewAdvWidget(
+            Widget widget_tmp = createNewAdvWidget(
                         context,
                         _advInput,
                         _onAdvSendPressed,
                         TextConsts.newAdvButtonText,
                         _newAdvTextCtrl
                      );
+
+            // I added this ListView to prevent widget_tmp from
+            // extending the whole screen. Inside the ListView it
+            // appears compact. Remove this later.
+            widget = ListView(
+               shrinkWrap: true,
+               //padding: const EdgeInsets.all(20.0),
+               children: <Widget>[widget_tmp]
+            );
+
          } else {
             widget = createAdvMenuListView(
                         context,
