@@ -239,7 +239,7 @@ Widget createChatTab(
             return createNewAdvWidget(
                       context,
                       data[i],
-                      onChat,
+                      () {onChat(i);},
                       buttonText,
                       null);
          },

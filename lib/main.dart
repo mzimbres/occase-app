@@ -132,16 +132,16 @@ class MenuChatState extends State<MenuChat>
    // Stores the last tapped botton bar of *chats* screen. See that
    // without this variable we cannot know which of the two chat
    // screens we are currently in. It should be only used when both
-   // _currentFavChat and _currentFavChat are -1.
+   // _currFavChatIdx and _currFavChatIdx are -1.
    int _chatBotBarIdx = 0;
 
    // Stores the current chat index on favorites chat screen, -1 means
    // we are not in this screen.
-   int _currentFavChat = -1;
+   int _currFavChatIdx = -1;
 
-   // Similar to _currentFavChat but corresponds to the *my own advs*
+   // Similar to _currFavChatIdx but corresponds to the *my own advs*
    // screen.
-   int _currentOwnChat = -1;
+   int _currOwnChatIdx = -1;
 
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
@@ -174,6 +174,13 @@ class MenuChatState extends State<MenuChat>
       }
 
       _menus[_botBarIdx].removeLast();
+      setState(() { });
+      return false;
+   }
+
+   bool _onWillPopFavChatScreen()
+   {
+      _currFavChatIdx = -1;
       setState(() { });
       return false;
    }
@@ -284,9 +291,11 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onChat()
+   void _onChat(int i)
    {
       print("On chat clicked.");
+      _currFavChatIdx = i;
+      setState(() { });
    }
 
    MenuChatState()
@@ -368,16 +377,23 @@ class MenuChatState extends State<MenuChat>
                 );
       }
 
-      final bool b1 = _currentFavChat != -1;
-      final bool b2 = _currentOwnChat != -1;
-      if (_tabController == 2 && (b1 || b2)) {
-         // They are not allowed to be both diffrent from -1 at the
-         // same time.
-         assert(!(b1 && b2));
-         if (_currentFavChat != -1) {
+      if (_tabController.index == 2 && _currFavChatIdx != -1) {
+         print("$_currFavChatIdx -- $_currOwnChatIdx");
+         if (_currFavChatIdx != -1) {
             // We are in the favorite advs screen, where pressing the
             // chat button in any of the advs leads us to the chat
             // screen with the advertizer.
+
+            return WillPopScope(
+                   onWillPop: () async { return _onWillPopFavChatScreen();},
+                   child: Scaffold(
+                            appBar : AppBar(
+                               title: Text("Paulo nascimento"),
+                               backgroundColor:
+                                  Theme.of(context).primaryColor,
+                  )
+                )
+             );
          }
       }
 
