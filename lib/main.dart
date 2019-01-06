@@ -84,6 +84,62 @@ int advIndexHelper(int i)
    // Assert we do not get here.
 }
 
+Widget
+createChatScreen(BuildContext context,
+                 Function onWillPopScope)
+{
+   Row row = Row(
+         children: <Widget>[
+            Expanded(child: Text('TextField')),
+            IconButton(
+                  icon: Icon(Icons.send),
+                  onPressed: () { print("Chat send"); },
+            )
+         ],
+   );
+
+   List<String> msgs = <String>["msg1", "msg2", "msg2"];
+
+   ListView list = ListView.builder(
+         padding: const EdgeInsets.all(0.0),
+         itemCount: msgs.length,
+         itemBuilder: (BuildContext context, int i)
+         {
+            return Text(msgs[i]);
+         },
+   );
+
+   Column col = Column(
+         children: <Widget>[
+            Expanded(child: list),
+            row
+         ],
+   );
+
+   return WillPopScope(
+          onWillPop: () async { return onWillPopScope();},
+          child: Scaffold(
+             appBar : AppBar(
+                //title: Text("Anunciante: Paulo nascimento"),
+                title: ListTile(
+                   leading: CircleAvatar(child: Text("")),
+                   title: Text( "Paulo nascimento",
+                      style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: Consts.mainFontSize
+                      )
+                   ),
+                   dense: false,
+                   //subtitle: subtitle
+                ),
+                backgroundColor: Theme.of(context).primaryColor,
+             ),
+          body: col,
+          backgroundColor: Consts.scaffoldBackground,
+       )
+    );
+}
+
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -133,7 +189,7 @@ class MenuChatState extends State<MenuChat>
    // without this variable we cannot know which of the two chat
    // screens we are currently in. It should be only used when both
    // _currFavChatIdx and _currFavChatIdx are -1.
-   int _chatBotBarIdx = 0;
+   int _chatBotBarIdx = 1;
 
    // Stores the current chat index on favorites chat screen, -1 means
    // we are not in this screen.
@@ -390,17 +446,7 @@ class MenuChatState extends State<MenuChat>
             // We are in the favorite advs screen, where pressing the
             // chat button in any of the advs leads us to the chat
             // screen with the advertizer.
-
-            return WillPopScope(
-                   onWillPop: () async { return _onWillPopFavChatScreen();},
-                   child: Scaffold(
-                            appBar : AppBar(
-                               title: Text("Anunciante: Paulo nascimento"),
-                               backgroundColor:
-                                  Theme.of(context).primaryColor,
-                  )
-                )
-             );
+            return createChatScreen(context, _onWillPopFavChatScreen);
          }
       }
 
