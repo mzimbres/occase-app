@@ -88,13 +88,30 @@ Widget
 createChatScreen(BuildContext context,
                  Function onWillPopScope)
 {
-   Row row = Row(
+   TextField textField = TextField(
+      //controller: newAdvTextCtrl,
+      //textInputAction: TextInputAction.go,
+      //onSubmitted: onTextFieldPressed,
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      decoration: InputDecoration(
+            hintText: "Digite sua mensagem"),
+   );
+
+   Column sendButCol = Column(
          children: <Widget>[
-            Expanded(child: Text('TextField')),
+            Flexible(child: Text(""), flex: 0, fit:  FlexFit.tight),
             IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () { print("Chat send"); },
-            )
+                  )
+         ],
+   );
+
+   Row row = Row(
+         children: <Widget>[
+            Expanded(child: textField),
+            sendButCol
          ],
    );
 
@@ -109,7 +126,7 @@ createChatScreen(BuildContext context,
          },
    );
 
-   Column col = Column(
+   Column mainCol = Column(
          children: <Widget>[
             Expanded(child: list),
             row
@@ -134,7 +151,7 @@ createChatScreen(BuildContext context,
                 ),
                 backgroundColor: Theme.of(context).primaryColor,
              ),
-          body: col,
+          body: mainCol,
           backgroundColor: Consts.scaffoldBackground,
        )
     );
