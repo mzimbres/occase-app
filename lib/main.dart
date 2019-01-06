@@ -150,6 +150,7 @@ class MenuChatState extends State<MenuChat>
    {
       print('Anuncio salvo');
       _advsUserSelected.add(data);
+      //_advsFromUser.add(data);
       _advsFromServer.remove(data);
       setState(() { });
    }
@@ -291,10 +292,16 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onChat(int i)
+   void _onFavChat(int i)
    {
       print("On chat clicked.");
       _currFavChatIdx = i;
+      setState(() { });
+   }
+
+   void _onOwnAdvChat(int i)
+   {
+      _currOwnChatIdx = i;
       setState(() { });
    }
 
@@ -388,7 +395,7 @@ class MenuChatState extends State<MenuChat>
                    onWillPop: () async { return _onWillPopFavChatScreen();},
                    child: Scaffold(
                             appBar : AppBar(
-                               title: Text("Paulo nascimento"),
+                               title: Text("Anunciante: Paulo nascimento"),
                                backgroundColor:
                                   Theme.of(context).primaryColor,
                   )
@@ -430,16 +437,23 @@ class MenuChatState extends State<MenuChat>
                       _onNewAdv
                    );
 
-      String buttonText = TextConsts.chatButtonText;
-      if (_chatBotBarIdx == 0)
-         buttonText = TextConsts.ownAdvButtonText;
-
-      widgets[2] = createBotBarScreen(context,
-                      createChatTab(
+      Widget chatWidget;
+      if (_chatBotBarIdx == 0) {
+         chatWidget = createChatTab(
+                            context,
+                            _advsFromUser,
+                            _onOwnAdvChat,
+                            TextConsts.ownAdvButtonText);
+      } else {
+         chatWidget = createChatTab(
                             context,
                             _advsUserSelected,
-                            _onChat,
-                            buttonText),
+                            _onFavChat,
+                            TextConsts.chatButtonText);
+      }
+
+      widgets[2] = createBotBarScreen(context,
+                      chatWidget,
                       null,
                       TextConsts.chatIcons,
                       TextConsts.chatIconTexts,
