@@ -86,12 +86,14 @@ int advIndexHelper(int i)
 
 Widget
 createChatScreen(BuildContext context,
-                 Function onWillPopScope)
+                 Function onWillPopScope,
+                 List<String> chatMsgs,
+                 TextEditingController newAdvTextCtrl,
+                 Function onChatSendPressed)
 {
    TextField textField = TextField(
-      //controller: newAdvTextCtrl,
+      controller: newAdvTextCtrl,
       //textInputAction: TextInputAction.go,
-      //onSubmitted: onTextFieldPressed,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(
@@ -104,7 +106,7 @@ createChatScreen(BuildContext context,
          CircleAvatar(
                child: IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: () { print("Chat send"); },
+                  onPressed: onChatSendPressed,
                   color: Color(0xFFFFFFFF)
                   ),
                backgroundColor: Theme.of(context).primaryColor
@@ -117,14 +119,18 @@ createChatScreen(BuildContext context,
          ],
    );
 
-   List<String> msgs = <String>["msg1", "msg2", "msg2"];
-
    ListView list = ListView.builder(
-         padding: const EdgeInsets.all(0.0),
-         itemCount: msgs.length,
+         padding: const EdgeInsets.all(6.0),
+         itemCount: chatMsgs.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return Text(msgs[i]);
+            return Card(
+                  child: Padding( padding: EdgeInsets.all(4.0),
+                        child: Text(chatMsgs[i])),
+                  color: Color(0xFFFFFFFF),
+                  margin: EdgeInsets.all(6.0),
+                  elevation: 6.0,
+                  );
          },
    );
 
@@ -218,6 +224,9 @@ class MenuChatState extends State<MenuChat>
    // Similar to _currFavChatIdx but corresponds to the *my own advs*
    // screen.
    int _currOwnChatIdx = -1;
+
+   // A provisory list of user chat messages.
+   List<String> _chatMsgs = List<String>();
 
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
@@ -381,6 +390,14 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onChatSendPressed()
+   {
+      _chatMsgs.add(_newAdvTextCtrl.text);
+      _newAdvTextCtrl.text = "";
+      print("Chat send");
+      setState(() { });
+   }
+
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
@@ -465,7 +482,12 @@ class MenuChatState extends State<MenuChat>
             // We are in the favorite advs screen, where pressing the
             // chat button in any of the advs leads us to the chat
             // screen with the advertizer.
-            return createChatScreen(context, _onWillPopFavChatScreen);
+            return createChatScreen(
+                  context,
+                  _onWillPopFavChatScreen,
+                  _chatMsgs,
+                  _newAdvTextCtrl,
+                  _onChatSendPressed);
          }
       }
 
