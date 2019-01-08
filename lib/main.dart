@@ -124,13 +124,15 @@ createChatScreen(BuildContext context,
          itemCount: chatMsgs.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return Card(
-                  child: Padding( padding: EdgeInsets.all(4.0),
-                        child: Text(chatMsgs[i])),
-                  color: Color(0xFFFFFFFF),
-                  margin: EdgeInsets.all(6.0),
-                  elevation: 6.0,
-                  );
+            return FractionallySizedBox( child: Card(
+                    child: Padding( padding: EdgeInsets.all(4.0),
+                          child: Text(chatMsgs[i])),
+                    color: Color(0xFFFFFFFF),
+                    margin: EdgeInsets.all(6.0),
+                    elevation: 6.0,
+                  ),
+                  widthFactor: 0.8
+            );
          },
    );
 
