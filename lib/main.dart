@@ -95,18 +95,20 @@ createChatScreen(BuildContext context,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(
-            hintText: "Digite sua mensagem"),
+            hintText: "Digite sua mensagem",
+            fillColor:Color(0xFFFFFFFF),
+            )
    );
 
-   Column sendButCol = Column(
-         children: <Widget>[
-            Flexible(child: Text(""), flex: 0, fit:  FlexFit.tight),
-            IconButton(
+   CircleAvatar sendButCol =
+         CircleAvatar(
+               child: IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () { print("Chat send"); },
-                  )
-         ],
-   );
+                  color: Color(0xFFFFFFFF)
+                  ),
+               backgroundColor: Theme.of(context).primaryColor
+               );
 
    Row row = Row(
          children: <Widget>[
@@ -143,7 +145,8 @@ createChatScreen(BuildContext context,
                    title: Text( "Paulo nascimento",
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: Consts.mainFontSize
+                            fontSize: Consts.mainFontSize,
+                            color: Color(0xFFFFFFFF)
                       )
                    ),
                    dense: false,
@@ -235,7 +238,7 @@ class MenuChatState extends State<MenuChat>
       restoreMenuStack(_menus[0]);
       restoreMenuStack(_menus[1]);
       _botBarIdx = 0;
-      _chatBotBarIdx = 0;
+      //_chatBotBarIdx = 0;
       setState(() { });
    }
 
@@ -458,7 +461,6 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_tabController.index == 2 && _currFavChatIdx != -1) {
-         print("$_currFavChatIdx -- $_currOwnChatIdx");
          if (_currFavChatIdx != -1) {
             // We are in the favorite advs screen, where pressing the
             // chat button in any of the advs leads us to the chat
