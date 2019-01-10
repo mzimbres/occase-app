@@ -120,19 +120,21 @@ createChatScreen(BuildContext context,
    );
 
    ListView list = ListView.builder(
+         reverse:true,
          padding: const EdgeInsets.all(6.0),
          itemCount: chatMsgs.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return FractionallySizedBox( child: Card(
+            return Align( alignment: Alignment.bottomRight,
+                  child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
                           child: Text(chatMsgs[i])),
-                    color: Color(0xFFFFFFFF),
+                    color: Colors.lightGreenAccent[100],
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
                   ),
                   widthFactor: 0.8
-            );
+            ));
          },
    );
 
