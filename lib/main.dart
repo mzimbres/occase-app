@@ -410,10 +410,28 @@ class MenuChatState extends State<MenuChat>
 
    void onWSData(msg)
    {
-      //var menu = jsonDecode(msg);
-      //String cmd = menu["cmd"];
-      //print("Received from server: $cmd");
-      //if (cmd == "auth_ack") {
+      var ack = jsonDecode(msg);
+      final String cmd = ack["cmd"];
+      print("Received from server: $cmd");
+      if (cmd == "auth_ack") {
+         // First we check if the auth was successful.
+         final String res = ack["result"];
+         if (res == 'fail') {
+            print("Handle failed auth.");
+            return;
+         }
+
+         assert(res == 'ok');
+
+         if (!ack.containsKey('menus')) {
+            print("No menus key, we are uptodate.");
+            return;
+         }
+
+         var menus = ack['menus'];
+
+         print('Received menus with length ${menus.length}');
+
       //   var menuEntry = jsonDecode(menu["menu"]);
       //   menuEntry.forEach((k,v) => print(k));
       //   var sub = menuEntry["sub"];
@@ -421,7 +439,7 @@ class MenuChatState extends State<MenuChat>
       //   //print(menuEntry);
       //   //var menuMap = jsonDecode(menuEntry);
       //   //menuMap.forEach((k,v) => print(k));
-      //}
+      }
    }
 
    void onWSError(error)
