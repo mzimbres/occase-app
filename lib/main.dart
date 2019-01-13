@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/status.dart' as status;
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/adv.dart';
@@ -235,6 +239,8 @@ class MenuChatState extends State<MenuChat>
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
 
+   IOWebSocketChannel channel;
+
    void _onAdvSelection(AdvData data)
    {
       print('Anuncio salvo');
@@ -402,6 +408,34 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void onWSData(msg)
+   {
+      //var menu = jsonDecode(msg);
+      //String cmd = menu["cmd"];
+      //print("Received from server: $cmd");
+      //if (cmd == "auth_ack") {
+      //   var menuEntry = jsonDecode(menu["menu"]);
+      //   menuEntry.forEach((k,v) => print(k));
+      //   var sub = menuEntry["sub"];
+      //   sub.forEach((k) => print(k));
+      //   //print(menuEntry);
+      //   //var menuMap = jsonDecode(menuEntry);
+      //   //menuMap.forEach((k,v) => print(k));
+      //}
+   }
+
+   void onWSError(error)
+   {
+      // TODO: Start a reconnect timer.
+      print("Error occurred");
+   }
+
+   void onWSDone()
+   {
+      print("Communication closed by peer.");
+   }
+
+
    MenuChatState()
    {
       _menus = List<List<MenuNode>>(2);
@@ -415,13 +449,28 @@ class MenuChatState extends State<MenuChat>
       _advsFromServer = List<AdvData>();
       _advsUserSelected = List<AdvData>();
       _advsFromUser = List<AdvData>();
+
+      channel = IOWebSocketChannel.connect("ws://localhost:8080");
+      channel.stream.listen(onWSData,
+            onError: onWSError, onDone: onWSDone);
+
+      var authCmd = {
+         'cmd': 'auth',
+         'from': '0001',
+         'menu_versions': <int>[-1, -1],
+      };
+
+      final String authText = jsonEncode(authCmd);
+      print(authText);
+      channel.sink.add(authText);
    }
 
    @override
    void initState()
    {
       super.initState();
-      _tabController = TabController(vsync: this, initialIndex: 1, length: 3);
+      _tabController = TabController(vsync: this,
+            initialIndex: 1, length: 3);
    }
 
    @override
