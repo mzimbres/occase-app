@@ -70,15 +70,6 @@ Widget createBotBarScreen(
     );
 }
 
-void restoreMenuStack(List<MenuNode> st)
-{
-   if (st.isEmpty)
-      return;
-
-   while (st.length != 1)
-      st.removeLast();
-}
-
 int advIndexHelper(int i)
 {
    if (i == 0) return 1;
@@ -185,6 +176,15 @@ class MenuItemRaw {
 class MenuItem {
    int filter_depth;
    List<MenuNode> root = List<MenuNode>();
+
+   void restoreMenuStack()
+   {
+      if (root.isEmpty)
+         return;
+
+      while (root.length != 1)
+         root.removeLast();
+   }
 }
 
 class MenuChat extends StatefulWidget {
@@ -267,8 +267,8 @@ class MenuChatState extends State<MenuChat>
    {
       print("Open menu selection.");
       _onNewAdvPressed = true;
-      restoreMenuStack(_menus[0].root);
-      restoreMenuStack(_menus[1].root);
+      _menus[0].restoreMenuStack();
+      _menus[1].restoreMenuStack();
       _botBarIdx = 0;
       //_chatBotBarIdx = 0;
       setState(() { });
@@ -297,7 +297,7 @@ class MenuChatState extends State<MenuChat>
    void _onBotBarTapped(int i)
    {
       if ((_botBarIdx + 1) != TextConsts.newAdvTab.length)
-         restoreMenuStack(_menus[_botBarIdx].root);
+         _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -329,7 +329,7 @@ class MenuChatState extends State<MenuChat>
 
       _advInput.infos[_botBarIdx] = header;
 
-      restoreMenuStack(_menus[_botBarIdx].root);
+      _menus[_botBarIdx].restoreMenuStack();
 
       _botBarIdx = advIndexHelper(_botBarIdx);
    }
