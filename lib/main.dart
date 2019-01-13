@@ -174,6 +174,19 @@ createChatScreen(BuildContext context,
     );
 }
 
+// This is a one to one struct that we receive from the server.
+class MenuItemRaw {
+   int filter_depth;
+   int version;
+   String data;
+}
+
+// Built from MenuItemRaw by parsing the menu into a tree.
+class MenuItem {
+   int filter_depth;
+   List<MenuNode> root;
+}
+
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -432,13 +445,17 @@ class MenuChatState extends State<MenuChat>
 
          print('Received menus with length ${menus.length}');
 
-      //   var menuEntry = jsonDecode(menu["menu"]);
-      //   menuEntry.forEach((k,v) => print(k));
-      //   var sub = menuEntry["sub"];
-      //   sub.forEach((k) => print(k));
-      //   //print(menuEntry);
-      //   //var menuMap = jsonDecode(menuEntry);
-      //   //menuMap.forEach((k,v) => print(k));
+         List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
+         for (int i = 0; i < menus.length; ++i) {
+            MenuItemRaw item = MenuItemRaw();
+            item.filter_depth = menus[i]["depth"];
+            item.version = menus[i]["version"];
+            item.data = menus[i]["data"];
+            rawMenus.add(item);
+            //print("depth $depth, version $version, data ");
+         }
+
+         // Now we should asynchronously write this menu to file.
       }
    }
 
@@ -474,6 +491,9 @@ class MenuChatState extends State<MenuChat>
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
+      // This is where we will read the raw menu from files and send
+      // our versions to the app. By sending -1 we will always receive
+      // back from the server.
       var authCmd = {
          'cmd': 'auth',
          'from': '0001',
