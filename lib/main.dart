@@ -184,7 +184,7 @@ class MenuItemRaw {
 // Built from MenuItemRaw by parsing the menu into a tree.
 class MenuItem {
    int filter_depth;
-   List<MenuNode> root;
+   List<MenuNode> root = List<MenuNode>();
 }
 
 class MenuChat extends StatefulWidget {
@@ -203,7 +203,7 @@ class MenuChatState extends State<MenuChat>
    // stack whose first element is the menu root node. When menu
    // entries are selected we push those items on the stack. Used both
    // on the filter and on the advertizement screens.
-   List<List<MenuNode>> _menus;
+   List<MenuItem> _menus;
 
    // The user own adv.
    AdvData _advInput;
@@ -267,8 +267,8 @@ class MenuChatState extends State<MenuChat>
    {
       print("Open menu selection.");
       _onNewAdvPressed = true;
-      restoreMenuStack(_menus[0]);
-      restoreMenuStack(_menus[1]);
+      restoreMenuStack(_menus[0].root);
+      restoreMenuStack(_menus[1].root);
       _botBarIdx = 0;
       //_chatBotBarIdx = 0;
       setState(() { });
@@ -276,13 +276,13 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopMenu()
    {
-      if (_menus[_botBarIdx].length == 1) {
+      if (_menus[_botBarIdx].root.length == 1) {
          _onNewAdvPressed = false;
          setState(() { });
          return false;
       }
 
-      _menus[_botBarIdx].removeLast();
+      _menus[_botBarIdx].root.removeLast();
       setState(() { });
       return false;
    }
@@ -297,7 +297,7 @@ class MenuChatState extends State<MenuChat>
    void _onBotBarTapped(int i)
    {
       if ((_botBarIdx + 1) != TextConsts.newAdvTab.length)
-         restoreMenuStack(_menus[_botBarIdx]);
+         restoreMenuStack(_menus[_botBarIdx].root);
 
       setState(() { _botBarIdx = i; });
    }
@@ -309,8 +309,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafPressed(int i)
    {
-      MenuNode o = _menus[_botBarIdx].last.children[i];
-      _menus[_botBarIdx].add(o);
+      MenuNode o = _menus[_botBarIdx].root.last.children[i];
+      _menus[_botBarIdx].root.add(o);
       _onAdvLeafReached();
       setState(() { });
    }
@@ -320,16 +320,16 @@ class MenuChatState extends State<MenuChat>
       List<KeyValuePair> header = List<KeyValuePair>();
 
       // Let us read the corresponding header.
-      final int length = _menus[_botBarIdx].length;
+      final int length = _menus[_botBarIdx].root.length;
       for (int i = 1; i < length; ++i) {
          String key = TextConsts.menuDepthNames[_botBarIdx][i];
-         String value = _menus[_botBarIdx][i].name;
+         String value = _menus[_botBarIdx].root[i].name;
          header.add(KeyValuePair(key, ": " + value));
       }
 
       _advInput.infos[_botBarIdx] = header;
 
-      restoreMenuStack(_menus[_botBarIdx]);
+      restoreMenuStack(_menus[_botBarIdx].root);
 
       _botBarIdx = advIndexHelper(_botBarIdx);
    }
@@ -337,12 +337,12 @@ class MenuChatState extends State<MenuChat>
    void _onNodePressed(int i)
    {
       do {
-         MenuNode o = _menus[_botBarIdx].last.children[i];
-         _menus[_botBarIdx].add(o);
+         MenuNode o = _menus[_botBarIdx].root.last.children[i];
+         _menus[_botBarIdx].root.add(o);
          i = 1;
-      } while (_menus[_botBarIdx].last.children.length == 2);
+      } while (_menus[_botBarIdx].root.last.children.length == 2);
 
-      final int length = _menus[_botBarIdx].last.children.length;
+      final int length = _menus[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -356,7 +356,7 @@ class MenuChatState extends State<MenuChat>
    void _onFilterLeafNodePressed(bool newValue, int i)
    {
       if (i == 0) {
-         for (MenuNode p in _menus[_botBarIdx].last.children) {
+         for (MenuNode p in _menus[_botBarIdx].root.last.children) {
             p.status = newValue;
          }
 
@@ -364,7 +364,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      MenuNode o = _menus[_botBarIdx].last.children[i];
+      MenuNode o = _menus[_botBarIdx].root.last.children[i];
       String code = o.code;
       print('$code ===> $newValue');
       o.status = newValue;
@@ -473,9 +473,11 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      _menus = List<List<MenuNode>>(2);
-      _menus[0] = menuReader(Consts.locMenu);
-      _menus[1] = menuReader(Consts.modelsMenu);
+      _menus = List<MenuItem>(2);
+      _menus[0] = MenuItem();
+      _menus[1] = MenuItem();
+      _menus[0].root = menuReader(Consts.locMenu);
+      _menus[1].root = menuReader(Consts.modelsMenu);
 
       _onNewAdvPressed = false;
       _botBarIdx = 0;
@@ -546,7 +548,7 @@ class MenuChatState extends State<MenuChat>
          } else {
             widget = createAdvMenuListView(
                         context,
-                        _menus[_botBarIdx].last,
+                        _menus[_botBarIdx].root.last,
                         _onAdvLeafPressed,
                         _onNodePressed
                      );
@@ -588,10 +590,10 @@ class MenuChatState extends State<MenuChat>
       if (_botBarIdx == 2) {
          filterTabWidget = createSendScreen();
       } else {
-         final int d = _menus[_botBarIdx].length;
+         final int d = _menus[_botBarIdx].root.length;
          filterTabWidget = createMenuListView(
                              context,
-                             _menus[_botBarIdx].last,
+                             _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
                              _onNodePressed,
                              d == Consts.maxFilterDepth);
