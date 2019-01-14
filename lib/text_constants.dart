@@ -49,5 +49,7 @@ class TextConsts {
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 
    static final IconData newAdvIcon = Icons.mode_edit;
+
+   static final String hintTextChat = "Digite sua mensagem";
 }
 

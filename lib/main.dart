@@ -92,7 +92,7 @@ createChatScreen(BuildContext context,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(
-            hintText: "Digite sua mensagem",
+            hintText: TextConsts.hintTextChat,
             fillColor:Color(0xFFFFFFFF),
             )
    );
@@ -415,6 +415,9 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatSendPressed()
    {
+      if (_newAdvTextCtrl.text.isEmpty)
+         return;
+
       _chatMsgs.add(_newAdvTextCtrl.text);
       _newAdvTextCtrl.text = "";
       print("Chat send");
