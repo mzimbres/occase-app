@@ -459,10 +459,9 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
+         // This list will have to be written to a file.
          List<MenuItemRaw> rawMenus = readMenuItemRawFromJson(ack['menus']);
          print('Received menus with length ${rawMenus.length}');
- 
-         // Now we should asynchronously write this menu to file.
       }
    }
 
