@@ -187,6 +187,21 @@ class MenuItem {
    }
 }
 
+List<MenuItemRaw> readMenuItemRawFromJson(menus)
+{
+   List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
+   for (int i = 0; i < menus.length; ++i) {
+      MenuItemRaw item = MenuItemRaw();
+      item.filter_depth = menus[i]["depth"];
+      item.version = menus[i]["version"];
+      item.data = menus[i]["data"];
+      rawMenus.add(item);
+      //print("depth $depth, version $version, data ");
+   }
+   
+   return rawMenus;
+}
+
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -444,20 +459,9 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         var menus = ack['menus'];
-
-         print('Received menus with length ${menus.length}');
-
-         List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
-         for (int i = 0; i < menus.length; ++i) {
-            MenuItemRaw item = MenuItemRaw();
-            item.filter_depth = menus[i]["depth"];
-            item.version = menus[i]["version"];
-            item.data = menus[i]["data"];
-            rawMenus.add(item);
-            //print("depth $depth, version $version, data ");
-         }
-
+         List<MenuItemRaw> rawMenus = readMenuItemRawFromJson(ack['menus']);
+         print('Received menus with length ${rawMenus.length}');
+ 
          // Now we should asynchronously write this menu to file.
       }
    }
