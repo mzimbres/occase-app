@@ -2,39 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 
-class TreeItem extends StatelessWidget {
-   final String name;
-   String msg;
-   Icon trailing = null;
-
-   TreeItem(this.name, int n, {this.trailing})
-   {
-      msg = "";
-      //if (n != 0 && n != 1)
-      if (n != 0)
-         msg = '${n} item(s)';
+ListTile createListViewItem(String name, int n, Icon trailing)
+{
+   Text subtitle = null;
+   if (n != 0) {
+      final String msg = '${n} item(s)';
+      subtitle = Text( msg,
+            style: TextStyle( fontSize: Consts.subFontSize));
    }
 
-   @override
-   Widget build(BuildContext context)
-   {
-      Text subtitle;
-      if (!msg.isEmpty)
-         subtitle = Text( msg,
-               style: TextStyle( fontSize: Consts.subFontSize));
-
-      return ListTile(
-            leading: CircleAvatar(child: Text(name[0])),
-            title: Text( name,
-                  style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Consts.mainFontSize )
-            ),
-            dense: false,
-            subtitle: subtitle,
-            trailing: trailing
-         );
-   }
+   return ListTile(
+         leading: CircleAvatar(child: Text(name[0])),
+         title: Text( name,
+               style: TextStyle(
+                     fontWeight: FontWeight.bold,
+                     fontSize: Consts.mainFontSize )
+         ),
+         dense: false,
+         subtitle: subtitle,
+         trailing: trailing
+      );
 }
 
 ListView createFilterListView(BuildContext context, MenuNode o,
@@ -74,8 +61,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                icon = Icon(Icons.clear);
 
             return FlatButton(
-                  child: TreeItem(child.name,
-                        child.children.length, trailing: icon),
+                  child: createListViewItem(child.name,
+                     child.children.length, icon),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
@@ -84,7 +71,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          
          MenuNode child = o.children[i + 1];
          return FlatButton(
-               child: TreeItem(child.name, child.children.length - 1),
+               child: createListViewItem(child.name,
+                  child.children.length - 1, null),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i + 1); },

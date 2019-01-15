@@ -208,7 +208,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i];
          if (child.isLeaf()) {
             return FlatButton(
-                  child: TreeItem(child.name, child.children.length),
+                  child: createListViewItem(child.name,
+                     child.children.length, null),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i);},
@@ -216,7 +217,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          }
          
          return FlatButton(
-               child: TreeItem(child.name, child.children.length - 1),
+               child: createListViewItem(child.name,
+                  child.children.length - 1, null),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
