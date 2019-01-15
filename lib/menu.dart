@@ -5,8 +5,9 @@ import 'package:menu_chat/constants.dart';
 class TreeItem extends StatelessWidget {
    final String name;
    String msg;
+   Icon trailing = null;
 
-   TreeItem(this.name, int n)
+   TreeItem(this.name, int n, {this.trailing})
    {
       msg = "";
       //if (n != 0 && n != 1)
@@ -30,12 +31,14 @@ class TreeItem extends StatelessWidget {
                         fontSize: Consts.mainFontSize )
             ),
             dense: false,
-            subtitle: subtitle
+            subtitle: subtitle,
+            //trailing: Icon(Icons.done)
+            trailing: trailing
          );
    }
 }
 
-ListView createMenuListView(BuildContext context, MenuNode o,
+ListView createFilterListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed, bool makeLeaf)
 {
 /*
@@ -69,7 +72,7 @@ ListView createMenuListView(BuildContext context, MenuNode o,
                         style: TextStyle(fontSize: Consts.mainFontSize)
                   ),
                   value: child.status,
-                  onChanged: (bool newValue) { onLeafPressed(newValue, i);},
+                  onChanged: (bool) { onLeafPressed(i);},
             );
          }
          

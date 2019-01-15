@@ -368,11 +368,13 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onFilterLeafNodePressed(bool newValue, int i)
+   void _onFilterLeafNodePressed(int i)
    {
       if (i == 0) {
+         final bool allStatus =
+               _menus[_botBarIdx].root.last.children.first.status;
          for (MenuNode p in _menus[_botBarIdx].root.last.children) {
-            p.status = newValue;
+            p.status = !allStatus;
          }
 
          setState(() { });
@@ -381,8 +383,9 @@ class MenuChatState extends State<MenuChat>
 
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       String code = o.code;
-      print('$code ===> $newValue');
-      o.status = newValue;
+      final bool b = o.status;
+      print('$code ===> $b');
+      o.status = !b;;
       setState(() { });
    }
 
@@ -597,7 +600,7 @@ class MenuChatState extends State<MenuChat>
          filterTabWidget = createSendScreen();
       } else {
          final int d = _menus[_botBarIdx].root.length;
-         filterTabWidget = createMenuListView(
+         filterTabWidget = createFilterListView(
                              context,
                              _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
