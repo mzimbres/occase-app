@@ -165,43 +165,6 @@ createChatScreen(BuildContext context,
     );
 }
 
-// This is a one to one struct that we receive from the server.
-class MenuItemRaw {
-   int filter_depth;
-   int version;
-   String data;
-}
-
-// Built from MenuItemRaw by parsing the menu into a tree.
-class MenuItem {
-   int filter_depth;
-   List<MenuNode> root = List<MenuNode>();
-
-   void restoreMenuStack()
-   {
-      if (root.isEmpty)
-         return;
-
-      while (root.length != 1)
-         root.removeLast();
-   }
-}
-
-List<MenuItemRaw> readMenuItemRawFromJson(menus)
-{
-   List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
-   for (int i = 0; i < menus.length; ++i) {
-      MenuItemRaw item = MenuItemRaw();
-      item.filter_depth = menus[i]["depth"];
-      item.version = menus[i]["version"];
-      item.data = menus[i]["data"];
-      rawMenus.add(item);
-      //print("depth $depth, version $version, data ");
-   }
-   
-   return rawMenus;
-}
-
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -444,7 +407,7 @@ class MenuChatState extends State<MenuChat>
 
    void onWSData(msg)
    {
-      var ack = jsonDecode(msg);
+      Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
       print("Received from server: $cmd");
       if (cmd == "auth_ack") {
@@ -482,11 +445,7 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      _menus = List<MenuItem>(2);
-      _menus[0] = MenuItem();
-      _menus[1] = MenuItem();
-      _menus[0].root = menuReader(Consts.locMenu);
-      _menus[1].root = menuReader(Consts.modelsMenu);
+      _menus = menuReader(jsonDecode(Consts.menus));
 
       _onNewAdvPressed = false;
       _botBarIdx = 0;

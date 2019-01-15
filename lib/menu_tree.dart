@@ -30,12 +30,15 @@ MenuNode buildTree(String dataRaw)
          continue;
 
       List<String> fields = line.split(";");
+      assert(fields.length == 3);
 
       int depth = int.parse(fields.first);
-      String name = fields.last;
+      String name = fields[1];
+      int leafCounter = int.parse(fields.last);
 
       if (st.isEmpty) {
          root.name = name;
+         //root.leafCounter = leafCounter;
          st.add(root);
          continue;
       }
@@ -81,13 +84,63 @@ MenuNode buildTree(String dataRaw)
    return root;
 }
 
-List<MenuNode> menuReader(String jdata)
+// This is a one to one struct that we receive from the server.
+class MenuItemRaw {
+   int filterDepth;
+   int version;
+   String data;
+}
+
+List<MenuItemRaw> readMenuItemRawFromJson(menus)
 {
-   Map<String, dynamic> menu = jsonDecode(jdata);
-   String dataRaw = menu["data"];
-   MenuNode root = buildTree(dataRaw);
-   List<MenuNode> ret = List<MenuNode>();
-   ret.add(root);
-   return ret;
+   List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
+   for (int i = 0; i < menus.length; ++i) {
+      MenuItemRaw item = MenuItemRaw();
+      item.filterDepth = menus[i]["depth"];
+      item.version = menus[i]["version"];
+      item.data = menus[i]["data"];
+      rawMenus.add(item);
+      //print("depth $depth, version $version, data ");
+   }
+   
+   return rawMenus;
+}
+
+// Built from MenuItemRaw by parsing the menu into a tree.
+class MenuItem {
+   int filterDepth;
+   List<MenuNode> root = List<MenuNode>();
+
+   void restoreMenuStack()
+   {
+      if (root.isEmpty)
+         return;
+
+      while (root.length != 1)
+         root.removeLast();
+   }
+}
+
+List<MenuItem> menuReader(Map<String, dynamic> menusMap)
+{
+   if (!menusMap.containsKey('menus'))
+      return null;
+
+   List<MenuItemRaw> rawMenus =
+         readMenuItemRawFromJson(menusMap['menus']);
+
+   print('Received menus with length ${rawMenus.length}');
+
+   List<MenuItem> menus = List<MenuItem>();
+
+   for (MenuItemRaw raw in rawMenus) {
+      MenuItem item = MenuItem();
+      item.filterDepth = raw.filterDepth;
+      MenuNode root = buildTree(raw.data);
+      item.root.add(root);
+      menus.add(item);
+   }
+
+   return menus;
 }
 
