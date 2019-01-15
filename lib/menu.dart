@@ -32,7 +32,6 @@ class TreeItem extends StatelessWidget {
             ),
             dense: false,
             subtitle: subtitle,
-            //trailing: Icon(Icons.done)
             trailing: trailing
          );
    }
@@ -67,12 +66,19 @@ ListView createFilterListView(BuildContext context, MenuNode o,
       {
          if (useAllChildren) {
             MenuNode child = o.children[i];
-            return CheckboxListTile(
-                  title: Text( child.name,
-                        style: TextStyle(fontSize: Consts.mainFontSize)
-                  ),
-                  value: child.status,
-                  onChanged: (bool) { onLeafPressed(i);},
+
+            Widget icon;
+            if (child.status)
+               icon = Icon(Icons.done);
+            else
+               icon = Icon(Icons.clear);
+
+            return FlatButton(
+                  child: TreeItem(child.name,
+                        child.children.length, trailing: icon),
+                  color: const Color(0xFFFFFF),
+                  highlightColor: const Color(0xFFFFFF),
+                  onPressed: () { onLeafPressed(i); },
             );
          }
          
