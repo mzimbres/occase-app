@@ -209,7 +209,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          if (child.isLeaf()) {
             return FlatButton(
                   child: createListViewItem(child.name,
-                     child.children.length, null),
+                     child.leafCounter, null),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i);},
@@ -218,7 +218,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          
          return FlatButton(
                child: createListViewItem(child.name,
-                  child.children.length - 1, null),
+                  child.leafCounter, null),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
