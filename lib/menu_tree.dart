@@ -133,8 +133,12 @@ class MenuTraversal {
 
    MenuNode advanceToLeaf()
    {
-      while (!st.last.last.children.isEmpty && st.length <= depth)
-         st.add(st.last.last.children);
+      while (!st.last.last.children.isEmpty && st.length <= depth) {
+         List<MenuNode> childrenCopy = List<MenuNode>();
+         for (MenuNode o in st.last.last.children)
+            childrenCopy.add(o);
+         st.add(childrenCopy);
+      }
 
       MenuNode tmp = st.last.last;
       st.last.removeLast();
