@@ -84,31 +84,9 @@ MenuNode buildTree(String dataRaw)
    return root;
 }
 
-// This is a one to one struct that we receive from the server.
-class MenuItemRaw {
-   int filterDepth;
-   int version;
-   String data;
-}
-
-List<MenuItemRaw> readMenuItemRawFromJson(menus)
-{
-   List<MenuItemRaw> rawMenus = List<MenuItemRaw>();
-   for (int i = 0; i < menus.length; ++i) {
-      MenuItemRaw item = MenuItemRaw();
-      item.filterDepth = menus[i]["depth"];
-      item.version = menus[i]["version"];
-      item.data = menus[i]["data"];
-      rawMenus.add(item);
-      //print("depth $depth, version $version, data ");
-   }
-   
-   return rawMenus;
-}
-
-// Built from MenuItemRaw by parsing the menu into a tree.
 class MenuItem {
    int filterDepth;
+   int version;
    List<MenuNode> root = List<MenuNode>();
 
    void restoreMenuStack()
@@ -126,17 +104,17 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
    if (!menusMap.containsKey('menus'))
       return null;
 
-   List<MenuItemRaw> rawMenus =
-         readMenuItemRawFromJson(menusMap['menus']);
+   List<dynamic> rawMenus = menusMap['menus'];
 
    print('Received menus with length ${rawMenus.length}');
 
    List<MenuItem> menus = List<MenuItem>();
 
-   for (MenuItemRaw raw in rawMenus) {
+   for (var raw in rawMenus) {
       MenuItem item = MenuItem();
-      item.filterDepth = raw.filterDepth;
-      MenuNode root = buildTree(raw.data);
+      item.filterDepth = raw["depth"];
+      item.version = raw["version"];
+      MenuNode root = buildTree(raw["data"]);
       item.root.add(root);
       menus.add(item);
    }

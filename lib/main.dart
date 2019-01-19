@@ -420,14 +420,9 @@ class MenuChatState extends State<MenuChat>
 
          assert(res == 'ok');
 
-         if (!ack.containsKey('menus')) {
-            print("No menus key, we are uptodate.");
-            return;
-         }
-
          // This list will have to be written to a file.
-         List<MenuItemRaw> rawMenus = readMenuItemRawFromJson(ack['menus']);
-         print('Received menus with length ${rawMenus.length}');
+         List<MenuItem> menus = menuReader(ack);
+         print('Received menus with length ${menus.length}');
       }
    }
 
