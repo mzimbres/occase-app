@@ -19,13 +19,45 @@ class MenuNode {
    }
 }
 
-MenuNode buildTree(String dataRaw)
+// This function should have the same behaviour as its corresponding
+// C++ implementation.
+int getMenuDepth(String rawMenu)
 {
-   List<String> data = dataRaw.split("=");
+   int maxDepth = 0;
+   List<String> lines = rawMenu.split("=");
+   for (String line in lines) {
+      if (line.isEmpty)
+         continue;
+
+      List<String> fields = line.split(";");
+      if (fields.isEmpty)
+         continue;
+
+      int depth = int.parse(fields.first);
+      if (maxDepth < depth)
+         maxDepth = depth;
+   }
+
+   return 1 + maxDepth;
+}
+
+MenuNode parseTree(String dataRaw)
+{
+   final int maxDepth = getMenuDepth(dataRaw);
+   if (maxDepth == 0)
+      return null;
+
+   print("Menu depth: $maxDepth");
+
+   List<int> codes = List<int>(max_depth - 1);
+   for (int i = 0; i < codes.length; ++i)
+      codes[i] = -1;
+
+   List<String> lines = dataRaw.split("=");
    List<MenuNode> st = List<MenuNode>();
    int last_depth = 0;
    MenuNode root = MenuNode();
-   for (String line in data) {
+   for (String line in lines) {
       if (line.isEmpty)
          continue;
 
@@ -111,7 +143,7 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
       MenuItem item = MenuItem();
       item.filterDepth = raw["depth"];
       item.version = raw["version"];
-      MenuNode root = buildTree(raw["data"]);
+      MenuNode root = parseTree(raw["data"]);
       item.root.add(root);
       menus.add(item);
    }
