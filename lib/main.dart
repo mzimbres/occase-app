@@ -444,8 +444,9 @@ class MenuChatState extends State<MenuChat>
    void _sendHahesToServer()
    {
       print("Sending hashes to server");
-      List<String> codes =
-            readHashCodes(_menus[0].root.first, _menus[0].filterDepth);
+      List<List<String>> codes = List<List<String>>();
+      for (MenuItem item in _menus)
+         codes.add(readHashCodes(item.root.first, item.filterDepth));
 
       print(codes);
    }

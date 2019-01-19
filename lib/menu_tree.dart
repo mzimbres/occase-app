@@ -184,7 +184,8 @@ List<String> readHashCodes(MenuNode root, int depth)
    MenuNode current = iter.advanceToLeaf();
    List<String> hashCodes = List<String>();
    while (current != null) {
-      hashCodes.add(current.code);
+      if (current.status)
+         hashCodes.add(current.code);
       current = iter.nextLeafNode();
    }
 
