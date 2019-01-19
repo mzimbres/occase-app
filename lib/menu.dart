@@ -62,7 +62,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
 
             return FlatButton(
                   child: createListViewItem(child.name,
-                     child.children.length, icon),
+                     child.leafCounter, icon),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
@@ -72,7 +72,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i + 1];
          return FlatButton(
                child: createListViewItem(child.name,
-                  child.children.length - 1, null),
+                  child.leafCounter, null),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i + 1); },

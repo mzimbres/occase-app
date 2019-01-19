@@ -5,6 +5,7 @@ class MenuNode {
    String name;
    String code;
    bool status;
+   int leafCounter;
 
    List<MenuNode> children = List<MenuNode>();
 
@@ -49,7 +50,7 @@ MenuNode parseTree(String dataRaw)
 
    print("Menu depth: $maxDepth");
 
-   List<int> codes = List<int>(max_depth - 1);
+   List<int> codes = List<int>(maxDepth - 1);
    for (int i = 0; i < codes.length; ++i)
       codes[i] = -1;
 
@@ -66,11 +67,9 @@ MenuNode parseTree(String dataRaw)
 
       int depth = int.parse(fields.first);
       String name = fields[1];
-      int leafCounter = int.parse(fields.last);
 
       if (st.isEmpty) {
          root.name = name;
-         //root.leafCounter = leafCounter;
          st.add(root);
          continue;
       }
@@ -131,6 +130,31 @@ class MenuItem {
    }
 }
 
+void loadLeafCounters(MenuNode root)
+{
+   // TODO: Give more serious treatment for the max depth. Here I will
+   // choose a depth that is big enough.
+
+   MenuTraversal iter = MenuTraversal(root, 1000);
+   MenuNode current = iter.advanceToLeaf();
+   while (current != null) {
+      int counter = 0;
+      if (!current.children.isEmpty) {
+         int c = 0;
+         for (MenuNode node in current.children) {
+            if (node.children.isEmpty)
+               c += 1;
+            else
+               c += node.leafCounter;
+         }
+         counter = c;
+      }
+
+      current.leafCounter = counter;
+      current = iter.nextNode();
+   }
+}
+
 List<MenuItem> menuReader(Map<String, dynamic> menusMap)
 {
    List<dynamic> rawMenus = menusMap['menus'];
@@ -144,6 +168,7 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
       item.filterDepth = raw["depth"];
       item.version = raw["version"];
       MenuNode root = parseTree(raw["data"]);
+      loadLeafCounters(root);
       item.root.add(root);
       menus.add(item);
    }
