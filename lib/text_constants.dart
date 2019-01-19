@@ -37,7 +37,7 @@ class TextConsts {
    static final List<List<String>> menuDepthNames =
    <List<String>>[
       <String>["Pais",   "Estado", "Cidade", "Bairro"],
-      <String>["Carros", "Marca",  "Modelo", "Ano", "Combustivel", "Preco Fipe"]
+      <String>["Carros", "Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"]
    ];
 
    // Text used in the adv screen to save the adv for chat.

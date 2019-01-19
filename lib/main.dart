@@ -418,11 +418,15 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
+         // TODO: Handle failed auths.
          assert(res == 'ok');
 
          // This list will have to be written to a file.
-         List<MenuItem> menus = menuReader(ack);
-         print('Received menus with length ${menus.length}');
+         if (ack.containsKey('menus')) {
+            _menus = menuReader(ack);
+            assert(_menus != null);
+            print('Received menus with length ${_menus.length}');
+         }
       }
    }
 
@@ -440,7 +444,11 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      _menus = menuReader(jsonDecode(Consts.menus));
+      Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
+      if (rawMenuMap.containsKey('menus')) {
+         // TODO: How to deal with a null menu.
+         _menus = menuReader(rawMenuMap);
+      }
 
       _onNewAdvPressed = false;
       _botBarIdx = 0;

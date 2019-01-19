@@ -101,9 +101,6 @@ class MenuItem {
 
 List<MenuItem> menuReader(Map<String, dynamic> menusMap)
 {
-   if (!menusMap.containsKey('menus'))
-      return null;
-
    List<dynamic> rawMenus = menusMap['menus'];
 
    print('Received menus with length ${rawMenus.length}');
