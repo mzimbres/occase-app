@@ -81,7 +81,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
    );
 }
 
-Center createSendScreen()
+Center createSendScreen(Function sendHahesToServer)
 {
    return Center(child:RaisedButton(
                child: Text( "Enviar",
@@ -89,12 +89,10 @@ Center createSendScreen()
                            fontWeight: FontWeight.bold,
                            fontSize: Consts.mainFontSize )
                ),
-               onPressed: () {
-                  print("Sending hashes to server");
-               },
+               onPressed: sendHahesToServer,
                //color: const Color(0xFFFFFF),
                //highlightColor: const Color(0xFFFFFF)
-   )
+         )
    );
 }
 

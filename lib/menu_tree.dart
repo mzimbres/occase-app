@@ -48,11 +48,11 @@ MenuNode buildTree(String dataRaw)
             return MenuNode();
 
          if (st.last.children.isEmpty) {
-            st.last.children.add(MenuNode('Todos'));
+            st.last.children.add(MenuNode('Todos', '001.001'));
          }
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(name);
+         MenuNode p = MenuNode(name, '001.002');
          st.last.children.add(p);
          st.add(p);
          ++last_depth;
@@ -67,14 +67,14 @@ MenuNode buildTree(String dataRaw)
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(name);
+         MenuNode p = MenuNode(name, '001.003');
          st.last.children.add(p);
          st.add(p);
 
          last_depth = depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(name);
+         MenuNode p = MenuNode(name, '001.004');
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -117,5 +117,73 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
    }
 
    return menus;
+}
+
+class MenuTraversal {
+   List<List<MenuNode>> st = List<List<MenuNode>>();
+   int depth;
+
+   MenuTraversal(MenuNode root, int depth_)
+   {
+      depth = depth_;
+
+      if (root != null)
+         st.add(<MenuNode>[root]);
+   }
+
+   MenuNode advanceToLeaf()
+   {
+      while (!st.last.last.children.isEmpty && st.length <= depth)
+         st.add(st.last.last.children);
+
+      MenuNode tmp = st.last.last;
+      st.last.removeLast();
+      return tmp;
+   }
+
+   MenuNode nextInternal()
+   {
+      st.removeLast();
+      if (st.isEmpty)
+         return null;
+      MenuNode tmp = st.last.last;
+      st.last.removeLast();
+      return tmp;
+   }
+
+   MenuNode nextLeafNode()
+   {
+      while (st.last.isEmpty)
+         if (nextInternal() == null)
+            return null;
+
+      return advanceToLeaf();
+   }
+
+   MenuNode nextNode()
+   {
+      if (st.last.isEmpty)
+         return nextInternal();
+
+      return advanceToLeaf();
+   }
+
+   int getDepth()
+   {
+      return st.length;
+   }
+}
+
+List<String> readHashCodes(MenuNode root, int depth)
+{
+   MenuTraversal iter = MenuTraversal(root, depth);
+   MenuNode current = iter.advanceToLeaf();
+   List<String> hashCodes = List<String>();
+   while (current != null) {
+      hashCodes.add(current.code);
+      current = iter.nextLeafNode();
+   }
+
+   return hashCodes;
 }
 

@@ -441,6 +441,14 @@ class MenuChatState extends State<MenuChat>
       print("Communication closed by peer.");
    }
 
+   void _sendHahesToServer()
+   {
+      print("Sending hashes to server");
+      List<String> codes =
+            readHashCodes(_menus[0].root.first, _menus[0].filterDepth);
+
+      print(codes);
+   }
 
    MenuChatState()
    {
@@ -559,7 +567,7 @@ class MenuChatState extends State<MenuChat>
 
       Widget filterTabWidget;
       if (_botBarIdx == 2) {
-         filterTabWidget = createSendScreen();
+         filterTabWidget = createSendScreen(_sendHahesToServer);
       } else {
          final int d = _menus[_botBarIdx].root.length;
          filterTabWidget = createFilterListView(
