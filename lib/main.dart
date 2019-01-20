@@ -436,6 +436,8 @@ class MenuChatState extends State<MenuChat>
             print('Received menus with length ${_menus.length}');
          }
       }
+
+      print("Received from server: ${ack}");
    }
 
    void onWSError(error)
@@ -456,7 +458,14 @@ class MenuChatState extends State<MenuChat>
       for (MenuItem item in _menus)
          codes.add(readHashCodes(item.root.first, item.filterDepth));
 
-      print(codes);
+      var subCmd = {
+         'cmd': 'subscribe',
+         'channels': codes,
+      };
+
+      final String subText = jsonEncode(subCmd);
+      print(subText);
+      channel.sink.add(subText);
    }
 
    MenuChatState()
