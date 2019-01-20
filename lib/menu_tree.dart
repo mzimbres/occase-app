@@ -20,6 +20,24 @@ class MenuNode {
    }
 }
 
+// Given a leaf code and the menu it crresponds to produces the an
+// array with the names of the parent up util the root direct child.
+List<String> loadNames(MenuNode root, String leafCode)
+{
+   List<String> codes = leafCode.split('.');
+
+   List<String> names = List<String>();
+   MenuNode iter = root;
+   for (String code in codes) {
+      final int idx = int.parse(code);
+      MenuNode next = iter.children[idx + 1];
+      names.add(next.name);
+      iter = next;
+   }
+
+   return names;
+}
+
 // This function should have the same behaviour as its corresponding
 // C++ implementation.
 int getMenuDepth(String rawMenu)

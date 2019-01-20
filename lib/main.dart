@@ -314,6 +314,12 @@ class MenuChatState extends State<MenuChat>
          header.add(KeyValuePair(key, ": " + value));
       }
 
+      List<String> names =
+            loadNames(_menus[_botBarIdx].root.first,
+                  _menus[_botBarIdx].root.last.code);
+
+      print(names);
+
       _advCodes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
 
       print("Code ===> ${_advCodes}");
