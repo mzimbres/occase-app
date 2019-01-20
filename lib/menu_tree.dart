@@ -270,12 +270,17 @@ class MenuTraversal {
 
 List<String> readHashCodes(MenuNode root, int depth)
 {
+   // TODO: Skip the *Todos* hash code.
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
    List<String> hashCodes = List<String>();
    while (current != null) {
-      if (current.status)
+      //print('${current.code} ===> ${current.status}');
+      if (current.status) {
+         print(current.code);
          hashCodes.add(current.code);
+         print('${current.code} ===> ${current.status}');
+      }
       current = iter.nextLeafNode();
    }
 

@@ -353,10 +353,9 @@ class MenuChatState extends State<MenuChat>
       }
 
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
-      String code = o.code;
       final bool b = o.status;
-      print('$code ===> $b');
       o.status = !b;;
+      print('${o.code} ===> ${o.status}');
       setState(() { });
    }
 
@@ -435,6 +434,8 @@ class MenuChatState extends State<MenuChat>
             assert(_menus != null);
             print('Received menus with length ${_menus.length}');
          }
+
+         return;
       }
 
       print("Received from server: ${ack}");
@@ -455,8 +456,10 @@ class MenuChatState extends State<MenuChat>
    {
       print("Sending hashes to server");
       List<List<String>> codes = List<List<String>>();
-      for (MenuItem item in _menus)
+      for (MenuItem item in _menus) {
+         print(item.root.first.name + ' ===> ${item.filterDepth}');
          codes.add(readHashCodes(item.root.first, item.filterDepth));
+      }
 
       var subCmd = {
          'cmd': 'subscribe',
@@ -593,7 +596,7 @@ class MenuChatState extends State<MenuChat>
                              _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
                              _onFilterNodePressed,
-                             d == Consts.maxFilterDepth);
+                             d == _menus[_botBarIdx].filterDepth);
       }
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
