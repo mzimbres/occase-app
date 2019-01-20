@@ -79,7 +79,7 @@ MenuNode parseTree(String dataRaw)
             return MenuNode();
 
          if (st.last.children.isEmpty) {
-            st.last.children.add(MenuNode('Todos', '001.001'));
+            st.last.children.add(MenuNode('Marcar Todos', '001.001'));
          }
 
          // We found the child of the last node pushed on the stack.
@@ -130,6 +130,9 @@ class MenuItem {
    }
 }
 
+/* Traverses the tree and loads each node with number of leaf nodes it
+ * is parent from. 
+ */
 void loadLeafCounters(MenuNode root)
 {
    // TODO: Give more serious treatment for the max depth. Here I will
@@ -140,12 +143,13 @@ void loadLeafCounters(MenuNode root)
    while (current != null) {
       int counter = 0;
       if (!current.children.isEmpty) {
+         assert(current.children.length > 1);
          int c = 0;
-         for (MenuNode node in current.children) {
-            if (node.children.isEmpty)
+         for (int i = 1; i < current.children.length; ++i) {
+            if (current.children[i].children.isEmpty)
                c += 1;
             else
-               c += node.leafCounter;
+               c += current.children[i].leafCounter;
          }
          counter = c;
       }

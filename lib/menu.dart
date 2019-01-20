@@ -6,7 +6,7 @@ ListTile createListViewItem(String name, int n, Icon trailing)
 {
    Text subtitle = null;
    if (n != 0) {
-      final String msg = '${n} item(s)';
+      final String msg = '${n} items';
       subtitle = Text( msg,
             style: TextStyle( fontSize: Consts.subFontSize));
    }
