@@ -189,6 +189,10 @@ class MenuChatState extends State<MenuChat>
    // The temporary variable used to store the adv the user sends.
    AdvData _advInput;
 
+   // Is meant to replace _advInput. It will contain the code that has
+   // been chosen on the new adv screen.
+   List<String> _advCodes;
+
    // The list of advs received from the server. Our own advs that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
@@ -310,6 +314,9 @@ class MenuChatState extends State<MenuChat>
          header.add(KeyValuePair(key, ": " + value));
       }
 
+      _advCodes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
+
+      print("Code ===> ${_advCodes}");
       _advInput.infos[_botBarIdx] = header;
 
       _menus[_botBarIdx].restoreMenuStack();
@@ -446,6 +453,7 @@ class MenuChatState extends State<MenuChat>
          // This list will have to be written to a file.
          if (ack.containsKey('menus')) {
             _menus = menuReader(ack);
+            _advCodes = List<String>(_menus.length);
             assert(_menus != null);
             print('Received menus with length ${_menus.length}');
          }
@@ -492,6 +500,7 @@ class MenuChatState extends State<MenuChat>
       if (rawMenuMap.containsKey('menus')) {
          // TODO: How to deal with a null menu.
          _menus = menuReader(rawMenuMap);
+         _advCodes = List<String>(_menus.length);
       }
 
       _onNewAdvPressed = false;
