@@ -149,6 +149,12 @@ class MenuItem {
    int version;
    List<MenuNode> root = List<MenuNode>();
 
+   bool isFilterLeaf()
+   {
+      print('${root.length} == ${filterDepth}');
+      return root.length == filterDepth;
+   }
+
    void restoreMenuStack()
    {
       if (root.isEmpty)

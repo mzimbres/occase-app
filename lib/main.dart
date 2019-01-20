@@ -590,13 +590,12 @@ class MenuChatState extends State<MenuChat>
       if (_botBarIdx == 2) {
          filterTabWidget = createSendScreen(_sendHahesToServer);
       } else {
-         final int d = _menus[_botBarIdx].root.length;
          filterTabWidget = createFilterListView(
                              context,
                              _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
                              _onFilterNodePressed,
-                             d == _menus[_botBarIdx].filterDepth);
+                             _menus[_botBarIdx].isFilterLeaf());
       }
 
       List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
