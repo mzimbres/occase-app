@@ -312,7 +312,7 @@ class MenuChatState extends State<MenuChat>
       _botBarIdx = advIndexHelper(_botBarIdx);
    }
 
-   void _onNodePressed(int i)
+   void _onAdvNodePressed(int i)
    {
       do {
          MenuNode o = _menus[_botBarIdx].root.last.children[i];
@@ -327,6 +327,14 @@ class MenuChatState extends State<MenuChat>
       if (length == 0) {
          _onAdvLeafReached();
       }
+
+      setState(() { });
+   }
+
+   void _onFilterNodePressed(int i)
+   {
+      MenuNode o = _menus[_botBarIdx].root.last.children[i];
+      _menus[_botBarIdx].root.add(o);
 
       setState(() { });
    }
@@ -530,7 +538,7 @@ class MenuChatState extends State<MenuChat>
                         context,
                         _menus[_botBarIdx].root.last,
                         _onAdvLeafPressed,
-                        _onNodePressed
+                        _onAdvNodePressed
                      );
          }
 
@@ -575,7 +583,7 @@ class MenuChatState extends State<MenuChat>
                              context,
                              _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
-                             _onNodePressed,
+                             _onFilterNodePressed,
                              d == Consts.maxFilterDepth);
       }
 
