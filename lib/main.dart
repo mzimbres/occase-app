@@ -176,6 +176,9 @@ class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabController;
 
+   // The id we will use to communicate with the server.
+   String _appId = '007';
+
    // The outermost list is an array with the length equal to the
    // number of menus there are. The inner most list is actually a
    // stack whose first element is the menu root node. When menu
@@ -183,10 +186,12 @@ class MenuChatState extends State<MenuChat>
    // on the filter and on the advertizement screens.
    List<MenuItem> _menus;
 
-   // The user own adv.
+   // The temporary variable used to store the adv the user sends.
    AdvData _advInput;
 
-   // The list of advs received from the server.
+   // The list of advs received from the server. Our own advs that the
+   // server echoes back to us (if we are subscribed to the channel)
+   // will be filtered out.
    List<AdvData> _advsFromServer;
 
    // The list of advs the user found interesting. The are moved from
@@ -355,7 +360,7 @@ class MenuChatState extends State<MenuChat>
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       final bool b = o.status;
       o.status = !b;;
-      print('${o.code} ===> ${o.status}');
+      //print('${o.code} ===> ${o.status}');
       setState(() { });
    }
 
@@ -371,16 +376,26 @@ class MenuChatState extends State<MenuChat>
       //________
       //
       // TODO: This line is needed only in the prototype. Later when
-      // we connect the app in the server to adv that has been
+      // we connect the app in the server to every adv that has been
       // published we get sent back to us by the server.
       _advsFromServer.add(_advInput.clone());
 
       // The following code may also have to be removed to avoid
       // duplicates. See comments in the declaration of _advsFromUser
-
       _advsFromUser.add(_advInput.clone());
-
       //_______
+
+      var pubMap = {
+         'cmd': 'publish',
+         'from': _appId,
+         'to': '007.008',
+         'msg': 'ksksks',
+         'id': 'unix time',
+      };
+
+      final String pubText = jsonEncode(pubMap);
+      print(pubText);
+      channel.sink.add(pubText);
 
       _newAdvTextCtrl.text = "";
       _advInput = AdvData();
