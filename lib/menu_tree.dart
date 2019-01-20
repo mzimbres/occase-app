@@ -52,14 +52,14 @@ String genCode(List<int> codes, int depth)
 
    if (depth == 1) {
       //print("2) Depth: $depth ==> ${codes} ==> ${codes.first}");
-      return '${codes.first}';
+      return codes.first.toRadixString(16).padLeft(3, '0');
    }
 
    String code = '';
    for (int i = 0; i < depth - 1; ++i)
-      code += '${codes[i]}.';
+      code += codes[i].toRadixString(16).padLeft(3, '0') + '.';
 
-   code += '${codes[depth - 1]}';
+   code += codes[depth - 1].toRadixString(16).padLeft(3, '0');
    //print("3) Depth: $depth ==> ${codes} ==> ${code}");
    return code;
 }
