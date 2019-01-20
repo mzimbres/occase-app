@@ -152,7 +152,7 @@ class MenuItem {
    bool isFilterLeaf()
    {
       print('${root.length} == ${filterDepth}');
-      return root.length == filterDepth;
+      return (root.length + 1) == filterDepth;
    }
 
    void restoreMenuStack()
@@ -229,7 +229,9 @@ class MenuTraversal {
 
    MenuNode advanceToLeaf()
    {
-      while (!st.last.last.children.isEmpty && st.length <= depth) {
+      // TODO: Understand why we have < instead of <= in comparison
+      // with the C++ code.
+      while (!st.last.last.children.isEmpty && st.length < depth) {
          List<MenuNode> childrenCopy = List<MenuNode>();
          for (MenuNode o in st.last.last.children)
             childrenCopy.add(o);
