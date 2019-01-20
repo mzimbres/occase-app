@@ -42,6 +42,22 @@ int getMenuDepth(String rawMenu)
    return 1 + maxDepth;
 }
 
+String genCode(List<int> codes, int depth)
+{
+   if (depth == 0)
+      return '';
+
+   if (depth == 1)
+      return '${codes.first}';
+
+   String code = '';
+   for (int i = 1; i < codes.length - depth - 1; ++i)
+      code += '${codes[i]}.';
+
+   code += '${codes.last}';
+   return code;
+}
+
 MenuNode parseTree(String dataRaw)
 {
    final int maxDepth = getMenuDepth(dataRaw);
@@ -56,7 +72,7 @@ MenuNode parseTree(String dataRaw)
 
    List<String> lines = dataRaw.split("=");
    List<MenuNode> st = List<MenuNode>();
-   int last_depth = 0;
+   int lastDepth = 0;
    MenuNode root = MenuNode();
    for (String line in lines) {
       if (line.isEmpty)
@@ -74,38 +90,44 @@ MenuNode parseTree(String dataRaw)
          continue;
       }
 
-      if (depth > last_depth) {
-         if (last_depth + 1 != depth)
+      ++codes[depth - 1];
+      for (int i = depth; i < codes.length; ++i)
+         codes[i] = -1;
+
+      final String code = genCode(codes, depth);
+
+      if (depth > lastDepth) {
+         if (lastDepth + 1 != depth)
             return MenuNode();
 
          if (st.last.children.isEmpty) {
-            st.last.children.add(MenuNode('Marcar Todos', '001.001'));
+            st.last.children.add(MenuNode('Marcar Todos', ''));
          }
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(name, '001.002');
+         MenuNode p = MenuNode(name, code);
          st.last.children.add(p);
          st.add(p);
-         ++last_depth;
-      } else if (depth < last_depth) {
+         ++lastDepth;
+      } else if (depth < lastDepth) {
          // Now we have to pop that number of nodes from the stack
          // until we get to the node that should be the parent of the
          // current line.
-         int delta_depth = last_depth - depth;
+         int delta_depth = lastDepth - depth;
          for (int i = 0; i < delta_depth; ++i)
             st.removeLast();
 
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(name, '001.003');
+         MenuNode p = MenuNode(name, code);
          st.last.children.add(p);
          st.add(p);
 
-         last_depth = depth;
+         lastDepth = depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(name, '001.004');
+         MenuNode p = MenuNode(name, code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
