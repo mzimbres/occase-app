@@ -44,17 +44,23 @@ int getMenuDepth(String rawMenu)
 
 String genCode(List<int> codes, int depth)
 {
-   if (depth == 0)
-      return '';
 
-   if (depth == 1)
+   if (depth == 0) {
+      //print("1) Depth: $depth ==> ${codes} ==> ");
+      return '';
+   }
+
+   if (depth == 1) {
+      //print("2) Depth: $depth ==> ${codes} ==> ${codes.first}");
       return '${codes.first}';
+   }
 
    String code = '';
-   for (int i = 1; i < codes.length - depth - 1; ++i)
+   for (int i = 0; i < depth - 1; ++i)
       code += '${codes[i]}.';
 
-   code += '${codes.last}';
+   code += '${codes[depth - 1]}';
+   //print("3) Depth: $depth ==> ${codes} ==> ${code}");
    return code;
 }
 
@@ -90,11 +96,12 @@ MenuNode parseTree(String dataRaw)
          continue;
       }
 
-      ++codes[depth - 1];
+      codes[depth - 1] += 1;
       for (int i = depth; i < codes.length; ++i)
          codes[i] = -1;
 
       final String code = genCode(codes, depth);
+      //print(code);
 
       if (depth > lastDepth) {
          if (lastDepth + 1 != depth)
