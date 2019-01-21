@@ -189,10 +189,6 @@ class MenuChatState extends State<MenuChat>
    // The temporary variable used to store the adv the user sends.
    AdvData _advInput;
 
-   // Is meant to replace _advInput. It will contain the code that has
-   // been chosen on the new adv screen.
-   List<String> _advCodes;
-
    // The list of advs received from the server. Our own advs that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
@@ -312,19 +308,7 @@ class MenuChatState extends State<MenuChat>
 
       print(names);
 
-      List<KeyValuePair> header = List<KeyValuePair>();
-
-      // Let us read the corresponding header.
-      final int length = _menus[_botBarIdx].root.length;
-      for (int i = 0; i < names.length; ++i) {
-         String key = TextConsts.menuDepthNames[_botBarIdx][i + 1];
-         header.add(KeyValuePair(key, ": " + names[i]));
-      }
-
-      _advCodes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
-
-      print("Code ===> ${_advCodes}");
-      _advInput.infos[_botBarIdx] = header;
+      _advInput.infos[_botBarIdx] = names;
 
       _menus[_botBarIdx].restoreMenuStack();
 
@@ -382,10 +366,7 @@ class MenuChatState extends State<MenuChat>
    {
       _onNewAdvPressed = false;
       _botBarIdx = 0;
-
-      final String key = "Descricao";
-      final String value = _newAdvTextCtrl.text;
-      _advInput.infos.last.add(KeyValuePair(key, ": " + value));
+      _advInput.infos.last.add(_newAdvTextCtrl.text);
 
       //________
       //
@@ -460,7 +441,6 @@ class MenuChatState extends State<MenuChat>
          // This list will have to be written to a file.
          if (ack.containsKey('menus')) {
             _menus = menuReader(ack);
-            _advCodes = List<String>(_menus.length);
             assert(_menus != null);
             print('Received menus with length ${_menus.length}');
          }
@@ -507,7 +487,6 @@ class MenuChatState extends State<MenuChat>
       if (rawMenuMap.containsKey('menus')) {
          // TODO: How to deal with a null menu.
          _menus = menuReader(rawMenuMap);
-         _advCodes = List<String>(_menus.length);
       }
 
       _onNewAdvPressed = false;

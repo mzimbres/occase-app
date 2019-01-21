@@ -4,37 +4,21 @@ import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
-class KeyValuePair {
-   String key;
-   String value;
-   KeyValuePair(this.key, this.value);
-
-   KeyValuePair clone()
-   {
-      return KeyValuePair(this.key, this.value);
-   }
-}
-
 class AdvData {
-     List<List<KeyValuePair>> infos;
+     List<List<String>> infos;
 
      AdvData()
      {
         int length = TextConsts.advAppBarMsg.length;
-        infos = List<List<KeyValuePair>>(length);
+        infos = List<List<String>>(length);
         for (int i = 0; i < length; ++i)
-           infos[i] = List<KeyValuePair>();
+           infos[i] = List<String>();
      }
 
      AdvData clone()
      {
          AdvData ret = AdvData();
-         for (int i = 0; i < this.infos.length; ++i) {
-            for (int j = 0; j < this.infos[i].length; ++j) {
-               ret.infos[i].add(this.infos[i][j].clone());
-            }
-         }
-
+         ret.infos = List<List<String>>.from(this.infos);
          return ret;
      }
 }
@@ -54,14 +38,14 @@ RichText createHeaderLine(BuildContext context, String key, String value)
 }
 
 Padding headerFactory(BuildContext context,
-                      List<KeyValuePair> values,
+                      List<String> values,
                       List<String> keys)
 {
    print("${keys.length} != ${values.length}");
 
    List<RichText> r = List<RichText>();
    for (int i = 0; i < values.length; ++i) {
-      r.add(createHeaderLine(context, keys[i + 1], values[i].value));
+      r.add(createHeaderLine(context, keys[i + 1], values[i]));
    }
 
    return Padding( padding: EdgeInsets.all(4.0),
