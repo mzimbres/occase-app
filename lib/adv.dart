@@ -39,15 +39,15 @@ class AdvData {
      }
 }
 
-RichText createHeaderLine(BuildContext context, KeyValuePair pair)
+RichText createHeaderLine(BuildContext context, String key, String value)
 {
    return RichText(
          text: TextSpan(
-               text: pair.key,
+               text: key + ': ',
                //style: DefaultTextStyle.of(context).style,
                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: Consts.mainFontSize),
                children: <TextSpan>[
-                  TextSpan(text: pair.value, style: TextStyle(fontWeight: FontWeight.normal)),
+                  TextSpan(text: value, style: TextStyle(fontWeight: FontWeight.normal)),
                ],
          ),
    );
@@ -58,7 +58,7 @@ Padding headerFactory(BuildContext context,
 {
    List<RichText> r = List<RichText>();
    for (KeyValuePair o in entries) {
-      r.add(createHeaderLine(context, o));
+      r.add(createHeaderLine(context, o.key, o. value));
    }
 
    return Padding( padding: EdgeInsets.all(4.0),
