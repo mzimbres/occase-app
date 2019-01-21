@@ -54,11 +54,14 @@ RichText createHeaderLine(BuildContext context, String key, String value)
 }
 
 Padding headerFactory(BuildContext context,
-                      List<KeyValuePair> entries)
+                      List<KeyValuePair> values,
+                      List<String> keys)
 {
+   print("${keys.length} != ${values.length}");
+
    List<RichText> r = List<RichText>();
-   for (KeyValuePair o in entries) {
-      r.add(createHeaderLine(context, o.key, o. value));
+   for (int i = 0; i < values.length; ++i) {
+      r.add(createHeaderLine(context, keys[i + 1], values[i].value));
    }
 
    return Padding( padding: EdgeInsets.all(4.0),
@@ -75,12 +78,15 @@ Card advAssembler(BuildContext context, AdvData data,
    List<Card> list = List<Card>();
 
    int length = data.infos.length;
-   if (newAdvTextCtrl != null )
+   if (newAdvTextCtrl != null)
       --length;
+
+   //assert(data.infos.length == TextConsts.menuDepthNames.length);
 
    for (int i = 0; i < length; ++i) {
       Card c = Card(
-            child: headerFactory(context, data.infos[i]),
+            child: headerFactory(context,
+                  data.infos[i], TextConsts.menuDepthNames[i]),
             color: Consts.advLocHeaderColor,
             margin: EdgeInsets.all(Consts.advInnerMarging),
             elevation: 0.0,
