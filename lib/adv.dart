@@ -39,34 +39,6 @@ class AdvData {
      }
 }
 
-AdvData SimulateAdvData()
-{
-   List<KeyValuePair> locHeaderList = List<KeyValuePair>();
-   locHeaderList.add(KeyValuePair("Estado: ",      "Sao Paulo"));
-   locHeaderList.add(KeyValuePair("Cidade: ",     "Atibaia"));
-
-   List<KeyValuePair> prodHeaderList = List<KeyValuePair>();
-   prodHeaderList.add(KeyValuePair("Marca: ",      "Volkswagen"));
-   prodHeaderList.add(KeyValuePair("Modelo: ",     "Brasilia"));
-   prodHeaderList.add(KeyValuePair("Ano: ",        "1985/86"));
-   prodHeaderList.add(KeyValuePair("Preco Fipe: ", "1200"));
-   prodHeaderList.add(KeyValuePair("Anunciante: ", "Paulinho Nascimento"));
-
-   String msg = "Carro em bom estado de conservacao. Único dono. ";
-   msg += "Documentos em dia. ";
-   msg += "Guarantia de um mês.";
-
-   List<KeyValuePair> descList = List<KeyValuePair>();
-   descList.add(KeyValuePair("Descricao: ", msg));
-
-   AdvData advData = AdvData();
-   advData.infos[0] = locHeaderList;
-   advData.infos[1] = prodHeaderList;
-   advData.infos[2] = descList;
-
-   return advData;
-}
-
 RichText createHeaderLine(BuildContext context, KeyValuePair pair)
 {
    return RichText(

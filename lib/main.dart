@@ -304,21 +304,22 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafReached()
    {
-      List<KeyValuePair> header = List<KeyValuePair>();
-
-      // Let us read the corresponding header.
-      final int length = _menus[_botBarIdx].root.length;
-      for (int i = 1; i < length; ++i) {
-         String key = TextConsts.menuDepthNames[_botBarIdx][i];
-         String value = _menus[_botBarIdx].root[i].name;
-         header.add(KeyValuePair(key, ": " + value));
-      }
-
+      // Given a channel code (in the form 001.002.003.004) returns an
+      // array with the names of the corresponding nodes.
       List<String> names =
             loadNames(_menus[_botBarIdx].root.first,
                   _menus[_botBarIdx].root.last.code);
 
       print(names);
+
+      List<KeyValuePair> header = List<KeyValuePair>();
+
+      // Let us read the corresponding header.
+      final int length = _menus[_botBarIdx].root.length;
+      for (int i = 0; i < names.length; ++i) {
+         String key = TextConsts.menuDepthNames[_botBarIdx][i + 1];
+         header.add(KeyValuePair(key, ": " + names[i]));
+      }
 
       _advCodes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
 
