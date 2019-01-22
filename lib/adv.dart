@@ -5,20 +5,25 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
-     List<List<String>> infos;
+     List<List<String>> codes;
+
+     // Stores the string *description* inputed when user writes an
+     // adv.
+     String description = '';
 
      AdvData()
      {
-        int length = TextConsts.advAppBarMsg.length;
-        infos = List<List<String>>(length);
+        final int length = TextConsts.advAppBarMsg.length - 1;
+        codes = List<List<String>>(length);
         for (int i = 0; i < length; ++i)
-           infos[i] = List<String>();
+           codes[i] = List<String>();
      }
 
      AdvData clone()
      {
          AdvData ret = AdvData();
-         ret.infos = List<List<String>>.from(this.infos);
+         ret.codes = List<List<String>>.from(this.codes);
+         ret.description = this.description;
          return ret;
      }
 }
@@ -41,7 +46,7 @@ Padding headerFactory(BuildContext context,
                       List<String> values,
                       List<String> keys)
 {
-   print("${keys.length} != ${values.length}");
+   print("${keys} != ${values}");
 
    List<RichText> r = List<RichText>();
    for (int i = 0; i < values.length; ++i) {
@@ -54,30 +59,32 @@ Padding headerFactory(BuildContext context,
          ));
 }
 
+Card advInnerCardFactory(BuildContext context,
+      List<String> values, List<String> keys)
+{
+   return Card(
+         child: headerFactory(context, values, keys),
+         color: Consts.advLocHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMarging),
+         elevation: 0.0,
+   );
+}
+
 Card advAssembler(BuildContext context, AdvData data,
                   Widget button, TextEditingController newAdvTextCtrl)
 {
-   // This function assumes the description fields is the last in the
-   // array.
    List<Card> list = List<Card>();
 
-   int length = data.infos.length;
-   if (newAdvTextCtrl != null)
-      --length;
+   print("=====> ${data.codes.length}");
+   final int length = data.codes.length;
+   for (int i = 0; i < length; ++i)
+      list.add(advInnerCardFactory(context,
+                  data.codes[i], TextConsts.menuDepthNames[i]));
 
-   //assert(data.infos.length == TextConsts.menuDepthNames.length);
-
-   for (int i = 0; i < length; ++i) {
-      Card c = Card(
-            child: headerFactory(context,
-                  data.infos[i], TextConsts.menuDepthNames[i]),
-            color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
-            elevation: 0.0,
-      );
-
-      list.add(c);
-   }
+   if (newAdvTextCtrl == null)
+      list.add(advInnerCardFactory(context,
+                  <String>[data.description],
+                  <String>["Dummy", TextConsts.descriptionText]));
 
    if (newAdvTextCtrl != null) {
       // TODO: Set a max length.

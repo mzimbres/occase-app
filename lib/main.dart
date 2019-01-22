@@ -308,7 +308,7 @@ class MenuChatState extends State<MenuChat>
 
       print(names);
 
-      _advInput.infos[_botBarIdx] = names;
+      _advInput.codes[_botBarIdx] = names;
 
       _menus[_botBarIdx].restoreMenuStack();
 
@@ -366,7 +366,7 @@ class MenuChatState extends State<MenuChat>
    {
       _onNewAdvPressed = false;
       _botBarIdx = 0;
-      _advInput.infos.last.add(_newAdvTextCtrl.text);
+      _advInput.description = _newAdvTextCtrl.text;
 
       //________
       //

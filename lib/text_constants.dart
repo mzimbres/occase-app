@@ -38,8 +38,10 @@ class TextConsts {
    <List<String>>[
       <String>["Pais",   "Estado", "Cidade", "Bairro"],
       <String>["Carros", "Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
-      <String>["Dummy", "Descricao"]
    ];
+
+   // The text in the adv description field.
+   static final String descriptionText = "Descricao";
 
    // Text used in the adv screen to save the adv for chat.
    static final String advButtonText = "Mover para favoritos";
