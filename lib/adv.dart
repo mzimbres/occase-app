@@ -14,6 +14,8 @@ class AdvData {
    AdvData()
    {
       codes = List<String>(TextConsts.menuDepthNames.length);
+      for (int i = 0; i < codes.length; ++i)
+         codes[i] = '';
    }
 
 

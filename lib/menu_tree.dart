@@ -24,6 +24,9 @@ class MenuNode {
 // array with the names of the parent up util the root direct child.
 List<String> loadNames(MenuNode root, String leafCode)
 {
+   if (leafCode.isEmpty)
+      return List<String>();
+
    List<String> codes = leafCode.split('.');
 
    List<String> names = List<String>();
