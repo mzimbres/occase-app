@@ -300,18 +300,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafReached()
    {
-      // Given a channel code (in the form 001.002.003.004) returns an
-      // array with the names of the corresponding nodes.
-      List<String> names =
-            loadNames(_menus[_botBarIdx].root.first,
-                  _menus[_botBarIdx].root.last.code);
-
-      print(names);
-
-      _advInput.codes[_botBarIdx] = names;
-
+      _advInput.codes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
       _menus[_botBarIdx].restoreMenuStack();
-
       _botBarIdx = advIndexHelper(_botBarIdx);
    }
 
@@ -543,7 +533,8 @@ class MenuChatState extends State<MenuChat>
                         _advInput,
                         _onAdvSendPressed,
                         TextConsts.newAdvButtonText,
-                        _newAdvTextCtrl
+                        _newAdvTextCtrl,
+                        _menus
                      );
 
             // I added this ListView to prevent widget_tmp from
@@ -625,7 +616,8 @@ class MenuChatState extends State<MenuChat>
                       context,
                       _advsFromServer,
                       _onAdvSelection,
-                      _onNewAdv
+                      _onNewAdv,
+                      _menus
                    );
 
       Widget chatWidget;
@@ -634,13 +626,15 @@ class MenuChatState extends State<MenuChat>
                             context,
                             _advsFromUser,
                             _onOwnAdvChat,
-                            TextConsts.ownAdvButtonText);
+                            TextConsts.ownAdvButtonText,
+                            _menus);
       } else {
          chatWidget = createChatTab(
                             context,
                             _advsUserSelected,
                             _onFavChat,
-                            TextConsts.chatButtonText);
+                            TextConsts.chatButtonText,
+                            _menus);
       }
 
       widgets[2] = createBotBarScreen(context,

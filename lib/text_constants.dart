@@ -36,8 +36,8 @@ class TextConsts {
    // The name of the fields at each menu depth.
    static final List<List<String>> menuDepthNames =
    <List<String>>[
-      <String>["Pais",   "Estado", "Cidade", "Bairro"],
-      <String>["Carros", "Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
+      <String>["Estado", "Cidade", "Bairro"],
+      <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
    ];
 
    // The text in the adv description field.

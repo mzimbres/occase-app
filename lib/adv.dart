@@ -5,27 +5,25 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
-     List<List<String>> codes;
+   // Contains channel codes e.g. 001.002.003.004, 009.003.001.005
+   List<String> codes;
 
-     // Stores the string *description* inputed when user writes an
-     // adv.
-     String description = '';
+   // The string *description* inputed when user writes an adv.
+   String description = '';
 
-     AdvData()
-     {
-        final int length = TextConsts.advAppBarMsg.length - 1;
-        codes = List<List<String>>(length);
-        for (int i = 0; i < length; ++i)
-           codes[i] = List<String>();
-     }
+   AdvData()
+   {
+      codes = List<String>(TextConsts.menuDepthNames.length);
+   }
 
-     AdvData clone()
-     {
-         AdvData ret = AdvData();
-         ret.codes = List<List<String>>.from(this.codes);
-         ret.description = this.description;
-         return ret;
-     }
+
+   AdvData clone()
+   {
+      AdvData ret = AdvData();
+      ret.codes = List<String>.from(this.codes);
+      ret.description = this.description;
+      return ret;
+   }
 }
 
 RichText createHeaderLine(BuildContext context, String key, String value)
@@ -50,7 +48,7 @@ Padding headerFactory(BuildContext context,
 
    List<RichText> r = List<RichText>();
    for (int i = 0; i < values.length; ++i) {
-      r.add(createHeaderLine(context, keys[i + 1], values[i]));
+      r.add(createHeaderLine(context, keys[i], values[i]));
    }
 
    return Padding( padding: EdgeInsets.all(4.0),
@@ -71,20 +69,21 @@ Card advInnerCardFactory(BuildContext context,
 }
 
 Card advAssembler(BuildContext context, AdvData data,
-                  Widget button, TextEditingController newAdvTextCtrl)
+                  Widget button, TextEditingController newAdvTextCtrl,
+                  List<MenuItem> menus)
 {
    List<Card> list = List<Card>();
-
-   print("=====> ${data.codes.length}");
    final int length = data.codes.length;
-   for (int i = 0; i < length; ++i)
-      list.add(advInnerCardFactory(context,
-                  data.codes[i], TextConsts.menuDepthNames[i]));
+   for (int i = 0; i < length; ++i) {
+      List<String> names = loadNames(menus[i].root.first, data.codes[i]);
+      list.add(advInnerCardFactory(context, names,
+                  TextConsts.menuDepthNames[i]));
+   }
 
    if (newAdvTextCtrl == null)
       list.add(advInnerCardFactory(context,
                   <String>[data.description],
-                  <String>["Dummy", TextConsts.descriptionText]));
+                  <String>[TextConsts.descriptionText]));
 
    if (newAdvTextCtrl != null) {
       // TODO: Set a max length.
@@ -121,7 +120,8 @@ Card advAssembler(BuildContext context, AdvData data,
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label,
-                        TextEditingController newAdvTextCtrl)
+                        TextEditingController newAdvTextCtrl,
+                        List<MenuItem> menus)
 {
    RaisedButton b = RaisedButton(
       child: Text(label),
@@ -137,12 +137,13 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl);
+   return advAssembler(context, data, c4, newAdvTextCtrl, menus);
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> data,
                     Function onAdvSelection,
-                    Function onNewAdv)
+                    Function onNewAdv,
+                    List<MenuItem> menus)
 {
    return Scaffold( body:
          ListView.builder(
@@ -152,7 +153,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                {
                   return createNewAdvWidget(context, data[i],
                         () {onAdvSelection(data[i]);},
-                        TextConsts.advButtonText, null);
+                        TextConsts.advButtonText, null, menus);
                },
          ),
 
@@ -200,7 +201,8 @@ Widget createChatTab(
          BuildContext context,
          List<AdvData> data,
          Function onChat,
-         String buttonText)
+         String buttonText,
+         List<MenuItem> menus)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
@@ -212,7 +214,7 @@ Widget createChatTab(
                       data[i],
                       () {onChat(i);},
                       buttonText,
-                      null);
+                      null, menus);
          },
    );
 }
