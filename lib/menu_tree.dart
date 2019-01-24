@@ -300,16 +300,23 @@ class MenuTraversal {
 List<String> readHashCodes(MenuNode root, int depth)
 {
    // TODO: Skip the *Todos* hash code.
+   // Keep in mind that the menu on the app differs from that of the
+   // server since the first child of every node except the root node
+   // has an artifitial *Todos* node that is used to simplify the gui.
+   // When generating the codes to join the channels we have to skip
+   // these nodes.
+
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
    List<String> hashCodes = List<String>();
    while (current != null) {
-      //print('${current.code} ===> ${current.status}');
-      if (current.status) {
-         print(current.code);
+      // I see no obvious way of skipping the *Todos* child using the
+      // MenuTraversal except for skipping nodes whose code field is
+      // empty. I do not want to modify the traversal algorithm for
+      // this special case.
+      if (current.status && !current.code.isEmpty)
          hashCodes.add(current.code);
-         print('${current.code} ===> ${current.status}');
-      }
+
       current = iter.nextLeafNode();
    }
 

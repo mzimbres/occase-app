@@ -457,8 +457,14 @@ class MenuChatState extends State<MenuChat>
       print("Sending hashes to server");
       List<List<String>> codes = List<List<String>>();
       for (MenuItem item in _menus) {
-         print(item.root.first.name + ' ===> ${item.filterDepth}');
-         codes.add(readHashCodes(item.root.first, item.filterDepth));
+         //print(item.root.first.name + ' ===> ${item.filterDepth}');
+         List<String> hashCodes =
+               readHashCodes(item.root.first, item.filterDepth);
+
+         if (hashCodes.isEmpty)
+            return;
+
+         codes.add(hashCodes);
       }
 
       var subCmd = {
@@ -489,7 +495,7 @@ class MenuChatState extends State<MenuChat>
 
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address.
-      channel = IOWebSocketChannel.connect('ws://10.0.2.2:8080');
+      channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
