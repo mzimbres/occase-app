@@ -173,10 +173,9 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
 {
    return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: o.children.length - 1,
+      itemCount: o.children.length,
       itemBuilder: (BuildContext context, int i)
       {
-         ++i;
          MenuNode child = o.children[i];
          if (child.isLeaf()) {
             return FlatButton(

@@ -307,11 +307,13 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvNodePressed(int i)
    {
+      // We continue pushing on the stack if the next screen will have
+      // only one menu option.
       do {
          MenuNode o = _menus[_botBarIdx].root.last.children[i];
          _menus[_botBarIdx].root.add(o);
-         i = 1;
-      } while (_menus[_botBarIdx].root.last.children.length == 2);
+         i = 0;
+      } while (_menus[_botBarIdx].root.last.children.length == 1);
 
       final int length = _menus[_botBarIdx].root.last.children.length;
 
@@ -335,15 +337,14 @@ class MenuChatState extends State<MenuChat>
    void _onFilterLeafNodePressed(int i)
    {
       if (i == 0) {
-         final bool allStatus =
-               _menus[_botBarIdx].root.last.children.first.status;
-         for (MenuNode p in _menus[_botBarIdx].root.last.children) {
-            p.status = !allStatus;
-         }
+         for (MenuNode p in _menus[_botBarIdx].root.last.children)
+            p.status = true;
 
          setState(() { });
          return;
       }
+
+      --i; // Accounts for the Todos index.
 
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       final bool b = o.status;

@@ -20,8 +20,8 @@ class MenuNode {
    }
 }
 
-// Given a leaf code and the menu it crresponds to produces the an
-// array with the names of the parent up util the root direct child.
+// Given a leaf code and the menu it corresponds to produces an array
+// with the names of the parent up until the root direct child.
 List<String> loadNames(MenuNode root, String leafCode)
 {
    if (leafCode.isEmpty)
@@ -33,7 +33,7 @@ List<String> loadNames(MenuNode root, String leafCode)
    MenuNode iter = root;
    for (String code in codes) {
       final int idx = int.parse(code);
-      MenuNode next = iter.children[idx + 1];
+      MenuNode next = iter.children[idx];
       names.add(next.name);
       iter = next;
    }
@@ -65,14 +65,11 @@ int getMenuDepth(String rawMenu)
 
 String genCode(List<int> codes, int depth)
 {
-
    if (depth == 0) {
-      //print("1) Depth: $depth ==> ${codes} ==> ");
       return '';
    }
 
    if (depth == 1) {
-      //print("2) Depth: $depth ==> ${codes} ==> ${codes.first}");
       return codes.first.toRadixString(16).padLeft(3, '0');
    }
 
@@ -81,7 +78,6 @@ String genCode(List<int> codes, int depth)
       code += codes[i].toRadixString(16).padLeft(3, '0') + '.';
 
    code += codes[depth - 1].toRadixString(16).padLeft(3, '0');
-   //print("3) Depth: $depth ==> ${codes} ==> ${code}");
    return code;
 }
 
@@ -127,10 +123,6 @@ MenuNode parseTree(String dataRaw)
       if (depth > lastDepth) {
          if (lastDepth + 1 != depth)
             return MenuNode();
-
-         if (st.last.children.isEmpty) {
-            st.last.children.add(MenuNode('Marcar Todos', ''));
-         }
 
          // We found the child of the last node pushed on the stack.
          MenuNode p = MenuNode(name, code);
@@ -193,15 +185,13 @@ void loadLeafCounters(MenuNode root)
 {
    // TODO: Give more serious treatment for the max depth. Here I will
    // choose a depth that is big enough.
-
    MenuTraversal iter = MenuTraversal(root, 1000);
    MenuNode current = iter.advanceToLeaf();
    while (current != null) {
       int counter = 0;
       if (!current.children.isEmpty) {
-         assert(current.children.length > 1);
          int c = 0;
-         for (int i = 1; i < current.children.length; ++i) {
+         for (int i = 0; i < current.children.length; ++i) {
             if (current.children[i].children.isEmpty)
                c += 1;
             else
@@ -299,22 +289,11 @@ class MenuTraversal {
 
 List<String> readHashCodes(MenuNode root, int depth)
 {
-   // TODO: Skip the *Todos* hash code.
-   // Keep in mind that the menu on the app differs from that of the
-   // server since the first child of every node except the root node
-   // has an artifitial *Todos* node that is used to simplify the gui.
-   // When generating the codes to join the channels we have to skip
-   // these nodes.
-
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
    List<String> hashCodes = List<String>();
    while (current != null) {
-      // I see no obvious way of skipping the *Todos* child using the
-      // MenuTraversal except for skipping nodes whose code field is
-      // empty. I do not want to modify the traversal algorithm for
-      // this special case.
-      if (current.status && !current.code.isEmpty)
+      if (current.status)
          hashCodes.add(current.code);
 
       current = iter.nextLeafNode();
