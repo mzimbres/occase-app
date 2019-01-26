@@ -300,7 +300,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onAdvLeafReached()
    {
-      _advInput.codes[_botBarIdx] = _menus[_botBarIdx].root.last.code;
+      _advInput.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
       _menus[_botBarIdx].restoreMenuStack();
       _botBarIdx = advIndexHelper(_botBarIdx);
    }
@@ -374,9 +374,9 @@ class MenuChatState extends State<MenuChat>
       var pubMap = {
          'cmd': 'publish',
          'from': _appId,
-         'to': '007.008',
-         'msg': 'ksksks',
-         'id': 'unix time',
+         'to': _advInput.codes,
+         'msg': 'Fucking awesome',
+         'id': 10,
       };
 
       final String pubText = jsonEncode(pubMap);

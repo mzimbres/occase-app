@@ -60,6 +60,7 @@ int getMenuDepth(String rawMenu)
    return maxDepth;
 }
 
+// Currently we do not need this function.
 String genCode(List<int> codes, int depth)
 {
    if (depth == 0) {

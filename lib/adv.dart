@@ -5,24 +5,29 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
-   // Contains channel codes e.g. 001.002.003.004, 009.003.001.005
-   List<List<int>> codes;
+   // Contains channel codes in the form
+   //
+   //  [[[1, 2]], [[3, 2]], [[3, 2, 1, 1]]]
+   //
+   List<List<List<int>>> codes;
 
    // The string *description* inputed when user writes an adv.
    String description = '';
 
    AdvData()
    {
-      codes = List<List<int>>(TextConsts.menuDepthNames.length);
-      for (int i = 0; i < codes.length; ++i)
-         codes[i] = List<int>();
+      codes = List<List<List<int>>>(TextConsts.menuDepthNames.length);
+      for (int i = 0; i < codes.length; ++i) {
+         codes[i] = List<List<int>>(1);
+         codes[i][0] = List<int>();
+      }
    }
 
 
    AdvData clone()
    {
       AdvData ret = AdvData();
-      ret.codes = List<List<int>>.from(this.codes);
+      ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
       return ret;
    }
@@ -77,7 +82,8 @@ Card advAssembler(BuildContext context, AdvData data,
    List<Card> list = List<Card>();
    final int length = data.codes.length;
    for (int i = 0; i < length; ++i) {
-      List<String> names = loadNames(menus[i].root.first, data.codes[i]);
+      List<String> names =
+            loadNames(menus[i].root.first, data.codes[i][0]);
       list.add(advInnerCardFactory(context, names,
                   TextConsts.menuDepthNames[i]));
    }
