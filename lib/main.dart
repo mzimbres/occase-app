@@ -279,7 +279,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if ((_botBarIdx + 1) != TextConsts.newAdvTab.length)
+      if ((_botBarIdx + 1) != TextConsts.newAdvTabNames.length)
          _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
@@ -573,7 +573,7 @@ class MenuChatState extends State<MenuChat>
                    widget,
                    appBar,
                    TextConsts.newAdvTabIcons,
-                   TextConsts.newAdvTab,
+                   TextConsts.newAdvTabNames,
                    _onWillPopMenu,
                    _onBotBarTapped,
                    _botBarIdx
@@ -613,7 +613,7 @@ class MenuChatState extends State<MenuChat>
                       filterTabWidget,
                       null,
                       TextConsts.newAdvTabIcons,
-                      TextConsts.newAdvTab,
+                      TextConsts.filterTabNames,
                       _onWillPopMenu,
                       _onBotBarTapped,
                       _botBarIdx

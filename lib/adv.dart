@@ -132,6 +132,14 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
       onPressed: onPressed,
    );
 
+   // With an icon does not look very good.
+   //CircleAvatar b = CircleAvatar( child: IconButton(
+   //               icon: Icon(Icons.send),
+   //               onPressed: onPressed,
+   //               color: Theme.of(context).accentColor),
+   //               backgroundColor: Theme.of(context).primaryColor
+   //            );
+
    Card c4 = Card(
       child: b,
       color: Consts.advMsgColor,
