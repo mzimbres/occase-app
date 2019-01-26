@@ -178,6 +178,25 @@ class MenuItem {
    }
 }
 
+/* Counts all leaf counters of the children. If the leaf counter of a
+ * child is zero she is itself a leaf and contributes with one.
+ */
+int accumulateLeafCounters(MenuNode node)
+{
+   if (node.children.isEmpty)
+      return 0;
+
+   int c = 0;
+   for (int i = 0; i < node.children.length; ++i) {
+      if (node.children[i].children.isEmpty)
+         c += 1;
+      else
+         c += node.children[i].leafCounter;
+   }
+
+   return c;
+}
+
 /* Traverses the tree and loads each node with number of leaf nodes it
  * is parent from. 
  */
@@ -188,19 +207,7 @@ void loadLeafCounters(MenuNode root)
    MenuTraversal iter = MenuTraversal(root, 1000);
    MenuNode current = iter.advanceToLeaf();
    while (current != null) {
-      int counter = 0;
-      if (!current.children.isEmpty) {
-         int c = 0;
-         for (int i = 0; i < current.children.length; ++i) {
-            if (current.children[i].children.isEmpty)
-               c += 1;
-            else
-               c += current.children[i].leafCounter;
-         }
-         counter = c;
-      }
-
-      current.leafCounter = counter;
+      current.leafCounter = accumulateLeafCounters(current);
       current = iter.nextNode();
    }
 }

@@ -52,7 +52,9 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          // Handles the *Marcar todos* button.
          if (shift == 1 && i == 0) {
             return FlatButton(
-                  child: createListViewItem("Marcar todos", 0, null),
+                  child: Text("Marcar todos (${o.leafCounter} items)",
+                        style: TextStyle( fontWeight: FontWeight.bold,
+                                fontSize: Consts.mainFontSize)),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
