@@ -60,7 +60,7 @@ int getMenuDepth(String rawMenu)
          maxDepth = depth;
    }
 
-   return 1 + maxDepth;
+   return maxDepth;
 }
 
 String genCode(List<int> codes, int depth)
@@ -89,7 +89,7 @@ MenuNode parseTree(String dataRaw)
 
    print("Menu depth: $maxDepth");
 
-   List<int> codes = List<int>(maxDepth - 1);
+   List<int> codes = List<int>(maxDepth);
    for (int i = 0; i < codes.length; ++i)
       codes[i] = -1;
 
@@ -164,8 +164,8 @@ class MenuItem {
 
    bool isFilterLeaf()
    {
-      print('${root.length} == ${filterDepth}');
-      return (root.length + 1) == filterDepth;
+      //print('${root.length} == ${filterDepth}');
+      return root.length == filterDepth;
    }
 
    void restoreMenuStack()
