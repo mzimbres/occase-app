@@ -3,7 +3,7 @@ import 'package:menu_chat/constants.dart';
 
 class MenuNode {
    String name;
-   String code;
+   List<int> code;
    bool status;
    int leafCounter;
 
@@ -22,17 +22,14 @@ class MenuNode {
 
 // Given a leaf code and the menu it corresponds to produces an array
 // with the names of the parent up until the root direct child.
-List<String> loadNames(MenuNode root, String leafCode)
+List<String> loadNames(MenuNode root, List<int> leafCode)
 {
    if (leafCode.isEmpty)
       return List<String>();
 
-   List<String> codes = leafCode.split('.');
-
    List<String> names = List<String>();
    MenuNode iter = root;
-   for (String code in codes) {
-      final int idx = int.parse(code);
+   for (int idx in leafCode) {
       MenuNode next = iter.children[idx];
       names.add(next.name);
       iter = next;
@@ -117,8 +114,8 @@ MenuNode parseTree(String dataRaw)
       for (int i = depth; i < codes.length; ++i)
          codes[i] = -1;
 
-      final String code = genCode(codes, depth);
-      //print(code);
+      List<int> code = List<int>.from(codes);
+      code.removeWhere((o) => o == -1);
 
       if (depth > lastDepth) {
          if (lastDepth + 1 != depth)
@@ -247,9 +244,7 @@ class MenuTraversal {
 
    MenuNode advanceToLeaf()
    {
-      // TODO: Understand why we have < instead of <= in comparison
-      // with the C++ code.
-      while (!st.last.last.children.isEmpty && st.length < depth) {
+      while (!st.last.last.children.isEmpty && st.length <= depth) {
          List<MenuNode> childrenCopy = List<MenuNode>();
          for (MenuNode o in st.last.last.children)
             childrenCopy.add(o);
@@ -294,12 +289,13 @@ class MenuTraversal {
    }
 }
 
-List<String> readHashCodes(MenuNode root, int depth)
+List<List<int>> readHashCodes(MenuNode root, int depth)
 {
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
-   List<String> hashCodes = List<String>();
+   List<List<int>> hashCodes = List<List<int>>();
    while (current != null) {
+      //print("===> ${current.status} ${current.code}");
       if (current.status)
          hashCodes.add(current.code);
 

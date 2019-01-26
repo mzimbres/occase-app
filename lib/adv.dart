@@ -6,23 +6,23 @@ import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
    // Contains channel codes e.g. 001.002.003.004, 009.003.001.005
-   List<String> codes;
+   List<List<int>> codes;
 
    // The string *description* inputed when user writes an adv.
    String description = '';
 
    AdvData()
    {
-      codes = List<String>(TextConsts.menuDepthNames.length);
+      codes = List<List<int>>(TextConsts.menuDepthNames.length);
       for (int i = 0; i < codes.length; ++i)
-         codes[i] = '';
+         codes[i] = List<int>();
    }
 
 
    AdvData clone()
    {
       AdvData ret = AdvData();
-      ret.codes = List<String>.from(this.codes);
+      ret.codes = List<List<int>>.from(this.codes);
       ret.description = this.description;
       return ret;
    }

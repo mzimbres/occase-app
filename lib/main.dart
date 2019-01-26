@@ -349,7 +349,7 @@ class MenuChatState extends State<MenuChat>
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       final bool b = o.status;
       o.status = !b;;
-      //print('${o.code} ===> ${o.status}');
+      print('${o.code} ===> ${o.status}');
       setState(() { });
    }
 
@@ -456,14 +456,16 @@ class MenuChatState extends State<MenuChat>
    void _sendHahesToServer()
    {
       print("Sending hashes to server");
-      List<List<String>> codes = List<List<String>>();
+      List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
-         //print(item.root.first.name + ' ===> ${item.filterDepth}');
-         List<String> hashCodes =
+         print(item.root.first.name + ' ===> ${item.filterDepth}');
+         List<List<int>> hashCodes =
                readHashCodes(item.root.first, item.filterDepth);
 
-         if (hashCodes.isEmpty)
+         if (hashCodes.isEmpty) {
+            print("====> Menu codes is empty.");
             return;
+         }
 
          codes.add(hashCodes);
       }
