@@ -24,22 +24,21 @@ ListTile createListViewItem(String name, int n, Icon trailing)
       );
 }
 
+/*
+ *  To support the "Todos" field in the menu checkbox we have to add
+ *  some relatively complex logic.  First we note that the "Todos"
+ *  checkbox should appear in all screens that present checkboxes,
+ *  namely, when
+ *  
+ *  1. makeLeaf is true, or
+ *  2. isLeaf is true for more than one node.
+ *
+ *  In those cases the builder will go through all node children
+ *  otherwise the first should be skipped.
+ */
 ListView createFilterListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed, bool makeLeaf)
 {
-/*
-   To support the "Todos" field in the menu checkbox we have to add
-   some relatively complex logic.  First we note that the "Todos"
-   checkbox should appear in all screens that present checkboxes,
-   namely, when
-   
-   1. makeLeaf is true, or
-   2. isLeaf is true for more than one node.
-
-   In those cases the builder will go through all node children
-   otherwise the first should be skipped.
-*/
-
    // TODO: We should check all children and not only the last.
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
@@ -64,9 +63,9 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             MenuNode child = o.children[i - 1];
             Widget icon = null;
             if (child.status)
-               icon = Icon(Icons.done);
+               icon = Icon(Icons.done, color: Colors.green);
             else
-               icon = Icon(Icons.clear);
+               icon = Icon(Icons.clear, color: Colors.red);
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
