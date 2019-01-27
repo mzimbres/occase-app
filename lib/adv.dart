@@ -5,7 +5,11 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
+   // The person that published this adv.
    String from = '';
+
+   // Toguether with *from* this is a unique identifier for this adv.
+   int id = 10;
 
    // Contains channel codes in the form
    //

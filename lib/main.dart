@@ -224,8 +224,8 @@ class MenuChatState extends State<MenuChat>
    // _currFavChatIdx and _currFavChatIdx are -1.
    int _chatBotBarIdx = 1;
 
-   // Stores the current chat index on favorites chat screen, -1 means
-   // we are not in this screen.
+   // Stores the current chat index in the array _advsUserSelected, -1
+   // means we are not in this screen.
    int _currFavChatIdx = -1;
 
    // Similar to _currFavChatIdx but corresponds to the *my own advs*
@@ -444,6 +444,8 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   // This function is called with the index in the index in
+   // _advsUserSelected the user selected to chat with.
    void _onFavChat(int i)
    {
       print("On chat clicked.");
@@ -465,9 +467,9 @@ class MenuChatState extends State<MenuChat>
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
-         'to': 'from string from some user',
+         'to': _advsUserSelected[_currFavChatIdx].from,
          'msg': _newAdvTextCtrl.text,
-         'id': 10,
+         'id': _advsUserSelected[_currFavChatIdx].id,
       };
 
       final String payload = jsonEncode(msgMap);
