@@ -479,6 +479,7 @@ class MenuChatState extends State<MenuChat>
          'to': _advsUserSelected[_currFavChatIdx].from,
          'msg': msg,
          'id': _advsUserSelected[_currFavChatIdx].id,
+         'is_sender_adv': false,
       };
 
       final String payload = jsonEncode(msgMap);
@@ -582,6 +583,10 @@ class MenuChatState extends State<MenuChat>
             // else. This is a server bug.
             return;
          }
+         // A user message can be either directed to one of the advs
+         // published by this app or one that the app is interested
+         // in. We distinguish this with the field 'is_sender_adv'
+         //final bool is_sender_adv = ack['is_sender_adv'];
 
          final String id = ack['id'];
 
