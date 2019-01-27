@@ -85,8 +85,6 @@ MenuNode parseTree(String dataRaw)
    if (maxDepth == 0)
       return null;
 
-   print("Menu depth: $maxDepth");
-
    List<int> codes = List<int>(maxDepth);
    for (int i = 0; i < codes.length; ++i)
       codes[i] = -1;
@@ -213,8 +211,6 @@ void loadLeafCounters(MenuNode root)
 List<MenuItem> menuReader(Map<String, dynamic> menusMap)
 {
    List<dynamic> rawMenus = menusMap['menus'];
-
-   print('Received menus with length ${rawMenus.length}');
 
    List<MenuItem> menus = List<MenuItem>();
 

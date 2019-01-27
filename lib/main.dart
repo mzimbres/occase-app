@@ -205,8 +205,17 @@ class MenuChatState extends State<MenuChat>
    // have to observe here is that we will send _advInput to the
    // server and if the user is subscribed to the channel the adv
    // belongs to, we will receive it back from the server and we
-   // should not display it or duplicate it on this list.
+   // should not display it or duplicate it on this list. The advs
+   // received from the server will not be inserted here. The only
+   // advs inserted here are those that have been acked with ok by the
+   // server, before that they will wait in the output queue
+   // _pubOutputQueue
    List<AdvData> _advsFromUser;
+
+   // Advs sent by the user that have not been acked by the server
+   // yet.
+   // TODO: convert this into a queue.
+   List<AdvData> _pubOutputQueue;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -257,6 +266,7 @@ class MenuChatState extends State<MenuChat>
       _advsFromServer = List<AdvData>();
       _advsUserSelected = List<AdvData>();
       _advsFromUser = List<AdvData>();
+      _pubOutputQueue = List<AdvData>();
 
    }
 
@@ -424,14 +434,13 @@ class MenuChatState extends State<MenuChat>
       // will be echoed back to us and have to be filtered out from
       // _advsFromServer since that list should not contain our own
       // advs.
-      _advsFromUser.add(_advInput.clone());
+      _pubOutputQueue.add(_advInput.clone());
 
       var pubMap = {
          'cmd': 'publish',
          'from': _appId,
          'to': _advInput.codes,
-         'msg': 'Fucking awesome',
-         'id': 10,
+         'msg': _advInput.description,
       };
 
       final String pubText = jsonEncode(pubMap);
@@ -544,6 +553,24 @@ class MenuChatState extends State<MenuChat>
          // TODO: Before triggering a redraw we should perhaps check
          // whether it is necessary given our current state.
          setState(() { });
+      }
+
+      if (cmd == "publish_ack") {
+         final String msg = ack['msg'];
+         final String res = ack['result'];
+         if (res != 'ok') {
+            print("Message could not be sent.");
+            // TODO: Retry to send. Since we send one by one the
+            // message that failed is in the top of the stack.
+            return;
+         }
+
+         // We have to set the id returned by the server.
+         final int id = ack['id'];
+         print(id);
+
+         assert(!_pubOutputQueue.isEmpty);
+         _advsFromUser.add(_pubOutputQueue.removeLast());
       }
    }
 

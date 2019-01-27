@@ -8,8 +8,9 @@ class AdvData {
    // The person that published this adv.
    String from = '';
 
-   // Toguether with *from* this is a unique identifier for this adv.
-   int id = 10;
+   // Together with *from* this is a unique identifier for this adv.
+   // This value is sent by the server.
+   int id;
 
    // Contains channel codes in the form
    //
@@ -56,8 +57,6 @@ Padding headerFactory(BuildContext context,
                       List<String> values,
                       List<String> keys)
 {
-   print("${keys} != ${values}");
-
    List<RichText> r = List<RichText>();
    for (int i = 0; i < values.length; ++i) {
       r.add(createHeaderLine(context, keys[i], values[i]));
