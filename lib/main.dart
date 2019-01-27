@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
+import 'package:flutter/services.dart';
+import 'package:device_info/device_info.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/adv.dart';
@@ -236,6 +239,60 @@ class MenuChatState extends State<MenuChat>
    TextEditingController _newAdvTextCtrl = TextEditingController();
 
    IOWebSocketChannel channel;
+
+   static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
+
+   MenuChatState()
+   {
+      Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
+      if (rawMenuMap.containsKey('menus')) {
+         // TODO: How to deal with a null menu.
+         _menus = menuReader(rawMenuMap);
+      }
+
+      _onNewAdvPressed = false;
+      _botBarIdx = 0;
+
+      _advInput = AdvData();
+      _advsFromServer = List<AdvData>();
+      _advsUserSelected = List<AdvData>();
+      _advsFromUser = List<AdvData>();
+
+   }
+
+   Future<void> readDevInfo() async
+   {
+      Map<String, dynamic> deviceData;
+
+      try {
+         if (Platform.isAndroid) {
+            AndroidDeviceInfo info = await devInfo.androidInfo;
+            print("Using device id: " + info.id);
+            _appId = info.id;
+         } else if (Platform.isIOS) {
+            // Not implemented.
+         }
+      } on PlatformException {
+         // Id unavailable?
+      }
+
+      // What is this meand for?
+      if (!mounted)
+         return;
+
+      _connectToServer(_appId);
+   }
+
+   @override
+   void initState()
+   {
+      super.initState();
+
+      _tabController = TabController(vsync: this,
+            initialIndex: 1, length: 3);
+
+      readDevInfo();
+   }
 
    void _onAdvSelection(AdvData data)
    {
@@ -480,50 +537,6 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(subText);
    }
 
-   MenuChatState()
-   {
-      Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
-      if (rawMenuMap.containsKey('menus')) {
-         // TODO: How to deal with a null menu.
-         _menus = menuReader(rawMenuMap);
-      }
-
-      _onNewAdvPressed = false;
-      _botBarIdx = 0;
-
-      _advInput = AdvData();
-      _advsFromServer = List<AdvData>();
-      _advsUserSelected = List<AdvData>();
-      _advsFromUser = List<AdvData>();
-
-      // WARNING: localhost or 127.0.0.1 is the emulator or the phone
-      // address.
-      channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
-      channel.stream.listen(onWSData,
-            onError: onWSError, onDone: onWSDone);
-
-      // This is where we will read the raw menu from files and send
-      // our versions to the app. By sending -1 we will always receive
-      // back from the server.
-      var authCmd = {
-         'cmd': 'auth',
-         'from': '0001',
-         'menu_versions': <int>[-1, -1],
-      };
-
-      final String authText = jsonEncode(authCmd);
-      print(authText);
-      channel.sink.add(authText);
-   }
-
-   @override
-   void initState()
-   {
-      super.initState();
-      _tabController = TabController(vsync: this,
-            initialIndex: 1, length: 3);
-   }
-
    @override
    void dispose()
    {
@@ -679,6 +692,28 @@ class MenuChatState extends State<MenuChat>
             ),
             body: TabBarView(controller: _tabController, children: widgets)
       );
+   }
+
+   void _connectToServer(String from)
+   {
+      // WARNING: localhost or 127.0.0.1 is the emulator or the phone
+      // address.
+      channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
+      channel.stream.listen(onWSData,
+            onError: onWSError, onDone: onWSDone);
+
+      // This is where we will read the raw menu from files and send
+      // our versions to the app. By sending -1 we will always receive
+      // back from the server.
+      var authCmd = {
+         'cmd': 'auth',
+         'from': from,
+         'menu_versions': <int>[-1, -1],
+      };
+
+      final String authText = jsonEncode(authCmd);
+      print(authText);
+      channel.sink.add(authText);
    }
 }
 
