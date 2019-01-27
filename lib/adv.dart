@@ -4,6 +4,14 @@ import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
+class ChatItem {
+   bool thisApp; 
+   String msg = '';
+   ChatItem(this.thisApp, this.msg)
+   {
+   }
+}
+
 class AdvData {
    // The person that published this adv.
    String from = '';
@@ -21,6 +29,8 @@ class AdvData {
    // The string *description* inputed when user writes an adv.
    String description = '';
 
+   List<ChatItem> chats = List<ChatItem>();
+
    AdvData()
    {
       codes = List<List<List<int>>>(TextConsts.menuDepthNames.length);
@@ -35,6 +45,7 @@ class AdvData {
       AdvData ret = AdvData();
       ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
+      ret.chats = this.chats;
       return ret;
    }
 }

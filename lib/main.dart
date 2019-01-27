@@ -85,7 +85,7 @@ int advIndexHelper(int i)
 Widget
 createChatScreen(BuildContext context,
                  Function onWillPopScope,
-                 List<String> chatMsgs,
+                 AdvData adv,
                  TextEditingController newAdvTextCtrl,
                  Function onChatSendPressed)
 {
@@ -120,13 +120,13 @@ createChatScreen(BuildContext context,
    ListView list = ListView.builder(
          reverse:true,
          padding: const EdgeInsets.all(6.0),
-         itemCount: chatMsgs.length,
+         itemCount: adv.chats.length,
          itemBuilder: (BuildContext context, int i)
          {
             return Align( alignment: Alignment.bottomRight,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
-                          child: Text(chatMsgs[i])),
+                          child: Text(adv.chats[i].msg)),
                     color: Colors.lightGreenAccent[100],
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
@@ -150,7 +150,7 @@ createChatScreen(BuildContext context,
                 //title: Text("Anunciante: Paulo nascimento"),
                 title: ListTile(
                    leading: CircleAvatar(child: Text("")),
-                   title: Text( "Paulo nascimento",
+                   title: Text( adv.from,
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: Consts.mainFontSize,
@@ -197,8 +197,9 @@ class MenuChatState extends State<MenuChat>
    // will be filtered out.
    List<AdvData> _advsFromServer;
 
-   // The list of advs the user found interesting. The are moved from
-   // the list of ads received from the server.
+   // The list of advs the user found interesting and its chat
+   // history. They are moved from the list of advs received from the
+   // server.
    List<AdvData> _advsUserSelected;
 
    // Advs the user wrote itself and sent to the server. One issue we
@@ -208,9 +209,9 @@ class MenuChatState extends State<MenuChat>
    // should not display it or duplicate it on this list. The advs
    // received from the server will not be inserted here. The only
    // advs inserted here are those that have been acked with ok by the
-   // server, before that they will wait in the output queue
+   // server, before that they will live in the output queue
    // _pubOutputQueue
-   List<AdvData> _advsFromUser;
+   List<AdvData> _userOwnAdvs;
 
    // Advs sent by the user that have not been acked by the server
    // yet.
@@ -241,9 +242,6 @@ class MenuChatState extends State<MenuChat>
    // screen.
    int _currOwnChatIdx = -1;
 
-   // A provisory list of user chat messages.
-   List<String> _chatMsgs = List<String>();
-
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
 
@@ -265,7 +263,7 @@ class MenuChatState extends State<MenuChat>
       _advInput = AdvData();
       _advsFromServer = List<AdvData>();
       _advsUserSelected = List<AdvData>();
-      _advsFromUser = List<AdvData>();
+      _userOwnAdvs = List<AdvData>();
       _pubOutputQueue = List<AdvData>();
 
    }
@@ -308,7 +306,7 @@ class MenuChatState extends State<MenuChat>
    {
       print('Anuncio salvo');
       _advsUserSelected.add(data);
-      //_advsFromUser.add(data);
+      //_userOwnAdvs.add(data);
       _advsFromServer.remove(data);
       setState(() { });
    }
@@ -453,8 +451,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   // This function is called with the index in the index in
-   // _advsUserSelected the user selected to chat with.
+   // This function is called with the index in _advsUserSelected.
    void _onFavChat(int i)
    {
       print("On chat clicked.");
@@ -473,11 +470,14 @@ class MenuChatState extends State<MenuChat>
       if (_newAdvTextCtrl.text.isEmpty)
          return;
 
+      final String msg = _newAdvTextCtrl.text;
+      _newAdvTextCtrl.text = "";
+
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
          'to': _advsUserSelected[_currFavChatIdx].from,
-         'msg': _newAdvTextCtrl.text,
+         'msg': msg,
          'id': _advsUserSelected[_currFavChatIdx].id,
       };
 
@@ -485,8 +485,7 @@ class MenuChatState extends State<MenuChat>
       print(payload);
       channel.sink.add(payload);
 
-      _chatMsgs.add(_newAdvTextCtrl.text);
-      _newAdvTextCtrl.text = "";
+      _advsUserSelected[_currFavChatIdx].chats.add(ChatItem(true, msg));
       setState(() { });
    }
 
@@ -572,7 +571,7 @@ class MenuChatState extends State<MenuChat>
          print(id);
 
          assert(!_pubOutputQueue.isEmpty);
-         _advsFromUser.add(_pubOutputQueue.removeLast());
+         _userOwnAdvs.add(_pubOutputQueue.removeLast());
       }
    }
 
@@ -675,11 +674,11 @@ class MenuChatState extends State<MenuChat>
       if (_tabController.index == 2 && _currFavChatIdx != -1) {
          // We are in the favorite advs screen, where pressing the
          // chat button in any of the advs leads us to the chat
-         // screen with the advertizer.
+         // screen with the advertiser.
          return createChatScreen(
                context,
                _onWillPopFavChatScreen,
-               _chatMsgs,
+               _advsUserSelected[_currFavChatIdx],
                _newAdvTextCtrl,
                _onChatSendPressed);
       }
@@ -721,7 +720,7 @@ class MenuChatState extends State<MenuChat>
       if (_chatBotBarIdx == 0) {
          chatWidget = createChatTab(
                             context,
-                            _advsFromUser,
+                            _userOwnAdvs,
                             _onOwnAdvChat,
                             TextConsts.ownAdvButtonText,
                             _menus);
