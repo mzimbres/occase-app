@@ -520,6 +520,7 @@ class MenuChatState extends State<MenuChat>
       if (cmd == "publish") {
          String msg = ack['msg'];
          String from = ack['from'];
+         int id = ack['id'];
 
          if (from == _appId) {
             // TODO: Ignore own messages.
@@ -547,6 +548,7 @@ class MenuChatState extends State<MenuChat>
          adv.from = from;
          adv.description = msg;
          adv.codes = codes;
+         adv.id = id;
 
          _advsFromServer.add(adv);
 
