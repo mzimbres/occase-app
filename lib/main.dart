@@ -642,17 +642,15 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_tabController.index == 2 && _currFavChatIdx != -1) {
-         if (_currFavChatIdx != -1) {
-            // We are in the favorite advs screen, where pressing the
-            // chat button in any of the advs leads us to the chat
-            // screen with the advertizer.
-            return createChatScreen(
-                  context,
-                  _onWillPopFavChatScreen,
-                  _chatMsgs,
-                  _newAdvTextCtrl,
-                  _onChatSendPressed);
-         }
+         // We are in the favorite advs screen, where pressing the
+         // chat button in any of the advs leads us to the chat
+         // screen with the advertizer.
+         return createChatScreen(
+               context,
+               _onWillPopFavChatScreen,
+               _chatMsgs,
+               _newAdvTextCtrl,
+               _onChatSendPressed);
       }
 
       Widget filterTabWidget;
