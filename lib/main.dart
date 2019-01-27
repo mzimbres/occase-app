@@ -474,9 +474,8 @@ class MenuChatState extends State<MenuChat>
    {
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
-      print("Received from server: $cmd");
+
       if (cmd == "auth_ack") {
-         // First we check if the auth was successful.
          final String res = ack["result"];
          if (res == 'fail') {
             print("Handle failed auth.");
@@ -490,13 +489,35 @@ class MenuChatState extends State<MenuChat>
          if (ack.containsKey('menus')) {
             _menus = menuReader(ack);
             assert(_menus != null);
-            print('Received menus with length ${_menus.length}');
          }
+
+         // TODO: Handle the subscribe ack.
 
          return;
       }
 
       print("Received from server: ${ack}");
+
+      if (cmd == "publish") {
+         String msg = ack['msg'];
+         String from = ack['from'];
+         List<dynamic> to = ack['to'];
+
+         List<List<List<int>>> codes = List<List<List<int>>>();
+         for (List<dynamic> a in to) {
+            List<List<int>> foo = List<List<int>>();
+            for (List<dynamic> b in a) {
+               List<int> bar = List<int>();
+               for (int c in b) {
+                  bar.add(c);
+               }
+               foo.add(bar);
+            }
+            codes.add(foo);
+         }
+
+         print("codes ===> ${codes}");
+      }
    }
 
    void onWSError(error)
