@@ -5,6 +5,8 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
 
 class AdvData {
+   String from = '';
+
    // Contains channel codes in the form
    //
    //  [[[1, 2]], [[3, 2]], [[3, 2, 1, 1]]]
@@ -22,7 +24,6 @@ class AdvData {
          codes[i][0] = List<int>();
       }
    }
-
 
    AdvData clone()
    {

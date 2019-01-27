@@ -416,17 +416,15 @@ class MenuChatState extends State<MenuChat>
       _botBarIdx = 0;
       _advInput.description = _newAdvTextCtrl.text;
 
-      //________
-      //
-      // TODO: This line is needed only in the prototype. Later when
-      // we connect the app in the server to every adv that has been
-      // published we get sent back to us by the server.
-      _advsFromServer.add(_advInput.clone());
+      // Was only useful when the app was not connected in the server.
+      // Remove this later.
+      //_advsFromServer.add(_advInput.clone());
 
-      // The following code may also have to be removed to avoid
-      // duplicates. See comments in the declaration of _advsFromUser
+      // We add it here in our own list of advs and keep in mind it
+      // will be echoed back to us and have to be filtered out from
+      // _advsFromServer since that list should not contain our own
+      // advs.
       _advsFromUser.add(_advInput.clone());
-      //_______
 
       var pubMap = {
          'cmd': 'publish',
@@ -492,7 +490,6 @@ class MenuChatState extends State<MenuChat>
          }
 
          // TODO: Handle the subscribe ack.
-
          return;
       }
 
@@ -517,6 +514,16 @@ class MenuChatState extends State<MenuChat>
          }
 
          print("codes ===> ${codes}");
+         AdvData adv = AdvData();
+         adv.from = from;
+         adv.description = msg;
+         adv.codes = codes;
+
+         _advsFromServer.add(adv);
+
+         // TODO: Before triggering a redraw we should perhaps check
+         // whether it is necessary given our current state.
+         setState(() { });
       }
    }
 
