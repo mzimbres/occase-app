@@ -566,12 +566,32 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         // We have to set the id returned by the server.
          final int id = ack['id'];
-         print(id);
+         print("Message with id = ${id} has been acked.");
+
+         _pubOutputQueue.last.id = id;
 
          assert(!_pubOutputQueue.isEmpty);
          _userOwnAdvs.add(_pubOutputQueue.removeLast());
+      }
+
+      if (cmd == "user_msg") {
+         final String to = ack['to'];
+         if (to != _appId) {
+            // The server routed us a msg that was meant for somebody
+            // else. This is a server bug.
+            return;
+         }
+
+         final String id = ack['id'];
+
+         // With the message id we can search in the array of our own
+         // messages.
+         final int i =
+               _userOwnAdvs.indexWhere((e) { return e.id == id;});
+
+         final String msg = ack['msg'];
+         _userOwnAdvs[i].chats.add(ChatItem(false, msg));
       }
    }
 
@@ -588,10 +608,9 @@ class MenuChatState extends State<MenuChat>
 
    void _sendHahesToServer()
    {
-      print("Sending hashes to server");
       List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
-         print(item.root.first.name + ' ===> ${item.filterDepth}');
+         //print(item.root.first.name + ' ===> ${item.filterDepth}');
          List<List<int>> hashCodes =
                readHashCodes(item.root.first, item.filterDepth);
 
