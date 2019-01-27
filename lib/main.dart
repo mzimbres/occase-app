@@ -697,8 +697,8 @@ class MenuChatState extends State<MenuChat>
    void _connectToServer(String from)
    {
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
-      // address.
-      channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
+      // address. The host address is 10.0.2.2.
+      channel = IOWebSocketChannel.connect('ws://188.104.195.99:80');
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
