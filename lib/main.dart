@@ -462,9 +462,20 @@ class MenuChatState extends State<MenuChat>
       if (_newAdvTextCtrl.text.isEmpty)
          return;
 
+      var msgMap = {
+         'cmd': 'user_msg',
+         'from': _appId,
+         'to': 'from string from some user',
+         'msg': _newAdvTextCtrl.text,
+         'id': 10,
+      };
+
+      final String payload = jsonEncode(msgMap);
+      print(payload);
+      channel.sink.add(payload);
+
       _chatMsgs.add(_newAdvTextCtrl.text);
       _newAdvTextCtrl.text = "";
-      print("Chat send");
       setState(() { });
    }
 
@@ -498,6 +509,13 @@ class MenuChatState extends State<MenuChat>
       if (cmd == "publish") {
          String msg = ack['msg'];
          String from = ack['from'];
+
+         if (from == _appId) {
+            // TODO: Ignore own messages.
+            print("Ignoring own publish message.");
+            return;
+         }
+
          List<dynamic> to = ack['to'];
 
          List<List<List<int>>> codes = List<List<List<int>>>();
