@@ -88,7 +88,8 @@ createChatScreen(BuildContext context,
                  Function onWillPopScope,
                  AdvData adv,
                  TextEditingController newAdvTextCtrl,
-                 Function onChatSendPressed)
+                 Function onChatSendPressed,
+                 String peer)
 {
    TextField textField = TextField(
       controller: newAdvTextCtrl,
@@ -118,16 +119,18 @@ createChatScreen(BuildContext context,
          ],
    );
 
+   List<ChatItem> history = adv.GetChatHistory(peer);
+
    ListView list = ListView.builder(
          reverse:true,
          padding: const EdgeInsets.all(6.0),
-         itemCount: adv.chats.length,
+         itemCount: history.length,
          itemBuilder: (BuildContext context, int i)
          {
             return Align( alignment: Alignment.bottomRight,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
-                          child: Text(adv.chats[i].msg)),
+                          child: Text(history[i].msg)),
                     color: Colors.lightGreenAccent[100],
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
@@ -735,7 +738,8 @@ class MenuChatState extends State<MenuChat>
                _onWillPopFavChatScreen,
                _favAdvs[_currFavChatIdx],
                _newAdvTextCtrl,
-               _onFavChatSendPressed);
+               _onFavChatSendPressed,
+               _favAdvs[_currFavChatIdx].from);
       }
 
       Widget filterTabWidget;

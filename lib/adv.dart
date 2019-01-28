@@ -7,9 +7,7 @@ import 'package:menu_chat/text_constants.dart';
 class ChatItem {
    bool thisApp; 
    String msg = '';
-   ChatItem(this.thisApp, this.msg)
-   {
-   }
+   ChatItem(this.thisApp, this.msg) { }
 }
 
 class AdvData {
@@ -29,7 +27,7 @@ class AdvData {
    // The string *description* inputed when user writes an adv.
    String description = '';
 
-   List<ChatItem> chats = List<ChatItem>();
+   Map<String, List<ChatItem>> chats = Map<String, List<ChatItem>>();
 
    AdvData()
    {
@@ -45,17 +43,27 @@ class AdvData {
       AdvData ret = AdvData();
       ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
-      ret.chats = this.chats;
+      ret.chats = Map<String, List<ChatItem>>.from(this.chats);
       return ret;
    }
 
    void addMsg(String from_, String msg, bool thisApp)
    {
-      // If from_ is equal to this.from
-      //chats[from].add(ChatItem(thisApp, msg));
+      List<ChatItem> history = GetChatHistory(from_);
+      history.add(ChatItem(thisApp, msg));
+   }
 
-      // Provisory.
-      chats.add(ChatItem(thisApp, msg));
+   List<ChatItem> GetChatHistory(String from_)
+   {
+      List<ChatItem> history = chats[from_];
+      if (history == null) {
+         // This is the first message with this user (from_).
+         List<ChatItem> tmp = List<ChatItem>();
+         chats[from_] = tmp;
+         return tmp;
+      }
+
+      return history;
    }
 }
 
