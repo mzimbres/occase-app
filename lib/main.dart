@@ -217,7 +217,7 @@ class MenuChatState extends State<MenuChat>
    // Advs sent by the user that have not been acked by the server
    // yet.
    // TODO: convert this into a queue.
-   List<AdvData> _outAdvQueue;
+   Queue<AdvData> _outAdvQueue;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -265,7 +265,7 @@ class MenuChatState extends State<MenuChat>
       _advsFromServer = List<AdvData>();
       _selectedAdvs = List<AdvData>();
       _ownAdvs = List<AdvData>();
-      _outAdvQueue = List<AdvData>();
+      _outAdvQueue = Queue<AdvData>();
 
    }
 
@@ -418,11 +418,12 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onAdvSendPressed()
+   void _onSendNewAdvPressed()
    {
       _onNewAdvPressed = false;
       _botBarIdx = 0;
       _advInput.description = _newAdvTextCtrl.text;
+      _newAdvTextCtrl.text = "";
 
       // Was only useful when the app was not connected in the server.
       // Remove this later.
@@ -433,20 +434,18 @@ class MenuChatState extends State<MenuChat>
       // _advsFromServer since that list should not contain our own
       // advs.
       _outAdvQueue.add(_advInput.clone());
+      _advInput = AdvData();
 
       var pubMap = {
          'cmd': 'publish',
          'from': _appId,
-         'to': _advInput.codes,
-         'msg': _advInput.description,
+         'to': _outAdvQueue.first.codes,
+         'msg': _outAdvQueue.first.description,
       };
 
       final String pubText = jsonEncode(pubMap);
       print(pubText);
       channel.sink.add(pubText);
-
-      _newAdvTextCtrl.text = "";
-      _advInput = AdvData();
 
       setState(() { });
    }
@@ -569,10 +568,10 @@ class MenuChatState extends State<MenuChat>
          final int id = ack['id'];
          print("Message with id = ${id} has been acked.");
 
-         _outAdvQueue.last.id = id;
+         _outAdvQueue.first.id = id;
 
          assert(!_outAdvQueue.isEmpty);
-         _ownAdvs.add(_outAdvQueue.removeLast());
+         _ownAdvs.add(_outAdvQueue.removeFirst());
       }
 
       if (cmd == "user_msg") {
@@ -651,7 +650,7 @@ class MenuChatState extends State<MenuChat>
             Widget widget_tmp = createNewAdvWidget(
                         context,
                         _advInput,
-                        _onAdvSendPressed,
+                        _onSendNewAdvPressed,
                         TextConsts.newAdvButtonText,
                         _newAdvTextCtrl,
                         _menus
