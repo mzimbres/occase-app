@@ -48,6 +48,15 @@ class AdvData {
       ret.chats = this.chats;
       return ret;
    }
+
+   void addMsg(String from_, String msg, bool thisApp)
+   {
+      // If from_ is equal to this.from
+      //chats[from].add(ChatItem(thisApp, msg));
+
+      // Provisory.
+      chats.add(ChatItem(thisApp, msg));
+   }
 }
 
 RichText createHeaderLine(BuildContext context, String key, String value)
