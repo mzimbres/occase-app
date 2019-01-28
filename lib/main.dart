@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:collection';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -197,10 +198,10 @@ class MenuChatState extends State<MenuChat>
    // will be filtered out.
    List<AdvData> _advsFromServer;
 
-   // The list of advs the user found interesting and its chat
-   // history. They are moved from the list of advs received from the
-   // server.
-   List<AdvData> _advsUserSelected;
+   // The list of advs the user found interesting and moved to
+   // favorites. They are moved from the list of advs received from
+   // the server to this list.
+   List<AdvData> _selectedAdvs;
 
    // Advs the user wrote itself and sent to the server. One issue we
    // have to observe here is that we will send _advInput to the
@@ -210,13 +211,13 @@ class MenuChatState extends State<MenuChat>
    // received from the server will not be inserted here. The only
    // advs inserted here are those that have been acked with ok by the
    // server, before that they will live in the output queue
-   // _pubOutputQueue
-   List<AdvData> _userOwnAdvs;
+   // _outAdvQueue
+   List<AdvData> _ownAdvs;
 
    // Advs sent by the user that have not been acked by the server
    // yet.
    // TODO: convert this into a queue.
-   List<AdvData> _pubOutputQueue;
+   List<AdvData> _outAdvQueue;
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -234,7 +235,7 @@ class MenuChatState extends State<MenuChat>
    // _currFavChatIdx and _currFavChatIdx are -1.
    int _chatBotBarIdx = 1;
 
-   // Stores the current chat index in the array _advsUserSelected, -1
+   // Stores the current chat index in the array _selectedAdvs, -1
    // means we are not in this screen.
    int _currFavChatIdx = -1;
 
@@ -262,9 +263,9 @@ class MenuChatState extends State<MenuChat>
 
       _advInput = AdvData();
       _advsFromServer = List<AdvData>();
-      _advsUserSelected = List<AdvData>();
-      _userOwnAdvs = List<AdvData>();
-      _pubOutputQueue = List<AdvData>();
+      _selectedAdvs = List<AdvData>();
+      _ownAdvs = List<AdvData>();
+      _outAdvQueue = List<AdvData>();
 
    }
 
@@ -305,8 +306,8 @@ class MenuChatState extends State<MenuChat>
    void _onAdvSelection(AdvData data)
    {
       print('Anuncio salvo');
-      _advsUserSelected.add(data);
-      //_userOwnAdvs.add(data);
+      _selectedAdvs.add(data);
+      //_ownAdvs.add(data);
       _advsFromServer.remove(data);
       setState(() { });
    }
@@ -414,7 +415,6 @@ class MenuChatState extends State<MenuChat>
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       final bool b = o.status;
       o.status = !b;;
-      print('${o.code} ===> ${o.status}');
       setState(() { });
    }
 
@@ -432,7 +432,7 @@ class MenuChatState extends State<MenuChat>
       // will be echoed back to us and have to be filtered out from
       // _advsFromServer since that list should not contain our own
       // advs.
-      _pubOutputQueue.add(_advInput.clone());
+      _outAdvQueue.add(_advInput.clone());
 
       var pubMap = {
          'cmd': 'publish',
@@ -451,7 +451,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   // This function is called with the index in _advsUserSelected.
+   // This function is called with the index in _selectedAdvs.
    void _onFavChat(int i)
    {
       print("On chat clicked.");
@@ -476,9 +476,9 @@ class MenuChatState extends State<MenuChat>
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
-         'to': _advsUserSelected[_currFavChatIdx].from,
+         'to': _selectedAdvs[_currFavChatIdx].from,
          'msg': msg,
-         'id': _advsUserSelected[_currFavChatIdx].id,
+         'id': _selectedAdvs[_currFavChatIdx].id,
          'is_sender_adv': false,
       };
 
@@ -486,7 +486,7 @@ class MenuChatState extends State<MenuChat>
       print(payload);
       channel.sink.add(payload);
 
-      _advsUserSelected[_currFavChatIdx].chats.add(ChatItem(true, msg));
+      _selectedAdvs[_currFavChatIdx].chats.add(ChatItem(true, msg));
       setState(() { });
    }
 
@@ -543,7 +543,6 @@ class MenuChatState extends State<MenuChat>
             codes.add(foo);
          }
 
-         print("codes ===> ${codes}");
          AdvData adv = AdvData();
          adv.from = from;
          adv.description = msg;
@@ -570,10 +569,10 @@ class MenuChatState extends State<MenuChat>
          final int id = ack['id'];
          print("Message with id = ${id} has been acked.");
 
-         _pubOutputQueue.last.id = id;
+         _outAdvQueue.last.id = id;
 
-         assert(!_pubOutputQueue.isEmpty);
-         _userOwnAdvs.add(_pubOutputQueue.removeLast());
+         assert(!_outAdvQueue.isEmpty);
+         _ownAdvs.add(_outAdvQueue.removeLast());
       }
 
       if (cmd == "user_msg") {
@@ -593,10 +592,10 @@ class MenuChatState extends State<MenuChat>
          // With the message id we can search in the array of our own
          // messages.
          final int i =
-               _userOwnAdvs.indexWhere((e) { return e.id == id;});
+               _ownAdvs.indexWhere((e) { return e.id == id;});
 
          final String msg = ack['msg'];
-         _userOwnAdvs[i].chats.add(ChatItem(false, msg));
+         _ownAdvs[i].chats.add(ChatItem(false, msg));
       }
    }
 
@@ -615,7 +614,6 @@ class MenuChatState extends State<MenuChat>
    {
       List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
-         //print(item.root.first.name + ' ===> ${item.filterDepth}');
          List<List<int>> hashCodes =
                readHashCodes(item.root.first, item.filterDepth);
 
@@ -702,7 +700,7 @@ class MenuChatState extends State<MenuChat>
          return createChatScreen(
                context,
                _onWillPopFavChatScreen,
-               _advsUserSelected[_currFavChatIdx],
+               _selectedAdvs[_currFavChatIdx],
                _newAdvTextCtrl,
                _onChatSendPressed);
       }
@@ -744,14 +742,14 @@ class MenuChatState extends State<MenuChat>
       if (_chatBotBarIdx == 0) {
          chatWidget = createChatTab(
                             context,
-                            _userOwnAdvs,
+                            _ownAdvs,
                             _onOwnAdvChat,
                             TextConsts.ownAdvButtonText,
                             _menus);
       } else {
          chatWidget = createChatTab(
                             context,
-                            _advsUserSelected,
+                            _selectedAdvs,
                             _onFavChat,
                             TextConsts.chatButtonText,
                             _menus);
