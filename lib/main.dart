@@ -345,6 +345,13 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
+   bool _onWillPopOwnChatScreen()
+   {
+      _currOwnChatIdx = -1;
+      setState(() { });
+      return false;
+   }
+
    void _onBotBarTapped(int i)
    {
       if ((_botBarIdx + 1) != TextConsts.newAdvTabNames.length)
@@ -740,6 +747,15 @@ class MenuChatState extends State<MenuChat>
                _newAdvTextCtrl,
                _onFavChatSendPressed,
                _favAdvs[_currFavChatIdx].from);
+      }
+
+      if (_tabController.index == 2 && _currOwnChatIdx != -1) {
+         // We are in the own advs screen, where pressing the button
+         // on one of our own advs will lead us to the list of users
+         // interested in our adv.
+         print("===> Adv ${_ownAdvs[_currOwnChatIdx]}");
+         final int l = _ownAdvs[_currOwnChatIdx].chats.length;
+         print("===> Interested users ${l}");
       }
 
       Widget filterTabWidget;
