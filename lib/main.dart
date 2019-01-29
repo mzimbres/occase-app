@@ -247,6 +247,10 @@ class MenuChatState extends State<MenuChat>
    // screen.
    int _currOwnChatIdx = -1;
 
+   // This string will be set to the name of user interested on our
+   // adv.
+   String _currOwnAdvChatName;
+
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
 
@@ -349,7 +353,8 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopOwnChatScreen()
    {
-      _currOwnChatIdx = -1;
+      _currOwnAdvChatName = null;
+      //_currOwnChatIdx = -1;
       setState(() { });
       return false;
    }
@@ -500,6 +505,11 @@ class MenuChatState extends State<MenuChat>
 
       _favAdvs[_currFavChatIdx].addMsg(from, msg, true);
       setState(() { });
+   }
+
+   void _onOwnChatSendPressed()
+   {
+      print("Send message to interested party.");
    }
 
    void onWSData(msg)
@@ -751,6 +761,20 @@ class MenuChatState extends State<MenuChat>
                _favAdvs[_currFavChatIdx].from);
       }
 
+      if (_tabController.index == 2 &&
+          _currOwnChatIdx != -1 && _currOwnAdvChatName != null) {
+         // We are in the chat screen with one interested user on a
+         // specific adv.
+
+         return createChatScreen(
+               context,
+               _onWillPopOwnChatScreen,
+               _ownAdvs[_currOwnChatIdx],
+               _newAdvTextCtrl,
+               _onOwnChatSendPressed,
+               _currOwnAdvChatName);
+      }
+
       Widget filterTabWidget;
       if (_botBarIdx == 2) {
          filterTabWidget = createSendScreen(_sendHahesToServer);
@@ -883,6 +907,8 @@ class MenuChatState extends State<MenuChat>
       // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
 
       print("Chat with: " + name);
+      _currOwnAdvChatName = name;
+      setState(() { });
    }
 }
 
