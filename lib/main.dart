@@ -798,7 +798,10 @@ class MenuChatState extends State<MenuChat>
             });
 
             chatWidget =
-                  createOwnAdvInterestedListView(context, interested);
+                  createOwnAdvInterestedListView(
+                        context,
+                        interested,
+                        _onOwnAdvInterestedChatPressed);
          } else {
             // The own advs tab in the chat screen.
             chatWidget = createChatTab(
@@ -873,6 +876,13 @@ class MenuChatState extends State<MenuChat>
       final String authText = jsonEncode(authCmd);
       print(authText);
       channel.sink.add(authText);
+   }
+
+   void _onOwnAdvInterestedChatPressed(String name)
+   {
+      // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
+
+      print("Chat with: " + name);
    }
 }
 

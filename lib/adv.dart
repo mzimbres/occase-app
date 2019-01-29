@@ -268,7 +268,8 @@ Widget createChatTab(
 
 ListView createOwnAdvInterestedListView(
             BuildContext context,
-            List<String> interested)
+            List<String> interested,
+            Function onPressed)
 {
    return ListView.builder(
       padding: const EdgeInsets.all(8.0),
@@ -280,7 +281,7 @@ ListView createOwnAdvInterestedListView(
                      interested[i], 0, null),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
-               onPressed: () { print("clicked"); },
+               onPressed: () { onPressed(interested[i]); },
          );
       },
    );
