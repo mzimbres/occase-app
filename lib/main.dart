@@ -172,6 +172,8 @@ createChatScreen(BuildContext context,
     );
 }
 
+
+
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -749,15 +751,6 @@ class MenuChatState extends State<MenuChat>
                _favAdvs[_currFavChatIdx].from);
       }
 
-      if (_tabController.index == 2 && _currOwnChatIdx != -1) {
-         // We are in the own advs screen, where pressing the button
-         // on one of our own advs will lead us to the list of users
-         // interested in our adv.
-         print("===> Adv ${_ownAdvs[_currOwnChatIdx]}");
-         final int l = _ownAdvs[_currOwnChatIdx].chats.length;
-         print("===> Interested users ${l}");
-      }
-
       Widget filterTabWidget;
       if (_botBarIdx == 2) {
          filterTabWidget = createSendScreen(_sendHahesToServer);
@@ -793,13 +786,30 @@ class MenuChatState extends State<MenuChat>
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
-         chatWidget = createChatTab(
-                            context,
-                            _ownAdvs,
-                            _onOwnAdvChat,
-                            TextConsts.ownAdvButtonText,
-                            _menus);
+         if (_tabController.index == 2 && _currOwnChatIdx != -1) {
+            // We are in the own advs screen, where pressing the button
+            // on one of our own advs will lead us to the list of users
+            // interested in it.
+
+            List<String> interested = List<String>();
+
+            _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
+               interested.add(k);
+            });
+
+            chatWidget =
+                  createOwnAdvInterestedListView(context, interested);
+         } else {
+            // The own advs tab in the chat screen.
+            chatWidget = createChatTab(
+                               context,
+                               _ownAdvs,
+                               _onOwnAdvChat,
+                               TextConsts.ownAdvButtonText,
+                               _menus);
+         }
       } else {
+         // The favorite tab in the chat screen.
          chatWidget = createChatTab(
                             context,
                             _favAdvs,
