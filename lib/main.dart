@@ -127,11 +127,18 @@ createChatScreen(BuildContext context,
          itemCount: history.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return Align( alignment: Alignment.bottomRight,
+            Alignment align = Alignment.bottomLeft;
+            Color color = Color(0xFFFFFFFF);
+            if (history[i].thisApp) {
+               align = Alignment.bottomRight;
+               color = Colors.lightGreenAccent[100];
+            }
+
+            return Align( alignment: align,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
                           child: Text(history[i].msg)),
-                    color: Colors.lightGreenAccent[100],
+                    color: color,
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
                   ),
