@@ -884,6 +884,15 @@ class MenuChatState extends State<MenuChat>
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
 
+      Row row = Row(children: <Widget>[
+         Text(TextConsts.tabNames[1] + " "),
+         CircleAvatar(
+               child: Text("99", style: TextStyle(
+                     //fontWeight: FontWeight.bold,
+                     fontSize: 11.0 )),
+               maxRadius: 10.0,
+               backgroundColor: Color(0xFFFFFFFF))
+      ]);
 
       return Scaffold(
             appBar: AppBar(
@@ -894,7 +903,7 @@ class MenuChatState extends State<MenuChat>
                         indicatorColor: Colors.white,
                         tabs: <Widget>[
                            Tab(text: TextConsts.tabNames[0],),
-                           Tab(text: TextConsts.tabNames[1]),
+                           Tab(child: row),
                            Tab(text: TextConsts.tabNames[2]),
                         ],
                   ),
