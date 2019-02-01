@@ -47,19 +47,19 @@ class AdvData {
       return ret;
    }
 
-   void addMsg(String from_, String msg, bool thisApp)
+   void addMsg(String peer, String msg, bool thisApp)
    {
-      List<ChatItem> history = GetChatHistory(from_);
+      List<ChatItem> history = GetChatHistory(peer);
       history.add(ChatItem(thisApp, msg));
    }
 
-   List<ChatItem> GetChatHistory(String from_)
+   List<ChatItem> GetChatHistory(String peer)
    {
-      List<ChatItem> history = chats[from_];
+      List<ChatItem> history = chats[peer];
       if (history == null) {
-         // This is the first message with this user (from_).
+         // This is the first message with this user (peer).
          List<ChatItem> tmp = List<ChatItem>();
-         chats[from_] = tmp;
+         chats[peer] = tmp;
          return tmp;
       }
 

@@ -151,10 +151,9 @@ createChatScreen(BuildContext context,
           onWillPop: () async { return onWillPopScope();},
           child: Scaffold(
              appBar : AppBar(
-                //title: Text("Anunciante: Paulo nascimento"),
                 title: ListTile(
                    leading: CircleAvatar(child: Text("")),
-                   title: Text( adv.from,
+                   title: Text( peer,
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: Consts.mainFontSize,
@@ -249,7 +248,7 @@ class MenuChatState extends State<MenuChat>
 
    // This string will be set to the name of user interested on our
    // adv.
-   String _currOwnAdvChatName;
+   String _ownAdvChatPeer;
 
    // The *new adv* text controler
    TextEditingController _newAdvTextCtrl = TextEditingController();
@@ -284,8 +283,11 @@ class MenuChatState extends State<MenuChat>
       try {
          if (Platform.isAndroid) {
             AndroidDeviceInfo info = await devInfo.androidInfo;
-            print("Using device id: " + info.id);
-            _appId = info.id;
+            // To void colision between devices running on the same
+            // machine, I will also use time stamp. Remove this later.
+            final int now = DateTime.now().millisecondsSinceEpoch;
+            _appId = info.id + "${now}";
+            print("========>: " + _appId);
          } else if (Platform.isIOS) {
             // Not implemented.
          }
@@ -353,7 +355,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopOwnChatScreen()
    {
-      _currOwnAdvChatName = null;
+      _ownAdvChatPeer = null;
       //_currOwnChatIdx = -1;
       setState(() { });
       return false;
@@ -488,12 +490,12 @@ class MenuChatState extends State<MenuChat>
       final String msg = _newAdvTextCtrl.text;
       _newAdvTextCtrl.text = "";
 
-      final String from = _favAdvs[_currFavChatIdx].from;
+      final String to = _favAdvs[_currFavChatIdx].from;
 
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
-         'to': from,
+         'to': to,
          'msg': msg,
          'id': _favAdvs[_currFavChatIdx].id,
          'is_sender_adv': false,
@@ -503,13 +505,33 @@ class MenuChatState extends State<MenuChat>
       print(payload);
       channel.sink.add(payload);
 
-      _favAdvs[_currFavChatIdx].addMsg(from, msg, true);
+      _favAdvs[_currFavChatIdx].addMsg(to, msg, true);
       setState(() { });
    }
 
    void _onOwnChatSendPressed()
    {
-      print("Send message to interested party.");
+      if (_newAdvTextCtrl.text.isEmpty)
+         return;
+
+      final String msg = _newAdvTextCtrl.text;
+      _newAdvTextCtrl.text = "";
+
+      var msgMap = {
+         'cmd': 'user_msg',
+         'from': _appId,
+         'to': _ownAdvChatPeer,
+         'msg': msg,
+         'id': _ownAdvs[_currOwnChatIdx].id,
+         'is_sender_adv': true,
+      };
+
+      final String payload = jsonEncode(msgMap);
+      print(payload);
+      channel.sink.add(payload);
+
+      _ownAdvs[_currOwnChatIdx].addMsg(_ownAdvChatPeer, msg, true);
+      setState(() { });
    }
 
    void onWSData(msg)
@@ -648,9 +670,10 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            print("Message to own adv.");
             _ownAdvs[i].addMsg(from, msg, false);
          }
+
+         setState((){});
       }
    }
 
@@ -762,7 +785,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_tabController.index == 2 &&
-          _currOwnChatIdx != -1 && _currOwnAdvChatName != null) {
+          _currOwnChatIdx != -1 && _ownAdvChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific adv.
 
@@ -772,7 +795,7 @@ class MenuChatState extends State<MenuChat>
                _ownAdvs[_currOwnChatIdx],
                _newAdvTextCtrl,
                _onOwnChatSendPressed,
-               _currOwnAdvChatName);
+               _ownAdvChatPeer);
       }
 
       Widget filterTabWidget;
@@ -907,7 +930,7 @@ class MenuChatState extends State<MenuChat>
       // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
 
       print("Chat with: " + name);
-      _currOwnAdvChatName = name;
+      _ownAdvChatPeer = name;
       setState(() { });
    }
 }
