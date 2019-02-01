@@ -81,29 +81,38 @@ RichText createHeaderLine(BuildContext context, String key, String value)
    );
 }
 
-Padding headerFactory(BuildContext context,
-                      List<String> values,
-                      List<String> keys)
+Card advInnerCardFactory(BuildContext context,
+      List<String> values, List<String> keys, String title)
 {
-   List<RichText> r = List<RichText>();
+   List<Widget> r = List<Widget>();
+   if (title != null) {
+       Text t = Text( title,
+          style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17.0,
+                color: Colors.black,
+             )
+          );
+
+       r.add(Center(child:t));
+   }
+
    for (int i = 0; i < values.length; ++i) {
       r.add(createHeaderLine(context, keys[i], values[i]));
    }
 
-   return Padding( padding: EdgeInsets.all(4.0),
-         child: Column( crossAxisAlignment: CrossAxisAlignment.stretch,
+   Padding padd = Padding( padding: EdgeInsets.all(4.0),
+         child: Column(
+               crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
-         ));
-}
+            )
+         );
 
-Card advInnerCardFactory(BuildContext context,
-      List<String> values, List<String> keys)
-{
    return Card(
-         child: headerFactory(context, values, keys),
-         color: Consts.advLocHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMarging),
-         elevation: 0.0,
+            child: padd,
+            color: Consts.advLocHeaderColor,
+            margin: EdgeInsets.all(Consts.advInnerMarging),
+            elevation: 0.0,
    );
 }
 
@@ -117,13 +126,15 @@ Card advAssembler(BuildContext context, AdvData data,
       List<String> names =
             loadNames(menus[i].root.first, data.codes[i][0]);
       list.add(advInnerCardFactory(context, names,
-                  TextConsts.menuDepthNames[i]));
+                  TextConsts.menuDepthNames[i],
+                  TextConsts.newAdvTabNames[i]),
+            );
    }
 
    if (newAdvTextCtrl == null)
       list.add(advInnerCardFactory(context,
                   <String>[data.description],
-                  <String>[TextConsts.descriptionText]));
+                  <String>[TextConsts.descriptionText], null));
 
    if (newAdvTextCtrl != null) {
       // TODO: Set a max length.
