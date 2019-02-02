@@ -178,7 +178,22 @@ createChatScreen(BuildContext context,
     );
 }
 
+Widget makeTabWidget(int n)
+{
+   if (n == 0)
+      return Text(TextConsts.tabNames[1]);
 
+   return Row(children: <Widget>[
+      Text(TextConsts.tabNames[1] + " "),
+      CircleAvatar(
+            child: Text("${n}", style: TextStyle(
+                  //fontWeight: FontWeight.bold,
+                  fontSize: 11.0 )),
+            maxRadius: 10.0,
+            backgroundColor: const Color(0xFFFFFFFF))
+      ]
+   );
+}
 
 class MenuChat extends StatefulWidget {
   MenuChat();
@@ -208,6 +223,7 @@ class MenuChatState extends State<MenuChat>
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
    List<AdvData> _advs;
+   List<AdvData> _unreadAdvs;
 
    // The list of advs the user found interesting and moved to
    // favorites. They are moved from the list of advs received from
@@ -277,6 +293,7 @@ class MenuChatState extends State<MenuChat>
 
       _advInput = AdvData();
       _advs = List<AdvData>();
+      _unreadAdvs = List<AdvData>();
       _favAdvs = List<AdvData>();
       _ownAdvs = List<AdvData>();
       _outAdvQueue = Queue<AdvData>();
@@ -600,7 +617,7 @@ class MenuChatState extends State<MenuChat>
          adv.codes = codes;
          adv.id = id;
 
-         _advs.add(adv);
+         _unreadAdvs.add(adv);
 
          // TODO: Before triggering a redraw we should perhaps check
          // whether it is necessary given our current state.
@@ -830,6 +847,13 @@ class MenuChatState extends State<MenuChat>
                       _botBarIdx
                    );
 
+      final int newAdvsLength = _unreadAdvs.length;
+      if (_tabController.index == 1) {
+         _advs.addAll(_unreadAdvs);
+         _unreadAdvs.clear();
+      }
+
+      // This is the widget of the incoming advs screen.
       widgets[1] = createAdvTab(
                       context,
                       _advs,
@@ -878,16 +902,14 @@ class MenuChatState extends State<MenuChat>
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
 
-      Row row = Row(children: <Widget>[
-         Text(TextConsts.tabNames[1] + " "),
-         CircleAvatar(
-               child: Text("99", style: TextStyle(
-                     //fontWeight: FontWeight.bold,
-                     fontSize: 11.0 )),
-               maxRadius: 10.0,
-               backgroundColor: Color(0xFFFFFFFF))
-      ]);
 
+      // We do not show the advs circle if we are in the same tab.
+      // TODO: Find a way to report incomming advs.
+      //int showNewAdvs = newAdvsLength;
+      //if (_tabController.index == 1)
+      //   showNewAdvs = 0;
+
+      print("I am being called.");
       return Scaffold(
             appBar: AppBar(
                   title: Text(TextConsts.appName),
@@ -897,7 +919,7 @@ class MenuChatState extends State<MenuChat>
                         indicatorColor: Colors.white,
                         tabs: <Widget>[
                            Tab(text: TextConsts.tabNames[0],),
-                           Tab(child: row),
+                           Tab(child: makeTabWidget(newAdvsLength)),
                            Tab(text: TextConsts.tabNames[2]),
                         ],
                   ),
