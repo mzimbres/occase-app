@@ -214,18 +214,18 @@ class MenuChatState extends State<MenuChat>
    List<MenuItem> _menus;
 
    // The temporary variable used to store the adv the user sends.
-   AdvData _advInput;
+   AdvData _advInput = AdvData();
 
    // The list of advs received from the server. Our own advs that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
-   List<AdvData> _advs;
-   List<AdvData> _unreadAdvs;
+   List<AdvData> _advs = List<AdvData>();
+   List<AdvData> _unreadAdvs = List<AdvData>();
 
    // The list of advs the user found interesting and moved to
    // favorites. They are moved from the list of advs received from
    // the server to this list.
-   List<AdvData> _favAdvs;
+   List<AdvData> _favAdvs = List<AdvData>();
 
    // Advs the user wrote itself and sent to the server. One issue we
    // have to observe here is that we will send _advInput to the
@@ -236,11 +236,11 @@ class MenuChatState extends State<MenuChat>
    // advs inserted here are those that have been acked with ok by the
    // server, before that they will live in the output queue
    // _outAdvQueue
-   List<AdvData> _ownAdvs;
+   List<AdvData> _ownAdvs = List<AdvData>();
 
    // Advs sent by the user that have not been acked by the server
    // yet.
-   Queue<AdvData> _outAdvQueue;
+   Queue<AdvData> _outAdvQueue = Queue<AdvData>();
 
    // A flag that is set to true when the floating button (new
    // advertisement) is clicked. It must be carefully set to false
@@ -287,13 +287,6 @@ class MenuChatState extends State<MenuChat>
 
       _onNewAdvPressed = false;
       _botBarIdx = 0;
-
-      _advInput = AdvData();
-      _advs = List<AdvData>();
-      _unreadAdvs = List<AdvData>();
-      _favAdvs = List<AdvData>();
-      _ownAdvs = List<AdvData>();
-      _outAdvQueue = Queue<AdvData>();
    }
 
    Future<void> readDevInfo() async
@@ -742,6 +735,17 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   int _getNumberOfUnreadChats()
+   {
+      int i = 0;
+      for (AdvData adv in _favAdvs)
+         i += adv.getNumberOfUnreadChats();
+      for (AdvData adv in _ownAdvs)
+         i += adv.getNumberOfUnreadChats();
+
+      return i;
+   }
+
    @override
    void dispose()
    {
@@ -806,7 +810,7 @@ class MenuChatState extends State<MenuChat>
          // screen with the advertiser.
          final String peer = _favAdvs[_currFavChatIdx].from;
          ChatHistory chatHist =
-               _favAdvs[_currFavChatIdx].GetChatHistory(peer);
+               _favAdvs[_currFavChatIdx].getChatHistory(peer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
@@ -821,7 +825,7 @@ class MenuChatState extends State<MenuChat>
          // We are in the chat screen with one interested user on a
          // specific adv.
          ChatHistory chatHist =
-               _ownAdvs[_currOwnChatIdx].GetChatHistory(_ownAdvChatPeer);
+               _ownAdvs[_currOwnChatIdx].getChatHistory(_ownAdvChatPeer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
@@ -912,8 +916,7 @@ class MenuChatState extends State<MenuChat>
                       _chatBotBarIdx);
 
 
-      // TODO: Calculate this.
-      final int newChats = 0;
+      final int newChats = _getNumberOfUnreadChats();
 
       return Scaffold(
          appBar: AppBar(

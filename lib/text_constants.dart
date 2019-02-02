@@ -5,7 +5,7 @@ class TextConsts {
 
    // Text used for the main tabs.
    static final List<String> tabNames =
-         <String>["FILTROS", "ANUNCIOS", "CONVERSAS"];
+         <String>["FILTROS", "ANUNCIOS", "CHATS"];
 
    //______________
 

@@ -63,17 +63,17 @@ class AdvData {
 
    void addMsg(String peer, String msg, bool thisApp)
    {
-      ChatHistory history = GetChatHistory(peer);
+      ChatHistory history = getChatHistory(peer);
       history.msgs.add(ChatItem(thisApp, msg));
    }
 
    void addUnreadMsg(String peer, String msg, bool thisApp)
    {
-      ChatHistory history = GetChatHistory(peer);
+      ChatHistory history = getChatHistory(peer);
       history.unreadMsgs.add(ChatItem(thisApp, msg));
    }
 
-   ChatHistory GetChatHistory(String peer)
+   ChatHistory getChatHistory(String peer)
    {
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
@@ -85,6 +85,16 @@ class AdvData {
       }
 
       return chats[i];
+   }
+
+   int getNumberOfUnreadChats()
+   {
+      int i = 0;
+      for (ChatHistory h in chats)
+         if (!h.unreadMsgs.isEmpty)
+            ++i;
+
+      return i;
    }
 }
 
