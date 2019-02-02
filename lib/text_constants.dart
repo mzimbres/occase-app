@@ -57,5 +57,8 @@ class TextConsts {
    static final IconData newAdvIcon = Icons.mode_edit;
 
    static final String hintTextChat = "Digite sua mensagem";
+
+   static final Color allMenuItemCircleColor = Colors.orangeAccent[700];
+   static final Color menuItemCircleColor = Colors.teal[600];
 }
 

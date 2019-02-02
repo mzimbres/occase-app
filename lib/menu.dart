@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
+import 'package:menu_chat/text_constants.dart';
 
 String makeSubItemsString(int n)
 {
@@ -11,14 +12,20 @@ String makeSubItemsString(int n)
    return null;
 }
 
-ListTile createListViewItem(String name, String subItemStr, Icon trailing)
+ListTile createListViewItem(
+      String name,
+      String subItemStr,
+      Icon trailing,
+      Color circleColor)
 {
    Text subItemText = null;
    if (subItemStr != null)
       subItemText = Text( subItemStr,
                           style: TextStyle(fontSize: Consts.subFontSize));
 
-   return ListTile( leading: CircleAvatar(child: Text(name[0])),
+   return ListTile( leading: CircleAvatar(
+                      child: Text(name[0]),
+                      backgroundColor: circleColor),
          title: Text( name,
                style: TextStyle(
                      fontWeight: FontWeight.bold,
@@ -59,7 +66,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          if (shift == 1 && i == 0) {
             final String title = "Marcar todos (${o.leafCounter} items)";
             return FlatButton(
-                  child: createListViewItem(title, null, null),
+                  child: createListViewItem(title, null,
+                        null, TextConsts.allMenuItemCircleColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
@@ -79,7 +87,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             return FlatButton(
-                  child: createListViewItem(child.name, subStr, icon),
+                  child: createListViewItem(child.name, subStr,
+                        icon, TextConsts.menuItemCircleColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
@@ -89,7 +98,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
          return FlatButton(
-               child: createListViewItem(child.name, subStr, null),
+               child: createListViewItem(child.name, subStr,
+                     null, TextConsts.menuItemCircleColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },

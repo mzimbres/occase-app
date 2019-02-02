@@ -237,7 +237,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          final String subStr = makeSubItemsString(child.leafCounter);
          if (child.isLeaf()) {
             return FlatButton(
-               child: createListViewItem(child.name, subStr, null),
+               child: createListViewItem(child.name, subStr,
+                     null, TextConsts.menuItemCircleColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onLeafPressed(i);},
@@ -245,7 +246,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          }
          
          return FlatButton(
-               child: createListViewItem(child.name, subStr, null),
+               child: createListViewItem(child.name, subStr,
+                     null, TextConsts.menuItemCircleColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
@@ -288,7 +290,8 @@ ListView createOwnAdvInterestedListView(
       {
          return FlatButton(
                child: createListViewItem(
-                     interested[i], null, null),
+                     interested[i], null, null,
+                     TextConsts.menuItemCircleColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onPressed(interested[i]); },
