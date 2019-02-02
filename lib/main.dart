@@ -86,10 +86,9 @@ int advIndexHelper(int i)
 Widget
 createChatScreen(BuildContext context,
                  Function onWillPopScope,
-                 AdvData adv,
+                 ChatHistory chatHist,
                  TextEditingController newAdvTextCtrl,
-                 Function onChatSendPressed,
-                 String peer)
+                 Function onChatSendPressed)
 {
    TextField textField = TextField(
       controller: newAdvTextCtrl,
@@ -119,17 +118,15 @@ createChatScreen(BuildContext context,
          ],
    );
 
-   ChatHistory history = adv.GetChatHistory(peer);
-
    ListView list = ListView.builder(
          reverse:true,
          padding: const EdgeInsets.all(6.0),
-         itemCount: history.msgs.length,
+         itemCount: chatHist.msgs.length,
          itemBuilder: (BuildContext context, int i)
          {
             Alignment align = Alignment.bottomLeft;
             Color color = Color(0xFFFFFFFF);
-            if (history.msgs[i].thisApp) {
+            if (chatHist.msgs[i].thisApp) {
                align = Alignment.bottomRight;
                color = Colors.lightGreenAccent[100];
             }
@@ -137,7 +134,7 @@ createChatScreen(BuildContext context,
             return Align( alignment: align,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
-                          child: Text(history.msgs[i].msg)),
+                          child: Text(chatHist.msgs[i].msg)),
                     color: color,
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
@@ -160,7 +157,7 @@ createChatScreen(BuildContext context,
              appBar : AppBar(
                 title: ListTile(
                    leading: CircleAvatar(child: Text("")),
-                   title: Text( peer,
+                   title: Text( chatHist.peer,
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: Consts.mainFontSize,
@@ -677,9 +674,7 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            print("Message to selected adv.");
-
-            _favAdvs[i].addMsg(from, msg, false);
+            _favAdvs[i].addUnreadMsg(from, msg, false);
 
          } else {
             // This is a message to our own adv, some interested user.
@@ -695,7 +690,7 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            _ownAdvs[i].addMsg(from, msg, false);
+            _ownAdvs[i].addUnreadMsg(from, msg, false);
          }
 
          setState((){});
@@ -809,27 +804,31 @@ class MenuChatState extends State<MenuChat>
          // We are in the favorite advs screen, where pressing the
          // chat button in any of the advs leads us to the chat
          // screen with the advertiser.
+         final String peer = _favAdvs[_currFavChatIdx].from;
+         ChatHistory chatHist =
+               _favAdvs[_currFavChatIdx].GetChatHistory(peer);
+         chatHist.moveToReadHistory();
          return createChatScreen(
-               context,
-               _onWillPopFavChatScreen,
-               _favAdvs[_currFavChatIdx],
-               _newAdvTextCtrl,
-               _onFavChatSendPressed,
-               _favAdvs[_currFavChatIdx].from);
+                   context,
+                   _onWillPopFavChatScreen,
+                   chatHist,
+                   _newAdvTextCtrl,
+                   _onFavChatSendPressed);
       }
 
       if (_tabCtrl.index == 2 &&
           _currOwnChatIdx != -1 && _ownAdvChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific adv.
-
+         ChatHistory chatHist =
+               _ownAdvs[_currOwnChatIdx].GetChatHistory(_ownAdvChatPeer);
+         chatHist.moveToReadHistory();
          return createChatScreen(
-               context,
-               _onWillPopOwnChatScreen,
-               _ownAdvs[_currOwnChatIdx],
-               _newAdvTextCtrl,
-               _onOwnChatSendPressed,
-               _ownAdvChatPeer);
+                   context,
+                   _onWillPopOwnChatScreen,
+                   chatHist,
+                   _newAdvTextCtrl,
+                   _onOwnChatSendPressed);
       }
 
       Widget filterTabWidget;

@@ -16,6 +16,12 @@ class ChatHistory {
    List<ChatItem> unreadMsgs = List<ChatItem>();
 
    ChatHistory(this.peer);
+
+   void moveToReadHistory()
+   {
+      msgs.addAll(unreadMsgs);
+      unreadMsgs.clear();
+   }
 }
 
 class AdvData {
@@ -59,6 +65,12 @@ class AdvData {
    {
       ChatHistory history = GetChatHistory(peer);
       history.msgs.add(ChatItem(thisApp, msg));
+   }
+
+   void addUnreadMsg(String peer, String msg, bool thisApp)
+   {
+      ChatHistory history = GetChatHistory(peer);
+      history.unreadMsgs.add(ChatItem(thisApp, msg));
    }
 
    ChatHistory GetChatHistory(String peer)
