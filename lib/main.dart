@@ -204,7 +204,7 @@ class MenuChat extends StatefulWidget {
 
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
-   TabController _tabController;
+   TabController _tabCtrl;
 
    // The id we will use to communicate with the server.
    String _appId = '007';
@@ -297,7 +297,6 @@ class MenuChatState extends State<MenuChat>
       _favAdvs = List<AdvData>();
       _ownAdvs = List<AdvData>();
       _outAdvQueue = Queue<AdvData>();
-
    }
 
    Future<void> readDevInfo() async
@@ -331,8 +330,10 @@ class MenuChatState extends State<MenuChat>
    {
       super.initState();
 
-      _tabController = TabController(vsync: this,
+      _tabCtrl = TabController(vsync: this,
             initialIndex: 1, length: 3);
+
+      _tabCtrl.addListener(_tabCtrlChangeHandler);
 
       readDevInfo();
    }
@@ -737,6 +738,15 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(subText);
    }
 
+   // Called when the main tab changes.
+   void _tabCtrlChangeHandler()
+   {
+      // This function is meant to change the tab widgets when we
+      // switch tab. This is needed to show the number of unread
+      // messages.
+      print("I see a tab has changed.");
+   }
+
    @override
    void dispose()
    {
@@ -795,7 +805,7 @@ class MenuChatState extends State<MenuChat>
                 );
       }
 
-      if (_tabController.index == 2 && _currFavChatIdx != -1) {
+      if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
          // We are in the favorite advs screen, where pressing the
          // chat button in any of the advs leads us to the chat
          // screen with the advertiser.
@@ -808,7 +818,7 @@ class MenuChatState extends State<MenuChat>
                _favAdvs[_currFavChatIdx].from);
       }
 
-      if (_tabController.index == 2 &&
+      if (_tabCtrl.index == 2 &&
           _currOwnChatIdx != -1 && _ownAdvChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific adv.
@@ -848,7 +858,7 @@ class MenuChatState extends State<MenuChat>
                    );
 
       final int newAdvsLength = _unreadAdvs.length;
-      if (_tabController.index == 1) {
+      if (_tabCtrl.index == 1) {
          _advs.addAll(_unreadAdvs);
          _unreadAdvs.clear();
       }
@@ -864,7 +874,7 @@ class MenuChatState extends State<MenuChat>
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
-         if (_tabController.index == 2 && _currOwnChatIdx != -1) {
+         if (_tabCtrl.index == 2 && _currOwnChatIdx != -1) {
             // We are in the own advs screen, where pressing the button
             // on one of our own advs will lead us to the list of users
             // interested in it.
@@ -906,7 +916,7 @@ class MenuChatState extends State<MenuChat>
       // We do not show the advs circle if we are in the same tab.
       // TODO: Find a way to report incomming advs.
       //int showNewAdvs = newAdvsLength;
-      //if (_tabController.index == 1)
+      //if (_tabCtrl.index == 1)
       //   showNewAdvs = 0;
 
       print("I am being called.");
@@ -915,7 +925,7 @@ class MenuChatState extends State<MenuChat>
                   title: Text(TextConsts.appName),
                   elevation: 0.7,
                   bottom: TabBar(
-                        controller: _tabController,
+                        controller: _tabCtrl,
                         indicatorColor: Colors.white,
                         tabs: <Widget>[
                            Tab(text: TextConsts.tabNames[0],),
@@ -931,7 +941,7 @@ class MenuChatState extends State<MenuChat>
                      Icon(Icons.more_vert)
                   ],
             ),
-            body: TabBarView(controller: _tabController, children: widgets)
+            body: TabBarView(controller: _tabCtrl, children: widgets)
       );
    }
 
