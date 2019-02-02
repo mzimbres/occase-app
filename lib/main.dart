@@ -178,13 +178,13 @@ createChatScreen(BuildContext context,
     );
 }
 
-Widget makeTabWidget(int n)
+Widget makeTabWidget(int n, String title)
 {
    if (n == 0)
-      return Text(TextConsts.tabNames[1]);
+      return Text(title);
 
    return Row(children: <Widget>[
-      Text(TextConsts.tabNames[1] + " "),
+      Text(title + " "),
       CircleAvatar(
             child: Text("${n}", style: TextStyle(
                   //fontWeight: FontWeight.bold,
@@ -913,35 +913,33 @@ class MenuChatState extends State<MenuChat>
                       _chatBotBarIdx);
 
 
-      // We do not show the advs circle if we are in the same tab.
-      // TODO: Find a way to report incomming advs.
-      //int showNewAdvs = newAdvsLength;
-      //if (_tabCtrl.index == 1)
-      //   showNewAdvs = 0;
+      // TODO: Calculate this.
+      final int newChats = 0;
 
-      print("I am being called.");
       return Scaffold(
-            appBar: AppBar(
-                  title: Text(TextConsts.appName),
-                  elevation: 0.7,
-                  bottom: TabBar(
-                        controller: _tabCtrl,
-                        indicatorColor: Colors.white,
-                        tabs: <Widget>[
-                           Tab(text: TextConsts.tabNames[0],),
-                           Tab(child: makeTabWidget(newAdvsLength)),
-                           Tab(text: TextConsts.tabNames[2]),
-                        ],
-                  ),
-                  actions: <Widget>[
-                     Icon(Icons.search),
-                     Padding(
-                           padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                     ),
-                     Icon(Icons.more_vert)
+         appBar: AppBar(
+            title: Text(TextConsts.appName),
+            elevation: 0.7,
+            bottom: TabBar(
+                  controller: _tabCtrl,
+                  indicatorColor: Colors.white,
+                  tabs: <Widget>[
+                     Tab(text: TextConsts.tabNames[0],),
+                     Tab(child: makeTabWidget(newAdvsLength,
+                                 TextConsts.tabNames[1])),
+                     Tab(child: makeTabWidget(newChats,
+                                TextConsts.tabNames[2])),
                   ],
             ),
-            body: TabBarView(controller: _tabCtrl, children: widgets)
+            actions: <Widget>[
+               Icon(Icons.search),
+               Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
+               ),
+               Icon(Icons.more_vert)
+            ],
+         ),
+         body: TabBarView(controller: _tabCtrl, children: widgets)
       );
    }
 
