@@ -744,7 +744,7 @@ class MenuChatState extends State<MenuChat>
       // This function is meant to change the tab widgets when we
       // switch tab. This is needed to show the number of unread
       // messages.
-      print("I see a tab has changed.");
+      setState(() { });
    }
 
    @override
