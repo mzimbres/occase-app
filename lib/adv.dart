@@ -13,6 +13,7 @@ class ChatItem {
 class ChatHistory {
    String peer = '';
    List<ChatItem> msgs = List<ChatItem>();
+   List<ChatItem> unreadMsgs = List<ChatItem>();
 
    ChatHistory(this.peer);
 }

@@ -207,7 +207,7 @@ class MenuChatState extends State<MenuChat>
    // The list of advs received from the server. Our own advs that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
-   List<AdvData> _advsFromServer;
+   List<AdvData> _advs;
 
    // The list of advs the user found interesting and moved to
    // favorites. They are moved from the list of advs received from
@@ -276,7 +276,7 @@ class MenuChatState extends State<MenuChat>
       _botBarIdx = 0;
 
       _advInput = AdvData();
-      _advsFromServer = List<AdvData>();
+      _advs = List<AdvData>();
       _favAdvs = List<AdvData>();
       _ownAdvs = List<AdvData>();
       _outAdvQueue = Queue<AdvData>();
@@ -325,7 +325,7 @@ class MenuChatState extends State<MenuChat>
       print('Anuncio salvo');
       _favAdvs.add(data);
       //_ownAdvs.add(data);
-      _advsFromServer.remove(data);
+      _advs.remove(data);
       setState(() { });
    }
 
@@ -452,11 +452,11 @@ class MenuChatState extends State<MenuChat>
 
       // Was only useful when the app was not connected in the server.
       // Remove this later.
-      //_advsFromServer.add(_advInput.clone());
+      //_advs.add(_advInput.clone());
 
       // We add it here in our own list of advs and keep in mind it
       // will be echoed back to us and have to be filtered out from
-      // _advsFromServer since that list should not contain our own
+      // _advs since that list should not contain our own
       // advs.
       _outAdvQueue.add(_advInput.clone());
       _advInput = AdvData();
@@ -600,7 +600,7 @@ class MenuChatState extends State<MenuChat>
          adv.codes = codes;
          adv.id = id;
 
-         _advsFromServer.add(adv);
+         _advs.add(adv);
 
          // TODO: Before triggering a redraw we should perhaps check
          // whether it is necessary given our current state.
@@ -832,7 +832,7 @@ class MenuChatState extends State<MenuChat>
 
       widgets[1] = createAdvTab(
                       context,
-                      _advsFromServer,
+                      _advs,
                       _onAdvSelection,
                       _onNewAdv,
                       _menus
