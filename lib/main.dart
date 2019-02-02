@@ -119,17 +119,17 @@ createChatScreen(BuildContext context,
          ],
    );
 
-   List<ChatItem> history = adv.GetChatHistory(peer);
+   ChatHistory history = adv.GetChatHistory(peer);
 
    ListView list = ListView.builder(
          reverse:true,
          padding: const EdgeInsets.all(6.0),
-         itemCount: history.length,
+         itemCount: history.msgs.length,
          itemBuilder: (BuildContext context, int i)
          {
             Alignment align = Alignment.bottomLeft;
             Color color = Color(0xFFFFFFFF);
-            if (history[i].thisApp) {
+            if (history.msgs[i].thisApp) {
                align = Alignment.bottomRight;
                color = Colors.lightGreenAccent[100];
             }
@@ -137,7 +137,7 @@ createChatScreen(BuildContext context,
             return Align( alignment: align,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
-                          child: Text(history[i].msg)),
+                          child: Text(history.msgs[i].msg)),
                     color: color,
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
@@ -845,17 +845,11 @@ class MenuChatState extends State<MenuChat>
             // on one of our own advs will lead us to the list of users
             // interested in it.
 
-            List<String> interested = List<String>();
-
-            _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
-               interested.add(k);
-            });
-
             chatWidget =
-                  createOwnAdvInterestedListView(
-                        context,
-                        interested,
-                        _onOwnAdvInterestedChatPressed);
+               createOwnAdvInterestedListView(
+                     context,
+                     _ownAdvs[_currOwnChatIdx].chats,
+                     _onOwnAdvInterestedChatPressed);
          } else {
             // The own advs tab in the chat screen.
             chatWidget = createChatTab(

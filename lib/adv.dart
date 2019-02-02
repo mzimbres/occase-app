@@ -10,6 +10,13 @@ class ChatItem {
    ChatItem(this.thisApp, this.msg) { }
 }
 
+class ChatHistory {
+   String peer = '';
+   List<ChatItem> msgs = List<ChatItem>();
+
+   ChatHistory(this.peer);
+}
+
 class AdvData {
    // The person that published this adv.
    String from = '';
@@ -27,7 +34,7 @@ class AdvData {
    // The string *description* inputed when user writes an adv.
    String description = '';
 
-   Map<String, List<ChatItem>> chats = Map<String, List<ChatItem>>();
+   List<ChatHistory> chats = List<ChatHistory>();
 
    AdvData()
    {
@@ -43,27 +50,28 @@ class AdvData {
       AdvData ret = AdvData();
       ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
-      ret.chats = Map<String, List<ChatItem>>.from(this.chats);
+      ret.chats = List<ChatHistory>.from(this.chats);
       return ret;
    }
 
    void addMsg(String peer, String msg, bool thisApp)
    {
-      List<ChatItem> history = GetChatHistory(peer);
-      history.add(ChatItem(thisApp, msg));
+      ChatHistory history = GetChatHistory(peer);
+      history.msgs.add(ChatItem(thisApp, msg));
    }
 
-   List<ChatItem> GetChatHistory(String peer)
+   ChatHistory GetChatHistory(String peer)
    {
-      List<ChatItem> history = chats[peer];
-      if (history == null) {
+      final int i = chats.indexWhere((e) {return e.peer == peer;});
+
+      if (i == -1) {
          // This is the first message with this user (peer).
-         List<ChatItem> tmp = List<ChatItem>();
-         chats[peer] = tmp;
-         return tmp;
+         ChatHistory history = ChatHistory(peer);
+         chats.add(history);
+         return history;
       }
 
-      return history;
+      return chats[i];
    }
 }
 
@@ -280,7 +288,7 @@ Widget createChatTab(
 
 ListView createOwnAdvInterestedListView(
             BuildContext context,
-            List<String> interested,
+            List<ChatHistory> interested,
             Function onPressed)
 {
    return ListView.builder(
@@ -290,11 +298,11 @@ ListView createOwnAdvInterestedListView(
       {
          return FlatButton(
                child: createListViewItem(
-                     interested[i], null, null,
+                     interested[i].peer, null, null,
                      TextConsts.menuItemCircleColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onPressed(interested[i]); },
+               onPressed: () { onPressed(interested[i].peer); },
          );
       },
    );
