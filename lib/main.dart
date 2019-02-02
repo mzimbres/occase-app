@@ -746,6 +746,19 @@ class MenuChatState extends State<MenuChat>
       return i;
    }
 
+   bool _onOwnAdvsBackPressed()
+   {
+      print("Implement me");
+
+      if (_chatBotBarIdx == 0 && _currOwnChatIdx != -1) {
+         _currOwnChatIdx = -1;
+         setState(() { });
+         return false;
+      }
+
+      return true;
+   }
+
    @override
    void dispose()
    {
@@ -911,7 +924,7 @@ class MenuChatState extends State<MenuChat>
                       null,
                       TextConsts.chatIcons,
                       TextConsts.chatIconTexts,
-                      () {print("Implement me");},
+                      _onOwnAdvsBackPressed,
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
 
