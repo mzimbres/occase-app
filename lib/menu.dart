@@ -21,8 +21,9 @@ ListTile createListViewItem(
 {
    Text subItemText = null;
    if (subItemStr != null)
-      subItemText = Text( subItemStr,
-                          style: Theme.of(context).textTheme.caption);
+      subItemText = Text(subItemStr,
+                         style: Theme.of(context).textTheme.caption,
+                         maxLines: 2, overflow: TextOverflow.clip);
 
    return ListTile( leading: CircleAvatar(
                       child: Text(name[0]),

@@ -22,6 +22,18 @@ class ChatHistory {
       msgs.addAll(unreadMsgs);
       unreadMsgs.clear();
    }
+
+   // TODO: Change this to return Text so that it is possible to
+   // return bold if unread.
+   String getLastMsg()
+   {
+      if (unreadMsgs.length != 0)
+         return unreadMsgs.last.msg;
+      if (msgs.length != 0)
+         return msgs.last.msg;
+
+      return '';
+   }
 }
 
 class AdvData {
@@ -201,11 +213,12 @@ Card createFavAdvWidget(BuildContext context,
                         Function onPressed,
                         List<MenuItem> menus)
 {
+   final String subTitle = adv.getChatHistory(adv.from).getLastMsg();
    FlatButton button = FlatButton(
          child: createListViewItem(
                context,
                adv.from,
-               "jsjsjs",
+               subTitle,
                null,
                Theme.of(context).primaryColor),
          color: const Color(0xFFFFFF),
@@ -410,8 +423,11 @@ ListView createOwnAdvInterestedListView(
       itemBuilder: (BuildContext context, int i)
       {
          return FlatButton(
-               child: createListViewItem(context,
-                     interested[i].peer, null, null,
+               child: createListViewItem(
+                     context,
+                     interested[i].peer,
+                     interested[i].getLastMsg(),
+                     null,
                      Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
