@@ -881,7 +881,7 @@ class MenuChatState extends State<MenuChat>
                       context,
                       filterTabWidget,
                       null,
-                      TextConsts.newAdvTabIcons,
+                      TextConsts.filterTabIcons,
                       TextConsts.filterTabNames,
                       _onWillPopMenu,
                       _onBotBarTapped,

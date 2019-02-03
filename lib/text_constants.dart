@@ -12,12 +12,15 @@ class TextConsts {
    // Text used in the *new advertisement screens* on the bottom
    // navigation bar.
    static final List<String> newAdvTabNames =
-         <String>['Localizacao', 'Modelos', 'Enviar'];
+         <String>['Localizacao', 'Modelos', 'Publicar'];
+
+   static List<IconData> newAdvTabIcons =
+         <IconData>[Icons.home, Icons.directions_car, Icons.publish];
 
    static final List<String> filterTabNames =
          <String>['Localizacao', 'Modelos', 'Salvar'];
 
-   static List<IconData> newAdvTabIcons =
+   static List<IconData> filterTabIcons =
          <IconData>[Icons.home, Icons.directions_car, Icons.send];
    //______________
 

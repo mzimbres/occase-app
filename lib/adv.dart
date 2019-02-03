@@ -328,7 +328,7 @@ Widget createOwnAdvChatTab(
                       () {onChat(i, true);},
                       buttonText,
                       null, menus,
-                      Icon(Icons.message));
+                      Icon(Icons.group));
          },
    );
 }
