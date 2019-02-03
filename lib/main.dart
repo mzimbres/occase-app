@@ -332,10 +332,11 @@ class MenuChatState extends State<MenuChat>
       readDevInfo();
    }
 
-   void _onAdvSelection(AdvData data)
+   void _onAdvSelection(AdvData data, bool fav)
    {
-      print('Anuncio salvo');
-      _favAdvs.add(data);
+      if (fav)
+         _favAdvs.add(data);
+
       //_ownAdvs.add(data);
       _advs.remove(data);
       setState(() { });

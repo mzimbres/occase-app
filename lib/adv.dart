@@ -197,22 +197,21 @@ Card createAdvWidget(BuildContext context, AdvData data,
                      TextEditingController newAdvTextCtrl,
                      List<MenuItem> menus)
 {
-   IconButton clear = IconButton(
+   IconButton icon1 = IconButton(
                      icon: Icon(Icons.clear, color: Colors.red),
-                     iconSize: 30.0
-                     //onPressed: onPressed,
+                     iconSize: 30.0,
+                     onPressed: () {onPressed(false);},
                   );
 
-   // With an icon does not look very good.
-   IconButton send = IconButton(
+   IconButton  icon2 = IconButton(
                      icon: Icon(Icons.star),
-                     onPressed: onPressed,
+                     onPressed: () {onPressed(true);},
                      color: Theme.of(context).primaryColor,
                      iconSize: 30.0
                   );
 
-   Row r = Row(children: <Widget>[Expanded(child:clear),
-         Expanded(child:send)]);
+   Row r = Row(children: <Widget>[Expanded(child: icon1),
+         Expanded(child: icon2)]);
 
    Card c4 = Card(
       child: r,
@@ -283,7 +282,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                itemBuilder: (BuildContext context, int i)
                {
                   return createAdvWidget(context, data[i],
-                        () {onAdvSelection(data[i]);},
+                        (fav) {onAdvSelection(data[i], fav);},
                         TextConsts.advButtonText, null, menus);
                },
          ),
