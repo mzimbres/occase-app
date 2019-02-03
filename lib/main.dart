@@ -32,6 +32,12 @@ class MyApp extends StatelessWidget {
         //accentColor: Color(0xff25D366),
         accentColor: Colors.blueGrey[200],
         fontFamily: 'Montserrat',
+        textTheme: TextTheme(
+          //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+          title: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          body1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+          body2: TextStyle(fontSize: 18.0, fontWeight: FontWeight.normal),
+        ),
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),

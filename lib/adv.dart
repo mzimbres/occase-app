@@ -103,10 +103,10 @@ RichText createHeaderLine(BuildContext context, String key, String value)
    return RichText(
          text: TextSpan(
                text: key + ': ',
-               style: Theme.of(context).textTheme.body2,
+               style: Theme.of(context).textTheme.body1,
                children: <TextSpan>[
                   TextSpan(text: value, style:
-                        Theme.of(context).textTheme.body1),
+                        Theme.of(context).textTheme.body2),
                ],
          ),
    );
@@ -117,7 +117,8 @@ Card advInnerCardFactory(BuildContext context,
 {
    List<Widget> r = List<Widget>();
    if (title != null) {
-       Text t = Text(title, style: Theme.of(context).textTheme.subhead);
+       Text t = Text(title, style:
+             Theme.of(context).textTheme.title);
        r.add(Center(child:t));
    }
 
