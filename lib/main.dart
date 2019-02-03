@@ -489,16 +489,26 @@ class MenuChatState extends State<MenuChat>
    }
 
    // This function is called with the index in _favAdvs.
-   void _onFavChat(int i)
+   void _onFavChat(int i, bool go)
    {
-      print("On chat clicked.");
-      _currFavChatIdx = i;
+      if (go) {
+         _currFavChatIdx = i;
+      } else {
+         //_advs.remove(data);
+         print("Must be implemented.");
+      }
       setState(() { });
    }
 
-   void _onOwnAdvChat(int i)
+   void _onOwnAdvChat(int i, bool go)
    {
-      _currOwnChatIdx = i;
+      if (go) {
+         _currOwnChatIdx = i;
+      } else {
+         //_advs.remove(data);
+         print("Must be implemented.");
+      }
+
       setState(() { });
    }
 

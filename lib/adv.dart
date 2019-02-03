@@ -195,16 +195,17 @@ Card advAssembler(BuildContext context, AdvData data,
 Card createAdvWidget(BuildContext context, AdvData data,
                      Function onPressed, String label,
                      TextEditingController newAdvTextCtrl,
-                     List<MenuItem> menus)
+                     List<MenuItem> menus,
+                     Icon i1, Icon i2)
 {
    IconButton icon1 = IconButton(
-                     icon: Icon(Icons.clear, color: Colors.red),
+                     icon: i1,
                      iconSize: 30.0,
                      onPressed: () {onPressed(false);},
                   );
 
    IconButton  icon2 = IconButton(
-                     icon: Icon(Icons.star),
+                     icon: i2,
                      onPressed: () {onPressed(true);},
                      color: Theme.of(context).primaryColor,
                      iconSize: 30.0
@@ -281,9 +282,14 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                itemCount: data.length,
                itemBuilder: (BuildContext context, int i)
                {
-                  return createAdvWidget(context, data[i],
+                  return createAdvWidget(
+                        context,
+                        data[i],
                         (fav) {onAdvSelection(data[i], fav);},
-                        TextConsts.advButtonText, null, menus);
+                        TextConsts.advButtonText,
+                        null, menus,
+                        Icon(Icons.clear, color: Colors.red),
+                        Icon(Icons.star));
                },
          ),
 
@@ -339,12 +345,14 @@ Widget createChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createNewAdvWidget(
+            return createAdvWidget(
                       context,
                       data[i],
-                      () {onChat(i);},
+                      (remove) {onChat(i, remove);},
                       buttonText,
-                      null, menus);
+                      null, menus,
+                      Icon(Icons.clear, color: Colors.red),
+                      Icon(Icons.message));
          },
    );
 }
