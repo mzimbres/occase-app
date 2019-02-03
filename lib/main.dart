@@ -505,14 +505,9 @@ class MenuChatState extends State<MenuChat>
    }
 
    // This function is called with the index in _favAdvs.
-   void _onFavChat(int i, bool go)
+   void _onFavChat(int i)
    {
-      if (go) {
-         _currFavChatIdx = i;
-      } else {
-         //_advs.remove(data);
-         print("Must be implemented.");
-      }
+      _currFavChatIdx = i;
       setState(() { });
    }
 
@@ -942,11 +937,10 @@ class MenuChatState extends State<MenuChat>
          }
       } else {
          // The favorite tab in the chat screen.
-         chatWidget = createChatTab(
+         chatWidget = createFavChatTab(
                             context,
                             _favAdvs,
                             _onFavChat,
-                            TextConsts.chatButtonText,
                             _menus);
       }
 

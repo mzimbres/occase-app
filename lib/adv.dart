@@ -141,9 +141,12 @@ Card advInnerCardFactory(BuildContext context,
    );
 }
 
-Card advAssembler(BuildContext context, AdvData data,
-                  Widget button, TextEditingController newAdvTextCtrl,
-                  List<MenuItem> menus, Color color)
+Card advAssembler(BuildContext context,
+                  AdvData data,
+                  Widget button,
+                  TextEditingController newAdvTextCtrl,
+                  List<MenuItem> menus,
+                  Color color)
 {
    List<Card> list = List<Card>();
    final int length = data.codes.length;
@@ -191,6 +194,34 @@ Card advAssembler(BuildContext context, AdvData data,
    );
 
    return adv1;
+}
+
+Card createFavAdvWidget(BuildContext context,
+                        AdvData adv,
+                        Function onPressed,
+                        List<MenuItem> menus)
+{
+   FlatButton button = FlatButton(
+         child: createListViewItem(
+               context,
+               adv.from,
+               "jsjsjs",
+               null,
+               Theme.of(context).primaryColor),
+         color: const Color(0xFFFFFF),
+         highlightColor: const Color(0xFFFFFF),
+         onPressed: onPressed,
+   );
+
+   Card c4 = Card(
+      child: button,
+      color: Colors.white,
+      margin: EdgeInsets.all(Consts.advInnerMarging),
+      elevation: 0.0,
+   );
+
+   Color color = Theme.of(context).accentColor;
+   return advAssembler(context, adv, c4, null, menus, color);
 }
 
 Card createAdvWidget(BuildContext context, AdvData data,
@@ -348,11 +379,10 @@ Widget createOwnAdvChatTab(
    );
 }
 
-Widget createChatTab(
+Widget createFavChatTab(
          BuildContext context,
          List<AdvData> data,
          Function onChat,
-         String buttonText,
          List<MenuItem> menus)
 {
    return ListView.builder(
@@ -360,15 +390,11 @@ Widget createChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            Color color = Theme.of(context).accentColor;
-            return createAdvWidget(
+            return createFavAdvWidget(
                       context,
                       data[i],
-                      (remove) {onChat(i, remove);},
-                      buttonText,
-                      null, menus,
-                      Icon(Icons.clear, color: Colors.red),
-                      Icon(Icons.message), color);
+                      () {onChat(i);},
+                      menus);
          },
    );
 }

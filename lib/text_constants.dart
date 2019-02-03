@@ -52,7 +52,6 @@ class TextConsts {
    // Text used in the adv screen to save the adv for chat.
    static final String advButtonText = "Mover para favoritos";
    static final String newAdvButtonText = "Enviar";
-   static final String chatButtonText = "Conversar";
    static final String ownAdvButtonText = "Ver interessados";
 
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
