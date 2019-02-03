@@ -103,10 +103,10 @@ RichText createHeaderLine(BuildContext context, String key, String value)
    return RichText(
          text: TextSpan(
                text: key + ': ',
-               //style: DefaultTextStyle.of(context).style,
-               style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: Consts.mainFontSize),
+               style: Theme.of(context).textTheme.body2,
                children: <TextSpan>[
-                  TextSpan(text: value, style: TextStyle(fontWeight: FontWeight.normal)),
+                  TextSpan(text: value, style:
+                        Theme.of(context).textTheme.body1),
                ],
          ),
    );
@@ -117,14 +117,7 @@ Card advInnerCardFactory(BuildContext context,
 {
    List<Widget> r = List<Widget>();
    if (title != null) {
-       Text t = Text( title,
-          style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17.0,
-                color: Colors.black,
-             )
-          );
-
+       Text t = Text(title, style: Theme.of(context).textTheme.subhead);
        r.add(Center(child:t));
    }
 
@@ -191,7 +184,7 @@ Card advAssembler(BuildContext context, AdvData data,
    Card adv1 = Card(
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
             children: list),
-         color: Consts.advMsgColor,
+         color: Theme.of(context).accentColor,
          margin: EdgeInsets.all(Consts.advMarging),
          elevation: 0.0,
    );
@@ -205,24 +198,49 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
                         TextEditingController newAdvTextCtrl,
                         List<MenuItem> menus)
 {
-   RaisedButton b = RaisedButton(
-      child: Text(label),
-      color: Theme.of(context).accentColor,
-      highlightColor: const Color(0xff075E54),
-      onPressed: onPressed,
-   );
+   //RaisedButton b = RaisedButton(
+   //   child: Text(label),
+   //   color: Theme.of(context).primaryColor,
+   //   //highlightColor: const Color(0xff075E54),
+   //   onPressed: onPressed,
+   //);
 
-   // With an icon does not look very good.
-   //CircleAvatar b = CircleAvatar( child: IconButton(
-   //               icon: Icon(Icons.send),
-   //               onPressed: onPressed,
-   //               color: Theme.of(context).accentColor),
-   //               backgroundColor: Theme.of(context).primaryColor
+   //CircleAvatar clear = CircleAvatar( child: IconButton(
+   //                  icon: Icon(Icons.clear, color: Colors.red),
+   //                  //onPressed: onPressed,
+   //               ),
+   //               backgroundColor: Colors.white,
    //            );
 
+   //// With an icon does not look very good.
+   //CircleAvatar send = CircleAvatar( child: IconButton(
+   //                  icon: Icon(Icons.star),
+   //                  onPressed: onPressed,
+   //                  color: Theme.of(context).primaryColor,
+   //               ),
+   //               backgroundColor: Colors.white,
+   //            );
+
+   IconButton clear = IconButton(
+                     icon: Icon(Icons.clear, color: Colors.red),
+                     iconSize: 30.0
+                     //onPressed: onPressed,
+                  );
+
+   // With an icon does not look very good.
+   IconButton send = IconButton(
+                     icon: Icon(Icons.star),
+                     onPressed: onPressed,
+                     color: Theme.of(context).primaryColor,
+                     iconSize: 30.0
+                  );
+
+   Row r = Row(children: <Widget>[Expanded(child:clear),
+         Expanded(child:send)]);
+
    Card c4 = Card(
-      child: b,
-      color: Consts.advMsgColor,
+      child: r,
+      color: Theme.of(context).accentColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );

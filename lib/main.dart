@@ -26,8 +26,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: TextConsts.appName,
       theme: ThemeData(
-        primaryColor: Color(0xff075E54),
-        accentColor: Color(0xff25D366),
+         brightness: Brightness.light,
+        //primaryColor: Color(0xff075E54),
+        primaryColor: Colors.blueGrey[800],
+        //accentColor: Color(0xff25D366),
+        accentColor: Colors.blueGrey[300],
+        fontFamily: 'Montserrat',
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
