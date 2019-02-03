@@ -270,27 +270,54 @@ Card createAdvWidget(BuildContext context, AdvData data,
          menus, newAdvColor);
 }
 
-Card createOwnAdvWidget(BuildContext context, AdvData data,
-                        Function onPressed, String label,
-                        TextEditingController newAdvTextCtrl,
-                        List<MenuItem> menus, Icon i1)
+ListView createOwnAdvInterestedListView(
+            BuildContext context,
+            List<ChatHistory> interested,
+            Function onPressed)
 {
-   IconButton publish = IconButton(
-                     icon: i1,
-                     onPressed: onPressed,
-                     color: Theme.of(context).primaryColor,
-                     iconSize: 35.0
-                  );
+   return ListView.builder(
+      padding: const EdgeInsets.all(8.0),
+      itemCount: interested.length,
+      shrinkWrap: true,
+      itemBuilder: (BuildContext context, int i)
+      {
+         return FlatButton(
+               child: createListViewItem(
+                     context,
+                     interested[i].peer,
+                     interested[i].getLastMsg(),
+                     null,
+                     Theme.of(context).primaryColor),
+               color: const Color(0xFFFFFF),
+               highlightColor: const Color(0xFFFFFF),
+               onPressed: () { onPressed(i); },
+         );
+      },
+   );
+}
 
-   Color color = Theme.of(context).accentColor;
-   Card c4 = Card(
-      child: publish,
-      color: color,
+Card createOwnAdvWidget(BuildContext context,
+                        AdvData adv,
+                        Function onPressed,
+                        String label,
+                        TextEditingController newAdvTextCtrl,
+                        List<MenuItem> menus,
+                        Icon i1)
+{
+   ListView lv = createOwnAdvInterestedListView(
+               context,
+               adv.chats,
+               onPressed);
+
+   Card card = Card(
+      child: lv,
+      color: Colors.white,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl,
+   Color color = Theme.of(context).accentColor;
+   return advAssembler(context, adv, card, newAdvTextCtrl,
          menus, color);
 }
 
@@ -408,9 +435,10 @@ Widget createOwnAdvChatTab(
             return createOwnAdvWidget(
                       context,
                       data[i],
-                      () {onChat(i, true);},
+                      (j) {onChat(i, j);},
                       buttonText,
-                      null, menus,
+                      null,
+                      menus,
                       Icon(Icons.group));
          },
    );
@@ -433,31 +461,6 @@ Widget createFavChatTab(
                       () {onChat(i);},
                       menus);
          },
-   );
-}
-
-ListView createOwnAdvInterestedListView(
-            BuildContext context,
-            List<ChatHistory> interested,
-            Function onPressed)
-{
-   return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
-      itemCount: interested.length,
-      itemBuilder: (BuildContext context, int i)
-      {
-         return FlatButton(
-               child: createListViewItem(
-                     context,
-                     interested[i].peer,
-                     interested[i].getLastMsg(),
-                     null,
-                     Theme.of(context).primaryColor),
-               color: const Color(0xFFFFFF),
-               highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onPressed(interested[i].peer); },
-         );
-      },
    );
 }
 

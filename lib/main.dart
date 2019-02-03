@@ -511,14 +511,10 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onOwnAdvChat(int i, bool go)
+   void _onOwnAdvChat(int i, int j)
    {
-      if (go) {
-         _currOwnChatIdx = i;
-      } else {
-         //_advs.remove(data);
-         print("Must be implemented.");
-      }
+      _currOwnChatIdx = i;
+     _ownAdvChatPeer = _ownAdvs[i].chats[j].peer;
 
       setState(() { });
    }
@@ -916,17 +912,17 @@ class MenuChatState extends State<MenuChat>
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
-         if (_tabCtrl.index == 2 && _currOwnChatIdx != -1) {
-            // We are in the own advs screen, where pressing the button
-            // on one of our own advs will lead us to the list of users
-            // interested in it.
+         //if (_tabCtrl.index == 2 && _currOwnChatIdx != -1) {
+         //   // We are in the own advs screen, where pressing the button
+         //   // on one of our own advs will lead us to the list of users
+         //   // interested in it.
 
-            chatWidget =
-               createOwnAdvInterestedListView(
-                     context,
-                     _ownAdvs[_currOwnChatIdx].chats,
-                     _onOwnAdvInterestedChatPressed);
-         } else {
+         //   chatWidget =
+         //      createOwnAdvInterestedListView(
+         //            context,
+         //            _ownAdvs[_currOwnChatIdx].chats,
+         //            _onOwnAdvInterestedChatPressed);
+         //} else {
             // The own advs tab in the chat screen.
             chatWidget = createOwnAdvChatTab(
                                context,
@@ -934,7 +930,7 @@ class MenuChatState extends State<MenuChat>
                                _onOwnAdvChat,
                                TextConsts.ownAdvButtonText,
                                _menus);
-         }
+         //}
       } else {
          // The favorite tab in the chat screen.
          chatWidget = createFavChatTab(
@@ -1005,13 +1001,13 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(authText);
    }
 
-   void _onOwnAdvInterestedChatPressed(String name)
-   {
-      // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
+   //void _onOwnAdvInterestedChatPressed(String name)
+   //{
+   //   // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
 
-      print("Chat with: " + name);
-      _ownAdvChatPeer = name;
-      setState(() { });
-   }
+   //   print("Chat with: " + name);
+   //   _ownAdvChatPeer = name;
+   //   setState(() { });
+   //}
 }
 
