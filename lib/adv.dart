@@ -270,6 +270,30 @@ Card createAdvWidget(BuildContext context, AdvData data,
          menus, newAdvColor);
 }
 
+Card createOwnAdvWidget(BuildContext context, AdvData data,
+                        Function onPressed, String label,
+                        TextEditingController newAdvTextCtrl,
+                        List<MenuItem> menus, Icon i1)
+{
+   IconButton publish = IconButton(
+                     icon: i1,
+                     onPressed: onPressed,
+                     color: Theme.of(context).primaryColor,
+                     iconSize: 35.0
+                  );
+
+   Color color = Theme.of(context).accentColor;
+   Card c4 = Card(
+      child: publish,
+      color: color,
+      margin: EdgeInsets.all(Consts.advInnerMarging),
+      elevation: 0.0,
+   );
+
+   return advAssembler(context, data, c4, newAdvTextCtrl,
+         menus, color);
+}
+
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label,
                         TextEditingController newAdvTextCtrl,
@@ -381,7 +405,7 @@ Widget createOwnAdvChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createNewAdvWidget(
+            return createOwnAdvWidget(
                       context,
                       data[i],
                       () {onChat(i, true);},
