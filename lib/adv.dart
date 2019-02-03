@@ -254,15 +254,15 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
    //            );
 
    // With an icon does not look very good.
-   IconButton send = IconButton(
-                     icon: Icon(Icons.send),
+   IconButton publish = IconButton(
+                     icon: Icon(Icons.publish),
                      onPressed: onPressed,
                      color: Theme.of(context).primaryColor,
-                     iconSize: 30.0
+                     iconSize: 35.0
                   );
 
    Card c4 = Card(
-      child: send,
+      child: publish,
       color: Theme.of(context).accentColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,

@@ -77,10 +77,13 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          if (shift == 1) {
             MenuNode child = o.children[i - 1];
             Widget icon = null;
-            if (child.status)
-               icon = Icon(Icons.done, color: Colors.green);
-            else
-               icon = Icon(Icons.clear, color: Colors.red);
+            if (child.status) {
+               icon = Icon(Icons.check_box,
+                     color: Theme.of(context).primaryColor);
+            } else {
+               icon = Icon(Icons.check_box_outline_blank,
+                     color: Theme.of(context).primaryColor);
+            }
 
             final String subStr = makeSubItemsString(child.leafCounter);
 
