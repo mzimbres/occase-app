@@ -64,10 +64,12 @@ ListView createFilterListView(BuildContext context, MenuNode o,
       {
          // Handles the *Marcar todos* button.
          if (shift == 1 && i == 0) {
-            final String title = "Marcar todos (${o.leafCounter} items)";
+            //final String title = "Marcar todos (${o.leafCounter} items)";
+            final String title = "Marcar todos";
             return FlatButton(
                   child: createListViewItem(title, null,
-                        null, TextConsts.allMenuItemCircleColor),
+                        null,
+                        TextConsts.allMenuItemCircleColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
@@ -91,7 +93,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             // this function can diferentiate the Todos button case.
             return FlatButton(
                   child: createListViewItem(child.name, subStr,
-                        icon, TextConsts.menuItemCircleColor),
+                        icon, Theme.of(context).primaryColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
@@ -102,7 +104,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          final String subStr = makeSubItemsString(child.leafCounter);
          return FlatButton(
                child: createListViewItem(child.name, subStr,
-                     null, TextConsts.menuItemCircleColor),
+                     null,
+                     Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
