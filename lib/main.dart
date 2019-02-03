@@ -793,7 +793,7 @@ class MenuChatState extends State<MenuChat>
                         _onSendNewAdvPressed,
                         TextConsts.newAdvButtonText,
                         _newAdvTextCtrl,
-                        _menus
+                        _menus, Icon(Icons.publish),
                      );
 
             // I added this ListView to prevent widget_tmp from
@@ -917,7 +917,7 @@ class MenuChatState extends State<MenuChat>
                      _onOwnAdvInterestedChatPressed);
          } else {
             // The own advs tab in the chat screen.
-            chatWidget = createChatTab(
+            chatWidget = createOwnAdvChatTab(
                                context,
                                _ownAdvs,
                                _onOwnAdvChat,

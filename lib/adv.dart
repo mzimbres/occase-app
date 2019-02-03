@@ -224,38 +224,13 @@ Card createAdvWidget(BuildContext context, AdvData data,
    return advAssembler(context, data, c4, newAdvTextCtrl, menus);
 }
 
-
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label,
                         TextEditingController newAdvTextCtrl,
-                        List<MenuItem> menus)
+                        List<MenuItem> menus, Icon i1)
 {
-   //RaisedButton b = RaisedButton(
-   //   child: Text(label),
-   //   color: Theme.of(context).primaryColor,
-   //   //highlightColor: const Color(0xff075E54),
-   //   onPressed: onPressed,
-   //);
-
-   //CircleAvatar clear = CircleAvatar( child: IconButton(
-   //                  icon: Icon(Icons.clear, color: Colors.red),
-   //                  //onPressed: onPressed,
-   //               ),
-   //               backgroundColor: Colors.white,
-   //            );
-
-   //// With an icon does not look very good.
-   //CircleAvatar send = CircleAvatar( child: IconButton(
-   //                  icon: Icon(Icons.star),
-   //                  onPressed: onPressed,
-   //                  color: Theme.of(context).primaryColor,
-   //               ),
-   //               backgroundColor: Colors.white,
-   //            );
-
-   // With an icon does not look very good.
    IconButton publish = IconButton(
-                     icon: Icon(Icons.publish),
+                     icon: i1,
                      onPressed: onPressed,
                      color: Theme.of(context).primaryColor,
                      iconSize: 35.0
@@ -330,6 +305,29 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                onPressed: () { onNodePressed(i); },
          );
       },
+   );
+}
+
+Widget createOwnAdvChatTab(
+         BuildContext context,
+         List<AdvData> data,
+         Function onChat,
+         String buttonText,
+         List<MenuItem> menus)
+{
+   return ListView.builder(
+         padding: const EdgeInsets.all(0.0),
+         itemCount: data.length,
+         itemBuilder: (BuildContext context, int i)
+         {
+            return createNewAdvWidget(
+                      context,
+                      data[i],
+                      () {onChat(i, true);},
+                      buttonText,
+                      null, menus,
+                      Icon(Icons.message));
+         },
    );
 }
 
