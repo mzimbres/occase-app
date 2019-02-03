@@ -6,7 +6,7 @@ class Consts {
    static final Color advLocHeaderColor = Color(0xFFFFFFFF);
    static final Color advProdHeaderColor = advLocHeaderColor;
    static final Color advMsgColor = Colors.grey;
-   static final Color scaffoldBackground = Colors.grey[350];
+   static final Color scaffoldBackground = Colors.white;
    static final double advMarging = 3.0;
    static final double advInnerMarging = 3.0;
    static final double listViewPadding = 3.0;
