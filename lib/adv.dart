@@ -192,6 +192,38 @@ Card advAssembler(BuildContext context, AdvData data,
    return adv1;
 }
 
+Card createAdvWidget(BuildContext context, AdvData data,
+                     Function onPressed, String label,
+                     TextEditingController newAdvTextCtrl,
+                     List<MenuItem> menus)
+{
+   IconButton clear = IconButton(
+                     icon: Icon(Icons.clear, color: Colors.red),
+                     iconSize: 30.0
+                     //onPressed: onPressed,
+                  );
+
+   // With an icon does not look very good.
+   IconButton send = IconButton(
+                     icon: Icon(Icons.star),
+                     onPressed: onPressed,
+                     color: Theme.of(context).primaryColor,
+                     iconSize: 30.0
+                  );
+
+   Row r = Row(children: <Widget>[Expanded(child:clear),
+         Expanded(child:send)]);
+
+   Card c4 = Card(
+      child: r,
+      color: Theme.of(context).accentColor,
+      margin: EdgeInsets.all(Consts.advInnerMarging),
+      elevation: 0.0,
+   );
+
+   return advAssembler(context, data, c4, newAdvTextCtrl, menus);
+}
+
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
                         Function onPressed, String label,
@@ -221,25 +253,16 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
    //               backgroundColor: Colors.white,
    //            );
 
-   IconButton clear = IconButton(
-                     icon: Icon(Icons.clear, color: Colors.red),
-                     iconSize: 30.0
-                     //onPressed: onPressed,
-                  );
-
    // With an icon does not look very good.
    IconButton send = IconButton(
-                     icon: Icon(Icons.star),
+                     icon: Icon(Icons.send),
                      onPressed: onPressed,
                      color: Theme.of(context).primaryColor,
                      iconSize: 30.0
                   );
 
-   Row r = Row(children: <Widget>[Expanded(child:clear),
-         Expanded(child:send)]);
-
    Card c4 = Card(
-      child: r,
+      child: send,
       color: Theme.of(context).accentColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
@@ -259,7 +282,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> data,
                itemCount: data.length,
                itemBuilder: (BuildContext context, int i)
                {
-                  return createNewAdvWidget(context, data[i],
+                  return createAdvWidget(context, data[i],
                         () {onAdvSelection(data[i]);},
                         TextConsts.advButtonText, null, menus);
                },
