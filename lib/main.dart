@@ -34,9 +34,14 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Montserrat',
         textTheme: TextTheme(
           //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-          title: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-          body1: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-          body2: TextStyle(fontSize: 18.0, fontWeight: FontWeight.normal),
+          title: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueGrey[700]),
+          body1: TextStyle( fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueGrey[700]),
+          body2: TextStyle(fontSize: 16.0, fontWeight: FontWeight.normal),
         ),
       ),
       debugShowCheckedModeBanner: false,

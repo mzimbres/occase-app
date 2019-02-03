@@ -290,7 +290,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          final String subStr = makeSubItemsString(child.leafCounter);
          if (child.isLeaf()) {
             return FlatButton(
-               child: createListViewItem(child.name, subStr,
+               child: createListViewItem(context, child.name, subStr,
                      null,
                      Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
@@ -300,7 +300,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          }
          
          return FlatButton(
-               child: createListViewItem(child.name, subStr,
+               child: createListViewItem(context, child.name, subStr,
                      null,
                      Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
@@ -369,7 +369,7 @@ ListView createOwnAdvInterestedListView(
       itemBuilder: (BuildContext context, int i)
       {
          return FlatButton(
-               child: createListViewItem(
+               child: createListViewItem(context,
                      interested[i].peer, null, null,
                      Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),

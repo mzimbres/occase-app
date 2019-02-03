@@ -13,6 +13,7 @@ String makeSubItemsString(int n)
 }
 
 ListTile createListViewItem(
+      BuildContext context,
       String name,
       String subItemStr,
       Icon trailing,
@@ -21,15 +22,13 @@ ListTile createListViewItem(
    Text subItemText = null;
    if (subItemStr != null)
       subItemText = Text( subItemStr,
-                          style: TextStyle(fontSize: Consts.subFontSize));
+                          style: Theme.of(context).textTheme.body2);
 
    return ListTile( leading: CircleAvatar(
                       child: Text(name[0]),
                       backgroundColor: circleColor),
          title: Text( name,
-               style: TextStyle(
-                     fontWeight: FontWeight.bold,
-                     fontSize: Consts.mainFontSize )
+               style: Theme.of(context).textTheme.title
          ),
          dense: false,
          subtitle: subItemText,
@@ -67,9 +66,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             //final String title = "Marcar todos (${o.leafCounter} items)";
             final String title = "Marcar todos";
             return FlatButton(
-                  child: createListViewItem(title, null,
-                        null,
-                        TextConsts.allMenuItemCircleColor),
+                  child: createListViewItem(context, title, null,
+                        null, TextConsts.allMenuItemCircleColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
@@ -92,7 +90,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             return FlatButton(
-                  child: createListViewItem(child.name, subStr,
+                  child: createListViewItem(context, child.name, subStr,
                         icon, Theme.of(context).primaryColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
@@ -103,9 +101,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
          return FlatButton(
-               child: createListViewItem(child.name, subStr,
-                     null,
-                     Theme.of(context).primaryColor),
+               child: createListViewItem(context, child.name, subStr,
+                     null, Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
