@@ -143,7 +143,7 @@ Card advInnerCardFactory(BuildContext context,
 
 Card advAssembler(BuildContext context, AdvData data,
                   Widget button, TextEditingController newAdvTextCtrl,
-                  List<MenuItem> menus)
+                  List<MenuItem> menus, Color color)
 {
    List<Card> list = List<Card>();
    final int length = data.codes.length;
@@ -185,7 +185,7 @@ Card advAssembler(BuildContext context, AdvData data,
    Card adv1 = Card(
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
             children: list),
-         color: Theme.of(context).accentColor,
+         color: color,
          margin: EdgeInsets.all(Consts.advMarging),
          elevation: 0.0,
    );
@@ -197,7 +197,7 @@ Card createAdvWidget(BuildContext context, AdvData data,
                      Function onPressed, String label,
                      TextEditingController newAdvTextCtrl,
                      List<MenuItem> menus,
-                     Icon i1, Icon i2)
+                     Icon i1, Icon i2, Color newAdvColor)
 {
    IconButton icon1 = IconButton(
                      icon: i1,
@@ -217,12 +217,13 @@ Card createAdvWidget(BuildContext context, AdvData data,
 
    Card c4 = Card(
       child: r,
-      color: Theme.of(context).accentColor,
+      color: newAdvColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl, menus);
+   return advAssembler(context, data, c4, newAdvTextCtrl,
+         menus, newAdvColor);
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
@@ -237,35 +238,48 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
                      iconSize: 35.0
                   );
 
+   Color color = Theme.of(context).accentColor;
    Card c4 = Card(
       child: publish,
-      color: Theme.of(context).accentColor,
+      color: color,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl, menus);
+   return advAssembler(context, data, c4, newAdvTextCtrl,
+         menus, color);
 }
 
-Widget createAdvTab(BuildContext context, List<AdvData> data,
+Widget createAdvTab(BuildContext context, List<AdvData> advs,
                     Function onAdvSelection,
                     Function onNewAdv,
-                    List<MenuItem> menus)
+                    List<MenuItem> menus,
+                    int numberOfNewAdvs)
 {
+   final int advsLength = advs.length;
+
    return Scaffold( body:
          ListView.builder(
                padding: const EdgeInsets.all(0.0),
-               itemCount: data.length,
+               itemCount: advsLength,
                itemBuilder: (BuildContext context, int i)
                {
+                  // Advs are shown in reverse order.
+                  final int idx = advsLength - i - 1;
+
+                  // New advs are shown with a different color.
+                  Color color = Theme.of(context).accentColor;
+                  if (i < numberOfNewAdvs)
+                     color = Colors.brown[200]; 
+
                   return createAdvWidget(
                         context,
-                        data[i],
-                        (fav) {onAdvSelection(data[i], fav);},
+                        advs[i],
+                        (fav) {onAdvSelection(advs[idx], fav);},
                         TextConsts.advButtonText,
                         null, menus,
                         Icon(Icons.clear, color: Colors.red),
-                        Icon(Icons.star));
+                        Icon(Icons.star), color);
                },
          ),
 
@@ -346,6 +360,7 @@ Widget createChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
+            Color color = Theme.of(context).accentColor;
             return createAdvWidget(
                       context,
                       data[i],
@@ -353,7 +368,7 @@ Widget createChatTab(
                       buttonText,
                       null, menus,
                       Icon(Icons.clear, color: Colors.red),
-                      Icon(Icons.message));
+                      Icon(Icons.message), color);
          },
    );
 }

@@ -916,7 +916,7 @@ class MenuChatState extends State<MenuChat>
                       _advs,
                       _onAdvSelection,
                       _onNewAdv,
-                      _menus
+                      _menus, newAdvsLength
                    );
 
       Widget chatWidget;
