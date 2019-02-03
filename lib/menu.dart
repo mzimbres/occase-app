@@ -22,13 +22,13 @@ ListTile createListViewItem(
    Text subItemText = null;
    if (subItemStr != null)
       subItemText = Text( subItemStr,
-                          style: Theme.of(context).textTheme.body2);
+                          style: Theme.of(context).textTheme.caption);
 
    return ListTile( leading: CircleAvatar(
                       child: Text(name[0]),
                       backgroundColor: circleColor),
          title: Text( name,
-               style: Theme.of(context).textTheme.title
+               style: Theme.of(context).textTheme.subhead
          ),
          dense: false,
          subtitle: subItemText,
