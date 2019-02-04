@@ -195,7 +195,8 @@ Card advAssembler(BuildContext context,
       list.add(textInput);
    }
 
-   list.add(button);
+   if (button != null)
+      list.add(button);
 
    Card adv1 = Card(
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -213,6 +214,8 @@ Card createFavAdvWidget(BuildContext context,
                         Function onPressed,
                         List<MenuItem> menus)
 {
+   // This adv should have only one chat history since it is not our
+   // own adv.
    final String subTitle = adv.getChatHistory(adv.from).getLastMsg();
    FlatButton button = FlatButton(
          child: createListViewItem(
@@ -221,20 +224,25 @@ Card createFavAdvWidget(BuildContext context,
                subTitle,
                null,
                Theme.of(context).primaryColor),
-         color: const Color(0xFFFFFF),
+         color: Colors.white,
          highlightColor: const Color(0xFFFFFF),
          onPressed: onPressed,
    );
 
-   Card c4 = Card(
-      child: button,
-      color: Colors.white,
+   Color color = Theme.of(context).primaryColor;
+   Widget advWidget =
+         advAssembler(context, adv, null, null, menus, color);
+
+   Column col = Column(children: <Widget>[
+      advWidget, SizedBox(height: 10.0), button
+   ]);
+
+   return Card(
+      child: Padding(child: col, padding: EdgeInsets.all(4.0)),
+      color: Theme.of(context).accentColor,
       margin: EdgeInsets.all(Consts.advInnerMarging),
       elevation: 0.0,
    );
-
-   Color color = Theme.of(context).accentColor;
-   return advAssembler(context, adv, c4, null, menus, color);
 }
 
 Card createAdvWidget(BuildContext context, AdvData data,
