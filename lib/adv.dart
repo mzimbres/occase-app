@@ -110,22 +110,11 @@ class AdvData {
    }
 }
 
-RichText createHeaderLine(BuildContext context, String key, String value)
-{
-   return RichText(
-         text: TextSpan(
-               text: key + ': ',
-               style: Theme.of(context).textTheme.body1,
-               children: <TextSpan>[
-                  TextSpan(text: value, style:
-                        Theme.of(context).textTheme.body2),
-               ],
-         ),
-   );
-}
-
-Card advInnerCardFactory(BuildContext context,
-      List<String> values, List<String> keys, String title)
+Card advElemFactory(BuildContext context,
+                         List<String> values,
+                         List<String> keys,
+                         String title,
+                         double advInnerMargin)
 {
    List<Widget> r = List<Widget>();
    if (title != null) {
@@ -135,20 +124,36 @@ Card advInnerCardFactory(BuildContext context,
    }
 
    for (int i = 0; i < values.length; ++i) {
-      r.add(createHeaderLine(context, keys[i], values[i]));
+      RichText rt = RichText(
+            text: TextSpan(
+                  text: keys[i] + ': ',
+                  style: Theme.of(context).textTheme.body1,
+                  children: <TextSpan>[
+                     TextSpan(text: values[i], style:
+                           Theme.of(context).textTheme.body2),
+                  ],
+            ),
+         );
+
+      r.add(rt);
    }
 
-   Padding padd = Padding( padding: EdgeInsets.all(4.0),
+   // Padding needed to show the text inside the adv element with some
+   // distance from the border.
+   Padding padd = Padding(
+         padding: EdgeInsets.all(TextConsts.advElemTextPadding),
          child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
             )
          );
 
+   // Here we need another padding to make the adv inner element have
+   // some distance to the outermost card.
    return Card(
             child: padd,
             color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
+            margin: EdgeInsets.all(advInnerMargin),
             elevation: 0.0,
    );
 }
@@ -158,38 +163,44 @@ Card advAssembler(BuildContext context,
                   Widget button,
                   TextEditingController newAdvTextCtrl,
                   List<MenuItem> menus,
-                  Color color)
+                  Color color, double outerCardMarging,
+                  double advInnerMargin)
 {
    List<Card> list = List<Card>();
    final int length = data.codes.length;
    for (int i = 0; i < length; ++i) {
       List<String> names =
             loadNames(menus[i].root.first, data.codes[i][0]);
-      list.add(advInnerCardFactory(context, names,
+      list.add(advElemFactory(context, names,
                   TextConsts.menuDepthNames[i],
-                  TextConsts.newAdvTabNames[i]),
+                  TextConsts.newAdvTabNames[i],
+                  advInnerMargin),
             );
    }
 
    if (newAdvTextCtrl == null)
-      list.add(advInnerCardFactory(context,
+      list.add(advElemFactory(context,
                   <String>[data.description],
-                  <String>[TextConsts.descriptionText], null));
+                  <String>[TextConsts.descriptionText], null,
+                  advInnerMargin));
 
    if (newAdvTextCtrl != null) {
       // TODO: Set a max length.
       Card textInput = Card(
-            child: TextField(
-               controller: newAdvTextCtrl,
-               //textInputAction: TextInputAction.go,
-               //onSubmitted: onTextFieldPressed,
-               keyboardType: TextInputType.multiline,
-               maxLines: null,
-               decoration: InputDecoration(
-                     hintText: TextConsts.newAdvDescDeco),
+            child: Padding(
+                  child: TextField(
+                     controller: newAdvTextCtrl,
+                     //textInputAction: TextInputAction.go,
+                     //onSubmitted: onTextFieldPressed,
+                     keyboardType: TextInputType.multiline,
+                     maxLines: null,
+                     decoration: InputDecoration(
+                           hintText: TextConsts.newAdvDescDeco)),
+                  padding: EdgeInsets.all(
+                        TextConsts.advElemTextPadding)
                ),
             color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMarging),
+            margin: EdgeInsets.all(Consts.advInnerMargin),
             elevation: 0.0,
       );
       list.add(textInput);
@@ -202,7 +213,7 @@ Card advAssembler(BuildContext context,
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
             children: list),
          color: color,
-         margin: EdgeInsets.all(Consts.advMarging),
+         margin: EdgeInsets.all(outerCardMarging),
          elevation: 0.0,
    );
 
@@ -217,30 +228,39 @@ Card createFavAdvWidget(BuildContext context,
    // This adv should have only one chat history since it is not our
    // own adv.
    final String subTitle = adv.getChatHistory(adv.from).getLastMsg();
-   FlatButton button = FlatButton(
-         child: createListViewItem(
+
+   ListTile lt = createListViewItem(
                context,
                adv.from,
                subTitle,
                null,
-               Theme.of(context).primaryColor),
+               Theme.of(context).primaryColor);
+
+   FlatButton button = FlatButton(
+         child: lt,
          color: Colors.white,
          highlightColor: const Color(0xFFFFFF),
          onPressed: onPressed,
    );
 
-   Color color = Theme.of(context).primaryColor;
+   Color color = Theme.of(context).accentColor;
    Widget advWidget =
-         advAssembler(context, adv, null, null, menus, color);
+         advAssembler(context, adv, null, null, menus, color, 0.0,
+              Consts.advInnerMargin);
 
    Column col = Column(children: <Widget>[
-      advWidget, SizedBox(height: 10.0), button
+      advWidget, SizedBox(height: 15.0),
+      Card( child: button,
+            color: Theme.of(context).accentColor,
+            margin: EdgeInsets.all(Consts.advInnerMargin),
+            elevation: 0.0,
+      ),
    ]);
 
    return Card(
-      child: Padding(child: col, padding: EdgeInsets.all(4.0)),
+      child: Padding(child: col, padding: EdgeInsets.all(2.0)),
       color: Theme.of(context).accentColor,
-      margin: EdgeInsets.all(Consts.advInnerMarging),
+      margin: EdgeInsets.all(3.0),
       elevation: 0.0,
    );
 }
@@ -270,12 +290,12 @@ Card createAdvWidget(BuildContext context, AdvData data,
    Card c4 = Card(
       child: r,
       color: newAdvColor,
-      margin: EdgeInsets.all(Consts.advInnerMarging),
+      margin: EdgeInsets.all(Consts.advInnerMargin),
       elevation: 0.0,
    );
 
    return advAssembler(context, data, c4, newAdvTextCtrl,
-         menus, newAdvColor);
+         menus, newAdvColor, Consts.advMarging, Consts.advInnerMargin);
 }
 
 ListView createOwnAdvInterestedListView(
@@ -320,13 +340,13 @@ Card createOwnAdvWidget(BuildContext context,
    Card card = Card(
       child: lv,
       color: Colors.white,
-      margin: EdgeInsets.all(Consts.advInnerMarging),
+      margin: EdgeInsets.all(Consts.advInnerMargin),
       elevation: 0.0,
    );
 
    Color color = Theme.of(context).accentColor;
    return advAssembler(context, adv, card, newAdvTextCtrl,
-         menus, color);
+         menus, color, 0.0, Consts.advInnerMargin);
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
@@ -345,12 +365,12 @@ Card createNewAdvWidget(BuildContext context, AdvData data,
    Card c4 = Card(
       child: publish,
       color: color,
-      margin: EdgeInsets.all(Consts.advInnerMarging),
+      margin: EdgeInsets.all(Consts.advInnerMargin),
       elevation: 0.0,
    );
 
    return advAssembler(context, data, c4, newAdvTextCtrl,
-         menus, color);
+         menus, color, Consts.advMarging, Consts.advInnerMargin);
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> advs,

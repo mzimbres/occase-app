@@ -61,5 +61,8 @@ class TextConsts {
    static final String hintTextChat = "Digite sua mensagem";
 
    static final Color allMenuItemCircleColor = Colors.brown;
+
+   // The padding used for the text inside the adv element.
+   static final double advElemTextPadding = 4.0;
 }
 
