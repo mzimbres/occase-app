@@ -33,7 +33,8 @@ ListTile createListViewItem(
          ),
          dense: false,
          subtitle: subItemText,
-         trailing: trailing
+         trailing: trailing,
+         contentPadding: EdgeInsets.symmetric(horizontal: 0.0)
       );
 }
 
@@ -72,6 +73,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
+                  padding: EdgeInsets.all(0.0)
             );
          }
 
@@ -96,6 +98,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
+                  padding: EdgeInsets.all(0.0)
             );
          }
 
@@ -107,6 +110,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
+               padding: EdgeInsets.all(0.0)
          );
       },
    );

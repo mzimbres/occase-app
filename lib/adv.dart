@@ -407,7 +407,7 @@ Card createOwnAdvWidget(BuildContext context,
 
    Color color = Theme.of(context).accentColor;
    return advAssembler(context, adv, card, newAdvTextCtrl,
-         menus, color, 0.0, Consts.advInnerMargin);
+         menus, color, 3.0, Consts.advInnerMargin);
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
