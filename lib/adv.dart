@@ -156,12 +156,12 @@ Card advElemFactory(BuildContext context,
 }
 
 List<Card>
-makeMenuInfoCard(BuildContext context,
-                 AdvData data,
-                 List<MenuItem> menus,
-                 Color color,
-                 double outerCardMarging,
-                 double advInnerMargin)
+makeMenuInfoCards(BuildContext context,
+                  AdvData data,
+                  List<MenuItem> menus,
+                  Color color,
+                  double outerCardMarging,
+                  double advInnerMargin)
 {
    List<Card> list = List<Card>();
 
@@ -182,6 +182,32 @@ makeMenuInfoCard(BuildContext context,
    return list;
 }
 
+// Will assemble menu information and the description in cards
+List<Card> advTextAssembler(BuildContext context,
+                            AdvData data,
+                            List<MenuItem> menus,
+                            Color color,
+                            double outerCardMarging,
+                            double advInnerMargin)
+{
+   List<Card> list = makeMenuInfoCards(context,
+                                       data,
+                                       menus,
+                                       color,
+                                       outerCardMarging,
+                                       advInnerMargin);
+
+   Card descCard = advElemFactory(context,
+                      <String>[data.description],
+                      <String>[TextConsts.descriptionText],
+                      "Detalhes adicionais",
+                      advInnerMargin);
+
+   list.add(descCard);
+
+   return list;
+}
+
 Card advAssembler(BuildContext context,
                   AdvData data,
                   Widget button,
@@ -191,12 +217,12 @@ Card advAssembler(BuildContext context,
                   double outerCardMarging,
                   double advInnerMargin)
 {
-   List<Card> list = makeMenuInfoCard(context,
-                                      data,
-                                      menus,
-                                      color,
-                                      outerCardMarging,
-                                      advInnerMargin);
+   List<Card> list = makeMenuInfoCards(context,
+                                       data,
+                                       menus,
+                                       color,
+                                       outerCardMarging,
+                                       advInnerMargin);
 
    if (ctrl == null)
       list.add(advElemFactory(context,
@@ -241,6 +267,15 @@ Card advAssembler(BuildContext context,
    return adv1;
 }
 
+Card makeTextSeparator(BuildContext context, String str)
+{
+   Text text = Text(str, style: Theme.of(context).textTheme.title);
+   return Card(
+         child: text,
+         color: Theme.of(context).accentColor,
+         elevation: 0.0);
+}
+
 Card createFavAdvWidget(BuildContext context,
                         AdvData adv,
                         Function onPressed,
@@ -265,18 +300,23 @@ Card createFavAdvWidget(BuildContext context,
    );
 
    Color color = Theme.of(context).accentColor;
-   Widget advWidget =
-         advAssembler(context, adv, null, null, menus, color, 0.0,
-              Consts.advInnerMargin);
 
-   Column col = Column(children: <Widget>[
-      advWidget, SizedBox(height: 15.0),
-      Card( child: button,
+   List<Card> cards = advTextAssembler(
+                               context,
+                               adv,
+                               menus,
+                               color,
+                               0.0,
+                               Consts.advInnerMargin);
+   
+   cards.add(makeTextSeparator(context, "Chat"));
+
+   cards.add(Card( child: button,
             color: Theme.of(context).accentColor,
             margin: EdgeInsets.all(Consts.advInnerMargin),
-            elevation: 0.0,
-      ),
-   ]);
+            elevation: 0.0));
+
+   Column col = Column(children: cards);
 
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(2.0)),
