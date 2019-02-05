@@ -111,17 +111,14 @@ class AdvData {
 }
 
 Card advElemFactory(BuildContext context,
-                         List<String> values,
-                         List<String> keys,
-                         String title,
-                         double advInnerMargin)
+                    List<String> values,
+                    List<String> keys,
+                    String title,
+                    double advInnerMargin)
 {
    List<Widget> r = List<Widget>();
-   if (title != null) {
-       Text t = Text(title, style:
-             Theme.of(context).textTheme.title);
-       r.add(Center(child:t));
-   }
+   Text t = Text(title, style: Theme.of(context).textTheme.title);
+   r.add(Center(child:t));
 
    for (int i = 0; i < values.length; ++i) {
       RichText rt = RichText(
@@ -158,38 +155,62 @@ Card advElemFactory(BuildContext context,
    );
 }
 
+List<Card>
+makeMenuInfoCard(BuildContext context,
+                 AdvData data,
+                 List<MenuItem> menus,
+                 Color color,
+                 double outerCardMarging,
+                 double advInnerMargin)
+{
+   List<Card> list = List<Card>();
+
+   for (int i = 0; i < data.codes.length; ++i) {
+      List<String> names =
+            loadNames(menus[i].root.first, data.codes[i][0]);
+
+      Card card = advElemFactory(
+                  context,
+                  names,
+                  TextConsts.menuDepthNames[i],
+                  TextConsts.newAdvTabNames[i],
+                  advInnerMargin);
+
+      list.add(card);
+   }
+
+   return list;
+}
+
 Card advAssembler(BuildContext context,
                   AdvData data,
                   Widget button,
-                  TextEditingController newAdvTextCtrl,
+                  TextEditingController ctrl,
                   List<MenuItem> menus,
-                  Color color, double outerCardMarging,
+                  Color color,
+                  double outerCardMarging,
                   double advInnerMargin)
 {
-   List<Card> list = List<Card>();
-   final int length = data.codes.length;
-   for (int i = 0; i < length; ++i) {
-      List<String> names =
-            loadNames(menus[i].root.first, data.codes[i][0]);
-      list.add(advElemFactory(context, names,
-                  TextConsts.menuDepthNames[i],
-                  TextConsts.newAdvTabNames[i],
-                  advInnerMargin),
-            );
-   }
+   List<Card> list = makeMenuInfoCard(context,
+                                      data,
+                                      menus,
+                                      color,
+                                      outerCardMarging,
+                                      advInnerMargin);
 
-   if (newAdvTextCtrl == null)
+   if (ctrl == null)
       list.add(advElemFactory(context,
                   <String>[data.description],
-                  <String>[TextConsts.descriptionText], null,
+                  <String>[TextConsts.descriptionText],
+                  "Detalhes adicionais",
                   advInnerMargin));
 
-   if (newAdvTextCtrl != null) {
+   if (ctrl != null) {
       // TODO: Set a max length.
       Card textInput = Card(
             child: Padding(
                   child: TextField(
-                     controller: newAdvTextCtrl,
+                     controller: ctrl,
                      //textInputAction: TextInputAction.go,
                      //onSubmitted: onTextFieldPressed,
                      keyboardType: TextInputType.multiline,
