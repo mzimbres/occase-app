@@ -12,19 +12,23 @@ String makeSubItemsString(int n)
    return null;
 }
 
+Text createMenuItemSubStrWidget(String str, FontWeight fw)
+{
+   if (str == null)
+      return Text("");
+
+   return Text(str, style: TextStyle(fontSize: 13.0, fontWeight: fw),
+               maxLines: 2,
+               overflow: TextOverflow.clip);
+}
+
 ListTile createListViewItem(
       BuildContext context,
       String name,
-      String subItemStr,
+      Text subItemWidget,
       Icon trailing,
       Color circleColor)
 {
-   Text subItemText = null;
-   if (subItemStr != null)
-      subItemText = Text(subItemStr,
-                         style: Theme.of(context).textTheme.caption,
-                         maxLines: 2, overflow: TextOverflow.clip);
-
    return ListTile( leading: CircleAvatar(
                       child: Text(name[0]),
                       backgroundColor: circleColor),
@@ -32,7 +36,7 @@ ListTile createListViewItem(
                style: Theme.of(context).textTheme.subhead
          ),
          dense: false,
-         subtitle: subItemText,
+         subtitle: subItemWidget,
          trailing: trailing,
          contentPadding: EdgeInsets.symmetric(horizontal: 7.0)
       );
@@ -68,8 +72,12 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             //final String title = "Marcar todos (${o.leafCounter} items)";
             final String title = "Marcar todos";
             return FlatButton(
-                  child: createListViewItem(context, title, null,
-                        null, TextConsts.allMenuItemCircleColor),
+                  child: createListViewItem(
+                            context,
+                            title,
+                            null,
+                            null,
+                            TextConsts.allMenuItemCircleColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(0); },
@@ -93,8 +101,14 @@ ListView createFilterListView(BuildContext context, MenuNode o,
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             return FlatButton(
-                  child: createListViewItem(context, child.name, subStr,
-                        icon, Theme.of(context).primaryColor),
+                  child: createListViewItem(
+                            context,
+                            child.name,
+                            createMenuItemSubStrWidget(
+                                  subStr,
+                                  FontWeight.normal),
+                            icon,
+                            Theme.of(context).primaryColor),
                   color: const Color(0xFFFFFF),
                   highlightColor: const Color(0xFFFFFF),
                   onPressed: () { onLeafPressed(i); },
@@ -105,8 +119,14 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
          return FlatButton(
-               child: createListViewItem(context, child.name, subStr,
-                     null, Theme.of(context).primaryColor),
+               child: createListViewItem(
+                         context,
+                         child.name,
+                         createMenuItemSubStrWidget(
+                               subStr,
+                               FontWeight.normal),
+                         null,
+                         Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },

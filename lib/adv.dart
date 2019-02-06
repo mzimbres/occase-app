@@ -23,8 +23,7 @@ class ChatHistory {
       unreadMsgs.clear();
    }
 
-   // TODO: Change this to return Text so that it is possible to
-   // return bold if unread.
+   // TODO: Remove this function.
    String getLastMsg()
    {
       if (unreadMsgs.length != 0)
@@ -33,6 +32,22 @@ class ChatHistory {
          return msgs.last.msg;
 
       return '';
+   }
+
+   String getLastUnreadMsg()
+   {
+      if (unreadMsgs.isEmpty)
+         return '';
+
+      return unreadMsgs.last.msg;
+   }
+
+   String getLastReadMsg()
+   {
+      if (msgs.isEmpty)
+         return '';
+
+      return msgs.last.msg;
    }
 }
 
@@ -276,6 +291,17 @@ Card makeTextSeparator(BuildContext context, String str)
          elevation: 0.0);
 }
 
+Text makeChatSubStrWidget(ChatHistory ch)
+{
+   final String subTitle = ch.getLastUnreadMsg();
+
+   if (subTitle.isEmpty) // There is no unread message.
+      return createMenuItemSubStrWidget(ch.getLastReadMsg(),
+                FontWeight.normal);
+
+   return createMenuItemSubStrWidget(subTitle, FontWeight.bold);
+}
+
 Card createFavAdvWidget(BuildContext context,
                         AdvData adv,
                         Function onPressed,
@@ -283,12 +309,11 @@ Card createFavAdvWidget(BuildContext context,
 {
    // This adv should have only one chat history since it is not our
    // own adv.
-   final String subTitle = adv.getChatHistory(adv.from).getLastMsg();
-
+   final ChatHistory ch = adv.getChatHistory(adv.from);
    ListTile lt = createListViewItem(
                context,
                adv.from,
-               subTitle,
+               makeChatSubStrWidget(ch),
                null,
                Theme.of(context).primaryColor);
 
@@ -374,7 +399,9 @@ ListView createOwnAdvInterestedListView(
                child: createListViewItem(
                      context,
                      interested[i].peer,
-                     interested[i].getLastMsg(),
+                     createMenuItemSubStrWidget(
+                           interested[i].getLastMsg(),
+                           FontWeight.normal),
                      null,
                      Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
@@ -488,9 +515,14 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          final String subStr = makeSubItemsString(child.leafCounter);
          if (child.isLeaf()) {
             return FlatButton(
-               child: createListViewItem(context, child.name, subStr,
-                     null,
-                     Theme.of(context).primaryColor),
+               child: createListViewItem(
+                         context,
+                         child.name,
+                         createMenuItemSubStrWidget(
+                               subStr,
+                               FontWeight.normal),
+                         null,
+                         Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onLeafPressed(i);},
@@ -498,9 +530,14 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          }
          
          return FlatButton(
-               child: createListViewItem(context, child.name, subStr,
-                     null,
-                     Theme.of(context).primaryColor),
+               child: createListViewItem(
+                         context,
+                         child.name,
+                         createMenuItemSubStrWidget(
+                               subStr,
+                               FontWeight.normal),
+                         null,
+                         Theme.of(context).primaryColor),
                color: const Color(0xFFFFFF),
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
