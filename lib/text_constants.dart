@@ -64,5 +64,7 @@ class TextConsts {
 
    // The padding used for the text inside the adv element.
    static final double advElemTextPadding = 4.0;
+
+   static Color favChatButtonColor = Colors.white; 
 }
 

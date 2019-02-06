@@ -294,7 +294,7 @@ Card createFavAdvWidget(BuildContext context,
 
    FlatButton button = FlatButton(
          child: lt,
-         color: Colors.white,
+         color: TextConsts.favChatButtonColor,
          highlightColor: const Color(0xFFFFFF),
          onPressed: onPressed,
    );
@@ -321,7 +321,7 @@ Card createFavAdvWidget(BuildContext context,
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(2.0)),
       color: Theme.of(context).accentColor,
-      margin: EdgeInsets.all(3.0),
+      margin: EdgeInsets.all(Consts.advMarging),
       elevation: 0.0,
    );
 }

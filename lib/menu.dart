@@ -34,7 +34,7 @@ ListTile createListViewItem(
          dense: false,
          subtitle: subItemText,
          trailing: trailing,
-         contentPadding: EdgeInsets.symmetric(horizontal: 0.0)
+         contentPadding: EdgeInsets.symmetric(horizontal: 7.0)
       );
 }
 
