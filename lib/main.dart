@@ -199,12 +199,7 @@ Widget makeTabWidget(int n, String title)
 
    return Row(children: <Widget>[
       Text(title + " "),
-      CircleAvatar(
-            child: Text("${n}", style: TextStyle(
-                  //fontWeight: FontWeight.bold,
-                  fontSize: 11.0 )),
-            maxRadius: 10.0,
-            backgroundColor: const Color(0xFFFFFFFF))
+      makeCircleUnreadMsgs(n, const Color(0xFFFFFFFF))
       ]
    );
 }
@@ -997,14 +992,5 @@ class MenuChatState extends State<MenuChat>
       print(authText);
       channel.sink.add(authText);
    }
-
-   //void _onOwnAdvInterestedChatPressed(String name)
-   //{
-   //   // _ownAdvs[_currOwnChatIdx].chats.forEach((k, v) {
-
-   //   print("Chat with: " + name);
-   //   _ownAdvChatPeer = name;
-   //   setState(() { });
-   //}
 }
 

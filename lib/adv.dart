@@ -42,6 +42,14 @@ class ChatHistory {
       return unreadMsgs.last.msg;
    }
 
+   int getNumberOfUnreadMsgs()
+   {
+      if (unreadMsgs.isEmpty)
+         return 0;
+
+      return unreadMsgs.length;
+   }
+
    String getLastReadMsg()
    {
       if (msgs.isEmpty)
@@ -123,6 +131,21 @@ class AdvData {
 
       return i;
    }
+}
+
+// Study how to convert this into an elipsis like whatsapp.
+CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
+{
+   if (n == 0)
+      return CircleAvatar(backgroundColor: backgroundColor);
+
+   return CircleAvatar(
+            child: Text("${n}",
+                  style: TextStyle(
+                  //fontWeight: FontWeight.bold,
+                  fontSize: 11.0 )),
+            maxRadius: 10.0,
+            backgroundColor: backgroundColor);
 }
 
 Card advElemFactory(BuildContext context,
@@ -309,18 +332,24 @@ Card createFavAdvWidget(BuildContext context,
 {
    // This adv should have only one chat history since it is not our
    // own adv.
+   final Color buttonBgColor = const Color(0xFFFFFF);
    final ChatHistory ch = adv.getChatHistory(adv.from);
+   final int n = ch.getNumberOfUnreadMsgs();
+   Color cc = Theme.of(context).accentColor;
+   if (n == 0)
+      cc = buttonBgColor;
+
    ListTile lt = createListViewItem(
-               context,
-               adv.from,
-               makeChatSubStrWidget(ch),
-               null,
-               Theme.of(context).primaryColor);
+                    context,
+                    adv.from,
+                    makeChatSubStrWidget(ch),
+                    makeCircleUnreadMsgs(n, cc),
+                    Theme.of(context).primaryColor);
 
    FlatButton button = FlatButton(
          child: lt,
          color: TextConsts.favChatButtonColor,
-         highlightColor: const Color(0xFFFFFF),
+         highlightColor: buttonBgColor,
          onPressed: onPressed,
    );
 
@@ -490,7 +519,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> advs,
                         TextConsts.advButtonText,
                         null, menus,
                         Icon(Icons.clear, color: Colors.red),
-                        Icon(Icons.star), color);
+                        Icon(Icons.star, color: Colors.amber), color);
                },
          ),
 

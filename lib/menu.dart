@@ -26,7 +26,7 @@ ListTile createListViewItem(
       BuildContext context,
       String name,
       Text subItemWidget,
-      Icon trailing,
+      Widget trailing,
       Color circleColor)
 {
    return ListTile( leading: CircleAvatar(
