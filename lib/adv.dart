@@ -132,17 +132,17 @@ Card advElemFactory(BuildContext context,
                     double advInnerMargin)
 {
    List<Widget> r = List<Widget>();
-   Text t = Text(title, style: Theme.of(context).textTheme.title);
+   Text t = Text(title, style: Theme.of(context).textTheme.subhead);
    r.add(Center(child:t));
 
    for (int i = 0; i < values.length; ++i) {
       RichText rt = RichText(
             text: TextSpan(
                   text: keys[i] + ': ',
-                  style: Theme.of(context).textTheme.body1,
+                  style: Theme.of(context).textTheme.body2,
                   children: <TextSpan>[
                      TextSpan(text: values[i], style:
-                           Theme.of(context).textTheme.body2),
+                           Theme.of(context).textTheme.body1),
                   ],
             ),
          );

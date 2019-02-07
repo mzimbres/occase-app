@@ -29,22 +29,22 @@ class MyApp extends StatelessWidget {
          brightness: Brightness.light,
         primaryColor: Colors.blueGrey[600],
         accentColor: Colors.blueGrey[200],
-        fontFamily: 'Montserrat',
-        textTheme: TextTheme(
-          //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-          title: TextStyle(
-                fontSize: 17.0,
-                fontWeight: FontWeight.bold,
-                //color: Colors.blueGrey[700]
-                ),
-          subhead: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.bold,),
-          body1: TextStyle( fontSize: 15.0,
-                fontWeight: FontWeight.bold,),
-          body2: TextStyle(fontSize: 15.0, fontWeight: FontWeight.normal),
-          caption: TextStyle(fontSize: 13.0, fontWeight: FontWeight.normal),
-        ),
+        //fontFamily: 'Montserrat',
+        //textTheme: TextTheme(
+        //  //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+        //  title: TextStyle(
+        //        fontSize: 17.0,
+        //        fontWeight: FontWeight.bold,
+        //        //color: Colors.blueGrey[700]
+        //        ),
+        //  subhead: TextStyle(
+        //        fontSize: 16.0,
+        //        fontWeight: FontWeight.bold,),
+        //  body1: TextStyle( fontSize: 15.0,
+        //        fontWeight: FontWeight.bold,),
+        //  body2: TextStyle(fontSize: 15.0, fontWeight: FontWeight.normal),
+        //  caption: TextStyle(fontSize: 13.0, fontWeight: FontWeight.normal),
+        //)
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
