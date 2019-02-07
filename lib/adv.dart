@@ -305,11 +305,10 @@ Card advAssembler(BuildContext context,
    return adv1;
 }
 
-Card makeTextSeparator(BuildContext context, String str)
+Card makeTextSeparator(BuildContext context)
 {
-   Text text = Text(str, style: Theme.of(context).textTheme.title);
    return Card(
-         child: text,
+         child: Icon(Icons.message),
          color: Theme.of(context).accentColor,
          elevation: 0.0);
 }
@@ -363,7 +362,7 @@ Card createFavAdvWidget(BuildContext context,
                                0.0,
                                Consts.advInnerMargin);
    
-   cards.add(makeTextSeparator(context, "Chat"));
+   cards.add(makeTextSeparator(context));
 
    cards.add(Card( child: button,
             color: Theme.of(context).accentColor,
