@@ -251,38 +251,27 @@ Card advAssembler(BuildContext context,
                                        color,
                                        outerCardMarging,
                                        advInnerMargin);
+   // TODO: Set a max length.
+   Card textInput = Card(
+         child: Padding(
+               child: TextField(
+                  controller: ctrl,
+                  //textInputAction: TextInputAction.go,
+                  //onSubmitted: onTextFieldPressed,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                        hintText: TextConsts.newAdvDescDeco)),
+               padding: EdgeInsets.all(
+                     TextConsts.advElemTextPadding)
+            ),
+         color: Consts.advLocHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMargin),
+         elevation: 0.0,
+   );
 
-   if (ctrl == null)
-      list.add(advElemFactory(context,
-                  <String>[data.description],
-                  <String>[TextConsts.descriptionText],
-                  "Detalhes adicionais",
-                  advInnerMargin));
-
-   if (ctrl != null) {
-      // TODO: Set a max length.
-      Card textInput = Card(
-            child: Padding(
-                  child: TextField(
-                     controller: ctrl,
-                     //textInputAction: TextInputAction.go,
-                     //onSubmitted: onTextFieldPressed,
-                     keyboardType: TextInputType.multiline,
-                     maxLines: null,
-                     decoration: InputDecoration(
-                           hintText: TextConsts.newAdvDescDeco)),
-                  padding: EdgeInsets.all(
-                        TextConsts.advElemTextPadding)
-               ),
-            color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(Consts.advInnerMargin),
-            elevation: 0.0,
-      );
-      list.add(textInput);
-   }
-
-   if (button != null)
-      list.add(button);
+   list.add(textInput);
+   list.add(button);
 
    Card adv1 = Card(
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -426,17 +415,19 @@ Card createAdvWidget(BuildContext context,
    );
 }
 
-Card createNewAdvWidget(BuildContext context, AdvData data,
-                        Function onPressed, String label,
+Card createNewAdvWidget(BuildContext context,
+                        AdvData data,
+                        Function onPressed,
+                        String label,
                         TextEditingController newAdvTextCtrl,
-                        List<MenuItem> menus, Icon i1)
+                        List<MenuItem> menus,
+                        Icon i1)
 {
    IconButton publish = IconButton(
                      icon: i1,
                      onPressed: onPressed,
                      color: Theme.of(context).primaryColor,
-                     iconSize: 35.0
-                  );
+                     iconSize: 30.0);
 
    Color color = Theme.of(context).accentColor;
    Card c4 = Card(
