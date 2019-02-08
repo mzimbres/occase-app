@@ -23,17 +23,6 @@ class ChatHistory {
       unreadMsgs.clear();
    }
 
-   // TODO: Remove this function.
-   String getLastMsg()
-   {
-      if (unreadMsgs.length != 0)
-         return unreadMsgs.last.msg;
-      if (msgs.length != 0)
-         return msgs.last.msg;
-
-      return '';
-   }
-
    String getLastUnreadMsg()
    {
       if (unreadMsgs.isEmpty)
