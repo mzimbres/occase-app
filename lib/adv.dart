@@ -451,23 +451,20 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-ListView createOwnAdvInterestedListView(
+Column createOwnAdvInterestedListView(
             BuildContext context,
             List<ChatHistory> ch,
             Function onPressed)
 {
-   return ListView.builder(
-      padding: const EdgeInsets.all(0.0),
-      itemCount: ch.length,
-      shrinkWrap: true,
-      itemBuilder: (BuildContext context, int i)
-      {
-         return makeChatItemButton(
+   List<Widget> list = List<Widget>(ch.length);
+
+   for (int i = 0; i < list.length; ++i)
+      list[i] = makeChatItemButton(
                    context,
                    ch[i],
                    () { onPressed(i); });
-      },
-   );
+
+   return Column(children: list);
 }
 
 Widget createOwnAdvChatTab(
