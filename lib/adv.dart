@@ -141,8 +141,7 @@ CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
 Card advElemFactory(BuildContext context,
                     List<String> values,
                     List<String> keys,
-                    String title,
-                    double advInnerMargin)
+                    String title)
 {
    List<Widget> r = List<Widget>();
    Text t = Text(title, style: Theme.of(context).textTheme.subhead);
@@ -178,7 +177,7 @@ Card advElemFactory(BuildContext context,
    return Card(
             child: padd,
             color: Consts.advLocHeaderColor,
-            margin: EdgeInsets.all(advInnerMargin),
+            margin: EdgeInsets.all(Consts.advInnerMargin),
             elevation: 0.0,
    );
 }
@@ -187,9 +186,7 @@ List<Card>
 makeMenuInfoCards(BuildContext context,
                   AdvData data,
                   List<MenuItem> menus,
-                  Color color,
-                  double outerCardMarging,
-                  double advInnerMargin)
+                  Color color)
 {
    List<Card> list = List<Card>();
 
@@ -201,8 +198,7 @@ makeMenuInfoCards(BuildContext context,
                   context,
                   names,
                   TextConsts.menuDepthNames[i],
-                  TextConsts.newAdvTabNames[i],
-                  advInnerMargin);
+                  TextConsts.newAdvTabNames[i]);
 
       list.add(card);
    }
@@ -214,22 +210,14 @@ makeMenuInfoCards(BuildContext context,
 List<Card> advTextAssembler(BuildContext context,
                             AdvData data,
                             List<MenuItem> menus,
-                            Color color,
-                            double outerCardMarging,
-                            double advInnerMargin)
+                            Color color)
 {
-   List<Card> list = makeMenuInfoCards(context,
-                                       data,
-                                       menus,
-                                       color,
-                                       outerCardMarging,
-                                       advInnerMargin);
+   List<Card> list = makeMenuInfoCards(context, data, menus, color);
 
    Card descCard = advElemFactory(context,
                       <String>[data.description],
                       <String>[TextConsts.descriptionText],
-                      "Detalhes do anunciante",
-                      advInnerMargin);
+                      "Detalhes do anunciante");
 
    list.add(descCard);
 
@@ -241,16 +229,10 @@ Card advAssembler(BuildContext context,
                   Widget button,
                   TextEditingController ctrl,
                   List<MenuItem> menus,
-                  Color color,
-                  double outerCardMarging,
-                  double advInnerMargin)
+                  Color color)
 {
-   List<Card> list = makeMenuInfoCards(context,
-                                       data,
-                                       menus,
-                                       color,
-                                       outerCardMarging,
-                                       advInnerMargin);
+   List<Card> list = makeMenuInfoCards(context, data, menus, color);
+
    // TODO: Set a max length.
    Card textInput = Card(
          child: Padding(
@@ -277,7 +259,7 @@ Card advAssembler(BuildContext context,
          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
             children: list),
          color: color,
-         margin: EdgeInsets.all(outerCardMarging),
+         margin: EdgeInsets.all(Consts.advMarging),
          elevation: 0.0,
    );
 
@@ -335,13 +317,8 @@ Card createChatEntry(BuildContext context,
                      List<MenuItem> menus,
                      Widget chats)
 {
-   List<Card> cards = advTextAssembler(
-                               context,
-                               adv,
-                               menus,
-                               Theme.of(context).accentColor,
-                               0.0,
-                               Consts.advInnerMargin);
+   List<Card> cards = advTextAssembler(context, adv, menus,
+                                       Theme.of(context).accentColor);
    
    cards.add(makeTextSeparator(context));
 
@@ -372,13 +349,8 @@ Card createAdvWidget(BuildContext context,
                      Icon i2,
                      Color newAdvColor)
 {
-   List<Card> cards = advTextAssembler(
-                               context,
-                               data,
-                               menus,
-                               Theme.of(context).accentColor,
-                               0.0,
-                               Consts.advInnerMargin);
+   List<Card> cards = advTextAssembler(context, data, menus,
+                                       Theme.of(context).accentColor);
    
    IconButton icon1 = IconButton(
                          icon: i1,
@@ -435,8 +407,7 @@ Card createNewAdvWidget(BuildContext context,
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl,
-         menus, color, Consts.advMarging, Consts.advInnerMargin);
+   return advAssembler(context, data, c4, newAdvTextCtrl, menus, color);
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> advs,
