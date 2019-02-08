@@ -352,28 +352,27 @@ FlatButton makeChatItemButton(BuildContext context,
    );
 }
 
-Card createFavAdvWidget(BuildContext context,
-                        AdvData adv,
-                        Function onPressed,
-                        List<MenuItem> menus)
+Card createChatEntry(BuildContext context,
+                     AdvData adv,
+                     List<MenuItem> menus,
+                     Widget chats)
 {
-   Color color = Theme.of(context).accentColor;
-
    List<Card> cards = advTextAssembler(
                                context,
                                adv,
                                menus,
-                               color,
+                               Theme.of(context).accentColor,
                                0.0,
                                Consts.advInnerMargin);
    
    cards.add(makeTextSeparator(context));
 
-   ChatHistory ch = adv.getChatHistory(adv.from);
-   cards.add(Card(child: makeChatItemButton(context, ch, onPressed),
-             color: Theme.of(context).accentColor,
-             margin: EdgeInsets.all(Consts.advInnerMargin),
-             elevation: 0.0));
+   Card chatCard = Card(child: chats,
+                        color: Theme.of(context).accentColor,
+                        margin: EdgeInsets.all(Consts.advInnerMargin),
+                        elevation: 0.0);
+
+   cards.add(chatCard);
 
    Column col = Column(children: cards);
 
@@ -424,7 +423,7 @@ ListView createOwnAdvInterestedListView(
             Function onPressed)
 {
    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(0.0),
       itemCount: ch.length,
       shrinkWrap: true,
       itemBuilder: (BuildContext context, int i)
@@ -435,31 +434,6 @@ ListView createOwnAdvInterestedListView(
                    () { onPressed(i); });
       },
    );
-}
-
-Card createOwnAdvWidget(BuildContext context,
-                        AdvData adv,
-                        Function onPressed,
-                        String label,
-                        TextEditingController newAdvTextCtrl,
-                        List<MenuItem> menus,
-                        Icon i1)
-{
-   ListView lv = createOwnAdvInterestedListView(
-               context,
-               adv.chats,
-               onPressed);
-
-   Card card = Card(
-      child: lv,
-      color: Colors.white,
-      margin: EdgeInsets.all(Consts.advInnerMargin),
-      elevation: 0.0,
-   );
-
-   Color color = Theme.of(context).accentColor;
-   return advAssembler(context, adv, card, newAdvTextCtrl,
-         menus, color, 3.0, Consts.advInnerMargin);
 }
 
 Card createNewAdvWidget(BuildContext context, AdvData data,
@@ -583,14 +557,14 @@ Widget createOwnAdvChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createOwnAdvWidget(
+            return createChatEntry(
                       context,
                       data[i],
-                      (j) {onChat(i, j);},
-                      buttonText,
-                      null,
                       menus,
-                      Icon(Icons.group));
+                      createOwnAdvInterestedListView(
+                            context,
+                            data[i].chats,
+                            (j) {onChat(i, j);}));
          },
    );
 }
@@ -606,11 +580,14 @@ Widget createFavChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
-            return createFavAdvWidget(
+            return createChatEntry(
                       context,
                       data[i],
-                      () {onChat(i);},
-                      menus);
+                      menus,
+                      makeChatItemButton(
+                            context,
+                            data[i].getChatHistory(data[i].from),
+                            () {onChat(i);}));
          },
    );
 }
