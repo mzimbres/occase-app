@@ -324,19 +324,18 @@ Text makeChatSubStrWidget(ChatHistory ch)
    return createMenuItemSubStrWidget(subTitle, FontWeight.bold);
 }
 
-Card createFavAdvWidget(BuildContext context,
-                        AdvData adv,
-                        Function onPressed,
-                        List<MenuItem> menus)
+FlatButton makeChatItemButton(BuildContext context,
+                              AdvData adv,
+                              Function onPressed)
 {
    // This adv should have only one chat history since it is not our
    // own adv.
-   final Color buttonBgColor = const Color(0xFFFFFF);
+   final Color bgColor = const Color(0xFFFFFF);
    final ChatHistory ch = adv.getChatHistory(adv.from);
    final int n = ch.getNumberOfUnreadMsgs();
    Color cc = Theme.of(context).accentColor;
    if (n == 0)
-      cc = buttonBgColor;
+      cc = bgColor;
 
    ListTile lt = createListViewItem(
                     context,
@@ -345,13 +344,19 @@ Card createFavAdvWidget(BuildContext context,
                     makeCircleUnreadMsgs(n, cc),
                     Theme.of(context).primaryColor);
 
-   FlatButton button = FlatButton(
-         child: lt,
-         color: TextConsts.favChatButtonColor,
-         highlightColor: buttonBgColor,
-         onPressed: onPressed,
+   return FlatButton(
+             child: lt,
+             color: TextConsts.favChatButtonColor,
+             highlightColor: bgColor,
+             onPressed: onPressed,
    );
+}
 
+Card createFavAdvWidget(BuildContext context,
+                        AdvData adv,
+                        Function onPressed,
+                        List<MenuItem> menus)
+{
    Color color = Theme.of(context).accentColor;
 
    List<Card> cards = advTextAssembler(
@@ -364,10 +369,10 @@ Card createFavAdvWidget(BuildContext context,
    
    cards.add(makeTextSeparator(context));
 
-   cards.add(Card( child: button,
-            color: Theme.of(context).accentColor,
-            margin: EdgeInsets.all(Consts.advInnerMargin),
-            elevation: 0.0));
+   cards.add(Card(child: makeChatItemButton(context, adv, onPressed),
+             color: Theme.of(context).accentColor,
+             margin: EdgeInsets.all(Consts.advInnerMargin),
+             elevation: 0.0));
 
    Column col = Column(children: cards);
 
