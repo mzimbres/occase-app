@@ -790,7 +790,6 @@ class MenuChatState extends State<MenuChat>
                         context,
                         _advInput,
                         _onSendNewAdvPressed,
-                        TextConsts.newAdvButtonText,
                         _newAdvTextCtrl,
                         _menus, Icon(Icons.publish),
                      );
