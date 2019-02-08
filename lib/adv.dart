@@ -302,7 +302,7 @@ Card makeAdvWidget(BuildContext context,
                    List<Card> cards,
                    Function onPressed,
                    Icon icon,
-                   Color newAdvColor)
+                   Color color)
 {
    IconButton icon1 = IconButton(
                          icon: Icon(Icons.clear, color: Colors.red),
@@ -312,68 +312,6 @@ Card makeAdvWidget(BuildContext context,
    IconButton icon2 = IconButton(
                          icon: icon,
                          onPressed: () {onPressed(true);},
-                         color: Theme.of(context).primaryColor,
-                         iconSize: 30.0);
-
-   Row r = Row(children: <Widget>[
-              Expanded(child: icon1),
-              Expanded(child: icon2)]);
-
-   Card c4 = Card(
-      child: r,
-      color: newAdvColor,
-      margin: EdgeInsets.all(Consts.advInnerMargin),
-      elevation: 0.0,
-   );
-
-   cards.add(c4);
-
-   final double padding = TextConsts.outerAdvCardPadding;
-   return Card(
-      child: Padding(child: Column(children: cards),
-                     padding: EdgeInsets.all(padding)),
-      color: newAdvColor,
-      margin: EdgeInsets.all(Consts.advMarging),
-      elevation: 0.0,
-   );
-}
-
-Card makeTextInputFieldCard(TextEditingController ctrl)
-{
-   // TODO: Set a max length.
-   return Card(
-         child: Padding(
-               child: TextField(
-                  controller: ctrl,
-                  //textInputAction: TextInputAction.go,
-                  //onSubmitted: onTextFieldPressed,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  decoration: InputDecoration(
-                        hintText: TextConsts.newAdvDescDeco)),
-               padding: EdgeInsets.all(
-                     TextConsts.advElemTextPadding)
-            ),
-         color: Consts.advLocHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMargin),
-         elevation: 0.0,
-   );
-}
-
-Card createNewAdvWidget(BuildContext context,
-                        List<Card> cards,
-                        Function onPressed,
-                        Icon icon,
-                        Color color)
-{
-   IconButton icon1 = IconButton(
-                         icon: Icon(Icons.clear, color: Colors.red),
-                         iconSize: 30.0,
-                         onPressed: () {print("I need an impl.");});
-
-   IconButton icon2 = IconButton(
-                         icon: icon,
-                         onPressed: () {onPressed();},
                          color: Theme.of(context).primaryColor,
                          iconSize: 30.0);
 
@@ -401,7 +339,30 @@ Card createNewAdvWidget(BuildContext context,
    );
 }
 
-Widget makeAdvTab(BuildContext context, List<AdvData> advs,
+Card makeTextInputFieldCard(TextEditingController ctrl)
+{
+   // TODO: Set a max length.
+   return Card(
+         child: Padding(
+               child: TextField(
+                  controller: ctrl,
+                  //textInputAction: TextInputAction.go,
+                  //onSubmitted: onTextFieldPressed,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                        hintText: TextConsts.newAdvDescDeco)),
+               padding: EdgeInsets.all(
+                     TextConsts.advElemTextPadding)
+            ),
+         color: Consts.advLocHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMargin),
+         elevation: 0.0,
+   );
+}
+
+Widget makeAdvTab(BuildContext context,
+                  List<AdvData> advs,
                   Function onAdvSelection,
                   Function onNewAdv,
                   List<MenuItem> menus,

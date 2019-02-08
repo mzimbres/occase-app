@@ -464,7 +464,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onSendNewAdvPressed()
+   void _onSendNewAdvPressed(bool add)
    {
       _onNewAdvPressed = false;
       _botBarIdx = 0;
@@ -794,12 +794,12 @@ class MenuChatState extends State<MenuChat>
 
             cards.add(makeTextInputFieldCard(_newAdvTextCtrl));
    
-            Widget widget_tmp = createNewAdvWidget(
-                        context,
-                        cards,
-                        _onSendNewAdvPressed,
-                        Icon(Icons.publish),
-                        Theme.of(context).accentColor);
+            Widget widget_tmp = makeAdvWidget(
+                                   context,
+                                   cards,
+                                   _onSendNewAdvPressed,
+                                   Icon(Icons.publish),
+                                   Theme.of(context).accentColor);
 
             // I added this ListView to prevent widget_tmp from
             // extending the whole screen. Inside the ListView it
@@ -900,13 +900,11 @@ class MenuChatState extends State<MenuChat>
       }
 
       // This is the widget of the incoming advs screen.
-      widgets[1] = makeAdvTab(
-                      context,
-                      _advs,
-                      _onAdvSelection,
-                      _onNewAdv,
-                      _menus, newAdvsLength
-                   );
+      widgets[1] = makeAdvTab(context,
+                              _advs,
+                              _onAdvSelection,
+                              _onNewAdv,
+                              _menus, newAdvsLength);
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
