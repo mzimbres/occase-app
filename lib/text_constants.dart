@@ -66,5 +66,7 @@ class TextConsts {
    static final double advElemTextPadding = 4.0;
 
    static Color favChatButtonColor = Colors.white; 
+
+   static final double outerAdvCardPadding = 2.0;
 }
 

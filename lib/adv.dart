@@ -228,7 +228,7 @@ List<Card> advTextAssembler(BuildContext context,
    Card descCard = advElemFactory(context,
                       <String>[data.description],
                       <String>[TextConsts.descriptionText],
-                      "Detalhes adicionais",
+                      "Detalhes do anunciante",
                       advInnerMargin);
 
    list.add(descCard);
@@ -365,35 +365,47 @@ Card createChatEntry(BuildContext context,
 
    Column col = Column(children: cards);
 
+   final double padding = TextConsts.outerAdvCardPadding;
    return Card(
-      child: Padding(child: col, padding: EdgeInsets.all(2.0)),
+      child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: Theme.of(context).accentColor,
       margin: EdgeInsets.all(Consts.advMarging),
       elevation: 0.0,
    );
 }
 
-Card createAdvWidget(BuildContext context, AdvData data,
-                     Function onPressed, String label,
+Card createAdvWidget(BuildContext context,
+                     AdvData data,
+                     Function onPressed,
+                     String label,
                      TextEditingController newAdvTextCtrl,
                      List<MenuItem> menus,
-                     Icon i1, Icon i2, Color newAdvColor)
+                     Icon i1,
+                     Icon i2,
+                     Color newAdvColor)
 {
+   List<Card> cards = advTextAssembler(
+                               context,
+                               data,
+                               menus,
+                               Theme.of(context).accentColor,
+                               0.0,
+                               Consts.advInnerMargin);
+   
    IconButton icon1 = IconButton(
-                     icon: i1,
-                     iconSize: 30.0,
-                     onPressed: () {onPressed(false);},
-                  );
+                         icon: i1,
+                         iconSize: 30.0,
+                         onPressed: () {onPressed(false);});
 
-   IconButton  icon2 = IconButton(
-                     icon: i2,
-                     onPressed: () {onPressed(true);},
-                     color: Theme.of(context).primaryColor,
-                     iconSize: 30.0
-                  );
+   IconButton icon2 = IconButton(
+                         icon: i2,
+                         onPressed: () {onPressed(true);},
+                         color: Theme.of(context).primaryColor,
+                         iconSize: 30.0);
 
-   Row r = Row(children: <Widget>[Expanded(child: icon1),
-         Expanded(child: icon2)]);
+   Row r = Row(children: <Widget>[
+              Expanded(child: icon1),
+              Expanded(child: icon2)]);
 
    Card c4 = Card(
       child: r,
@@ -402,26 +414,15 @@ Card createAdvWidget(BuildContext context, AdvData data,
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl,
-         menus, newAdvColor, Consts.advMarging, Consts.advInnerMargin);
-}
+   cards.add(c4);
 
-ListView createOwnAdvInterestedListView(
-            BuildContext context,
-            List<ChatHistory> ch,
-            Function onPressed)
-{
-   return ListView.builder(
-      padding: const EdgeInsets.all(0.0),
-      itemCount: ch.length,
-      shrinkWrap: true,
-      itemBuilder: (BuildContext context, int i)
-      {
-         return makeChatItemButton(
-                   context,
-                   ch[i],
-                   () { onPressed(i); });
-      },
+   final double padding = TextConsts.outerAdvCardPadding;
+   return Card(
+      child: Padding(child: Column(children: cards),
+                     padding: EdgeInsets.all(padding)),
+      color: newAdvColor,
+      margin: EdgeInsets.all(Consts.advMarging),
+      elevation: 0.0,
    );
 }
 
@@ -530,6 +531,25 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                highlightColor: const Color(0xFFFFFF),
                onPressed: () { onNodePressed(i); },
          );
+      },
+   );
+}
+
+ListView createOwnAdvInterestedListView(
+            BuildContext context,
+            List<ChatHistory> ch,
+            Function onPressed)
+{
+   return ListView.builder(
+      padding: const EdgeInsets.all(0.0),
+      itemCount: ch.length,
+      shrinkWrap: true,
+      itemBuilder: (BuildContext context, int i)
+      {
+         return makeChatItemButton(
+                   context,
+                   ch[i],
+                   () { onPressed(i); });
       },
    );
 }
