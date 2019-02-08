@@ -397,6 +397,31 @@ class MenuChatState extends State<MenuChat>
       setState(() { _botBarIdx = i; });
    }
 
+   void _onNewAdvBotBarTapped(int i)
+   {
+      // We allow the user to tap backwards to a new tab not forward.
+      // This is to avoid complex logic of avoid the publication of
+      // imcomplete advs.
+      if (i >= _botBarIdx)
+         return;
+
+      // The desired tab is *i* the current tab is _botBarIdx. For any
+      // tab we land on or walk through we have to restore the menu
+      // stack, except for the last tab or any *non-menu* tab that we
+      // happen to add.
+
+      // To handle the boundary condition on the last tab.
+      if ((_botBarIdx + 1) != TextConsts.newAdvTabNames.length)
+         ++_botBarIdx;
+
+      do {
+         --_botBarIdx;
+         _menus[_botBarIdx].restoreMenuStack();
+      } while (_botBarIdx != i);
+
+      setState(() { });
+   }
+
    void _onChatBotBarTapped(int i)
    {
       setState(() { _chatBotBarIdx = i; });
@@ -839,7 +864,7 @@ class MenuChatState extends State<MenuChat>
                    TextConsts.newAdvTabIcons,
                    TextConsts.newAdvTabNames,
                    _onWillPopMenu,
-                   _onBotBarTapped,
+                   _onNewAdvBotBarTapped,
                    _botBarIdx
                 );
       }

@@ -23,23 +23,22 @@ Text createMenuItemSubStrWidget(String str, FontWeight fw)
 }
 
 ListTile createListViewItem(
-      BuildContext context,
-      String name,
-      Text subItemWidget,
-      Widget trailing,
-      Color circleColor)
+            BuildContext context,
+            String name,
+            Text subItemWidget,
+            Widget trailing,
+            Color circleColor)
 {
-   return ListTile( leading: CircleAvatar(
-                      child: Text(name[0]),
-                      backgroundColor: circleColor),
-         title: Text( name,
-               style: Theme.of(context).textTheme.subhead
-         ),
-         dense: false,
-         subtitle: subItemWidget,
-         trailing: trailing,
-         contentPadding: EdgeInsets.symmetric(horizontal: 7.0)
-      );
+   return ListTile(
+             leading: CircleAvatar(
+                         child: Text(name[0]),
+                         backgroundColor: circleColor),
+             title: Text(name,
+               style: Theme.of(context).textTheme.subhead),
+             //dense: false,
+             subtitle: subItemWidget,
+             trailing: trailing,
+             contentPadding: EdgeInsets.symmetric(horizontal: 10.0));
 }
 
 /*
