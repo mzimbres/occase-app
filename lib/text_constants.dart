@@ -50,9 +50,6 @@ class TextConsts {
    // The text in the adv description field.
    static final String descriptionText = "Descricao";
 
-   // Text used in the adv screen to save the adv for chat.
-   static final String ownAdvButtonText = "Ver interessados";
-
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 
    static final IconData newAdvIcon = Icons.publish;

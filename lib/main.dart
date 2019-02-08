@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
          brightness: Brightness.light,
         primaryColor: Colors.blueGrey[600],
-        accentColor: Colors.blueGrey[200],
+        accentColor: Colors.blueGrey[300],
         //fontFamily: 'Montserrat',
         //textTheme: TextTheme(
         //  //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
@@ -946,7 +946,6 @@ class MenuChatState extends State<MenuChat>
                             context,
                             _ownAdvs,
                             _onOwnAdvChat,
-                            TextConsts.ownAdvButtonText,
                             _menus);
       } else {
          // The favorite tab in the chat screen.

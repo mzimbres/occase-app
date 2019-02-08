@@ -471,7 +471,6 @@ Widget createOwnAdvChatTab(
          BuildContext context,
          List<AdvData> data,
          Function onChat,
-         String buttonText,
          List<MenuItem> menus)
 {
    return ListView.builder(
