@@ -298,24 +298,19 @@ Card createChatEntry(BuildContext context,
    );
 }
 
-Card createAdvWidget(BuildContext context,
-                     AdvData data,
-                     Function onPressed,
-                     List<MenuItem> menus,
-                     Icon i1,
-                     Icon i2,
-                     Color newAdvColor)
+Card makeAdvWidget(BuildContext context,
+                   List<Card> cards,
+                   Function onPressed,
+                   Icon icon,
+                   Color newAdvColor)
 {
-   List<Card> cards = advTextAssembler(context, data, menus,
-                                       Theme.of(context).accentColor);
-   
    IconButton icon1 = IconButton(
-                         icon: i1,
+                         icon: Icon(Icons.clear, color: Colors.red),
                          iconSize: 30.0,
                          onPressed: () {onPressed(false);});
 
    IconButton icon2 = IconButton(
-                         icon: i2,
+                         icon: icon,
                          onPressed: () {onPressed(true);},
                          color: Theme.of(context).primaryColor,
                          iconSize: 30.0);
@@ -343,17 +338,10 @@ Card createAdvWidget(BuildContext context,
    );
 }
 
-Card createNewAdvWidget(BuildContext context,
-                        AdvData data,
-                        Function onPressed,
-                        TextEditingController ctrl,
-                        List<MenuItem> menus,
-                        Icon icon)
+Card makeTextInputFieldCard(TextEditingController ctrl)
 {
-   List<Card> cards = advTextAssembler(context, data, menus,
-                                       Theme.of(context).accentColor);
    // TODO: Set a max length.
-   Card textInput = Card(
+   return Card(
          child: Padding(
                child: TextField(
                   controller: ctrl,
@@ -370,9 +358,14 @@ Card createNewAdvWidget(BuildContext context,
          margin: EdgeInsets.all(Consts.advInnerMargin),
          elevation: 0.0,
    );
+}
 
-   cards.add(textInput);
-   
+Card createNewAdvWidget(BuildContext context,
+                        List<Card> cards,
+                        Function onPressed,
+                        Icon icon,
+                        Color color)
+{
    IconButton icon1 = IconButton(
                          icon: Icon(Icons.clear, color: Colors.red),
                          iconSize: 30.0,
@@ -384,15 +377,12 @@ Card createNewAdvWidget(BuildContext context,
                          color: Theme.of(context).primaryColor,
                          iconSize: 30.0);
 
-   Row r = Row(children: <Widget>[
-              Expanded(child: icon1),
-              Expanded(child: icon2)]);
-
-
-   Color color = Theme.of(context).accentColor;
+   Row row = Row(children: <Widget>[
+                Expanded(child: icon1),
+                Expanded(child: icon2)]);
 
    Card c4 = Card(
-      child: r,
+      child: row,
       color: color,
       margin: EdgeInsets.all(Consts.advInnerMargin),
       elevation: 0.0,
@@ -405,17 +395,17 @@ Card createNewAdvWidget(BuildContext context,
    final double padding = TextConsts.outerAdvCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: Theme.of(context).accentColor,
+      color: color,
       margin: EdgeInsets.all(Consts.advMarging),
       elevation: 0.0,
    );
 }
 
-Widget createAdvTab(BuildContext context, List<AdvData> advs,
-                    Function onAdvSelection,
-                    Function onNewAdv,
-                    List<MenuItem> menus,
-                    int numberOfNewAdvs)
+Widget makeAdvTab(BuildContext context, List<AdvData> advs,
+                  Function onAdvSelection,
+                  Function onNewAdv,
+                  List<MenuItem> menus,
+                  int numberOfNewAdvs)
 {
    final int advsLength = advs.length;
 
@@ -433,13 +423,17 @@ Widget createAdvTab(BuildContext context, List<AdvData> advs,
                   if (i < numberOfNewAdvs)
                      color = Colors.brown[200]; 
 
-                  return createAdvWidget(
-                        context,
-                        advs[i],
-                        (fav) {onAdvSelection(advs[idx], fav);},
-                        menus,
-                        Icon(Icons.clear, color: Colors.red),
-                        Icon(Icons.star, color: Colors.amber), color);
+                  List<Card> cards = advTextAssembler(
+                                        context,
+                                        advs[i],
+                                        menus,
+                                        Theme.of(context).accentColor);
+   
+                  return makeAdvWidget(
+                            context,
+                            cards,
+                            (fav) {onAdvSelection(advs[idx], fav);},
+                            Icon(Icons.star, color: Colors.amber), color);
                },
          ),
 
