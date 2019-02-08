@@ -224,48 +224,6 @@ List<Card> advTextAssembler(BuildContext context,
    return list;
 }
 
-Card advAssembler(BuildContext context,
-                  AdvData data,
-                  Widget button,
-                  TextEditingController ctrl,
-                  List<MenuItem> menus,
-                  Color color)
-{
-   List<Card> list = makeMenuInfoCards(context, data, menus, color);
-
-   // TODO: Set a max length.
-   Card textInput = Card(
-         child: Padding(
-               child: TextField(
-                  controller: ctrl,
-                  //textInputAction: TextInputAction.go,
-                  //onSubmitted: onTextFieldPressed,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  decoration: InputDecoration(
-                        hintText: TextConsts.newAdvDescDeco)),
-               padding: EdgeInsets.all(
-                     TextConsts.advElemTextPadding)
-            ),
-         color: Consts.advLocHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMargin),
-         elevation: 0.0,
-   );
-
-   list.add(textInput);
-   list.add(button);
-
-   Card adv1 = Card(
-         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: list),
-         color: color,
-         margin: EdgeInsets.all(Consts.advMarging),
-         elevation: 0.0,
-   );
-
-   return adv1;
-}
-
 Card makeTextSeparator(BuildContext context)
 {
    return Card(
@@ -343,7 +301,6 @@ Card createChatEntry(BuildContext context,
 Card createAdvWidget(BuildContext context,
                      AdvData data,
                      Function onPressed,
-                     TextEditingController newAdvTextCtrl,
                      List<MenuItem> menus,
                      Icon i1,
                      Icon i2,
@@ -389,25 +346,69 @@ Card createAdvWidget(BuildContext context,
 Card createNewAdvWidget(BuildContext context,
                         AdvData data,
                         Function onPressed,
-                        TextEditingController newAdvTextCtrl,
+                        TextEditingController ctrl,
                         List<MenuItem> menus,
-                        Icon i1)
+                        Icon icon)
 {
-   IconButton publish = IconButton(
-                     icon: i1,
-                     onPressed: onPressed,
-                     color: Theme.of(context).primaryColor,
-                     iconSize: 30.0);
+   List<Card> cards = advTextAssembler(context, data, menus,
+                                       Theme.of(context).accentColor);
+   // TODO: Set a max length.
+   Card textInput = Card(
+         child: Padding(
+               child: TextField(
+                  controller: ctrl,
+                  //textInputAction: TextInputAction.go,
+                  //onSubmitted: onTextFieldPressed,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                        hintText: TextConsts.newAdvDescDeco)),
+               padding: EdgeInsets.all(
+                     TextConsts.advElemTextPadding)
+            ),
+         color: Consts.advLocHeaderColor,
+         margin: EdgeInsets.all(Consts.advInnerMargin),
+         elevation: 0.0,
+   );
+
+   cards.add(textInput);
+   
+   IconButton icon1 = IconButton(
+                         icon: Icon(Icons.clear, color: Colors.red),
+                         iconSize: 30.0,
+                         onPressed: () {print("I need an impl.");});
+
+   IconButton icon2 = IconButton(
+                         icon: icon,
+                         onPressed: () {onPressed();},
+                         color: Theme.of(context).primaryColor,
+                         iconSize: 30.0);
+
+   Row r = Row(children: <Widget>[
+              Expanded(child: icon1),
+              Expanded(child: icon2)]);
+
 
    Color color = Theme.of(context).accentColor;
+
    Card c4 = Card(
-      child: publish,
+      child: r,
       color: color,
       margin: EdgeInsets.all(Consts.advInnerMargin),
       elevation: 0.0,
    );
 
-   return advAssembler(context, data, c4, newAdvTextCtrl, menus, color);
+   cards.add(c4);
+
+   Column col = Column(children: cards);
+
+   final double padding = TextConsts.outerAdvCardPadding;
+   return Card(
+      child: Padding(child: col, padding: EdgeInsets.all(padding)),
+      color: Theme.of(context).accentColor,
+      margin: EdgeInsets.all(Consts.advMarging),
+      elevation: 0.0,
+   );
 }
 
 Widget createAdvTab(BuildContext context, List<AdvData> advs,
@@ -436,7 +437,7 @@ Widget createAdvTab(BuildContext context, List<AdvData> advs,
                         context,
                         advs[i],
                         (fav) {onAdvSelection(advs[idx], fav);},
-                        null, menus,
+                        menus,
                         Icon(Icons.clear, color: Colors.red),
                         Icon(Icons.star, color: Colors.amber), color);
                },
