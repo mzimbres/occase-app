@@ -382,7 +382,7 @@ Widget makeAdvTab(BuildContext context,
                   // New advs are shown with a different color.
                   Color color = Theme.of(context).accentColor;
                   if (i < numberOfNewAdvs)
-                     color = Colors.brown[200]; 
+                     color = TextConsts.newReceivedAdvColor; 
 
                   List<Card> cards = advTextAssembler(
                                         context,
@@ -401,7 +401,8 @@ Widget makeAdvTab(BuildContext context,
          backgroundColor: Consts.scaffoldBackground,
          floatingActionButton: FloatingActionButton(
                backgroundColor: Theme.of(context).accentColor,
-               child: Icon(TextConsts.newAdvIcon, color: Colors.white),
+               child: Icon( TextConsts.newAdvIcon,
+                            color: Theme.of(context).primaryColor),
                onPressed: onNewAdv,
          ),
    );

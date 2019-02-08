@@ -54,7 +54,7 @@ class TextConsts {
 
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 
-   static final IconData newAdvIcon = Icons.mode_edit;
+   static final IconData newAdvIcon = Icons.publish;
 
    static final String hintTextChat = "Digite sua mensagem";
 
@@ -64,6 +64,9 @@ class TextConsts {
    static final double advElemTextPadding = 4.0;
 
    static Color favChatButtonColor = Colors.white; 
+
+   // New received advs color.
+   static Color newReceivedAdvColor = Colors.brown[200]; 
 
    static final double outerAdvCardPadding = 2.0;
 }

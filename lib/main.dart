@@ -911,29 +911,18 @@ class MenuChatState extends State<MenuChat>
                               _advs,
                               _onAdvSelection,
                               _onNewAdv,
-                              _menus, newAdvsLength);
+                              _menus,
+                              newAdvsLength);
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
-         //if (_tabCtrl.index == 2 && _currOwnChatIdx != -1) {
-         //   // We are in the own advs screen, where pressing the button
-         //   // on one of our own advs will lead us to the list of users
-         //   // interested in it.
-
-         //   chatWidget =
-         //      createOwnAdvInterestedListView(
-         //            context,
-         //            _ownAdvs[_currOwnChatIdx].chats,
-         //            _onOwnAdvInterestedChatPressed);
-         //} else {
-            // The own advs tab in the chat screen.
-            chatWidget = createOwnAdvChatTab(
-                               context,
-                               _ownAdvs,
-                               _onOwnAdvChat,
-                               TextConsts.ownAdvButtonText,
-                               _menus);
-         //}
+         // The own advs tab in the chat screen.
+         chatWidget = createOwnAdvChatTab(
+                            context,
+                            _ownAdvs,
+                            _onOwnAdvChat,
+                            TextConsts.ownAdvButtonText,
+                            _menus);
       } else {
          // The favorite tab in the chat screen.
          chatWidget = createFavChatTab(
