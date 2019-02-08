@@ -467,6 +467,13 @@ class MenuChatState extends State<MenuChat>
    void _onSendNewAdvPressed(bool add)
    {
       _onNewAdvPressed = false;
+
+      if (!add) {
+         _advInput = AdvData();
+         setState(() { });
+         return;
+      }
+
       _botBarIdx = 0;
       _advInput.description = _newAdvTextCtrl.text;
       _newAdvTextCtrl.text = "";
