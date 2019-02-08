@@ -137,7 +137,8 @@ class AdvData {
 CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
 {
    if (n == 0)
-      return CircleAvatar(backgroundColor: backgroundColor);
+      return CircleAvatar(backgroundColor: backgroundColor,
+                maxRadius: 10.0);
 
    return CircleAvatar(
             child: Text("${n}",
@@ -325,13 +326,12 @@ Text makeChatSubStrWidget(ChatHistory ch)
 }
 
 FlatButton makeChatItemButton(BuildContext context,
-                              AdvData adv,
+                              ChatHistory ch,
                               Function onPressed)
 {
    // This adv should have only one chat history since it is not our
    // own adv.
    final Color bgColor = const Color(0xFFFFFF);
-   final ChatHistory ch = adv.getChatHistory(adv.from);
    final int n = ch.getNumberOfUnreadMsgs();
    Color cc = Theme.of(context).accentColor;
    if (n == 0)
@@ -339,7 +339,7 @@ FlatButton makeChatItemButton(BuildContext context,
 
    ListTile lt = createListViewItem(
                     context,
-                    adv.from,
+                    ch.peer,
                     makeChatSubStrWidget(ch),
                     makeCircleUnreadMsgs(n, cc),
                     Theme.of(context).primaryColor);
@@ -369,7 +369,8 @@ Card createFavAdvWidget(BuildContext context,
    
    cards.add(makeTextSeparator(context));
 
-   cards.add(Card(child: makeChatItemButton(context, adv, onPressed),
+   ChatHistory ch = adv.getChatHistory(adv.from);
+   cards.add(Card(child: makeChatItemButton(context, ch, onPressed),
              color: Theme.of(context).accentColor,
              margin: EdgeInsets.all(Consts.advInnerMargin),
              elevation: 0.0));
@@ -419,28 +420,19 @@ Card createAdvWidget(BuildContext context, AdvData data,
 
 ListView createOwnAdvInterestedListView(
             BuildContext context,
-            List<ChatHistory> interested,
+            List<ChatHistory> ch,
             Function onPressed)
 {
    return ListView.builder(
       padding: const EdgeInsets.all(8.0),
-      itemCount: interested.length,
+      itemCount: ch.length,
       shrinkWrap: true,
       itemBuilder: (BuildContext context, int i)
       {
-         return FlatButton(
-               child: createListViewItem(
-                     context,
-                     interested[i].peer,
-                     createMenuItemSubStrWidget(
-                           interested[i].getLastMsg(),
-                           FontWeight.normal),
-                     null,
-                     Theme.of(context).primaryColor),
-               color: const Color(0xFFFFFF),
-               highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onPressed(i); },
-         );
+         return makeChatItemButton(
+                   context,
+                   ch[i],
+                   () { onPressed(i); });
       },
    );
 }
