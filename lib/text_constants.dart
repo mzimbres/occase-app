@@ -29,7 +29,8 @@ class TextConsts {
          <String>['Meus anúncios', 'Favoritos'];
 
    static List<IconData> chatIcons =
-         <IconData>[Icons.list, Icons.star_border];
+         <IconData>[ Icons.list,
+                     Icons.star];
 
    //______________
 
