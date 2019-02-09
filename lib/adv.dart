@@ -207,7 +207,7 @@ Card advElemFactory(BuildContext context,
    // some distance to the outermost card.
    return Card(
             child: padd,
-            color: Consts.advLocHeaderColor,
+            color: Colors.grey[100],
             margin: EdgeInsets.all(Consts.advInnerMargin),
             elevation: 0.0,
    );
@@ -248,7 +248,7 @@ List<Card> advTextAssembler(BuildContext context,
    Card descCard = advElemFactory(context,
                       <String>[data.description],
                       <String>[TextConsts.descriptionText],
-                      Icons.publish);
+                      Icons.person);
 
    list.add(descCard);
 
