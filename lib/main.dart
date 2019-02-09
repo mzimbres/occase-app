@@ -654,6 +654,10 @@ class MenuChatState extends State<MenuChat>
          adv.codes = codes;
          adv.id = id;
 
+         // Since this adv is not from this app we have to add a chat
+         // entry in it.
+         adv.createChatEntryForPeer(adv.from);
+
          _unreadAdvs.add(adv);
 
          // TODO: Before triggering a redraw we should perhaps check

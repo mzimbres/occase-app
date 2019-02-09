@@ -97,15 +97,20 @@ class AdvData {
       history.unreadMsgs.add(ChatItem(thisApp, msg));
    }
 
+   void createChatEntryForPeer(String peer)
+   {
+      ChatHistory history = ChatHistory(peer);
+      chats.add(history);
+   }
+
    ChatHistory getChatHistory(String peer)
    {
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
       if (i == -1) {
          // This is the first message with this user (peer).
-         ChatHistory history = ChatHistory(peer);
-         chats.add(history);
-         return history;
+         createChatEntryForPeer(peer);
+         return chats.last;
       }
 
       return chats[i];
