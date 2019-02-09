@@ -456,10 +456,9 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Column createOwnAdvInterestedListView(
-            BuildContext context,
-            List<ChatHistory> ch,
-            Function onPressed)
+Column makeAdvChatCol(BuildContext context,
+                      List<ChatHistory> ch,
+                      Function onPressed)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -472,7 +471,7 @@ Column createOwnAdvInterestedListView(
    return Column(children: list);
 }
 
-Widget createOwnAdvChatTab(
+Widget makeAdvChatTab(
          BuildContext context,
          List<AdvData> data,
          Function onChat,
@@ -487,33 +486,10 @@ Widget createOwnAdvChatTab(
                       context,
                       data[i],
                       menus,
-                      createOwnAdvInterestedListView(
+                      makeAdvChatCol(
                             context,
                             data[i].chats,
                             (j) {onChat(i, j);}));
-         },
-   );
-}
-
-Widget createFavChatTab(
-         BuildContext context,
-         List<AdvData> data,
-         Function onChat,
-         List<MenuItem> menus)
-{
-   return ListView.builder(
-         padding: const EdgeInsets.all(0.0),
-         itemCount: data.length,
-         itemBuilder: (BuildContext context, int i)
-         {
-            return createChatEntry(
-                      context,
-                      data[i],
-                      menus,
-                      makeChatItemButton(
-                            context,
-                            data[i].getChatHistory(data[i].from),
-                            () {onChat(i);}));
          },
    );
 }

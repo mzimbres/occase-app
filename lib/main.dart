@@ -529,8 +529,9 @@ class MenuChatState extends State<MenuChat>
    }
 
    // This function is called with the index in _favAdvs.
-   void _onFavChat(int i)
+   void _onFavChat(int i, int j)
    {
+      assert(j == 0);
       _currFavChatIdx = i;
       setState(() { });
    }
@@ -946,14 +947,14 @@ class MenuChatState extends State<MenuChat>
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
          // The own advs tab in the chat screen.
-         chatWidget = createOwnAdvChatTab(
+         chatWidget = makeAdvChatTab(
                             context,
                             _ownAdvs,
                             _onOwnAdvChat,
                             _menus);
       } else {
          // The favorite tab in the chat screen.
-         chatWidget = createFavChatTab(
+         chatWidget = makeAdvChatTab(
                             context,
                             _favAdvs,
                             _onFavChat,
