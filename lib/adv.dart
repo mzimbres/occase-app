@@ -441,9 +441,9 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Column makeAdvChatCol(BuildContext context,
-                      List<ChatHistory> ch,
-                      Function onPressed)
+Container makeAdvChatCol(BuildContext context,
+                         List<ChatHistory> ch,
+                         Function onPressed)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -453,7 +453,9 @@ Column makeAdvChatCol(BuildContext context,
                    ch[i],
                    () { onPressed(i); });
 
-   return Column(children: list);
+   return Container(
+             decoration: BoxDecoration(color: Colors.white),
+             child: Column(children: list));
 }
 
 Widget makeAdvChatTab(
