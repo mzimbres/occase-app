@@ -22,12 +22,12 @@ Text createMenuItemSubStrWidget(String str, FontWeight fw)
                overflow: TextOverflow.clip);
 }
 
-ListTile createListViewItem(
-            BuildContext context,
-            String name,
-            Text subItemWidget,
-            Widget trailing,
-            Color circleColor)
+ListTile createListViewItem(BuildContext context,
+                            String name,
+                            Text subItemWidget,
+                            Widget trailing,
+                            Color circleColor,
+                            Function onTap)
 {
    return ListTile(
              leading: CircleAvatar(
@@ -38,7 +38,9 @@ ListTile createListViewItem(
              //dense: false,
              subtitle: subItemWidget,
              trailing: trailing,
-             contentPadding: EdgeInsets.symmetric(horizontal: 10.0));
+             contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+             onTap: onTap,
+             enabled: true);
 }
 
 /*
@@ -70,18 +72,13 @@ ListView createFilterListView(BuildContext context, MenuNode o,
          if (shift == 1 && i == 0) {
             //final String title = "Marcar todos (${o.leafCounter} items)";
             final String title = "Marcar todos";
-            return FlatButton(
-                  child: createListViewItem(
+            return createListViewItem(
                             context,
                             title,
                             null,
                             null,
-                            TextConsts.allMenuItemCircleColor),
-                  color: const Color(0xFFFFFF),
-                  highlightColor: const Color(0xFFFFFF),
-                  onPressed: () { onLeafPressed(0); },
-                  padding: EdgeInsets.all(0.0)
-            );
+                            TextConsts.allMenuItemCircleColor,
+                            () { onLeafPressed(0); });
          }
 
          if (shift == 1) {
@@ -99,38 +96,28 @@ ListView createFilterListView(BuildContext context, MenuNode o,
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
-            return FlatButton(
-                  child: createListViewItem(
+            return createListViewItem(
                             context,
                             child.name,
                             createMenuItemSubStrWidget(
                                   subStr,
                                   FontWeight.normal),
                             icon,
-                            Theme.of(context).primaryColor),
-                  color: const Color(0xFFFFFF),
-                  highlightColor: const Color(0xFFFFFF),
-                  onPressed: () { onLeafPressed(i); },
-                  padding: EdgeInsets.all(0.0)
-            );
+                            Theme.of(context).primaryColor,
+                            () { onLeafPressed(i);});
          }
 
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
-         return FlatButton(
-               child: createListViewItem(
+         return createListViewItem(
                          context,
                          child.name,
                          createMenuItemSubStrWidget(
                                subStr,
                                FontWeight.normal),
                          null,
-                         Theme.of(context).primaryColor),
-               color: const Color(0xFFFFFF),
-               highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onNodePressed(i); },
-               padding: EdgeInsets.all(0.0)
-         );
+                         Theme.of(context).primaryColor,
+                         () { onNodePressed(i); });
       },
    );
 }

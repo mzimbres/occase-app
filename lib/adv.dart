@@ -248,9 +248,9 @@ Text makeChatSubStrWidget(ChatHistory ch)
    return createMenuItemSubStrWidget(subTitle, FontWeight.bold);
 }
 
-FlatButton makeChatItemButton(BuildContext context,
-                              ChatHistory ch,
-                              Function onPressed)
+ListTile makeChatItemButton(BuildContext context,
+                            ChatHistory ch,
+                            Function onPressed)
 {
    // This adv should have only one chat history since it is not our
    // own adv.
@@ -260,19 +260,12 @@ FlatButton makeChatItemButton(BuildContext context,
    if (n == 0)
       cc = bgColor;
 
-   ListTile lt = createListViewItem(
-                    context,
-                    ch.peer,
-                    makeChatSubStrWidget(ch),
-                    makeCircleUnreadMsgs(n, cc),
-                    Theme.of(context).primaryColor);
-
-   return FlatButton(
-             child: lt,
-             color: TextConsts.favChatButtonColor,
-             highlightColor: bgColor,
-             onPressed: onPressed,
-   );
+   return createListViewItem(context,
+                             ch.peer,
+                             makeChatSubStrWidget(ch),
+                             makeCircleUnreadMsgs(n, cc),
+                             Theme.of(context).primaryColor,
+                             onPressed);
 }
 
 Card createChatEntry(BuildContext context,
@@ -424,34 +417,26 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
          if (child.isLeaf()) {
-            return FlatButton(
-               child: createListViewItem(
+            return createListViewItem(
                          context,
                          child.name,
                          createMenuItemSubStrWidget(
                                subStr,
                                FontWeight.normal),
                          null,
-                         Theme.of(context).primaryColor),
-               color: const Color(0xFFFFFF),
-               highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onLeafPressed(i);},
-            );
+                         Theme.of(context).primaryColor,
+                         () { onLeafPressed(i);});
          }
          
-         return FlatButton(
-               child: createListViewItem(
+         return createListViewItem(
                          context,
                          child.name,
                          createMenuItemSubStrWidget(
                                subStr,
                                FontWeight.normal),
                          null,
-                         Theme.of(context).primaryColor),
-               color: const Color(0xFFFFFF),
-               highlightColor: const Color(0xFFFFFF),
-               onPressed: () { onNodePressed(i); },
-         );
+                         Theme.of(context).primaryColor,
+                         () { onNodePressed(i); });
       },
    );
 }
