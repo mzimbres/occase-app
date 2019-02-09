@@ -14,6 +14,7 @@ class ChatHistory {
    String peer = '';
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> unreadMsgs = List<ChatItem>();
+   bool isLongPressed = false;
 
    ChatHistory(this.peer);
 
@@ -253,8 +254,6 @@ ListTile makeChatItemButton(BuildContext context,
                             Function onPressed,
                             Function onLongPressed)
 {
-   // This adv should have only one chat history since it is not our
-   // own adv.
    final Color bgColor = const Color(0xFFFFFF);
    final int n = ch.getNumberOfUnreadMsgs();
    Color cc = Theme.of(context).accentColor;
@@ -452,12 +451,21 @@ Container makeAdvChatCol(BuildContext context,
 {
    List<Widget> list = List<Widget>(ch.length);
 
-   for (int i = 0; i < list.length; ++i)
-      list[i] = makeChatItemButton(
-                   context,
-                   ch[i],
-                   () { onPressed(i); },
-                   () { onLongPressed(i); });
+   for (int i = 0; i < list.length; ++i) {
+      final Color bgColor = const Color(0xFFFFFF);
+      final int n = ch[i].getNumberOfUnreadMsgs();
+      Color cc = Theme.of(context).accentColor;
+      if (n == 0)
+         cc = bgColor;
+
+      list[i] = createListViewItem(context,
+                                   ch[i].peer,
+                                   makeChatSubStrWidget(ch[i]),
+                                   makeCircleUnreadMsgs(n, cc),
+                                   Theme.of(context).primaryColor,
+                                   () { onPressed(i); },
+                                   () { onLongPressed(i); });
+   }
 
    return Container(
              decoration: BoxDecoration(color: Colors.white),

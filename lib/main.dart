@@ -539,6 +539,8 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatLongPressed(int i, int j)
    {
       assert(j == 0);
+     final bool old = _favAdvs[i].chats[0].isLongPressed;
+     _favAdvs[i].chats[0].isLongPressed = !old;
       print("_onFavChatLongPressed");
    }
 
