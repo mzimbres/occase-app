@@ -31,14 +31,11 @@ ListTile createListViewItem(BuildContext context,
                             Function onLongPress,
                             Widget circleChild)
 {
-   TextStyle ts = TextStyle(fontSize: 17.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black);
    return ListTile(
              leading: CircleAvatar(
                          child: circleChild,
                          backgroundColor: circleColor),
-             title: Text(name, style: ts),
+             title: Text(name, style: TextConsts.menuTitleStl),
              //dense: false,
              subtitle: subItemWidget,
              trailing: trailing,

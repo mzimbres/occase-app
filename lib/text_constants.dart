@@ -74,5 +74,15 @@ class TextConsts {
 
    static final TextStyle firstLetterStl =
          TextStyle(color: Colors.white);
+
+   static final TextStyle menuTitleStl =
+             TextStyle(fontSize: 17.0,
+                       fontWeight: FontWeight.bold,
+                       color: Colors.black);
+
+   static final TextStyle valueTextStl =
+             TextStyle(fontSize: 17.0,
+                       fontWeight: FontWeight.normal,
+                       color: Colors.black);
 }
 
