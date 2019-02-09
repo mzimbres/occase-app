@@ -249,26 +249,6 @@ Text makeChatSubStrWidget(ChatHistory ch)
    return createMenuItemSubStrWidget(subTitle, FontWeight.bold);
 }
 
-ListTile makeChatItemButton(BuildContext context,
-                            ChatHistory ch,
-                            Function onPressed,
-                            Function onLongPressed)
-{
-   final Color bgColor = const Color(0xFFFFFF);
-   final int n = ch.getNumberOfUnreadMsgs();
-   Color cc = Theme.of(context).accentColor;
-   if (n == 0)
-      cc = bgColor;
-
-   return createListViewItem(context,
-                             ch.peer,
-                             makeChatSubStrWidget(ch),
-                             makeCircleUnreadMsgs(n, cc),
-                             Theme.of(context).primaryColor,
-                             onPressed,
-                             onLongPressed);
-}
-
 Card createChatEntry(BuildContext context,
                      AdvData adv,
                      List<MenuItem> menus,
