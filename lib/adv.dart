@@ -126,6 +126,27 @@ class AdvData {
 
       return i;
    }
+
+   // This function will return true if there is any chat marked as
+   // long pressed. It will traverse the AdvData array and stop at the
+   // first AdvData::chats that has isLongPressed true.
+   bool hasLongPressed()
+   {
+      for (ChatHistory ch in chats)
+         if (ch.isLongPressed)
+            return true;
+
+      return false;
+   }
+}
+
+bool hasLongPressed(final List<AdvData> advs)
+{
+   for (AdvData adv in advs)
+      if (adv.hasLongPressed())
+         return true;
+
+   return false;
 }
 
 // Study how to convert this into an elipsis like whatsapp.

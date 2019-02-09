@@ -824,6 +824,14 @@ class MenuChatState extends State<MenuChat>
       return true;
    }
 
+   bool hasLongPressedChat()
+   {
+      if (_chatBotBarIdx == 0)
+         return hasLongPressed(_ownAdvs);
+      else
+         return hasLongPressed(_favAdvs);
+   }
+
    @override
    void dispose()
    {
@@ -989,6 +997,19 @@ class MenuChatState extends State<MenuChat>
 
       final int newChats = _getNumberOfUnreadChats();
 
+      List<Widget> actions = List<Widget>();
+      if (_tabCtrl.index == 2 && hasLongPressedChat()) {
+         IconButton ib = IconButton(
+               icon: Icon(Icons.delete),
+               tooltip: TextConsts.deleteChatStr,
+               onPressed: () { print("remover conversa."); });
+
+         actions.add(ib);
+      }
+
+      actions.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0)));
+      actions.add(Icon(Icons.more_vert));
+
       return Scaffold(
          appBar: AppBar(
             title: Text(TextConsts.appName),
@@ -1004,13 +1025,7 @@ class MenuChatState extends State<MenuChat>
                                 TextConsts.tabNames[2])),
                   ],
             ),
-            actions: <Widget>[
-               Icon(Icons.search),
-               Padding(
-                     padding: const EdgeInsets.symmetric(horizontal: 5.0),
-               ),
-               Icon(Icons.more_vert)
-            ],
+            actions: actions,
          ),
          body: TabBarView(controller: _tabCtrl, children: widgets)
       );
