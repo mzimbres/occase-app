@@ -396,6 +396,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
       itemBuilder: (BuildContext context, int i)
       {
          MenuNode child = o.children[i];
+         final String firstLetter = getFirstLetter(child.name);
          final String subStr = makeSubItemsString(child.leafCounter);
          if (child.isLeaf()) {
             return createListViewItem(
@@ -407,7 +408,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          null,
                          Theme.of(context).primaryColor,
                          () { onLeafPressed(i);},
-                         (){});
+                         (){},
+                         Text(firstLetter));
          }
          
          return createListViewItem(
@@ -419,7 +421,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          null,
                          Theme.of(context).primaryColor,
                          () { onNodePressed(i); },
-                         (){});
+                         (){},
+                         Text(firstLetter));
       },
    );
 }
@@ -438,13 +441,15 @@ Container makeAdvChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
+      final String firstLetter = getFirstLetter(ch[i].peer);
       list[i] = createListViewItem(context,
                                    ch[i].peer,
                                    makeChatSubStrWidget(ch[i]),
                                    makeCircleUnreadMsgs(n, cc),
                                    Theme.of(context).primaryColor,
                                    () { onPressed(i); },
-                                   () { onLongPressed(i); });
+                                   () { onLongPressed(i); },
+                                   Text(firstLetter));
    }
 
    return Container(

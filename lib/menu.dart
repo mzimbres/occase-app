@@ -28,11 +28,12 @@ ListTile createListViewItem(BuildContext context,
                             Widget trailing,
                             Color circleColor,
                             Function onTap,
-                            Function onLongPress)
+                            Function onLongPress,
+                            Widget circleChild)
 {
    return ListTile(
              leading: CircleAvatar(
-                         child: Text(name[0]),
+                         child: circleChild,
                          backgroundColor: circleColor),
              title: Text(name,
                style: Theme.of(context).textTheme.subhead),
@@ -43,6 +44,13 @@ ListTile createListViewItem(BuildContext context,
              onTap: onTap,
              enabled: true,
              onLongPress: onLongPress);
+}
+
+String getFirstLetter(String str)
+{
+   if (str.isEmpty)
+      return '';
+   return str[0];
 }
 
 /*
@@ -57,8 +65,11 @@ ListTile createListViewItem(BuildContext context,
  *  In those cases the builder will go through all node children
  *  otherwise the first should be skipped.
  */
-ListView createFilterListView(BuildContext context, MenuNode o,
-      Function onLeafPressed, Function onNodePressed, bool makeLeaf)
+ListView createFilterListView(BuildContext context,
+                              MenuNode o,
+                              Function onLeafPressed,
+                              Function onNodePressed,
+                              bool makeLeaf)
 {
    // TODO: We should check all children and not only the last.
    int shift = 0;
@@ -81,7 +92,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                             null,
                             TextConsts.allMenuItemCircleColor,
                             () { onLeafPressed(0); },
-                            (){});
+                            (){},
+                            Text(title[0]));
          }
 
          if (shift == 1) {
@@ -99,6 +111,7 @@ ListView createFilterListView(BuildContext context, MenuNode o,
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
+            final String firstLetter = getFirstLetter(child.name);
             return createListViewItem(
                             context,
                             child.name,
@@ -108,11 +121,13 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                             icon,
                             Theme.of(context).primaryColor,
                             () { onLeafPressed(i);},
-                            (){});
+                            (){},
+                            Text(firstLetter));
          }
 
          MenuNode child = o.children[i];
          final String subStr = makeSubItemsString(child.leafCounter);
+         final String firstLetter = getFirstLetter(child.name);
          return createListViewItem(
                          context,
                          child.name,
@@ -122,7 +137,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                          null,
                          Theme.of(context).primaryColor,
                          () { onNodePressed(i); },
-                         (){});
+                         (){},
+                         Text(firstLetter));
       },
    );
 }
