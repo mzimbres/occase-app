@@ -170,12 +170,12 @@ CircleAvatar makeCircleUnreadMsgs(int n,
 Card advElemFactory(BuildContext context,
                     List<String> values,
                     List<String> keys,
-                    String title)
+                    IconData icd)
 {
    List<Widget> r = List<Widget>();
-   Text t = Text(title, style: TextConsts.menuTitleStl);
+   final Icon ic = Icon(icd, color: Theme.of(context).primaryColor);
    r.add(Padding(
-            child: Center(child: t),
+            child: Center(child: ic),
             padding: EdgeInsets.all(4.0)));
 
    for (int i = 0; i < values.length; ++i) {
@@ -229,7 +229,7 @@ makeMenuInfoCards(BuildContext context,
                   context,
                   names,
                   TextConsts.menuDepthNames[i],
-                  TextConsts.newAdvTabNames[i]);
+                  TextConsts.newAdvTabIcons[i]);
 
       list.add(card);
    }
@@ -248,7 +248,7 @@ List<Card> advTextAssembler(BuildContext context,
    Card descCard = advElemFactory(context,
                       <String>[data.description],
                       <String>[TextConsts.descriptionText],
-                      "Detalhes do anunciante");
+                      Icons.publish);
 
    list.add(descCard);
 
@@ -257,10 +257,9 @@ List<Card> advTextAssembler(BuildContext context,
 
 Card makeTextSeparator(BuildContext context)
 {
-   return Card(
-         child: Icon(Icons.message, color: Colors.white),
-         color: Theme.of(context).primaryColor,
-         elevation: 0.0);
+   return Card(child: Icon(Icons.message, color: Colors.white),
+               color: Theme.of(context).primaryColor,
+               elevation: 0.0);
 }
 
 Text makeChatSubStrWidget(ChatHistory ch)
