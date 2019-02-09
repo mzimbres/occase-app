@@ -71,5 +71,8 @@ class TextConsts {
    static final double outerAdvCardPadding = 1.0;
 
    static final String deleteChatStr = "Remover conversa";
+
+   static final TextStyle firstLetterStl =
+         TextStyle(color: Colors.white);
 }
 

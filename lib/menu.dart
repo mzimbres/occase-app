@@ -87,6 +87,8 @@ ListView createFilterListView(BuildContext context,
          if (shift == 1 && i == 0) {
             //final String title = "Marcar todos (${o.leafCounter} items)";
             final String title = "Marcar todos";
+            final TextStyle fls =
+                  TextStyle(color: Theme.of(context).primaryColor);
             return createListViewItem(
                             context,
                             title,
@@ -95,7 +97,7 @@ ListView createFilterListView(BuildContext context,
                             Theme.of(context).accentColor,
                             () { onLeafPressed(0); },
                             (){},
-                            Text(title[0]));
+                            Text(title[0], style: fls));
          }
 
          if (shift == 1) {
@@ -124,7 +126,8 @@ ListView createFilterListView(BuildContext context,
                             Theme.of(context).primaryColor,
                             () { onLeafPressed(i);},
                             (){},
-                            Text(firstLetter));
+                            Text(firstLetter,
+                                 style: TextConsts.firstLetterStl));
          }
 
          MenuNode child = o.children[i];
@@ -140,7 +143,8 @@ ListView createFilterListView(BuildContext context,
                          Theme.of(context).primaryColor,
                          () { onNodePressed(i); },
                          (){},
-                         Text(firstLetter));
+                         Text(firstLetter,
+                              style: TextConsts.firstLetterStl));
       },
    );
 }

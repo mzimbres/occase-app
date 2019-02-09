@@ -432,7 +432,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          Theme.of(context).primaryColor,
                          () { onLeafPressed(i);},
                          (){},
-                         Text(firstLetter));
+                         Text(firstLetter,
+                              style: TextConsts.firstLetterStl));
          }
          
          return createListViewItem(
@@ -445,7 +446,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          Theme.of(context).primaryColor,
                          () { onNodePressed(i); },
                          (){},
-                         Text(firstLetter));
+                         Text(firstLetter,
+                              style: TextConsts.firstLetterStl));
       },
    );
 }
@@ -466,7 +468,7 @@ Column makeAdvChatCol(BuildContext context,
          bgColor = Theme.of(context).accentColor;
       } else {
          final String firstLetter = getFirstLetter(ch[i].peer);
-         widget = Text(firstLetter);
+         widget = Text(firstLetter, style: TextConsts.firstLetterStl);
          bgColor = Colors.white;
       }
 

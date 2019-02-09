@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
       title: TextConsts.appName,
       theme: ThemeData(
          brightness: Brightness.light,
-        primaryColor: Colors.red[900],
-        accentColor: Colors.red[50],
+        primaryColor: Colors.deepOrange[900],
+        accentColor: Colors.deepOrange[50],
         //fontFamily: 'Montserrat',
         //textTheme: TextTheme(
         //  //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
