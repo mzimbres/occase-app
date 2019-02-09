@@ -139,7 +139,7 @@ CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
             child: Text("${n}",
                   style: TextStyle(
                   //fontWeight: FontWeight.bold,
-                  fontSize: 11.0 )),
+                  fontSize: 11.0, color: Colors.black)),
             maxRadius: 10.0,
             backgroundColor: backgroundColor);
 }
@@ -427,41 +427,44 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Container makeAdvChatCol(BuildContext context,
-                         List<ChatHistory> ch,
-                         Function onPressed,
-                         Function onLongPressed)
+Column makeAdvChatCol(BuildContext context,
+                      List<ChatHistory> ch,
+                      Function onPressed,
+                      Function onLongPressed)
 {
    List<Widget> list = List<Widget>(ch.length);
 
    for (int i = 0; i < list.length; ++i) {
-      final Color bgColor = const Color(0xFFFFFF);
       final int n = ch[i].getNumberOfUnreadMsgs();
-      Color cc = Theme.of(context).accentColor;
-      if (n == 0)
-         cc = bgColor;
-
       Widget widget;
+      Color bgColor;
       if (ch[i].isLongPressed) {
          widget = Icon(Icons.check);
+         bgColor = TextConsts.chatLongPressedColor;
       } else {
          final String firstLetter = getFirstLetter(ch[i].peer);
          widget = Text(firstLetter);
+         bgColor = Colors.white;
       }
 
-      list[i] = createListViewItem(context,
-                                   ch[i].peer,
-                                   makeChatSubStrWidget(ch[i]),
-                                   makeCircleUnreadMsgs(n, cc),
-                                   Theme.of(context).primaryColor,
-                                   () { onPressed(i); },
-                                   () { onLongPressed(i); },
-                                   widget);
+      Color cc = Theme.of(context).primaryColor;
+      if (n == 0)
+         cc = bgColor;
+
+      ListTile lt = createListViewItem(context,
+                                       ch[i].peer,
+                                       makeChatSubStrWidget(ch[i]),
+                                       makeCircleUnreadMsgs(n, cc),
+                                       Theme.of(context).primaryColor,
+                                       () { onPressed(i); },
+                                       () { onLongPressed(i); },
+                                       widget);
+
+      list[i] = Container(decoration: BoxDecoration(color: bgColor),
+                  child: lt);
    }
 
-   return Container(
-             decoration: BoxDecoration(color: Colors.white),
-             child: Column(children: list));
+   return Column(children: list);
 }
 
 Widget makeAdvChatTab(

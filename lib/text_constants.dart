@@ -58,6 +58,8 @@ class TextConsts {
 
    static final Color allMenuItemCircleColor = Colors.brown;
 
+   static final Color chatLongPressedColor = Colors.brown;
+
    // The padding used for the text inside the adv element.
    static final double advElemTextPadding = 4.0;
 
