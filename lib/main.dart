@@ -848,7 +848,7 @@ class MenuChatState extends State<MenuChat>
       if (_onNewAdvPressed) {
          Widget widget;
          if (_botBarIdx == 2) {
-            List<Card> cards = advTextAssembler(
+            List<Card> cards = makeMenuInfoCards(
                                   context,
                                   _advInput,
                                   _menus,
