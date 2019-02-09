@@ -27,8 +27,8 @@ class MyApp extends StatelessWidget {
       title: TextConsts.appName,
       theme: ThemeData(
          brightness: Brightness.light,
-        primaryColor: Colors.deepOrange[900],
-        accentColor: Colors.blueGrey[300],
+        primaryColor: Colors.red[900],
+        accentColor: Colors.red[50],
         //fontFamily: 'Montserrat',
         //textTheme: TextTheme(
         //  //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
@@ -192,14 +192,17 @@ createChatScreen(BuildContext context,
     );
 }
 
-Widget makeTabWidget(int n, String title)
+Widget makeTabWidget(BuildContext context, int n, String title)
 {
    if (n == 0)
       return Text(title);
 
+   // TODO: Change the text color to primary color?
    return Row(children: <Widget>[
       Text(title + " "),
-      makeCircleUnreadMsgs(n, const Color(0xFFFFFFFF))
+      makeCircleUnreadMsgs(n,
+                           Colors.white,
+                           Theme.of(context).primaryColor)
       ]
    );
 }
@@ -849,7 +852,7 @@ class MenuChatState extends State<MenuChat>
                                   context,
                                   _advInput,
                                   _menus,
-                                  Theme.of(context).accentColor);
+                                  Theme.of(context).primaryColor);
 
             cards.add(makeTextInputFieldCard(_newAdvTextCtrl));
    
@@ -857,8 +860,9 @@ class MenuChatState extends State<MenuChat>
                                    context,
                                    cards,
                                    _onSendNewAdvPressed,
-                                   Icon(Icons.publish),
-                                   Theme.of(context).accentColor);
+                                   Icon( Icons.publish,
+                                        color: Colors.white),
+                                   Theme.of(context).primaryColor);
 
             // I added this ListView to prevent widget_tmp from
             // extending the whole screen. Inside the ListView it
@@ -1019,9 +1023,9 @@ class MenuChatState extends State<MenuChat>
                   indicatorColor: Colors.white,
                   tabs: <Widget>[
                      Tab(text: TextConsts.tabNames[0],),
-                     Tab(child: makeTabWidget(newAdvsLength,
+                     Tab(child: makeTabWidget(context, newAdvsLength,
                                  TextConsts.tabNames[1])),
-                     Tab(child: makeTabWidget(newChats,
+                     Tab(child: makeTabWidget(context, newChats,
                                 TextConsts.tabNames[2])),
                   ],
             ),

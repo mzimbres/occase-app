@@ -15,9 +15,9 @@ String makeSubItemsString(int n)
 Text createMenuItemSubStrWidget(String str, FontWeight fw)
 {
    if (str == null)
-      return Text("");
+      return null;
 
-   return Text(str, style: TextStyle(fontSize: 13.0, fontWeight: fw),
+   return Text(str, style: TextStyle(fontSize: 14.0, fontWeight: fw),
                maxLines: 2,
                overflow: TextOverflow.clip);
 }
@@ -31,12 +31,14 @@ ListTile createListViewItem(BuildContext context,
                             Function onLongPress,
                             Widget circleChild)
 {
+   TextStyle ts = TextStyle(fontSize: 17.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black);
    return ListTile(
              leading: CircleAvatar(
                          child: circleChild,
                          backgroundColor: circleColor),
-             title: Text(name,
-               style: Theme.of(context).textTheme.subhead),
+             title: Text(name, style: ts),
              //dense: false,
              subtitle: subItemWidget,
              trailing: trailing,
@@ -90,7 +92,7 @@ ListView createFilterListView(BuildContext context,
                             title,
                             null,
                             null,
-                            TextConsts.allMenuItemCircleColor,
+                            Theme.of(context).accentColor,
                             () { onLeafPressed(0); },
                             (){},
                             Text(title[0]));

@@ -150,7 +150,9 @@ bool hasLongPressed(final List<AdvData> advs)
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
+CircleAvatar makeCircleUnreadMsgs(int n,
+                                  Color backgroundColor,
+                                  Color textColor)
 {
    if (n == 0)
       return CircleAvatar(backgroundColor: backgroundColor,
@@ -160,7 +162,7 @@ CircleAvatar makeCircleUnreadMsgs(int n, Color backgroundColor)
             child: Text("${n}",
                   style: TextStyle(
                   //fontWeight: FontWeight.bold,
-                  fontSize: 11.0, color: Colors.black)),
+                  fontSize: 11.0, color: textColor)),
             maxRadius: 10.0,
             backgroundColor: backgroundColor);
 }
@@ -254,8 +256,8 @@ List<Card> advTextAssembler(BuildContext context,
 Card makeTextSeparator(BuildContext context)
 {
    return Card(
-         child: Icon(Icons.message),
-         color: Theme.of(context).accentColor,
+         child: Icon(Icons.message, color: Colors.white),
+         color: Theme.of(context).primaryColor,
          elevation: 0.0);
 }
 
@@ -276,12 +278,12 @@ Card createChatEntry(BuildContext context,
                      Widget chats)
 {
    List<Card> cards = advTextAssembler(context, adv, menus,
-                                       Theme.of(context).accentColor);
+                                       Theme.of(context).primaryColor);
    
    cards.add(makeTextSeparator(context));
 
    Card chatCard = Card(child: chats,
-                        color: Theme.of(context).accentColor,
+                        color: Theme.of(context).primaryColor,
                         margin: EdgeInsets.all(Consts.advInnerMargin),
                         elevation: 0.0);
 
@@ -292,7 +294,7 @@ Card createChatEntry(BuildContext context,
    final double padding = TextConsts.outerAdvCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: Theme.of(context).accentColor,
+      color: Theme.of(context).primaryColor,
       margin: EdgeInsets.all(Consts.advMarging),
       elevation: 0.0,
    );
@@ -305,7 +307,7 @@ Card makeAdvWidget(BuildContext context,
                    Color color)
 {
    IconButton icon1 = IconButton(
-                         icon: Icon(Icons.clear, color: Colors.red),
+                         icon: Icon(Icons.clear, color: Colors.white),
                          iconSize: 30.0,
                          onPressed: () {onPressed(false);});
 
@@ -380,7 +382,7 @@ Widget makeAdvTab(BuildContext context,
                   final int idx = advsLength - i - 1;
 
                   // New advs are shown with a different color.
-                  Color color = Theme.of(context).accentColor;
+                  Color color = Theme.of(context).primaryColor;
                   if (i < numberOfNewAdvs)
                      color = TextConsts.newReceivedAdvColor; 
 
@@ -388,7 +390,7 @@ Widget makeAdvTab(BuildContext context,
                                         context,
                                         advs[i],
                                         menus,
-                                        Theme.of(context).accentColor);
+                                        Theme.of(context).primaryColor);
    
                   return makeAdvWidget(
                             context,
@@ -400,9 +402,9 @@ Widget makeAdvTab(BuildContext context,
 
          backgroundColor: Consts.scaffoldBackground,
          floatingActionButton: FloatingActionButton(
-               backgroundColor: Theme.of(context).accentColor,
+               backgroundColor: Theme.of(context).primaryColor,
                child: Icon( TextConsts.newAdvIcon,
-                            color: Theme.of(context).primaryColor),
+                            color: Colors.white),
                onPressed: onNewAdv,
          ),
    );
@@ -461,7 +463,7 @@ Column makeAdvChatCol(BuildContext context,
       Color bgColor;
       if (ch[i].isLongPressed) {
          widget = Icon(Icons.check);
-         bgColor = TextConsts.chatLongPressedColor;
+         bgColor = Theme.of(context).accentColor;
       } else {
          final String firstLetter = getFirstLetter(ch[i].peer);
          widget = Text(firstLetter);
@@ -473,13 +475,13 @@ Column makeAdvChatCol(BuildContext context,
          cc = bgColor;
 
       ListTile lt = createListViewItem(context,
-                                       ch[i].peer,
-                                       makeChatSubStrWidget(ch[i]),
-                                       makeCircleUnreadMsgs(n, cc),
-                                       Theme.of(context).primaryColor,
-                                       () { onPressed(i); },
-                                       () { onLongPressed(i); },
-                                       widget);
+                        ch[i].peer,
+                        makeChatSubStrWidget(ch[i]),
+                        makeCircleUnreadMsgs(n, cc, Colors.white),
+                        Theme.of(context).primaryColor,
+                        () { onPressed(i); },
+                        () { onLongPressed(i); },
+                        widget);
 
       list[i] = Container(decoration: BoxDecoration(color: bgColor),
                   child: lt);

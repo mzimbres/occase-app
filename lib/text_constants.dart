@@ -68,7 +68,7 @@ class TextConsts {
    // New received advs color.
    static Color newReceivedAdvColor = Colors.brown[200]; 
 
-   static final double outerAdvCardPadding = 2.0;
+   static final double outerAdvCardPadding = 1.0;
 
    static final String deleteChatStr = "Remover conversa";
 }
