@@ -441,7 +441,14 @@ Container makeAdvChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
-      final String firstLetter = getFirstLetter(ch[i].peer);
+      Widget widget;
+      if (ch[i].isLongPressed) {
+         widget = Icon(Icons.check);
+      } else {
+         final String firstLetter = getFirstLetter(ch[i].peer);
+         widget = Text(firstLetter);
+      }
+
       list[i] = createListViewItem(context,
                                    ch[i].peer,
                                    makeChatSubStrWidget(ch[i]),
@@ -449,7 +456,7 @@ Container makeAdvChatCol(BuildContext context,
                                    Theme.of(context).primaryColor,
                                    () { onPressed(i); },
                                    () { onLongPressed(i); },
-                                   Text(firstLetter));
+                                   widget);
    }
 
    return Container(
