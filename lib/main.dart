@@ -529,19 +529,30 @@ class MenuChatState extends State<MenuChat>
    }
 
    // This function is called with the index in _favAdvs.
-   void _onFavChat(int i, int j)
+   void _onFavChatPressed(int i, int j)
    {
       assert(j == 0);
       _currFavChatIdx = i;
       setState(() { });
    }
 
-   void _onOwnAdvChat(int i, int j)
+   void _onFavChatLongPressed(int i, int j)
+   {
+      assert(j == 0);
+      print("_onFavChatLongPressed");
+   }
+
+   void _onOwnAdvChatPressed(int i, int j)
    {
       _currOwnChatIdx = i;
      _ownAdvChatPeer = _ownAdvs[i].chats[j].peer;
 
       setState(() { });
+   }
+
+   void _onOwnAdvChatLongPressed(int i, int j)
+   {
+      print("_onOwnAdvChatLongPressed");
    }
 
    void _onFavChatSendPressed()
@@ -950,14 +961,16 @@ class MenuChatState extends State<MenuChat>
          chatWidget = makeAdvChatTab(
                             context,
                             _ownAdvs,
-                            _onOwnAdvChat,
+                            _onOwnAdvChatPressed,
+                            _onOwnAdvChatLongPressed,
                             _menus);
       } else {
          // The favorite tab in the chat screen.
          chatWidget = makeAdvChatTab(
                             context,
                             _favAdvs,
-                            _onFavChat,
+                            _onFavChatPressed,
+                            _onFavChatLongPressed,
                             _menus);
       }
 

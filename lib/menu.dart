@@ -27,7 +27,8 @@ ListTile createListViewItem(BuildContext context,
                             Text subItemWidget,
                             Widget trailing,
                             Color circleColor,
-                            Function onTap)
+                            Function onTap,
+                            Function onLongPress)
 {
    return ListTile(
              leading: CircleAvatar(
@@ -40,7 +41,8 @@ ListTile createListViewItem(BuildContext context,
              trailing: trailing,
              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
              onTap: onTap,
-             enabled: true);
+             enabled: true,
+             onLongPress: onLongPress);
 }
 
 /*
@@ -78,7 +80,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                             null,
                             null,
                             TextConsts.allMenuItemCircleColor,
-                            () { onLeafPressed(0); });
+                            () { onLeafPressed(0); },
+                            (){});
          }
 
          if (shift == 1) {
@@ -104,7 +107,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                                   FontWeight.normal),
                             icon,
                             Theme.of(context).primaryColor,
-                            () { onLeafPressed(i);});
+                            () { onLeafPressed(i);},
+                            (){});
          }
 
          MenuNode child = o.children[i];
@@ -117,7 +121,8 @@ ListView createFilterListView(BuildContext context, MenuNode o,
                                FontWeight.normal),
                          null,
                          Theme.of(context).primaryColor,
-                         () { onNodePressed(i); });
+                         () { onNodePressed(i); },
+                         (){});
       },
    );
 }

@@ -250,7 +250,8 @@ Text makeChatSubStrWidget(ChatHistory ch)
 
 ListTile makeChatItemButton(BuildContext context,
                             ChatHistory ch,
-                            Function onPressed)
+                            Function onPressed,
+                            Function onLongPressed)
 {
    // This adv should have only one chat history since it is not our
    // own adv.
@@ -265,7 +266,8 @@ ListTile makeChatItemButton(BuildContext context,
                              makeChatSubStrWidget(ch),
                              makeCircleUnreadMsgs(n, cc),
                              Theme.of(context).primaryColor,
-                             onPressed);
+                             onPressed,
+                             onLongPressed);
 }
 
 Card createChatEntry(BuildContext context,
@@ -425,7 +427,8 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                                FontWeight.normal),
                          null,
                          Theme.of(context).primaryColor,
-                         () { onLeafPressed(i);});
+                         () { onLeafPressed(i);},
+                         (){});
          }
          
          return createListViewItem(
@@ -436,14 +439,16 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                                FontWeight.normal),
                          null,
                          Theme.of(context).primaryColor,
-                         () { onNodePressed(i); });
+                         () { onNodePressed(i); },
+                         (){});
       },
    );
 }
 
 Container makeAdvChatCol(BuildContext context,
                          List<ChatHistory> ch,
-                         Function onPressed)
+                         Function onPressed,
+                         Function onLongPressed)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -451,7 +456,8 @@ Container makeAdvChatCol(BuildContext context,
       list[i] = makeChatItemButton(
                    context,
                    ch[i],
-                   () { onPressed(i); });
+                   () { onPressed(i); },
+                   () { onLongPressed(i); });
 
    return Container(
              decoration: BoxDecoration(color: Colors.white),
@@ -461,7 +467,8 @@ Container makeAdvChatCol(BuildContext context,
 Widget makeAdvChatTab(
          BuildContext context,
          List<AdvData> data,
-         Function onChat,
+         Function onPressed,
+         Function onLongPressed,
          List<MenuItem> menus)
 {
    return ListView.builder(
@@ -476,7 +483,8 @@ Widget makeAdvChatTab(
                       makeAdvChatCol(
                             context,
                             data[i].chats,
-                            (j) {onChat(i, j);}));
+                            (j) {onPressed(i, j);},
+                            (j) {onLongPressed(i, j);}));
          },
    );
 }
