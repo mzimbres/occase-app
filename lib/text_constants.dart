@@ -98,12 +98,12 @@ final TextStyle firstLetterStl =
       TextStyle(color: Colors.white);
 
 final TextStyle menuTitleStl =
-          TextStyle(fontSize: 17.0,
+          TextStyle(fontSize: 15.0,
                     fontWeight: FontWeight.bold,
                     color: Colors.black);
 
 final TextStyle valueTextStl =
-          TextStyle(fontSize: 17.0,
+          TextStyle(fontSize: 15.0,
                     fontWeight: FontWeight.normal,
                     color: Colors.black);
 
