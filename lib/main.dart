@@ -178,13 +178,12 @@ createChatScreen(BuildContext context,
 Widget makeTabWidget(BuildContext context, int n, String title)
 {
    if (n == 0)
-      return Text(title);
+      return Text(title, style: TextStyle(color: Colors.white));
 
    // TODO: Change the text color to primary color?
    return Row(children: <Widget>[
-      Text(title + " "),
-      makeCircleUnreadMsgs(n,
-                           Colors.white,
+      Text(title + " ", style: TextStyle(color: Colors.white)),
+      makeCircleUnreadMsgs(n, Colors.white,
                            Theme.of(context).primaryColor)
       ]
    );
@@ -869,7 +868,8 @@ class MenuChatState extends State<MenuChat>
          }
 
          AppBar appBar = AppBar(
-               title: Text(cts.advAppBarMsg[_botBarIdx]),
+               title: Text(cts.advAppBarMsg[_botBarIdx],
+                           style: TextStyle(color: Colors.white)),
                elevation: 0.7,
                toolbarOpacity : 1.0
          );
@@ -998,17 +998,19 @@ class MenuChatState extends State<MenuChat>
       }
 
       actions.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0)));
-      actions.add(Icon(Icons.more_vert));
+      actions.add(Icon(Icons.more_vert, color: Colors.white));
 
       return Scaffold(
          appBar: AppBar(
-            title: Text(cts.appName),
+            title: Text(cts.appName, style: TextStyle(color:
+                        Colors.white)),
             elevation: 0.7,
             bottom: TabBar(
                   controller: _tabCtrl,
                   indicatorColor: Colors.white,
                   tabs: <Widget>[
-                     Tab(text: cts.tabNames[0],),
+                     Tab(child: makeTabWidget(context, 0,
+                                 cts.tabNames[0])),
                      Tab(child: makeTabWidget(context, newAdvsLength,
                                  cts.tabNames[1])),
                      Tab(child: makeTabWidget(context, newChats,

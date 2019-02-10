@@ -460,7 +460,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Column makeAdvChatCol(BuildContext context,
+Widget makeAdvChatCol(BuildContext context,
                       List<ChatHistory> ch,
                       Function onPressed,
                       Function onLongPressed)
@@ -497,10 +497,24 @@ Column makeAdvChatCol(BuildContext context,
                   child: lt);
    }
 
-   return Column(children: ListTile.divideTiles(
-                    context: context,
-                    tiles: list,
-                    color: Colors.grey).toList());
+   if (list.length == 1)
+      return Column(children: ListTile.divideTiles(
+                       context: context,
+                       tiles: list,
+                       color: Colors.grey).toList());
+
+   final TextStyle stl =
+             TextStyle(fontSize: 15.0,
+                       fontWeight: FontWeight.normal,
+                       color: Colors.white);
+
+   return ExpansionTile(
+             //key: PageStorageKey<Entry>(root),
+             title: Text("Interessados", style: stl),
+             children: ListTile.divideTiles(
+                        context: context,
+                        tiles: list,
+                        color: Colors.grey).toList());
 }
 
 Widget makeAdvChatTab(
