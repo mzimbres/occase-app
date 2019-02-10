@@ -3,6 +3,7 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart';
+import 'package:intl/intl.dart';
 
 class ChatItem {
    bool thisApp; 
@@ -83,6 +84,7 @@ class AdvData {
       ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
       ret.chats = List<ChatHistory>.from(this.chats);
+      ret.from = this.from;
       return ret;
    }
 
@@ -207,7 +209,7 @@ Card advElemFactory(BuildContext context,
    // some distance to the outermost card.
    return Card(
             child: padd,
-            color: Colors.grey[100],
+            color: Colors.white,
             margin: EdgeInsets.all(Consts.advInnerMargin),
             elevation: 0.0,
    );
@@ -245,10 +247,18 @@ List<Card> advTextAssembler(BuildContext context,
 {
    List<Card> list = makeMenuInfoCards(context, data, menus, color);
 
-   Card descCard = advElemFactory(context,
-                      <String>[data.description],
-                      <String>[TextConsts.descriptionText],
-                      Icons.person);
+   DateTime date = DateTime.fromMillisecondsSinceEpoch(data.id);
+   DateFormat format = DateFormat.yMd().add_jm();
+   String dateString = format.format(date);
+
+   List<String> values = List<String>();
+   values.add(data.from);
+   values.add(dateString);
+   values.add(data.description);
+
+   Card descCard = advElemFactory(context, values,
+                                  TextConsts.descList,
+                                  Icons.person);
 
    list.add(descCard);
 

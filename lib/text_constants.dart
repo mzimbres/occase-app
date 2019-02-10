@@ -48,7 +48,8 @@ class TextConsts {
    ];
 
    // The text in the adv description field.
-   static final String descriptionText = "Descricao";
+   static final List<String> descList =
+         <String>['Anunciante', 'Data', "Descricao"];
 
    static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 

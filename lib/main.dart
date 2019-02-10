@@ -498,6 +498,7 @@ class MenuChatState extends State<MenuChat>
 
       if (!add) {
          _advInput = AdvData();
+         _advInput.from = _appId;
          setState(() { });
          return;
       }
@@ -514,12 +515,14 @@ class MenuChatState extends State<MenuChat>
       // will be echoed back to us and have to be filtered out from
       // _advs since that list should not contain our own
       // advs.
+      _advInput.from = _appId;
+      print(_advInput.from);
       _outAdvQueue.add(_advInput.clone());
       _advInput = AdvData();
 
       var pubMap = {
          'cmd': 'publish',
-         'from': _appId,
+         'from': _outAdvQueue.first.from,
          'to': _outAdvQueue.first.codes,
          'msg': _outAdvQueue.first.description,
       };
