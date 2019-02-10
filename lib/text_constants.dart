@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 final Color primaryColor = Colors.deepOrange[900];
 final Color accentColor = Colors.deepOrange[50];
+final Color newReceivedAdvColor = Colors.brown[200]; 
 
 final String appName = "CarMenu";
 
 // Text used for the main tabs.
 final List<String> tabNames =
-      <String>["FILTROS", "POSTS", "CHATS"];
+   <String>["FILTROS", "POSTS", "CHATS"];
 
 //______________
 
@@ -59,17 +60,8 @@ final IconData newAdvIcon = Icons.publish;
 
 final String hintTextChat = "Digite sua mensagem";
 
-final Color allMenuItemCircleColor = Colors.brown;
-
-final Color chatLongPressedColor = Colors.brown;
-
 // The padding used for the text inside the adv element.
 final double advElemTextPadding = 4.0;
-
-Color favChatButtonColor = Colors.white; 
-
-// New received advs color.
-Color newReceivedAdvColor = Colors.brown[200]; 
 
 final double outerAdvCardPadding = 1.0;
 
