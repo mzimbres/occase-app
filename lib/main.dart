@@ -54,10 +54,9 @@ Widget createBotBarScreen(
          List<BottomNavigationBarItem>(length);
 
    for (int i = 0; i < length; ++i) {
-      TextStyle ts = TextStyle(color: Theme.of(context).primaryColor);
       items[i] = BottomNavigationBarItem(
                icon: icons[i],
-               title: Text(iconLabels[i], style: ts)
+               title: Text(iconLabels[i])
       );
    }
 
@@ -69,7 +68,6 @@ Widget createBotBarScreen(
                bottomNavigationBar: BottomNavigationBar(
                      items: items,
                      currentIndex: i,
-                     fixedColor: Colors.deepPurple,
                      onTap: onBotBarTapped,
             )
          )

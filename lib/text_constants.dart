@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-final Color primaryColor = Colors.deepOrange[900];
+final Color primaryColor = Colors.deepOrange[800];
 final Color accentColor = Colors.deepOrange[50];
 final Color newReceivedAdvColor = Colors.brown[200]; 
 
@@ -24,9 +24,9 @@ final List<String> newAdvTabNames = <String>[
 ];
 
 List<Icon> newAdvTabIcons = <Icon>[
-   Icon(Icons.home, color: primaryColor),
-   Icon(Icons.directions_car, color: primaryColor),
-   Icon(Icons.publish, color: primaryColor)
+   Icon(Icons.home),
+   Icon(Icons.directions_car),
+   Icon(Icons.publish)
 ];
 
 //______________
@@ -38,9 +38,9 @@ final List<String> filterTabNames = <String>[
 ];
 
 List<Icon> filterTabIcons = <Icon>[
-   Icon(Icons.home, color: primaryColor),
-   Icon(Icons.directions_car, color: primaryColor),
-   Icon(Icons.send, color: primaryColor)
+   Icon(Icons.home),
+   Icon(Icons.directions_car),
+   Icon(Icons.send)
 ];
 
 //______________
@@ -52,12 +52,12 @@ final List<String> chatIconTexts = <String>[
 ];
 
 List<Icon> chatIcons = <Icon>[
-   Icon(Icons.list, color: primaryColor),
-   Icon(Icons.star, color: Colors.amber)
+   Icon(Icons.list),
+   Icon(Icons.star)
 ];
 
 final Icon favIcon = Icon(Icons.star, color: Colors.amber);
-final Icon personIcon = Icon(Icons.person, color: primaryColor);
+final Icon personIcon = Icon(Icons.person);
 
 //______________
 
