@@ -85,7 +85,7 @@ ListView createFilterListView(BuildContext context,
             //final String title = "Marcar todos (${o.leafCounter} items)";
             final String title = "Marcar todos";
             final TextStyle fls =
-                  TextStyle(color: Theme.of(context).primaryColor);
+                  TextStyle(color: Theme.of(context).accentColor);
             return createListViewItem(
                             context,
                             title,

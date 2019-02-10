@@ -344,7 +344,7 @@ Card makeAdvWidget(BuildContext context,
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
       margin: EdgeInsets.all(Consts.advMarging),
-      elevation: 0.0,
+      elevation: 5.0,
    );
 }
 
