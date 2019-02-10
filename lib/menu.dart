@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
-import 'package:menu_chat/text_constants.dart';
+import 'package:menu_chat/text_constants.dart' as cts;
 
 String makeSubItemsString(int n)
 {
@@ -35,7 +35,7 @@ ListTile createListViewItem(BuildContext context,
              leading: CircleAvatar(
                          child: circleChild,
                          backgroundColor: circleColor),
-             title: Text(name, style: Cts.menuTitleStl),
+             title: Text(name, style: cts.menuTitleStl),
              //dense: false,
              subtitle: subItemWidget,
              trailing: trailing,
@@ -124,7 +124,7 @@ ListView createFilterListView(BuildContext context,
                             () { onLeafPressed(i);},
                             (){},
                             Text(firstLetter,
-                                 style: Cts.firstLetterStl));
+                                 style: cts.firstLetterStl));
          }
 
          MenuNode child = o.children[i];
@@ -141,7 +141,7 @@ ListView createFilterListView(BuildContext context,
                          () { onNodePressed(i); },
                          (){},
                          Text(firstLetter,
-                              style: Cts.firstLetterStl));
+                              style: cts.firstLetterStl));
       },
    );
 }

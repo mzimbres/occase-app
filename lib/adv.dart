@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
-import 'package:menu_chat/text_constants.dart';
+import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:intl/intl.dart';
 
 class ChatItem {
@@ -71,7 +71,7 @@ class AdvData {
 
    AdvData()
    {
-      codes = List<List<List<int>>>(Cts.menuDepthNames.length);
+      codes = List<List<List<int>>>(cts.menuDepthNames.length);
       for (int i = 0; i < codes.length; ++i) {
          codes[i] = List<List<int>>(1);
          codes[i][0] = List<int>();
@@ -184,10 +184,10 @@ Card advElemFactory(BuildContext context,
       RichText rt = RichText(
             text: TextSpan(
                   text: keys[i] + ': ',
-                  style: Cts.menuTitleStl,
+                  style: cts.menuTitleStl,
                   children: <TextSpan>[
                      TextSpan(text: values[i],
-                              style: Cts.valueTextStl),
+                              style: cts.valueTextStl),
                   ],
             ),
          );
@@ -198,7 +198,7 @@ Card advElemFactory(BuildContext context,
    // Padding needed to show the text inside the adv element with some
    // distance from the border.
    Padding padd = Padding(
-         padding: EdgeInsets.all(Cts.advElemTextPadding),
+         padding: EdgeInsets.all(cts.advElemTextPadding),
          child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
@@ -230,8 +230,8 @@ makeMenuInfoCards(BuildContext context,
       Card card = advElemFactory(
                   context,
                   names,
-                  Cts.menuDepthNames[i],
-                  Cts.newAdvTabIcons[i]);
+                  cts.menuDepthNames[i],
+                  cts.newAdvTabIcons[i]);
 
       list.add(card);
    }
@@ -257,7 +257,7 @@ List<Card> advTextAssembler(BuildContext context,
    values.add(data.description);
 
    Card descCard = advElemFactory(context, values,
-                                  Cts.descList,
+                                  cts.descList,
                                   Icons.person);
 
    list.add(descCard);
@@ -302,7 +302,7 @@ Card createChatEntry(BuildContext context,
 
    Column col = Column(children: cards);
 
-   final double padding = Cts.outerAdvCardPadding;
+   final double padding = cts.outerAdvCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: Theme.of(context).primaryColor,
@@ -343,7 +343,7 @@ Card makeAdvWidget(BuildContext context,
 
    Column col = Column(children: cards);
 
-   final double padding = Cts.outerAdvCardPadding;
+   final double padding = cts.outerAdvCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
@@ -364,9 +364,9 @@ Card makeTextInputFieldCard(TextEditingController ctrl)
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   decoration: InputDecoration(
-                        hintText: Cts.newAdvDescDeco)),
+                        hintText: cts.newAdvDescDeco)),
                padding: EdgeInsets.all(
-                     Cts.advElemTextPadding)
+                     cts.advElemTextPadding)
             ),
          color: Consts.advLocHeaderColor,
          margin: EdgeInsets.all(Consts.advInnerMargin),
@@ -395,7 +395,7 @@ Widget makeAdvTab(BuildContext context,
                   // New advs are shown with a different color.
                   Color color = Theme.of(context).primaryColor;
                   if (i < numberOfNewAdvs)
-                     color = Cts.newReceivedAdvColor; 
+                     color = cts.newReceivedAdvColor; 
 
                   List<Card> cards = advTextAssembler(
                                         context,
@@ -414,7 +414,7 @@ Widget makeAdvTab(BuildContext context,
          backgroundColor: Consts.scaffoldBackground,
          floatingActionButton: FloatingActionButton(
                backgroundColor: Theme.of(context).primaryColor,
-               child: Icon( Cts.newAdvIcon,
+               child: Icon( cts.newAdvIcon,
                             color: Colors.white),
                onPressed: onNewAdv,
          ),
@@ -444,7 +444,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          () { onLeafPressed(i);},
                          (){},
                          Text(firstLetter,
-                              style: Cts.firstLetterStl));
+                              style: cts.firstLetterStl));
          }
          
          return createListViewItem(
@@ -458,7 +458,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
                          () { onNodePressed(i); },
                          (){},
                          Text(firstLetter,
-                              style: Cts.firstLetterStl));
+                              style: cts.firstLetterStl));
       },
    );
 }
@@ -479,7 +479,7 @@ Column makeAdvChatCol(BuildContext context,
          bgColor = Theme.of(context).accentColor;
       } else {
          final String firstLetter = getFirstLetter(ch[i].peer);
-         widget = Text(firstLetter, style: Cts.firstLetterStl);
+         widget = Text(firstLetter, style: cts.firstLetterStl);
          bgColor = Colors.white;
       }
 

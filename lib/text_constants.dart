@@ -1,92 +1,90 @@
 import 'package:flutter/material.dart';
 
-class Cts {
-   static final Color primaryColor = Colors.deepOrange[900];
-   static final Color accentColor = Colors.deepOrange[50];
+final Color primaryColor = Colors.deepOrange[900];
+final Color accentColor = Colors.deepOrange[50];
 
-   static final String appName = "CarMenu";
+final String appName = "CarMenu";
 
-   // Text used for the main tabs.
-   static final List<String> tabNames =
-         <String>["FILTROS", "POSTS", "CHATS"];
+// Text used for the main tabs.
+final List<String> tabNames =
+      <String>["FILTROS", "POSTS", "CHATS"];
 
-   //______________
+//______________
 
-   // Text used in the *new advertisement screens* on the bottom
-   // navigation bar.
-   static final List<String> newAdvTabNames =
-         <String>['Localizacao', 'Modelos', 'Publicar'];
+// Text used in the *new advertisement screens* on the bottom
+// navigation bar.
+final List<String> newAdvTabNames =
+      <String>['Localizacao', 'Modelos', 'Publicar'];
 
-   static List<IconData> newAdvTabIcons =
-         <IconData>[Icons.home, Icons.directions_car, Icons.publish];
+List<IconData> newAdvTabIcons =
+      <IconData>[Icons.home, Icons.directions_car, Icons.publish];
 
-   static final List<String> filterTabNames =
-         <String>['Localizacao', 'Modelos', 'Salvar'];
+final List<String> filterTabNames =
+      <String>['Localizacao', 'Modelos', 'Salvar'];
 
-   static List<IconData> filterTabIcons =
-         <IconData>[Icons.home, Icons.directions_car, Icons.send];
-   //______________
+List<IconData> filterTabIcons =
+      <IconData>[Icons.home, Icons.directions_car, Icons.send];
+//______________
 
-   // Text used in the chat screen.
-   static final List<String> chatIconTexts =
-         <String>['Meus anúncios', 'Favoritos'];
+// Text used in the chat screen.
+final List<String> chatIconTexts =
+      <String>['Meus anúncios', 'Favoritos'];
 
-   static List<IconData> chatIcons =
-         <IconData>[ Icons.list,
-                     Icons.star];
+List<IconData> chatIcons =
+      <IconData>[ Icons.list,
+                  Icons.star];
 
-   //______________
+//______________
 
-   // The text shown on the app bar for each tab on the *new
-   // advertisement screen.*
-   static final List<String> advAppBarMsg =
-      <String>["Escolha uma localizacao", "Escolha um modelo",
-               "Verificacao e envio"];
+// The text shown on the app bar for each tab on the *new
+// advertisement screen.*
+final List<String> advAppBarMsg =
+   <String>["Escolha uma localizacao", "Escolha um modelo",
+            "Verificacao e envio"];
 
-   // The name of the fields at each menu depth.
-   static final List<List<String>> menuDepthNames =
-   <List<String>>[
-      <String>["Estado", "Cidade", "Bairro"],
-      <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
-   ];
+// The name of the fields at each menu depth.
+final List<List<String>> menuDepthNames =
+<List<String>>[
+   <String>["Estado", "Cidade", "Bairro"],
+   <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
+];
 
-   // The text in the adv description field.
-   static final List<String> descList =
-         <String>['Anunciante', 'Data', "Descricao"];
+// The text in the adv description field.
+final List<String> descList =
+      <String>['Anunciante', 'Data', "Descricao"];
 
-   static final String newAdvDescDeco = "Digite aqui informacoes adicionais";
+final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 
-   static final IconData newAdvIcon = Icons.publish;
+final IconData newAdvIcon = Icons.publish;
 
-   static final String hintTextChat = "Digite sua mensagem";
+final String hintTextChat = "Digite sua mensagem";
 
-   static final Color allMenuItemCircleColor = Colors.brown;
+final Color allMenuItemCircleColor = Colors.brown;
 
-   static final Color chatLongPressedColor = Colors.brown;
+final Color chatLongPressedColor = Colors.brown;
 
-   // The padding used for the text inside the adv element.
-   static final double advElemTextPadding = 4.0;
+// The padding used for the text inside the adv element.
+final double advElemTextPadding = 4.0;
 
-   static Color favChatButtonColor = Colors.white; 
+Color favChatButtonColor = Colors.white; 
 
-   // New received advs color.
-   static Color newReceivedAdvColor = Colors.brown[200]; 
+// New received advs color.
+Color newReceivedAdvColor = Colors.brown[200]; 
 
-   static final double outerAdvCardPadding = 1.0;
+final double outerAdvCardPadding = 1.0;
 
-   static final String deleteChatStr = "Remover conversa";
+final String deleteChatStr = "Remover conversa";
 
-   static final TextStyle firstLetterStl =
-         TextStyle(color: Colors.white);
+final TextStyle firstLetterStl =
+      TextStyle(color: Colors.white);
 
-   static final TextStyle menuTitleStl =
-             TextStyle(fontSize: 17.0,
-                       fontWeight: FontWeight.bold,
-                       color: Colors.black);
+final TextStyle menuTitleStl =
+          TextStyle(fontSize: 17.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black);
 
-   static final TextStyle valueTextStl =
-             TextStyle(fontSize: 17.0,
-                       fontWeight: FontWeight.normal,
-                       color: Colors.black);
-}
+final TextStyle valueTextStl =
+          TextStyle(fontSize: 17.0,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black);
 

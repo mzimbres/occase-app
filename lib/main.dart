@@ -13,7 +13,7 @@ import 'package:menu_chat/adv.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
-import 'package:menu_chat/text_constants.dart';
+import 'package:menu_chat/text_constants.dart' as cts;
 
 Future<Null> main() async
 {
@@ -24,11 +24,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: Cts.appName,
+      title: cts.appName,
       theme: ThemeData(
                 brightness: Brightness.light,
-                primaryColor: Cts.primaryColor,
-                accentColor: Cts.primaryColor,
+                primaryColor: cts.primaryColor,
+                accentColor: cts.primaryColor,
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
@@ -98,7 +98,7 @@ createChatScreen(BuildContext context,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(
-            hintText: Cts.hintTextChat,
+            hintText: cts.hintTextChat,
             fillColor:Color(0xFFFFFFFF),
             )
    );
@@ -379,7 +379,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if ((_botBarIdx + 1) != Cts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != cts.newAdvTabNames.length)
          _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
@@ -399,7 +399,7 @@ class MenuChatState extends State<MenuChat>
       // happen to add.
 
       // To handle the boundary condition on the last tab.
-      if ((_botBarIdx + 1) != Cts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != cts.newAdvTabNames.length)
          ++_botBarIdx;
 
       do {
@@ -871,7 +871,7 @@ class MenuChatState extends State<MenuChat>
          }
 
          AppBar appBar = AppBar(
-               title: Text(Cts.advAppBarMsg[_botBarIdx]),
+               title: Text(cts.advAppBarMsg[_botBarIdx]),
                elevation: 0.7,
                toolbarOpacity : 1.0
          );
@@ -880,8 +880,8 @@ class MenuChatState extends State<MenuChat>
                    context,
                    widget,
                    appBar,
-                   Cts.newAdvTabIcons,
-                   Cts.newAdvTabNames,
+                   cts.newAdvTabIcons,
+                   cts.newAdvTabNames,
                    _onWillPopMenu,
                    _onNewAdvBotBarTapped,
                    _botBarIdx
@@ -931,14 +931,14 @@ class MenuChatState extends State<MenuChat>
                              _menus[_botBarIdx].isFilterLeaf());
       }
 
-      List<Widget> widgets = List<Widget>(Cts.tabNames.length);
+      List<Widget> widgets = List<Widget>(cts.tabNames.length);
 
       widgets[0] = createBotBarScreen(
                       context,
                       filterTabWidget,
                       null,
-                      Cts.filterTabIcons,
-                      Cts.filterTabNames,
+                      cts.filterTabIcons,
+                      cts.filterTabNames,
                       _onWillPopMenu,
                       _onBotBarTapped,
                       _botBarIdx
@@ -980,8 +980,8 @@ class MenuChatState extends State<MenuChat>
       widgets[2] = createBotBarScreen(context,
                       chatWidget,
                       null,
-                      Cts.chatIcons,
-                      Cts.chatIconTexts,
+                      cts.chatIcons,
+                      cts.chatIconTexts,
                       _onOwnAdvsBackPressed,
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
@@ -993,7 +993,7 @@ class MenuChatState extends State<MenuChat>
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
          IconButton ib = IconButton(
                icon: Icon(Icons.delete),
-               tooltip: Cts.deleteChatStr,
+               tooltip: cts.deleteChatStr,
                onPressed: () { print("remover conversa."); });
 
          actions.add(ib);
@@ -1004,17 +1004,17 @@ class MenuChatState extends State<MenuChat>
 
       return Scaffold(
          appBar: AppBar(
-            title: Text(Cts.appName),
+            title: Text(cts.appName),
             elevation: 0.7,
             bottom: TabBar(
                   controller: _tabCtrl,
                   indicatorColor: Colors.white,
                   tabs: <Widget>[
-                     Tab(text: Cts.tabNames[0],),
+                     Tab(text: cts.tabNames[0],),
                      Tab(child: makeTabWidget(context, newAdvsLength,
-                                 Cts.tabNames[1])),
+                                 cts.tabNames[1])),
                      Tab(child: makeTabWidget(context, newChats,
-                                Cts.tabNames[2])),
+                                cts.tabNames[2])),
                   ],
             ),
             actions: actions,
