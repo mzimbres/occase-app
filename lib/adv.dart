@@ -497,7 +497,10 @@ Column makeAdvChatCol(BuildContext context,
                   child: lt);
    }
 
-   return Column(children: list);
+   return Column(children: ListTile.divideTiles(
+                    context: context,
+                    tiles: list,
+                    color: Colors.grey).toList());
 }
 
 Widget makeAdvChatTab(
