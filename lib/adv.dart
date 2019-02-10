@@ -172,13 +172,10 @@ CircleAvatar makeCircleUnreadMsgs(int n,
 Card advElemFactory(BuildContext context,
                     List<String> values,
                     List<String> keys,
-                    IconData icd)
+                    Icon ic)
 {
    List<Widget> r = List<Widget>();
-   final Icon ic = Icon(icd, color: Theme.of(context).primaryColor);
-   r.add(Padding(
-            child: Center(child: ic),
-            padding: EdgeInsets.all(4.0)));
+   r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
 
    for (int i = 0; i < values.length; ++i) {
       RichText rt = RichText(
@@ -256,9 +253,8 @@ List<Card> advTextAssembler(BuildContext context,
    values.add(dateString);
    values.add(data.description);
 
-   Card descCard = advElemFactory(context, values,
-                                  cts.descList,
-                                  Icons.person);
+   Card descCard = advElemFactory(context, values, cts.descList,
+                                  cts.personIcon);
 
    list.add(descCard);
 
@@ -407,7 +403,8 @@ Widget makeAdvTab(BuildContext context,
                             context,
                             cards,
                             (fav) {onAdvSelection(advs[idx], fav);},
-                            Icon(Icons.star, color: Colors.amber), color);
+                            cts.favIcon,
+                            color);
                },
          ),
 

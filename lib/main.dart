@@ -41,7 +41,7 @@ Widget createBotBarScreen(
       BuildContext context,
       Widget scafBody,
       Widget appBar,
-      List<IconData> icons,
+      List<Icon> icons,
       List<String> iconLabels,
       Function onWillPop,
       Function onBotBarTapped,
@@ -56,7 +56,7 @@ Widget createBotBarScreen(
    for (int i = 0; i < length; ++i) {
       TextStyle ts = TextStyle(color: Theme.of(context).primaryColor);
       items[i] = BottomNavigationBarItem(
-               icon: Icon(icons[i]),
+               icon: icons[i],
                title: Text(iconLabels[i], style: ts)
       );
    }

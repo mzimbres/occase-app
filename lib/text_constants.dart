@@ -7,52 +7,79 @@ final Color newReceivedAdvColor = Colors.brown[200];
 final String appName = "CarMenu";
 
 // Text used for the main tabs.
-final List<String> tabNames =
-   <String>["FILTROS", "POSTS", "CHATS"];
+final List<String> tabNames = <String>[
+   "FILTROS",
+   "POSTS",
+   "CHATS"
+];
 
 //______________
 
 // Text used in the *new advertisement screens* on the bottom
 // navigation bar.
-final List<String> newAdvTabNames =
-      <String>['Localizacao', 'Modelos', 'Publicar'];
+final List<String> newAdvTabNames = <String>[
+   'Localizacao',
+   'Modelos',
+   'Publicar'
+];
 
-List<IconData> newAdvTabIcons =
-      <IconData>[Icons.home, Icons.directions_car, Icons.publish];
+List<Icon> newAdvTabIcons = <Icon>[
+   Icon(Icons.home, color: primaryColor),
+   Icon(Icons.directions_car, color: primaryColor),
+   Icon(Icons.publish, color: primaryColor)
+];
 
-final List<String> filterTabNames =
-      <String>['Localizacao', 'Modelos', 'Salvar'];
+//______________
 
-List<IconData> filterTabIcons =
-      <IconData>[Icons.home, Icons.directions_car, Icons.send];
+final List<String> filterTabNames = <String>[
+   'Localizacao',
+   'Modelos',
+   'Salvar'
+];
+
+List<Icon> filterTabIcons = <Icon>[
+   Icon(Icons.home, color: primaryColor),
+   Icon(Icons.directions_car, color: primaryColor),
+   Icon(Icons.send, color: primaryColor)
+];
+
 //______________
 
 // Text used in the chat screen.
-final List<String> chatIconTexts =
-      <String>['Meus anúncios', 'Favoritos'];
+final List<String> chatIconTexts = <String>[
+   'Meus anúncios',
+   'Favoritos'
+];
 
-List<IconData> chatIcons =
-      <IconData>[ Icons.list,
-                  Icons.star];
+List<Icon> chatIcons = <Icon>[
+   Icon(Icons.list, color: primaryColor),
+   Icon(Icons.star, color: Colors.amber)
+];
+
+final Icon favIcon = Icon(Icons.star, color: Colors.amber);
+final Icon personIcon = Icon(Icons.person, color: primaryColor);
 
 //______________
 
 // The text shown on the app bar for each tab on the *new
 // advertisement screen.*
-final List<String> advAppBarMsg =
-   <String>["Escolha uma localizacao", "Escolha um modelo",
-            "Verificacao e envio"];
+final List<String> advAppBarMsg = <String>[
+   "Escolha uma localizacao",
+   "Escolha um modelo",
+   "Verificacao e envio"
+];
 
 // The name of the fields at each menu depth.
-final List<List<String>> menuDepthNames =
-<List<String>>[
+final List<List<String>> menuDepthNames = <List<String>>[
    <String>["Estado", "Cidade", "Bairro"],
    <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
 ];
 
 // The text in the adv description field.
-final List<String> descList =
-      <String>['Anunciante', 'Data', "Descricao"];
+final List<String> descList = <String>[
+   'Anunciante',
+   'Data',
+   "Descricao"];
 
 final String newAdvDescDeco = "Digite aqui informacoes adicionais";
 
