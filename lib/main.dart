@@ -24,27 +24,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: TextConsts.appName,
+      title: Cts.appName,
       theme: ThemeData(
-         brightness: Brightness.light,
-        primaryColor: Colors.green[800],
-        accentColor: Colors.green[50],
-        //fontFamily: 'Montserrat',
-        //textTheme: TextTheme(
-        //  //headline: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-        //  title: TextStyle(
-        //        fontSize: 17.0,
-        //        fontWeight: FontWeight.bold,
-        //        //color: Colors.blueGrey[700]
-        //        ),
-        //  subhead: TextStyle(
-        //        fontSize: 16.0,
-        //        fontWeight: FontWeight.bold,),
-        //  body1: TextStyle( fontSize: 15.0,
-        //        fontWeight: FontWeight.bold,),
-        //  body2: TextStyle(fontSize: 15.0, fontWeight: FontWeight.normal),
-        //  caption: TextStyle(fontSize: 13.0, fontWeight: FontWeight.normal),
-        //)
+                brightness: Brightness.light,
+                primaryColor: Cts.primaryColor,
+                accentColor: Cts.primaryColor,
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
@@ -70,9 +54,10 @@ Widget createBotBarScreen(
          List<BottomNavigationBarItem>(length);
 
    for (int i = 0; i < length; ++i) {
+      TextStyle ts = TextStyle(color: Theme.of(context).primaryColor);
       items[i] = BottomNavigationBarItem(
                icon: Icon(icons[i]),
-               title: Text(iconLabels[i])
+               title: Text(iconLabels[i], style: ts)
       );
    }
 
@@ -113,7 +98,7 @@ createChatScreen(BuildContext context,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       decoration: InputDecoration(
-            hintText: TextConsts.hintTextChat,
+            hintText: Cts.hintTextChat,
             fillColor:Color(0xFFFFFFFF),
             )
    );
@@ -394,7 +379,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if ((_botBarIdx + 1) != TextConsts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != Cts.newAdvTabNames.length)
          _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
@@ -414,7 +399,7 @@ class MenuChatState extends State<MenuChat>
       // happen to add.
 
       // To handle the boundary condition on the last tab.
-      if ((_botBarIdx + 1) != TextConsts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != Cts.newAdvTabNames.length)
          ++_botBarIdx;
 
       do {
@@ -886,7 +871,7 @@ class MenuChatState extends State<MenuChat>
          }
 
          AppBar appBar = AppBar(
-               title: Text(TextConsts.advAppBarMsg[_botBarIdx]),
+               title: Text(Cts.advAppBarMsg[_botBarIdx]),
                elevation: 0.7,
                toolbarOpacity : 1.0
          );
@@ -895,8 +880,8 @@ class MenuChatState extends State<MenuChat>
                    context,
                    widget,
                    appBar,
-                   TextConsts.newAdvTabIcons,
-                   TextConsts.newAdvTabNames,
+                   Cts.newAdvTabIcons,
+                   Cts.newAdvTabNames,
                    _onWillPopMenu,
                    _onNewAdvBotBarTapped,
                    _botBarIdx
@@ -946,14 +931,14 @@ class MenuChatState extends State<MenuChat>
                              _menus[_botBarIdx].isFilterLeaf());
       }
 
-      List<Widget> widgets = List<Widget>(TextConsts.tabNames.length);
+      List<Widget> widgets = List<Widget>(Cts.tabNames.length);
 
       widgets[0] = createBotBarScreen(
                       context,
                       filterTabWidget,
                       null,
-                      TextConsts.filterTabIcons,
-                      TextConsts.filterTabNames,
+                      Cts.filterTabIcons,
+                      Cts.filterTabNames,
                       _onWillPopMenu,
                       _onBotBarTapped,
                       _botBarIdx
@@ -995,8 +980,8 @@ class MenuChatState extends State<MenuChat>
       widgets[2] = createBotBarScreen(context,
                       chatWidget,
                       null,
-                      TextConsts.chatIcons,
-                      TextConsts.chatIconTexts,
+                      Cts.chatIcons,
+                      Cts.chatIconTexts,
                       _onOwnAdvsBackPressed,
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
@@ -1008,7 +993,7 @@ class MenuChatState extends State<MenuChat>
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
          IconButton ib = IconButton(
                icon: Icon(Icons.delete),
-               tooltip: TextConsts.deleteChatStr,
+               tooltip: Cts.deleteChatStr,
                onPressed: () { print("remover conversa."); });
 
          actions.add(ib);
@@ -1019,17 +1004,17 @@ class MenuChatState extends State<MenuChat>
 
       return Scaffold(
          appBar: AppBar(
-            title: Text(TextConsts.appName),
+            title: Text(Cts.appName),
             elevation: 0.7,
             bottom: TabBar(
                   controller: _tabCtrl,
                   indicatorColor: Colors.white,
                   tabs: <Widget>[
-                     Tab(text: TextConsts.tabNames[0],),
+                     Tab(text: Cts.tabNames[0],),
                      Tab(child: makeTabWidget(context, newAdvsLength,
-                                 TextConsts.tabNames[1])),
+                                 Cts.tabNames[1])),
                      Tab(child: makeTabWidget(context, newChats,
-                                TextConsts.tabNames[2])),
+                                Cts.tabNames[2])),
                   ],
             ),
             actions: actions,

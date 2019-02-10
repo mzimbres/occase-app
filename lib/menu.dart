@@ -35,7 +35,7 @@ ListTile createListViewItem(BuildContext context,
              leading: CircleAvatar(
                          child: circleChild,
                          backgroundColor: circleColor),
-             title: Text(name, style: TextConsts.menuTitleStl),
+             title: Text(name, style: Cts.menuTitleStl),
              //dense: false,
              subtitle: subItemWidget,
              trailing: trailing,
@@ -124,7 +124,7 @@ ListView createFilterListView(BuildContext context,
                             () { onLeafPressed(i);},
                             (){},
                             Text(firstLetter,
-                                 style: TextConsts.firstLetterStl));
+                                 style: Cts.firstLetterStl));
          }
 
          MenuNode child = o.children[i];
@@ -141,7 +141,7 @@ ListView createFilterListView(BuildContext context,
                          () { onNodePressed(i); },
                          (){},
                          Text(firstLetter,
-                              style: TextConsts.firstLetterStl));
+                              style: Cts.firstLetterStl));
       },
    );
 }

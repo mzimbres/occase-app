@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-class TextConsts {
+class Cts {
+   static final Color primaryColor = Colors.deepOrange[900];
+   static final Color accentColor = Colors.deepOrange[50];
+
    static final String appName = "CarMenu";
 
    // Text used for the main tabs.
