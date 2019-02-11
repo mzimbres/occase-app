@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-final Color primaryColor = Colors.orange;
-final Color accentColor = Colors.orange[50];
+//final Color primaryColor = Color(0xFFE18A07);
+final Color primaryColor = Colors.blueGrey;
+final Color accentColor = Colors.blueGrey[50];
 final Color newReceivedAdvColor = Colors.brown[200]; 
 
 final String appName = "CarMenu";
@@ -107,3 +108,7 @@ final TextStyle valueTextStl =
                     fontWeight: FontWeight.normal,
                     color: Colors.black);
 
+final TextStyle expTileStl =
+          TextStyle(fontSize: 15.0,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white);

@@ -284,10 +284,24 @@ Card createChatEntry(BuildContext context,
                      List<MenuItem> menus,
                      Widget chats)
 {
-   List<Card> cards = advTextAssembler(context, adv, menus,
+   List<Card> textCards = advTextAssembler(context, adv, menus,
                                        Theme.of(context).primaryColor);
-   
-   cards.add(makeTextSeparator(context));
+
+   ExpansionTile et = ExpansionTile(
+             //key: PageStorageKey<Entry>(root),
+             title: Text("Detalhes do post", style: cts.expTileStl),
+             children: ListTile.divideTiles(
+                        context: context,
+                        tiles: textCards,
+                        color: Colors.grey).toList());
+
+   List<Widget> cards = List<Card>();
+   cards.add(Card(child: et,
+                  color: Theme.of(context).accentColor,
+                  margin: EdgeInsets.all(0.0),
+                  elevation: 0.0));
+
+   //cards.add(makeTextSeparator(context));
 
    Card chatCard = Card(child: chats,
                         color: Theme.of(context).primaryColor,
@@ -497,7 +511,7 @@ Widget makeAdvChatCol(BuildContext context,
                   child: lt);
    }
 
-   if (list.length == 1)
+   if (list.length <= 10)
       return Column(children: ListTile.divideTiles(
                        context: context,
                        tiles: list,
@@ -510,7 +524,7 @@ Widget makeAdvChatCol(BuildContext context,
 
    return ExpansionTile(
              //key: PageStorageKey<Entry>(root),
-             title: Text("Interessados", style: stl),
+             title: Text("Conversas", style: cts.expTileStl),
              children: ListTile.divideTiles(
                         context: context,
                         tiles: list,

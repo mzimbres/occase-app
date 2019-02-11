@@ -18,7 +18,7 @@ Text createMenuItemSubStrWidget(String str, FontWeight fw)
       return null;
 
    return Text(str, style: TextStyle(fontSize: 14.0, fontWeight: fw),
-               maxLines: 2,
+               maxLines: 1,
                overflow: TextOverflow.clip);
 }
 
