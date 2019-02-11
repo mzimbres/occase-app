@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-//final Color primaryColor = Color(0xFFE18A07);
-final Color primaryColor = Colors.blueGrey;
+final Color primaryColor = Color(0xFFE18A07);
+//final Color primaryColor = Colors.blueGrey;
 final Color accentColor = Colors.blueGrey[50];
 final Color newReceivedAdvColor = Colors.brown[200]; 
 
