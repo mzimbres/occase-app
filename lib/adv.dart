@@ -362,26 +362,29 @@ Card makeAdvWidget(BuildContext context,
    );
 }
 
-Card makeTextInputFieldCard(TextEditingController ctrl)
+Card makeCard(Widget widget)
 {
-   // TODO: Set a max length.
    return Card(
-         child: Padding(
-               child: TextField(
-                  controller: ctrl,
-                  //textInputAction: TextInputAction.go,
-                  //onSubmitted: onTextFieldPressed,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  decoration: InputDecoration(
-                        hintText: cts.newAdvDescDeco)),
-               padding: EdgeInsets.all(
-                     cts.advElemTextPadding)
-            ),
+         child:
+            Padding(child: widget,
+                    padding: EdgeInsets.all( cts.advElemTextPadding)),
          color: Consts.advLocHeaderColor,
          margin: EdgeInsets.all(Consts.advInnerMargin),
          elevation: 0.0,
    );
+}
+
+TextField makeTextInputFieldCard(TextEditingController ctrl)
+{
+   // TODO: Set a max length.
+   return TextField(
+             controller: ctrl,
+             //textInputAction: TextInputAction.go,
+             //onSubmitted: onTextFieldPressed,
+             keyboardType: TextInputType.multiline,
+             maxLines: null,
+             decoration:
+                InputDecoration(hintText: cts.newAdvDescDeco));
 }
 
 Widget makeAdvTab(BuildContext context,

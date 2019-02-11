@@ -87,19 +87,10 @@ Widget
 createChatScreen(BuildContext context,
                  Function onWillPopScope,
                  ChatHistory chatHist,
-                 TextEditingController newAdvTextCtrl,
+                 TextEditingController ctrl,
                  Function onChatSendPressed)
 {
-   TextField textField = TextField(
-      controller: newAdvTextCtrl,
-      //textInputAction: TextInputAction.go,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      decoration: InputDecoration(
-            hintText: cts.hintTextChat,
-            fillColor:Color(0xFFFFFFFF),
-            )
-   );
+   TextField tf = makeTextInputFieldCard(ctrl);
 
    CircleAvatar sendButCol =
          CircleAvatar(
@@ -113,8 +104,8 @@ createChatScreen(BuildContext context,
 
    Row row = Row(
          children: <Widget>[
-            Expanded(child: textField),
-            sendButCol
+            Expanded(child: makeCard(tf)),
+            makeCard(sendButCol)
          ],
    );
 
@@ -839,7 +830,7 @@ class MenuChatState extends State<MenuChat>
                                   _menus,
                                   Theme.of(context).primaryColor);
 
-            cards.add(makeTextInputFieldCard(_newAdvTextCtrl));
+            cards.add(makeCard(makeTextInputFieldCard(_newAdvTextCtrl)));
    
             Widget widget_tmp = makeAdvWidget(
                                    context,
