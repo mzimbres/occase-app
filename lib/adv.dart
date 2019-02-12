@@ -287,6 +287,7 @@ Card createChatEntry(BuildContext context,
    List<Card> textCards = advTextAssembler(context, adv, menus,
                                        Theme.of(context).primaryColor);
 
+   final Color ac = Colors.blueGrey[400];
    ExpansionTile et = ExpansionTile(
              //key: PageStorageKey<Entry>(root),
              title: Text("Detalhes do post", style: cts.expTileStl),
@@ -297,14 +298,14 @@ Card createChatEntry(BuildContext context,
 
    List<Widget> cards = List<Card>();
    cards.add(Card(child: et,
-                  color: Theme.of(context).accentColor,
+                  color: ac,
                   margin: EdgeInsets.all(0.0),
                   elevation: 0.0));
 
    //cards.add(makeTextSeparator(context));
 
    Card chatCard = Card(child: chats,
-                        color: Theme.of(context).primaryColor,
+                        color: ac,
                         margin: EdgeInsets.all(Consts.advInnerMargin),
                         elevation: 0.0);
 
@@ -315,7 +316,7 @@ Card createChatEntry(BuildContext context,
    final double padding = cts.outerAdvCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: Theme.of(context).primaryColor,
+      color: ac,
       margin: EdgeInsets.all(Consts.advMarging),
       elevation: 0.0,
    );

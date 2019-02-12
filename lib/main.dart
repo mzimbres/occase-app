@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
                 brightness: Brightness.light,
                 primaryColor: cts.primaryColor,
-                accentColor: cts.primaryColor,
+                accentColor: cts.accentColor,
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),

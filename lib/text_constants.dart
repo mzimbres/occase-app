@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-final Color primaryColor = Color(0xFFE18A07);
+final Color coral = Color(0xFFE18A07);
+final Color primaryColor = coral;
 //final Color primaryColor = Colors.blueGrey;
-final Color accentColor = Colors.blueGrey[50];
+final Color accentColor = Colors.grey;
 final Color newReceivedAdvColor = Colors.brown[200]; 
 
 final String appName = "CarMenu";
