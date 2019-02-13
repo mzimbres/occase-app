@@ -79,8 +79,6 @@ int advIndexHelper(int i)
    if (i == 0) return 1;
    if (i == 1) return 2;
    return 1;
-
-   // Assert we do not get here.
 }
 
 Widget
@@ -518,10 +516,9 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatLongPressed(int i, int j)
    {
       assert(j == 0);
-     final bool old = _favAdvs[i].chats[0].isLongPressed;
-     _favAdvs[i].chats[0].isLongPressed = !old;
+      final bool old = _favAdvs[i].chats[0].isLongPressed;
+      _favAdvs[i].chats[0].isLongPressed = !old;
       setState(() { });
-      //print("_onFavChatLongPressed: ${_favAdvs[i].chats[0].isLongPressed}");
    }
 
    void _onOwnAdvChatPressed(int i, int j)
@@ -534,6 +531,9 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnAdvChatLongPressed(int i, int j)
    {
+      final bool old = _ownAdvs[i].chats[j].isLongPressed;
+      _ownAdvs[i].chats[j].isLongPressed = !old;
+      setState(() { });
       print("_onOwnAdvChatLongPressed");
    }
 
