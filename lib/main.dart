@@ -811,6 +811,40 @@ class MenuChatState extends State<MenuChat>
          return hasLongPressed(_favAdvs);
    }
 
+   void _deleteChatEntryDialog(BuildContext context)
+   {
+      showDialog(
+         context: context,
+         builder: (BuildContext context)
+         {
+            final FlatButton ok = FlatButton(
+                     child: Text(cts.deleteChatOkStr),
+                     onPressed: ()
+                     {
+                        print("ok");
+                        Navigator.of(context).pop();
+                     });
+
+            final FlatButton cancel = FlatButton(
+                     child: Text(cts.deleteChatCancelStr),
+                     onPressed: ()
+                     {
+                        print("cancel");
+                        Navigator.of(context).pop();
+                     });
+
+            List<FlatButton> actions = List<FlatButton>(2);
+            actions[0] = ok;
+            actions[1] = cancel;
+
+            return AlertDialog(
+                  title: Text(cts.deleteChatTitleStr),
+                  content: Text(""),
+                  actions: actions);
+         },
+      );
+   }
+
    @override
    void dispose()
    {
@@ -981,10 +1015,9 @@ class MenuChatState extends State<MenuChat>
       List<Widget> actions = List<Widget>();
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
          IconButton ib = IconButton(
-               icon: Icon(Icons.delete),
-               tooltip: cts.deleteChatStr,
-               onPressed: () { print("remover conversa."); });
-
+            icon: Icon(Icons.delete, color: Colors.white),
+            tooltip: cts.deleteChatStr,
+            onPressed: () { _deleteChatEntryDialog(context); });
          actions.add(ib);
       }
 

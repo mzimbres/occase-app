@@ -33,6 +33,12 @@ List<Icon> newAdvTabIcons = <Icon>[
 
 //______________
 
+final String deleteChatTitleStr = "Remover conversas?";
+final String deleteChatOkStr = "Remover";
+final String deleteChatCancelStr = "Cancelar";
+
+//______________
+
 final List<String> filterTabNames = <String>[
    'Localizacao',
    'Modelos',
