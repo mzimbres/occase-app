@@ -818,7 +818,7 @@ class MenuChatState extends State<MenuChat>
          builder: (BuildContext context)
          {
             final FlatButton ok = FlatButton(
-                     child: Text(cts.deleteChatOkStr),
+                     child: cts.deleteChatOkText,
                      onPressed: ()
                      {
                         print("ok");
@@ -826,7 +826,7 @@ class MenuChatState extends State<MenuChat>
                      });
 
             final FlatButton cancel = FlatButton(
-                     child: Text(cts.deleteChatCancelStr),
+                     child: cts.deleteChatCancelText,
                      onPressed: ()
                      {
                         print("cancel");
@@ -838,7 +838,7 @@ class MenuChatState extends State<MenuChat>
             actions[1] = cancel;
 
             return AlertDialog(
-                  title: Text(cts.deleteChatTitleStr),
+                  title: cts.deleteChatTitleText,
                   content: Text(""),
                   actions: actions);
          },

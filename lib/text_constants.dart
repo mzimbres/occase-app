@@ -33,9 +33,14 @@ List<Icon> newAdvTabIcons = <Icon>[
 
 //______________
 
-final String deleteChatTitleStr = "Remover conversas?";
-final String deleteChatOkStr = "Remover";
-final String deleteChatCancelStr = "Cancelar";
+final Text deleteChatTitleText =
+   Text("Remover conversas?", style: TextStyle(color: Colors.black));
+
+final Text deleteChatOkText =
+   Text("Remover", style: TextStyle(color: coral));
+
+final Text deleteChatCancelText =
+   Text("Cancelar", style: TextStyle(color: coral));
 
 //______________
 
