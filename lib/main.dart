@@ -811,6 +811,28 @@ class MenuChatState extends State<MenuChat>
          return hasLongPressed(_favAdvs);
    }
 
+   void _removeLongPressedChatEntries()
+   {
+      assert(_tabCtrl.index == 2);
+      if (_chatBotBarIdx == 0) {
+         for (AdvData adv in _ownAdvs)
+            adv.removeLongPressedChats();
+
+         // TODO: Should the whole post be removed if after this
+         // action it became empty or should we keep it. If we remove
+         // it and a user sends a message to this chat it will have to
+         // be ignored.
+         setState(() { });
+      } else {
+         for (AdvData adv in _favAdvs)
+            adv.removeLongPressedChats();
+
+         // TODO: Same concern here. But I think we should remove the
+         // post in this case.
+         setState(() { });
+      }
+   }
+
    void _deleteChatEntryDialog(BuildContext context)
    {
       showDialog(
@@ -821,7 +843,7 @@ class MenuChatState extends State<MenuChat>
                      child: cts.deleteChatOkText,
                      onPressed: ()
                      {
-                        print("ok");
+                        _removeLongPressedChatEntries();
                         Navigator.of(context).pop();
                      });
 
@@ -829,7 +851,6 @@ class MenuChatState extends State<MenuChat>
                      child: cts.deleteChatCancelText,
                      onPressed: ()
                      {
-                        print("cancel");
                         Navigator.of(context).pop();
                      });
 

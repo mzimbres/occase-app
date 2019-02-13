@@ -140,6 +140,11 @@ class AdvData {
 
       return false;
    }
+
+   void removeLongPressedChats()
+   {
+      chats.removeWhere((e) { return e.isLongPressed; });
+   }
 }
 
 bool hasLongPressed(final List<AdvData> advs)
