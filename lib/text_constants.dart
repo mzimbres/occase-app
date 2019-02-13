@@ -33,8 +33,11 @@ List<Icon> newAdvTabIcons = <Icon>[
 
 //______________
 
-final Text deleteChatTitleText =
+final Text delOwnChatTitleText =
    Text("Remover conversas?", style: TextStyle(color: Colors.black));
+
+final Text delFavChatTitleText =
+   Text("Remover de Favoritos?", style: TextStyle(color: Colors.black));
 
 final Text deleteChatOkText =
    Text("Remover", style: TextStyle(color: coral));

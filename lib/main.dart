@@ -827,8 +827,8 @@ class MenuChatState extends State<MenuChat>
          for (AdvData adv in _favAdvs)
             adv.removeLongPressedChats();
 
-         // TODO: Same concern here. But I think we should remove the
-         // post in this case.
+         _favAdvs.removeWhere((e) { return e.chats.isEmpty; });
+
          setState(() { });
       }
    }
@@ -858,8 +858,13 @@ class MenuChatState extends State<MenuChat>
             actions[0] = ok;
             actions[1] = cancel;
 
+            Text txt = cts.delOwnChatTitleText;
+            if (_chatBotBarIdx == 1) {
+               txt = cts.delFavChatTitleText;
+            }
+
             return AlertDialog(
-                  title: cts.deleteChatTitleText,
+                  title: txt,
                   content: Text(""),
                   actions: actions);
          },
