@@ -50,11 +50,11 @@ class ChatHistory {
    }
 }
 
-class AdvData {
-   // The person that published this adv.
+class PostData {
+   // The person that published this post.
    String from = '';
 
-   // Together with *from* this is a unique identifier for this adv.
+   // Together with *from* this is a unique identifier for this post.
    // This value is sent by the server.
    int id;
 
@@ -64,12 +64,12 @@ class AdvData {
    //
    List<List<List<int>>> codes;
 
-   // The string *description* inputed when user writes an adv.
+   // The string *description* inputed when user writes an post.
    String description = '';
 
    List<ChatHistory> chats = List<ChatHistory>();
 
-   AdvData()
+   PostData()
    {
       codes = List<List<List<int>>>(cts.menuDepthNames.length);
       for (int i = 0; i < codes.length; ++i) {
@@ -78,9 +78,9 @@ class AdvData {
       }
    }
 
-   AdvData clone()
+   PostData clone()
    {
-      AdvData ret = AdvData();
+      PostData ret = PostData();
       ret.codes = List<List<List<int>>>.from(this.codes);
       ret.description = this.description;
       ret.chats = List<ChatHistory>.from(this.chats);
@@ -130,8 +130,8 @@ class AdvData {
    }
 
    // This function will return true if there is any chat marked as
-   // long pressed. It will traverse the AdvData array and stop at the
-   // first AdvData::chats that has isLongPressed true.
+   // long pressed. It will traverse the PostData array and stop at the
+   // first PostData::chats that has isLongPressed true.
    bool hasLongPressed()
    {
       for (ChatHistory ch in chats)
@@ -147,10 +147,10 @@ class AdvData {
    }
 }
 
-bool hasLongPressed(final List<AdvData> advs)
+bool hasLongPressed(final List<PostData> posts)
 {
-   for (AdvData adv in advs)
-      if (adv.hasLongPressed())
+   for (PostData post in posts)
+      if (post.hasLongPressed())
          return true;
 
    return false;
@@ -174,7 +174,7 @@ CircleAvatar makeCircleUnreadMsgs(int n,
             backgroundColor: backgroundColor);
 }
 
-Card advElemFactory(BuildContext context,
+Card postElemFactory(BuildContext context,
                     List<String> values,
                     List<String> keys,
                     Icon ic)
@@ -197,29 +197,29 @@ Card advElemFactory(BuildContext context,
       r.add(rt);
    }
 
-   // Padding needed to show the text inside the adv element with some
+   // Padding needed to show the text inside the post element with some
    // distance from the border.
    Padding padd = Padding(
-         padding: EdgeInsets.all(cts.advElemTextPadding),
+         padding: EdgeInsets.all(cts.postElemTextPadding),
          child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
             )
          );
 
-   // Here we need another padding to make the adv inner element have
+   // Here we need another padding to make the post inner element have
    // some distance to the outermost card.
    return Card(
             child: padd,
             color: Colors.white,
-            margin: EdgeInsets.all(Consts.advInnerMargin),
+            margin: EdgeInsets.all(Consts.postInnerMargin),
             elevation: 0.0,
    );
 }
 
 List<Card>
 makeMenuInfoCards(BuildContext context,
-                  AdvData data,
+                  PostData data,
                   List<MenuItem> menus,
                   Color color)
 {
@@ -229,11 +229,11 @@ makeMenuInfoCards(BuildContext context,
       List<String> names =
             loadNames(menus[i].root.first, data.codes[i][0]);
 
-      Card card = advElemFactory(
+      Card card = postElemFactory(
                   context,
                   names,
                   cts.menuDepthNames[i],
-                  cts.newAdvTabIcons[i]);
+                  cts.newPostTabIcons[i]);
 
       list.add(card);
    }
@@ -242,8 +242,8 @@ makeMenuInfoCards(BuildContext context,
 }
 
 // Will assemble menu information and the description in cards
-List<Card> advTextAssembler(BuildContext context,
-                            AdvData data,
+List<Card> postTextAssembler(BuildContext context,
+                            PostData data,
                             List<MenuItem> menus,
                             Color color)
 {
@@ -258,7 +258,7 @@ List<Card> advTextAssembler(BuildContext context,
    values.add(dateString);
    values.add(data.description);
 
-   Card descCard = advElemFactory(context, values, cts.descList,
+   Card descCard = postElemFactory(context, values, cts.descList,
                                   cts.personIcon);
 
    list.add(descCard);
@@ -285,11 +285,11 @@ Text makeChatSubStrWidget(ChatHistory ch)
 }
 
 Card createChatEntry(BuildContext context,
-                     AdvData adv,
+                     PostData post,
                      List<MenuItem> menus,
                      Widget chats)
 {
-   List<Card> textCards = advTextAssembler(context, adv, menus,
+   List<Card> textCards = postTextAssembler(context, post, menus,
                                        Theme.of(context).primaryColor);
 
    final Color ac = Colors.blueGrey[400];
@@ -311,23 +311,23 @@ Card createChatEntry(BuildContext context,
 
    Card chatCard = Card(child: chats,
                         color: ac,
-                        margin: EdgeInsets.all(Consts.advInnerMargin),
+                        margin: EdgeInsets.all(Consts.postInnerMargin),
                         elevation: 0.0);
 
    cards.add(chatCard);
 
    Column col = Column(children: cards);
 
-   final double padding = cts.outerAdvCardPadding;
+   final double padding = cts.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: ac,
-      margin: EdgeInsets.all(Consts.advMarging),
+      margin: EdgeInsets.all(Consts.postMarging),
       elevation: 0.0,
    );
 }
 
-Card makeAdvWidget(BuildContext context,
+Card makePostWidget(BuildContext context,
                    List<Card> cards,
                    Function onPressed,
                    Icon icon,
@@ -351,7 +351,7 @@ Card makeAdvWidget(BuildContext context,
    Card c4 = Card(
       child: row,
       color: color,
-      margin: EdgeInsets.all(Consts.advInnerMargin),
+      margin: EdgeInsets.all(Consts.postInnerMargin),
       elevation: 0.0,
    );
 
@@ -359,11 +359,11 @@ Card makeAdvWidget(BuildContext context,
 
    Column col = Column(children: cards);
 
-   final double padding = cts.outerAdvCardPadding;
+   final double padding = cts.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
-      margin: EdgeInsets.all(Consts.advMarging),
+      margin: EdgeInsets.all(Consts.postMarging),
       elevation: 5.0,
    );
 }
@@ -373,9 +373,9 @@ Card makeCard(Widget widget)
    return Card(
          child:
             Padding(child: widget,
-                    padding: EdgeInsets.all( cts.advElemTextPadding)),
-         color: Consts.advLocHeaderColor,
-         margin: EdgeInsets.all(Consts.advInnerMargin),
+                    padding: EdgeInsets.all( cts.postElemTextPadding)),
+         color: Consts.postLocHeaderColor,
+         margin: EdgeInsets.all(Consts.postInnerMargin),
          elevation: 0.0,
    );
 }
@@ -390,42 +390,42 @@ TextField makeTextInputFieldCard(TextEditingController ctrl)
              keyboardType: TextInputType.multiline,
              maxLines: null,
              decoration:
-                InputDecoration(hintText: cts.newAdvDescDeco));
+                InputDecoration(hintText: cts.newPostDescDeco));
 }
 
-Widget makeAdvTab(BuildContext context,
-                  List<AdvData> advs,
-                  Function onAdvSelection,
-                  Function onNewAdv,
+Widget makePostTab(BuildContext context,
+                  List<PostData> posts,
+                  Function onPostSelection,
+                  Function onNewPost,
                   List<MenuItem> menus,
-                  int numberOfNewAdvs)
+                  int numberOfNewPosts)
 {
-   final int advsLength = advs.length;
+   final int postsLength = posts.length;
 
    return Scaffold( body:
          ListView.builder(
                padding: const EdgeInsets.all(0.0),
-               itemCount: advsLength,
+               itemCount: postsLength,
                itemBuilder: (BuildContext context, int i)
                {
-                  // Advs are shown in reverse order.
-                  final int idx = advsLength - i - 1;
+                  // Posts are shown in reverse order.
+                  final int idx = postsLength - i - 1;
 
-                  // New advs are shown with a different color.
+                  // New posts are shown with a different color.
                   Color color = Theme.of(context).primaryColor;
-                  if (i < numberOfNewAdvs)
-                     color = cts.newReceivedAdvColor; 
+                  if (i < numberOfNewPosts)
+                     color = cts.newReceivedPostColor; 
 
-                  List<Card> cards = advTextAssembler(
+                  List<Card> cards = postTextAssembler(
                                         context,
-                                        advs[i],
+                                        posts[i],
                                         menus,
                                         Theme.of(context).primaryColor);
    
-                  return makeAdvWidget(
+                  return makePostWidget(
                             context,
                             cards,
-                            (fav) {onAdvSelection(advs[idx], fav);},
+                            (fav) {onPostSelection(posts[idx], fav);},
                             cts.favIcon,
                             color);
                },
@@ -434,14 +434,14 @@ Widget makeAdvTab(BuildContext context,
          backgroundColor: Consts.scaffoldBackground,
          floatingActionButton: FloatingActionButton(
                backgroundColor: Theme.of(context).primaryColor,
-               child: Icon( cts.newAdvIcon,
+               child: Icon( cts.newPostIcon,
                             color: Colors.white),
-               onPressed: onNewAdv,
+               onPressed: onNewPost,
          ),
    );
 }
 
-ListView createAdvMenuListView(BuildContext context, MenuNode o,
+ListView createPostMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {
    return ListView.builder(
@@ -483,7 +483,7 @@ ListView createAdvMenuListView(BuildContext context, MenuNode o,
    );
 }
 
-Widget makeAdvChatCol(BuildContext context,
+Widget makePostChatCol(BuildContext context,
                       List<ChatHistory> ch,
                       Function onPressed,
                       Function onLongPressed)
@@ -540,9 +540,9 @@ Widget makeAdvChatCol(BuildContext context,
                         color: Colors.grey).toList());
 }
 
-Widget makeAdvChatTab(
+Widget makePostChatTab(
          BuildContext context,
-         List<AdvData> data,
+         List<PostData> data,
          Function onPressed,
          Function onLongPressed,
          List<MenuItem> menus)
@@ -556,7 +556,7 @@ Widget makeAdvChatTab(
                       context,
                       data[i],
                       menus,
-                      makeAdvChatCol(
+                      makePostChatCol(
                             context,
                             data[i].chats,
                             (j) {onPressed(i, j);},

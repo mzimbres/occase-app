@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 
 import 'package:flutter/material.dart';
-import 'package:menu_chat/adv.dart';
+import 'package:menu_chat/post.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Returns the widget for the *new adv screen*.
+// Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
       BuildContext context,
       Widget scafBody,
@@ -74,7 +74,7 @@ Widget createBotBarScreen(
     );
 }
 
-int advIndexHelper(int i)
+int postIndexHelper(int i)
 {
    if (i == 0) return 1;
    if (i == 1) return 2;
@@ -196,45 +196,45 @@ class MenuChatState extends State<MenuChat>
    // number of menus there are. The inner most list is actually a
    // stack whose first element is the menu root node. When menu
    // entries are selected we push those items on the stack. Used both
-   // on the filter and on the advertizement screens.
+   // on the filter and on the postertizement screens.
    List<MenuItem> _menus;
 
-   // The temporary variable used to store the adv the user sends.
-   AdvData _advInput = AdvData();
+   // The temporary variable used to store the post the user sends.
+   PostData _postInput = PostData();
 
-   // The list of advs received from the server. Our own advs that the
+   // The list of posts received from the server. Our own posts that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
-   List<AdvData> _advs = List<AdvData>();
-   List<AdvData> _unreadAdvs = List<AdvData>();
+   List<PostData> _posts = List<PostData>();
+   List<PostData> _unreadPosts = List<PostData>();
 
-   // The list of advs the user found interesting and moved to
-   // favorites. They are moved from the list of advs received from
+   // The list of posts the user found interesting and moved to
+   // favorites. They are moved from the list of posts received from
    // the server to this list.
-   List<AdvData> _favAdvs = List<AdvData>();
+   List<PostData> _favPosts = List<PostData>();
 
-   // Advs the user wrote itself and sent to the server. One issue we
-   // have to observe here is that we will send _advInput to the
-   // server and if the user is subscribed to the channel the adv
+   // Posts the user wrote itself and sent to the server. One issue we
+   // have to observe here is that we will send _postInput to the
+   // server and if the user is subscribed to the channel the post
    // belongs to, we will receive it back from the server and we
-   // should not display it or duplicate it on this list. The advs
+   // should not display it or duplicate it on this list. The posts
    // received from the server will not be inserted here. The only
-   // advs inserted here are those that have been acked with ok by the
+   // posts inserted here are those that have been acked with ok by the
    // server, before that they will live in the output queue
-   // _outAdvQueue
-   List<AdvData> _ownAdvs = List<AdvData>();
+   // _outPostQueue
+   List<PostData> _ownPosts = List<PostData>();
 
-   // Advs sent by the user that have not been acked by the server
+   // Posts sent by the user that have not been acked by the server
    // yet.
-   Queue<AdvData> _outAdvQueue = Queue<AdvData>();
+   Queue<PostData> _outPostQueue = Queue<PostData>();
 
    // A flag that is set to true when the floating button (new
-   // advertisement) is clicked. It must be carefully set to false
+   // postertisement) is clicked. It must be carefully set to false
    // when that screens are left.
-   bool _onNewAdvPressed = false;
+   bool _onNewPostPressed = false;
 
    // The index of the tab we are currently in in the *new
-   // advertisement screen*. For example 0 for the localization menu,
+   // postertisement screen*. For example 0 for the localization menu,
    // 1 for the models menu etc.
    int _botBarIdx = 0;
 
@@ -244,20 +244,20 @@ class MenuChatState extends State<MenuChat>
    // _currFavChatIdx and _currFavChatIdx are -1.
    int _chatBotBarIdx = 1;
 
-   // Stores the current chat index in the array _favAdvs, -1
+   // Stores the current chat index in the array _favPosts, -1
    // means we are not in this screen.
    int _currFavChatIdx = -1;
 
-   // Similar to _currFavChatIdx but corresponds to the *my own advs*
+   // Similar to _currFavChatIdx but corresponds to the *my own posts*
    // screen.
    int _currOwnChatIdx = -1;
 
    // This string will be set to the name of user interested on our
-   // adv.
-   String _ownAdvChatPeer;
+   // post.
+   String _ownPostChatPeer;
 
-   // The *new adv* text controler
-   TextEditingController _newAdvTextCtrl = TextEditingController();
+   // The *new post* text controler
+   TextEditingController _newPostTextCtrl = TextEditingController();
 
    IOWebSocketChannel channel;
 
@@ -271,7 +271,7 @@ class MenuChatState extends State<MenuChat>
          _menus = menuReader(rawMenuMap);
       }
 
-      _onNewAdvPressed = false;
+      _onNewPostPressed = false;
       _botBarIdx = 0;
    }
 
@@ -314,20 +314,20 @@ class MenuChatState extends State<MenuChat>
       readDevInfo();
    }
 
-   void _onAdvSelection(AdvData data, bool fav)
+   void _onPostSelection(PostData data, bool fav)
    {
       if (fav)
-         _favAdvs.add(data);
+         _favPosts.add(data);
 
-      //_ownAdvs.add(data);
-      _advs.remove(data);
+      //_ownPosts.add(data);
+      _posts.remove(data);
       setState(() { });
    }
 
-   void _onNewAdv()
+   void _onNewPost()
    {
       print("Open menu selection.");
-      _onNewAdvPressed = true;
+      _onNewPostPressed = true;
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
       _botBarIdx = 0;
@@ -338,7 +338,7 @@ class MenuChatState extends State<MenuChat>
    bool _onWillPopMenu()
    {
       if (_menus[_botBarIdx].root.length == 1) {
-         _onNewAdvPressed = false;
+         _onNewPostPressed = false;
          setState(() { });
          return false;
       }
@@ -357,7 +357,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopOwnChatScreen()
    {
-      _ownAdvChatPeer = null;
+      _ownPostChatPeer = null;
       //_currOwnChatIdx = -1;
       setState(() { });
       return false;
@@ -365,17 +365,17 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if ((_botBarIdx + 1) != cts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != cts.newPostTabNames.length)
          _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
 
-   void _onNewAdvBotBarTapped(int i)
+   void _onNewPostBotBarTapped(int i)
    {
       // We allow the user to tap backwards to a new tab not forward.
       // This is to avoid complex logic of avoid the publication of
-      // imcomplete advs.
+      // imcomplete posts.
       if (i >= _botBarIdx)
          return;
 
@@ -385,7 +385,7 @@ class MenuChatState extends State<MenuChat>
       // happen to add.
 
       // To handle the boundary condition on the last tab.
-      if ((_botBarIdx + 1) != cts.newAdvTabNames.length)
+      if ((_botBarIdx + 1) != cts.newPostTabNames.length)
          ++_botBarIdx;
 
       do {
@@ -401,22 +401,22 @@ class MenuChatState extends State<MenuChat>
       setState(() { _chatBotBarIdx = i; });
    }
 
-   void _onAdvLeafPressed(int i)
+   void _onPostLeafPressed(int i)
    {
       MenuNode o = _menus[_botBarIdx].root.last.children[i];
       _menus[_botBarIdx].root.add(o);
-      _onAdvLeafReached();
+      _onPostLeafReached();
       setState(() { });
    }
 
-   void _onAdvLeafReached()
+   void _onPostLeafReached()
    {
-      _advInput.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
+      _postInput.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
       _menus[_botBarIdx].restoreMenuStack();
-      _botBarIdx = advIndexHelper(_botBarIdx);
+      _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
-   void _onAdvNodePressed(int i)
+   void _onPostNodePressed(int i)
    {
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
@@ -431,7 +431,7 @@ class MenuChatState extends State<MenuChat>
       assert(length != 1);
 
       if (length == 0) {
-         _onAdvLeafReached();
+         _onPostLeafReached();
       }
 
       setState(() { });
@@ -463,39 +463,39 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onSendNewAdvPressed(bool add)
+   void _onSendNewPostPressed(bool add)
    {
-      _onNewAdvPressed = false;
+      _onNewPostPressed = false;
 
       if (!add) {
-         _advInput = AdvData();
-         _advInput.from = _appId;
+         _postInput = PostData();
+         _postInput.from = _appId;
          setState(() { });
          return;
       }
 
       _botBarIdx = 0;
-      _advInput.description = _newAdvTextCtrl.text;
-      _newAdvTextCtrl.text = "";
+      _postInput.description = _newPostTextCtrl.text;
+      _newPostTextCtrl.text = "";
 
       // Was only useful when the app was not connected in the server.
       // Remove this later.
-      //_advs.add(_advInput.clone());
+      //_posts.add(_postInput.clone());
 
-      // We add it here in our own list of advs and keep in mind it
+      // We add it here in our own list of posts and keep in mind it
       // will be echoed back to us and have to be filtered out from
-      // _advs since that list should not contain our own
-      // advs.
-      _advInput.from = _appId;
-      print(_advInput.from);
-      _outAdvQueue.add(_advInput.clone());
-      _advInput = AdvData();
+      // _posts since that list should not contain our own
+      // posts.
+      _postInput.from = _appId;
+      print(_postInput.from);
+      _outPostQueue.add(_postInput.clone());
+      _postInput = PostData();
 
       var pubMap = {
          'cmd': 'publish',
-         'from': _outAdvQueue.first.from,
-         'to': _outAdvQueue.first.codes,
-         'msg': _outAdvQueue.first.description,
+         'from': _outPostQueue.first.from,
+         'to': _outPostQueue.first.codes,
+         'msg': _outPostQueue.first.description,
       };
 
       final String pubText = jsonEncode(pubMap);
@@ -505,7 +505,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   // This function is called with the index in _favAdvs.
+   // This function is called with the index in _favPosts.
    void _onFavChatPressed(int i, int j)
    {
       assert(j == 0);
@@ -516,76 +516,76 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatLongPressed(int i, int j)
    {
       assert(j == 0);
-      final bool old = _favAdvs[i].chats[0].isLongPressed;
-      _favAdvs[i].chats[0].isLongPressed = !old;
+      final bool old = _favPosts[i].chats[0].isLongPressed;
+      _favPosts[i].chats[0].isLongPressed = !old;
       setState(() { });
    }
 
-   void _onOwnAdvChatPressed(int i, int j)
+   void _onOwnPostChatPressed(int i, int j)
    {
       _currOwnChatIdx = i;
-     _ownAdvChatPeer = _ownAdvs[i].chats[j].peer;
+     _ownPostChatPeer = _ownPosts[i].chats[j].peer;
 
       setState(() { });
    }
 
-   void _onOwnAdvChatLongPressed(int i, int j)
+   void _onOwnPostChatLongPressed(int i, int j)
    {
-      final bool old = _ownAdvs[i].chats[j].isLongPressed;
-      _ownAdvs[i].chats[j].isLongPressed = !old;
+      final bool old = _ownPosts[i].chats[j].isLongPressed;
+      _ownPosts[i].chats[j].isLongPressed = !old;
       setState(() { });
-      print("_onOwnAdvChatLongPressed");
+      print("_onOwnPostChatLongPressed");
    }
 
    void _onFavChatSendPressed()
    {
-      if (_newAdvTextCtrl.text.isEmpty)
+      if (_newPostTextCtrl.text.isEmpty)
          return;
 
-      final String msg = _newAdvTextCtrl.text;
-      _newAdvTextCtrl.text = "";
+      final String msg = _newPostTextCtrl.text;
+      _newPostTextCtrl.text = "";
 
-      final String to = _favAdvs[_currFavChatIdx].from;
+      final String to = _favPosts[_currFavChatIdx].from;
 
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
          'to': to,
          'msg': msg,
-         'id': _favAdvs[_currFavChatIdx].id,
-         'is_sender_adv': false,
+         'id': _favPosts[_currFavChatIdx].id,
+         'is_sender_post': false,
       };
 
       final String payload = jsonEncode(msgMap);
       print(payload);
       channel.sink.add(payload);
 
-      _favAdvs[_currFavChatIdx].addMsg(to, msg, true);
+      _favPosts[_currFavChatIdx].addMsg(to, msg, true);
       setState(() { });
    }
 
    void _onOwnChatSendPressed()
    {
-      if (_newAdvTextCtrl.text.isEmpty)
+      if (_newPostTextCtrl.text.isEmpty)
          return;
 
-      final String msg = _newAdvTextCtrl.text;
-      _newAdvTextCtrl.text = "";
+      final String msg = _newPostTextCtrl.text;
+      _newPostTextCtrl.text = "";
 
       var msgMap = {
          'cmd': 'user_msg',
          'from': _appId,
-         'to': _ownAdvChatPeer,
+         'to': _ownPostChatPeer,
          'msg': msg,
-         'id': _ownAdvs[_currOwnChatIdx].id,
-         'is_sender_adv': true,
+         'id': _ownPosts[_currOwnChatIdx].id,
+         'is_sender_post': true,
       };
 
       final String payload = jsonEncode(msgMap);
       print(payload);
       channel.sink.add(payload);
 
-      _ownAdvs[_currOwnChatIdx].addMsg(_ownAdvChatPeer, msg, true);
+      _ownPosts[_currOwnChatIdx].addMsg(_ownPostChatPeer, msg, true);
       setState(() { });
    }
 
@@ -642,17 +642,17 @@ class MenuChatState extends State<MenuChat>
             codes.add(foo);
          }
 
-         AdvData adv = AdvData();
-         adv.from = from;
-         adv.description = msg;
-         adv.codes = codes;
-         adv.id = id;
+         PostData post = PostData();
+         post.from = from;
+         post.description = msg;
+         post.codes = codes;
+         post.id = id;
 
-         // Since this adv is not from this app we have to add a chat
+         // Since this post is not from this app we have to add a chat
          // entry in it.
-         adv.createChatEntryForPeer(adv.from);
+         post.createChatEntryForPeer(post.from);
 
-         _unreadAdvs.add(adv);
+         _unreadPosts.add(post);
 
          // TODO: Before triggering a redraw we should perhaps check
          // whether it is necessary given our current state.
@@ -672,10 +672,10 @@ class MenuChatState extends State<MenuChat>
          final int id = ack['id'];
          print("Message with id = ${id} has been acked.");
 
-         _outAdvQueue.first.id = id;
+         _outPostQueue.first.id = id;
 
-         assert(!_outAdvQueue.isEmpty);
-         _ownAdvs.add(_outAdvQueue.removeFirst());
+         assert(!_outPostQueue.isEmpty);
+         _ownPosts.add(_outPostQueue.removeFirst());
       }
 
       if (cmd == "user_msg") {
@@ -694,16 +694,16 @@ class MenuChatState extends State<MenuChat>
          // TODO: The logic below is equal for both case. Do not
          // duplicate code, move it into a function.
 
-         // A user message can be either directed to one of the advs
+         // A user message can be either directed to one of the posts
          // published by this app or one that the app is interested
-         // in. We distinguish this with the field 'is_sender_adv'
-         final bool is_sender_adv = ack['is_sender_adv'];
-         if (is_sender_adv) {
-            // This message is meant to one of the advs this app
+         // in. We distinguish this with the field 'is_sender_post'
+         final bool is_sender_post = ack['is_sender_post'];
+         if (is_sender_post) {
+            // This message is meant to one of the posts this app
             // selected as favorite. We have to search it and insert
             // this new message in the chat history.
             final int i =
-                  _favAdvs.indexWhere((e) { return e.id == id;});
+                  _favPosts.indexWhere((e) { return e.id == id;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
@@ -711,15 +711,15 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            _favAdvs[i].addUnreadMsg(from, msg, false);
+            _favPosts[i].addUnreadMsg(from, msg, false);
 
          } else {
-            // This is a message to our own adv, some interested user.
-            // We have to find first which one of our own advs it
+            // This is a message to our own post, some interested user.
+            // We have to find first which one of our own posts it
             // refers to.
 
             final int i =
-                  _ownAdvs.indexWhere((e) { return e.id == id;});
+                  _ownPosts.indexWhere((e) { return e.id == id;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
@@ -727,7 +727,7 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            _ownAdvs[i].addUnreadMsg(from, msg, false);
+            _ownPosts[i].addUnreadMsg(from, msg, false);
          }
 
          setState((){});
@@ -782,15 +782,15 @@ class MenuChatState extends State<MenuChat>
    int _getNumberOfUnreadChats()
    {
       int i = 0;
-      for (AdvData adv in _favAdvs)
-         i += adv.getNumberOfUnreadChats();
-      for (AdvData adv in _ownAdvs)
-         i += adv.getNumberOfUnreadChats();
+      for (PostData post in _favPosts)
+         i += post.getNumberOfUnreadChats();
+      for (PostData post in _ownPosts)
+         i += post.getNumberOfUnreadChats();
 
       return i;
    }
 
-   bool _onOwnAdvsBackPressed()
+   bool _onOwnPostsBackPressed()
    {
       print("Implement me");
 
@@ -806,17 +806,17 @@ class MenuChatState extends State<MenuChat>
    bool hasLongPressedChat()
    {
       if (_chatBotBarIdx == 0)
-         return hasLongPressed(_ownAdvs);
+         return hasLongPressed(_ownPosts);
       else
-         return hasLongPressed(_favAdvs);
+         return hasLongPressed(_favPosts);
    }
 
    void _removeLongPressedChatEntries()
    {
       assert(_tabCtrl.index == 2);
       if (_chatBotBarIdx == 0) {
-         for (AdvData adv in _ownAdvs)
-            adv.removeLongPressedChats();
+         for (PostData post in _ownPosts)
+            post.removeLongPressedChats();
 
          // TODO: Should the whole post be removed if after this
          // action it became empty or should we keep it. If we remove
@@ -824,10 +824,10 @@ class MenuChatState extends State<MenuChat>
          // be ignored.
          setState(() { });
       } else {
-         for (AdvData adv in _favAdvs)
-            adv.removeLongPressedChats();
+         for (PostData post in _favPosts)
+            post.removeLongPressedChats();
 
-         _favAdvs.removeWhere((e) { return e.chats.isEmpty; });
+         _favPosts.removeWhere((e) { return e.chats.isEmpty; });
 
          setState(() { });
       }
@@ -874,28 +874,28 @@ class MenuChatState extends State<MenuChat>
    @override
    void dispose()
    {
-     _newAdvTextCtrl.dispose();
+     _newPostTextCtrl.dispose();
      super.dispose();
    }
 
    @override
    Widget build(BuildContext context)
    {
-      if (_onNewAdvPressed) {
+      if (_onNewPostPressed) {
          Widget widget;
          if (_botBarIdx == 2) {
             List<Card> cards = makeMenuInfoCards(
                                   context,
-                                  _advInput,
+                                  _postInput,
                                   _menus,
                                   Theme.of(context).primaryColor);
 
-            cards.add(makeCard(makeTextInputFieldCard(_newAdvTextCtrl)));
+            cards.add(makeCard(makeTextInputFieldCard(_newPostTextCtrl)));
    
-            Widget widget_tmp = makeAdvWidget(
+            Widget widget_tmp = makePostWidget(
                                    context,
                                    cards,
-                                   _onSendNewAdvPressed,
+                                   _onSendNewPostPressed,
                                    Icon( Icons.publish,
                                         color: Colors.white),
                                    Theme.of(context).primaryColor);
@@ -910,16 +910,16 @@ class MenuChatState extends State<MenuChat>
             );
 
          } else {
-            widget = createAdvMenuListView(
+            widget = createPostMenuListView(
                         context,
                         _menus[_botBarIdx].root.last,
-                        _onAdvLeafPressed,
-                        _onAdvNodePressed
+                        _onPostLeafPressed,
+                        _onPostNodePressed
                      );
          }
 
          AppBar appBar = AppBar(
-               title: Text(cts.advAppBarMsg[_botBarIdx],
+               title: Text(cts.postAppBarMsg[_botBarIdx],
                            style: TextStyle(color: Colors.white)),
                elevation: 0.7,
                toolbarOpacity : 1.0
@@ -929,42 +929,42 @@ class MenuChatState extends State<MenuChat>
                    context,
                    widget,
                    appBar,
-                   cts.newAdvTabIcons,
-                   cts.newAdvTabNames,
+                   cts.newPostTabIcons,
+                   cts.newPostTabNames,
                    _onWillPopMenu,
-                   _onNewAdvBotBarTapped,
+                   _onNewPostBotBarTapped,
                    _botBarIdx
                 );
       }
 
       if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
-         // We are in the favorite advs screen, where pressing the
-         // chat button in any of the advs leads us to the chat
-         // screen with the advertiser.
-         final String peer = _favAdvs[_currFavChatIdx].from;
+         // We are in the favorite posts screen, where pressing the
+         // chat button in any of the posts leads us to the chat
+         // screen with the postertiser.
+         final String peer = _favPosts[_currFavChatIdx].from;
          ChatHistory chatHist =
-               _favAdvs[_currFavChatIdx].getChatHistory(peer);
+               _favPosts[_currFavChatIdx].getChatHistory(peer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
                    _onWillPopFavChatScreen,
                    chatHist,
-                   _newAdvTextCtrl,
+                   _newPostTextCtrl,
                    _onFavChatSendPressed);
       }
 
       if (_tabCtrl.index == 2 &&
-          _currOwnChatIdx != -1 && _ownAdvChatPeer != null) {
+          _currOwnChatIdx != -1 && _ownPostChatPeer != null) {
          // We are in the chat screen with one interested user on a
-         // specific adv.
+         // specific post.
          ChatHistory chatHist =
-               _ownAdvs[_currOwnChatIdx].getChatHistory(_ownAdvChatPeer);
+               _ownPosts[_currOwnChatIdx].getChatHistory(_ownPostChatPeer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
                    _onWillPopOwnChatScreen,
                    chatHist,
-                   _newAdvTextCtrl,
+                   _newPostTextCtrl,
                    _onOwnChatSendPressed);
       }
 
@@ -993,34 +993,34 @@ class MenuChatState extends State<MenuChat>
                       _botBarIdx
                    );
 
-      final int newAdvsLength = _unreadAdvs.length;
+      final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
-         _advs.addAll(_unreadAdvs);
-         _unreadAdvs.clear();
+         _posts.addAll(_unreadPosts);
+         _unreadPosts.clear();
       }
 
-      // This is the widget of the incoming advs screen.
-      widgets[1] = makeAdvTab(context,
-                              _advs,
-                              _onAdvSelection,
-                              _onNewAdv,
+      // This is the widget of the incoming posts screen.
+      widgets[1] = makePostTab(context,
+                              _posts,
+                              _onPostSelection,
+                              _onNewPost,
                               _menus,
-                              newAdvsLength);
+                              newPostsLength);
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {
-         // The own advs tab in the chat screen.
-         chatWidget = makeAdvChatTab(
+         // The own posts tab in the chat screen.
+         chatWidget = makePostChatTab(
                             context,
-                            _ownAdvs,
-                            _onOwnAdvChatPressed,
-                            _onOwnAdvChatLongPressed,
+                            _ownPosts,
+                            _onOwnPostChatPressed,
+                            _onOwnPostChatLongPressed,
                             _menus);
       } else {
          // The favorite tab in the chat screen.
-         chatWidget = makeAdvChatTab(
+         chatWidget = makePostChatTab(
                             context,
-                            _favAdvs,
+                            _favPosts,
                             _onFavChatPressed,
                             _onFavChatLongPressed,
                             _menus);
@@ -1031,7 +1031,7 @@ class MenuChatState extends State<MenuChat>
                       null,
                       cts.chatIcons,
                       cts.chatIconTexts,
-                      _onOwnAdvsBackPressed,
+                      _onOwnPostsBackPressed,
                       _onChatBotBarTapped,
                       _chatBotBarIdx);
 
@@ -1061,7 +1061,7 @@ class MenuChatState extends State<MenuChat>
                   tabs: <Widget>[
                      Tab(child: makeTabWidget(context, 0,
                                  cts.tabNames[0])),
-                     Tab(child: makeTabWidget(context, newAdvsLength,
+                     Tab(child: makeTabWidget(context, newPostsLength,
                                  cts.tabNames[1])),
                      Tab(child: makeTabWidget(context, newChats,
                                 cts.tabNames[2])),

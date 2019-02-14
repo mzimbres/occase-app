@@ -4,7 +4,7 @@ final Color coral = Color(0xFFE18A07);
 final Color primaryColor = coral;
 //final Color primaryColor = Colors.blueGrey;
 final Color accentColor = Colors.grey;
-final Color newReceivedAdvColor = Colors.brown[200]; 
+final Color newReceivedPostColor = Colors.brown[200]; 
 
 final String appName = "CarMenu";
 
@@ -17,15 +17,15 @@ final List<String> tabNames = <String>[
 
 //______________
 
-// Text used in the *new advertisement screens* on the bottom
+// Text used in the *new postertisement screens* on the bottom
 // navigation bar.
-final List<String> newAdvTabNames = <String>[
+final List<String> newPostTabNames = <String>[
    'Localizacao',
    'Modelos',
    'Publicar'
 ];
 
-List<Icon> newAdvTabIcons = <Icon>[
+List<Icon> newPostTabIcons = <Icon>[
    Icon(Icons.home),
    Icon(Icons.directions_car),
    Icon(Icons.publish)
@@ -78,8 +78,8 @@ final Icon personIcon = Icon(Icons.person);
 //______________
 
 // The text shown on the app bar for each tab on the *new
-// advertisement screen.*
-final List<String> advAppBarMsg = <String>[
+// postertisement screen.*
+final List<String> postAppBarMsg = <String>[
    "Escolha uma localizacao",
    "Escolha um modelo",
    "Verificacao e envio"
@@ -91,22 +91,22 @@ final List<List<String>> menuDepthNames = <List<String>>[
    <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
 ];
 
-// The text in the adv description field.
+// The text in the post description field.
 final List<String> descList = <String>[
    'Anunciante',
    'Data',
    "Descricao"];
 
-final String newAdvDescDeco = "Digite aqui informacoes adicionais";
+final String newPostDescDeco = "Digite aqui informacoes adicionais";
 
-final IconData newAdvIcon = Icons.publish;
+final IconData newPostIcon = Icons.publish;
 
 final String hintTextChat = "Digite sua mensagem";
 
-// The padding used for the text inside the adv element.
-final double advElemTextPadding = 4.0;
+// The padding used for the text inside the post element.
+final double postElemTextPadding = 4.0;
 
-final double outerAdvCardPadding = 1.0;
+final double outerPostCardPadding = 1.0;
 
 final String deleteChatStr = "Remover conversa";
 
