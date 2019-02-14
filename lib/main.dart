@@ -552,7 +552,7 @@ class MenuChatState extends State<MenuChat>
          'from': _appId,
          'to': to,
          'msg': msg,
-         'id': _favPosts[_currFavChatIdx].id,
+         'post_id': _favPosts[_currFavChatIdx].id,
          'is_sender_post': false,
       };
 
@@ -577,7 +577,7 @@ class MenuChatState extends State<MenuChat>
          'from': _appId,
          'to': _ownPostChatPeer,
          'msg': msg,
-         'id': _ownPosts[_currOwnChatIdx].id,
+         'post_id': _ownPosts[_currOwnChatIdx].id,
          'is_sender_post': true,
       };
 
@@ -614,7 +614,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      print("Received from server: ${ack}");
+      //print("Received from server: ${ack}");
 
       if (cmd == "publish") {
          String msg = ack['msg'];
@@ -669,10 +669,7 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         final int id = ack['id'];
-         print("Message with id = ${id} has been acked.");
-
-         _outPostQueue.first.id = id;
+         _outPostQueue.first.id = ack['id'];
 
          assert(!_outPostQueue.isEmpty);
          _ownPosts.add(_outPostQueue.removeFirst());
@@ -687,7 +684,7 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         final int id = ack['id'];
+         final int post_id = ack['post_id'];
          final String msg = ack['msg'];
          final String from = ack['from'];
 
@@ -703,7 +700,7 @@ class MenuChatState extends State<MenuChat>
             // selected as favorite. We have to search it and insert
             // this new message in the chat history.
             final int i =
-                  _favPosts.indexWhere((e) { return e.id == id;});
+               _favPosts.indexWhere((e) { return e.id == post_id;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
@@ -719,7 +716,7 @@ class MenuChatState extends State<MenuChat>
             // refers to.
 
             final int i =
-                  _ownPosts.indexWhere((e) { return e.id == id;});
+               _ownPosts.indexWhere((e) { return e.id == post_id;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
