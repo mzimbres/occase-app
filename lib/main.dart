@@ -852,8 +852,8 @@ class MenuChatState extends State<MenuChat>
                      });
 
             List<FlatButton> actions = List<FlatButton>(2);
-            actions[0] = ok;
-            actions[1] = cancel;
+            actions[0] = cancel;
+            actions[1] = ok;
 
             Text txt = cts.delOwnChatTitleText;
             if (_chatBotBarIdx == 1) {
