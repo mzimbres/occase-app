@@ -50,14 +50,13 @@ TabBar makeTabBar(List<int> counters, TabController tabCtrl)
 
 // Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
-      BuildContext context,
-      Widget scafBody,
-      Widget appBar,
-      List<Icon> icons,
-      List<String> iconLabels,
-      Function onWillPop,
-      Function onBotBarTapped,
-      int i)
+          BuildContext context,
+          Widget scafBody,
+          Widget appBar,
+          List<Icon> icons,
+          List<String> iconLabels,
+          Function onBotBarTapped,
+          int i)
 {
    assert(icons.length == iconLabels.length);
    final int length = icons.length;
@@ -71,18 +70,14 @@ Widget createBotBarScreen(
                     title: Text(iconLabels[i]));
    }
 
-   return WillPopScope(
-          onWillPop: () async { return onWillPop();},
-          child: Scaffold(
+   return Scaffold(
                appBar: appBar,
                body: scafBody,
                bottomNavigationBar: BottomNavigationBar(
                      items: items,
                      currentIndex: i,
-                     onTap: onBotBarTapped,
-            )
-         )
-    );
+                     onTap: onBotBarTapped)
+               );
 }
 
 int postIndexHelper(int i)
@@ -938,16 +933,16 @@ class MenuChatState extends State<MenuChat>
                toolbarOpacity : 1.0
          );
 
-         return createBotBarScreen(
-                   context,
-                   widget,
-                   appBar,
-                   cts.newPostTabIcons,
-                   cts.newPostTabNames,
-                   _onWillPopMenu,
-                   _onNewPostBotBarTapped,
-                   _botBarIdx
-                );
+         return WillPopScope(
+                   onWillPop: () async { return _onWillPopMenu();},
+                   child: createBotBarScreen(
+                             context,
+                             widget,
+                             appBar,
+                             cts.newPostTabIcons,
+                             cts.newPostTabNames,
+                             _onNewPostBotBarTapped,
+                             _botBarIdx));
       }
 
       if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
@@ -996,16 +991,17 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> widgets = List<Widget>(cts.tabNames.length);
 
-      widgets[0] = createBotBarScreen(
-                      context,
-                      filterTabWidget,
-                      null,
-                      cts.filterTabIcons,
-                      cts.filterTabNames,
-                      _onWillPopMenu,
-                      _onBotBarTapped,
-                      _botBarIdx
-                   );
+      widgets[0] = WillPopScope(
+                      onWillPop: () async { return _onWillPopMenu();},
+                      child: createBotBarScreen(
+                                context,
+                                filterTabWidget,
+                                null,
+                                cts.filterTabIcons,
+                                cts.filterTabNames,
+                                _onBotBarTapped,
+                                _botBarIdx)
+                      );
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
@@ -1040,14 +1036,15 @@ class MenuChatState extends State<MenuChat>
                             _menus);
       }
 
-      widgets[2] = createBotBarScreen(context,
-                      chatWidget,
-                      null,
-                      cts.chatIcons,
-                      cts.chatIconTexts,
-                      _onOwnPostsBackPressed,
-                      _onChatBotBarTapped,
-                      _chatBotBarIdx);
+      widgets[2] = WillPopScope(
+                      onWillPop: () async { return _onOwnPostsBackPressed();},
+                      child: createBotBarScreen(context,
+                         chatWidget,
+                         null,
+                         cts.chatIcons,
+                         cts.chatIconTexts,
+                         _onChatBotBarTapped,
+                         _chatBotBarIdx));
 
 
       final int newChats = _getNumberOfUnreadChats();
