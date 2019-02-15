@@ -188,6 +188,7 @@ class MenuChat extends StatefulWidget {
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabCtrl;
+   ScrollController _scrollCtrl;
 
    // The id we will use to communicate with the server.
    String _appId = '007';
@@ -308,6 +309,8 @@ class MenuChatState extends State<MenuChat>
 
       _tabCtrl = TabController(vsync: this,
             initialIndex: 1, length: 3);
+
+      _scrollCtrl = ScrollController();
 
       _tabCtrl.addListener(_tabCtrlChangeHandler);
 
@@ -872,6 +875,9 @@ class MenuChatState extends State<MenuChat>
    void dispose()
    {
      _newPostTextCtrl.dispose();
+     _tabCtrl.dispose();
+     _scrollCtrl.dispose();
+
      super.dispose();
    }
 
@@ -974,7 +980,8 @@ class MenuChatState extends State<MenuChat>
                              _menus[_botBarIdx].root.last,
                              _onFilterLeafNodePressed,
                              _onFilterNodePressed,
-                             _menus[_botBarIdx].isFilterLeaf());
+                             _menus[_botBarIdx].isFilterLeaf(),
+                             _scrollCtrl);
       }
 
       List<Widget> widgets = List<Widget>(cts.tabNames.length);
@@ -1048,25 +1055,33 @@ class MenuChatState extends State<MenuChat>
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
       return Scaffold(
-         appBar: AppBar(
-            title: Text(cts.appName, style: TextStyle(color:
-                        Colors.white)),
-            elevation: 0.7,
-            bottom: TabBar(
-                  controller: _tabCtrl,
-                  indicatorColor: Colors.white,
-                  tabs: <Widget>[
-                     Tab(child: makeTabWidget(context, 0,
+        body: NestedScrollView(
+          controller: _scrollCtrl,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                title: Text(cts.appName, style: TextStyle(color: Colors.white)),
+                pinned: true,
+                floating: true,
+                forceElevated: innerBoxIsScrolled,
+                bottom: TabBar(
+                   controller: _tabCtrl,
+                   indicatorColor: Colors.white,
+                   tabs: <Widget>[
+                      Tab(child: makeTabWidget(context, 0,
                                  cts.tabNames[0])),
-                     Tab(child: makeTabWidget(context, newPostsLength,
+                      Tab(child: makeTabWidget(context, newPostsLength,
                                  cts.tabNames[1])),
-                     Tab(child: makeTabWidget(context, newChats,
-                                cts.tabNames[2])),
-                  ],
-            ),
-            actions: actions,
-         ),
-         body: TabBarView(controller: _tabCtrl, children: widgets)
+                      Tab(child: makeTabWidget(context, newChats,
+                                 cts.tabNames[2])),
+                   ],
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(controller: _tabCtrl,
+                           children: widgets),
+          ),
       );
    }
 

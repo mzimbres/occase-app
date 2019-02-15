@@ -68,7 +68,8 @@ ListView createFilterListView(BuildContext context,
                               MenuNode o,
                               Function onLeafPressed,
                               Function onNodePressed,
-                              bool makeLeaf)
+                              bool makeLeaf,
+                              ScrollController scrollCtrl)
 {
    // TODO: We should check all children and not only the last.
    int shift = 0;
@@ -77,6 +78,7 @@ ListView createFilterListView(BuildContext context,
 
    return ListView.builder(
       padding: const EdgeInsets.all(8.0),
+      controller: scrollCtrl,
       itemCount: o.children.length + shift,
       itemBuilder: (BuildContext context, int i)
       {
