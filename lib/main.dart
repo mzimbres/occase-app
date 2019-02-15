@@ -36,6 +36,18 @@ class MyApp extends StatelessWidget {
   }
 }
 
+TabBar makeTabBar(List<int> counters, TabController tabCtrl)
+{
+   List<Widget> tabs = List<Widget>(cts.tabNames.length);
+
+   for (int i = 0; i < tabs.length; ++i)
+      tabs[i] = Tab(child: makeTabWidget(counters[i], cts.tabNames[i]));
+
+   return TabBar(controller: tabCtrl,
+                 indicatorColor: Colors.white,
+                 tabs: tabs);
+}
+
 // Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
       BuildContext context,
@@ -55,9 +67,8 @@ Widget createBotBarScreen(
 
    for (int i = 0; i < length; ++i) {
       items[i] = BottomNavigationBarItem(
-               icon: icons[i],
-               title: Text(iconLabels[i])
-      );
+                    icon: icons[i],
+                    title: Text(iconLabels[i]));
    }
 
    return WillPopScope(
@@ -164,7 +175,7 @@ createChatScreen(BuildContext context,
     );
 }
 
-Widget makeTabWidget(BuildContext context, int n, String title)
+Widget makeTabWidget(int n, String title)
 {
    if (n == 0)
       return Text(title, style: TextStyle(color: Colors.white));
@@ -172,8 +183,7 @@ Widget makeTabWidget(BuildContext context, int n, String title)
    // TODO: Change the text color to primary color?
    return Row(children: <Widget>[
       Text(title + " ", style: TextStyle(color: Colors.white)),
-      makeCircleUnreadMsgs(n, Colors.white,
-                           Theme.of(context).primaryColor)
+      makeCircleUnreadMsgs(n, Colors.white, cts.primaryColor)
       ]
    );
 }
@@ -1054,6 +1064,11 @@ class MenuChatState extends State<MenuChat>
       actions.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0)));
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
+      List<int> newMsgsCounters = List<int>(cts.tabNames.length);
+      newMsgsCounters[0] = 0;
+      newMsgsCounters[1] = newPostsLength;
+      newMsgsCounters[2] = newChats;
+
       return Scaffold(
         body: NestedScrollView(
           controller: _scrollCtrl,
@@ -1064,23 +1079,11 @@ class MenuChatState extends State<MenuChat>
                 pinned: true,
                 floating: true,
                 forceElevated: innerBoxIsScrolled,
-                bottom: TabBar(
-                   controller: _tabCtrl,
-                   indicatorColor: Colors.white,
-                   tabs: <Widget>[
-                      Tab(child: makeTabWidget(context, 0,
-                                 cts.tabNames[0])),
-                      Tab(child: makeTabWidget(context, newPostsLength,
-                                 cts.tabNames[1])),
-                      Tab(child: makeTabWidget(context, newChats,
-                                 cts.tabNames[2])),
-                   ],
-                ),
+                bottom: makeTabBar(newMsgsCounters, _tabCtrl),
               ),
             ];
           },
-          body: TabBarView(controller: _tabCtrl,
-                           children: widgets),
+          body: TabBarView(controller: _tabCtrl, children: widgets),
           ),
       );
    }
