@@ -440,6 +440,14 @@ makePostTabListView(BuildContext context,
              });
 }
 
+FloatingActionButton makeNewPostButton(Function onNewPost)
+{
+   return FloatingActionButton(
+             backgroundColor: cts.primaryColor,
+             child: Icon(cts.newPostIcon, color: Colors.white),
+             onPressed: onNewPost);
+}
+
 Widget makePostTab(BuildContext context,
                   List<PostData> posts,
                   Function onPostSelection,
@@ -454,11 +462,7 @@ Widget makePostTab(BuildContext context,
                                        menus,
                                        numberOfNewPosts),
              backgroundColor: Consts.scaffoldBackground,
-             floatingActionButton: FloatingActionButton(
-                   backgroundColor: cts.primaryColor,
-                   child: Icon(cts.newPostIcon, color: Colors.white),
-                   onPressed: onNewPost,
-             ));
+             floatingActionButton: makeNewPostButton(onNewPost));
 }
 
 ListView createPostMenuListView(BuildContext context, MenuNode o,

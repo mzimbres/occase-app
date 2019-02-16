@@ -74,11 +74,15 @@ makeBottomBarItems(List<Icon> icons,
 
 // Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
-          Widget scafBody,
+          Widget body,
+          FloatingActionButton flt,
           BottomNavigationBar bottNavBar)
 {
-   return Scaffold(body: scafBody,
-                   bottomNavigationBar: bottNavBar);
+   return Scaffold(
+             body: body,
+             backgroundColor: Consts.scaffoldBackground,
+             bottomNavigationBar: bottNavBar,
+             floatingActionButton: flt);
 }
 
 int postIndexHelper(int i)
@@ -1001,6 +1005,7 @@ class MenuChatState extends State<MenuChat>
                       onWillPop: () async { return _onWillPopMenu();},
                       child: createBotBarScreen(
                                 filterTabWidget,
+                                null,
                                 makeBottomBarItems(
                                    cts.filterTabIcons,
                                    cts.filterTabNames,
@@ -1044,6 +1049,7 @@ class MenuChatState extends State<MenuChat>
                       onWillPop: () async { return _onOwnPostsBackPressed();},
                       child: createBotBarScreen(
                                 chatWidget,
+                                null,
                                 makeBottomBarItems(
                                    cts.chatIcons,
                                    cts.chatIconTexts,
