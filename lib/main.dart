@@ -986,26 +986,30 @@ class MenuChatState extends State<MenuChat>
                    _onOwnChatSendPressed);
       }
 
-      Widget filterTabWidget;
+      List<Widget> bodies = List<Widget>(cts.tabNames.length);
+      List<Widget> fltButtons = List<Widget>(cts.tabNames.length);
+
       if (_botBarIdx == 2) {
-         filterTabWidget = createSendScreen(_sendHahesToServer);
+         bodies[0] = createSendScreen(_sendHahesToServer);
       } else {
-         filterTabWidget = createFilterListView(
-                             context,
-                             _menus[_botBarIdx].root.last,
-                             _onFilterLeafNodePressed,
-                             _onFilterNodePressed,
-                             _menus[_botBarIdx].isFilterLeaf(),
-                             _scrollCtrl);
+         bodies[0] = createFilterListView(
+                        context,
+                        _menus[_botBarIdx].root.last,
+                        _onFilterLeafNodePressed,
+                        _onFilterNodePressed,
+                        _menus[_botBarIdx].isFilterLeaf(),
+                        _scrollCtrl);
       }
 
-      List<Widget> widgets = List<Widget>(cts.tabNames.length);
+      fltButtons[0] = null;
+
+      List<Widget> widgets = List<Widget>(bodies.length);
 
       widgets[0] = WillPopScope(
                       onWillPop: () async { return _onWillPopMenu();},
                       child: createBotBarScreen(
-                                filterTabWidget,
-                                null,
+                                bodies[0],
+                                fltButtons[0],
                                 makeBottomBarItems(
                                    cts.filterTabIcons,
                                    cts.filterTabNames,
@@ -1018,46 +1022,50 @@ class MenuChatState extends State<MenuChat>
          _unreadPosts.clear();
       }
 
+      bodies[1] = makePostTabListView(context,
+                                      _posts,
+                                      _onPostSelection,
+                                      _menus,
+                                      newPostsLength);
+
+      fltButtons[1] = makeNewPostButton(_onNewPost);
+
       // This is the widget of the incoming posts screen.
       widgets[1] = createBotBarScreen(
-                      makePostTabListView(context,
-                                          _posts,
-                                          _onPostSelection,
-                                          _menus,
-                                          newPostsLength),
-                      makeNewPostButton(_onNewPost),
+                      bodies[1],
+                      fltButtons[1],
                       null);
 
-      Widget chatWidget;
       if (_chatBotBarIdx == 0) {
          // The own posts tab in the chat screen.
-         chatWidget = makePostChatTab(
-                            context,
-                            _ownPosts,
-                            _onOwnPostChatPressed,
-                            _onOwnPostChatLongPressed,
-                            _menus);
+         bodies[2] = makePostChatTab(
+                        context,
+                        _ownPosts,
+                        _onOwnPostChatPressed,
+                        _onOwnPostChatLongPressed,
+                        _menus);
       } else {
          // The favorite tab in the chat screen.
-         chatWidget = makePostChatTab(
-                            context,
-                            _favPosts,
-                            _onFavChatPressed,
-                            _onFavChatLongPressed,
-                            _menus);
+         bodies[2] = makePostChatTab(
+                        context,
+                        _favPosts,
+                        _onFavChatPressed,
+                        _onFavChatLongPressed,
+                        _menus);
       }
+
+      fltButtons[2] = null;
 
       widgets[2] = WillPopScope(
                       onWillPop: () async { return _onOwnPostsBackPressed();},
                       child: createBotBarScreen(
-                                chatWidget,
-                                null,
+                                bodies[2],
+                                fltButtons[2],
                                 makeBottomBarItems(
                                    cts.chatIcons,
                                    cts.chatIconTexts,
                                    _onChatBotBarTapped,
                                    _chatBotBarIdx)));
-
 
       final int newChats = _getNumberOfUnreadChats();
 
