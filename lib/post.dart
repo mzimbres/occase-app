@@ -403,6 +403,43 @@ TextField makeTextInputFieldCard(TextEditingController ctrl)
                 InputDecoration(hintText: cts.newPostDescDeco));
 }
 
+ListView
+makePostTabListView(BuildContext context,
+                    List<PostData> posts,
+                    Function onPostSelection,
+                    List<MenuItem> menus,
+                    int numberOfNewPosts)
+{
+   final int postsLength = posts.length;
+
+   return ListView.builder(
+             padding: const EdgeInsets.all(0.0),
+             itemCount: postsLength,
+             itemBuilder: (BuildContext context, int i)
+             {
+                // Posts are shown in reverse order.
+                final int idx = postsLength - i - 1;
+
+                // New posts are shown with a different color.
+                Color color = cts.primaryColor;
+                if (i < numberOfNewPosts)
+                   color = cts.newReceivedPostColor; 
+
+                List<Card> cards = postTextAssembler(
+                                      context,
+                                      posts[i],
+                                      menus,
+                                      color);
+   
+                return makePostWidget(
+                          context,
+                          cards,
+                          (fav) {onPostSelection(posts[idx], fav);},
+                          cts.favIcon,
+                          color);
+             });
+}
+
 Widget makePostTab(BuildContext context,
                   List<PostData> posts,
                   Function onPostSelection,
@@ -410,45 +447,18 @@ Widget makePostTab(BuildContext context,
                   List<MenuItem> menus,
                   int numberOfNewPosts)
 {
-   final int postsLength = posts.length;
-
-   return Scaffold( body:
-         ListView.builder(
-               padding: const EdgeInsets.all(0.0),
-               itemCount: postsLength,
-               itemBuilder: (BuildContext context, int i)
-               {
-                  // Posts are shown in reverse order.
-                  final int idx = postsLength - i - 1;
-
-                  // New posts are shown with a different color.
-                  Color color = Theme.of(context).primaryColor;
-                  if (i < numberOfNewPosts)
-                     color = cts.newReceivedPostColor; 
-
-                  List<Card> cards = postTextAssembler(
-                                        context,
-                                        posts[i],
-                                        menus,
-                                        Theme.of(context).primaryColor);
-   
-                  return makePostWidget(
-                            context,
-                            cards,
-                            (fav) {onPostSelection(posts[idx], fav);},
-                            cts.favIcon,
-                            color);
-               },
-         ),
-
-         backgroundColor: Consts.scaffoldBackground,
-         floatingActionButton: FloatingActionButton(
-               backgroundColor: Theme.of(context).primaryColor,
-               child: Icon( cts.newPostIcon,
-                            color: Colors.white),
-               onPressed: onNewPost,
-         ),
-   );
+   return Scaffold(
+             body: makePostTabListView(context,
+                                       posts,
+                                       onPostSelection,
+                                       menus,
+                                       numberOfNewPosts),
+             backgroundColor: Consts.scaffoldBackground,
+             floatingActionButton: FloatingActionButton(
+                   backgroundColor: cts.primaryColor,
+                   child: Icon(cts.newPostIcon, color: Colors.white),
+                   onPressed: onNewPost,
+             ));
 }
 
 ListView createPostMenuListView(BuildContext context, MenuNode o,
