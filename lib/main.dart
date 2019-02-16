@@ -75,14 +75,11 @@ makeBottomBarItems(List<Icon> icons,
 // Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
           Widget body,
-          FloatingActionButton flt,
           BottomNavigationBar bottNavBar)
 {
    return Scaffold(
              body: body,
-             backgroundColor: Consts.scaffoldBackground,
-             bottomNavigationBar: bottNavBar,
-             floatingActionButton: flt);
+             bottomNavigationBar: bottNavBar);
 }
 
 int postIndexHelper(int i)
@@ -170,7 +167,7 @@ createChatScreen(BuildContext context,
                 backgroundColor: Theme.of(context).primaryColor,
              ),
           body: mainCol,
-          backgroundColor: Consts.scaffoldBackground,
+          backgroundColor: Colors.white,
        )
     );
 }
@@ -1069,9 +1066,7 @@ class MenuChatState extends State<MenuChat>
          widgets[i] = WillPopScope(
                          onWillPop: () async { return onWillPops[i]();},
                          child: createBotBarScreen(
-                                   bodies[i],
-                                   fltButtons[i],
-                                   bottBars[i]));
+                                   bodies[i], bottBars[i]));
       }
 
       final int newChats = _getNumberOfUnreadChats();
@@ -1095,20 +1090,22 @@ class MenuChatState extends State<MenuChat>
 
       return Scaffold(
         body: NestedScrollView(
-          controller: _scrollCtrl,
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return <Widget>[
-              SliverAppBar(
-                title: Text(cts.appName, style: TextStyle(color: Colors.white)),
-                pinned: true,
-                floating: true,
-                forceElevated: innerBoxIsScrolled,
-                bottom: makeTabBar(newMsgsCounters, _tabCtrl),
-              ),
-            ];
-          },
-          body: TabBarView(controller: _tabCtrl, children: widgets),
+                 controller: _scrollCtrl,
+                 headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                   return <Widget>[
+                     SliverAppBar(
+                       title: Text(cts.appName, style: TextStyle(color: Colors.white)),
+                       pinned: true,
+                       floating: true,
+                       forceElevated: innerBoxIsScrolled,
+                       bottom: makeTabBar(newMsgsCounters, _tabCtrl),
+                     ),
+                   ];
+                 },
+                 body: TabBarView(controller: _tabCtrl, children: widgets),
           ),
+          backgroundColor: Colors.white,
+          floatingActionButton: fltButtons[_tabCtrl.index],
       );
    }
 

@@ -6,7 +6,6 @@ class Consts {
    static final Color postLocHeaderColor = Color(0xFFFFFFFF);
    static final Color postProdHeaderColor = postLocHeaderColor;
    static final Color postMsgColor = Colors.grey;
-   static final Color scaffoldBackground = Colors.white;
 
    // Margin used so that the post card boarder has some distance from
    // the screen border or whatever widget it happens to be inside of.
