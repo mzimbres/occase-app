@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 final Color coral = Color(0xFFE18A07);
-final Color primaryColor = coral;
+final Color darkYellow = Color(0xFF999900);
+final Color fireBrick = Color(0xFFB22222);
+final Color seaGreen = Color(0xFF2E8B57);
+final Color oliveDrab = Color(0xFF6B8E23);
+final Color primaryColor = seaGreen;
 //final Color primaryColor = Colors.blueGrey;
 final Color accentColor = Colors.grey;
 final Color newReceivedPostColor = Colors.brown[200]; 

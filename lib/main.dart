@@ -175,12 +175,16 @@ Widget makeTabWidget(int n, String title)
    if (n == 0)
       return Text(title, style: TextStyle(color: Colors.white));
 
-   // TODO: Change the text color to primary color?
-   return Row(children: <Widget>[
-      Text(title + " ", style: TextStyle(color: Colors.white)),
-      makeCircleUnreadMsgs(n, Colors.white, cts.primaryColor)
-      ]
-   );
+   List<Widget> widgets = List<Widget>(2);
+   widgets[0] = Text(title, style: TextStyle(color: Colors.white));
+
+   // TODO: The container should change from white to the color when
+   // it is not focused. 
+   // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
+   widgets[1] = makeCircleUnreadMsgs(n, Colors.white,
+                   cts.primaryColor);
+
+   return Row(children: widgets);
 }
 
 class MenuChat extends StatefulWidget {

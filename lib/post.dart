@@ -157,21 +157,31 @@ bool hasLongPressed(final List<PostData> posts)
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-CircleAvatar makeCircleUnreadMsgs(int n,
-                                  Color backgroundColor,
-                                  Color textColor)
+Container makeCircleUnreadMsgs(int n,
+                               Color bgColor,
+                               Color textColor)
 {
-   if (n == 0)
-      return CircleAvatar(backgroundColor: backgroundColor,
-                maxRadius: 10.0);
+   // TODO: The container width has to be wide enough to fit the
+   // number of digits in string.
+   final Text txt = Text("${n}", style: TextStyle(
+                  color: textColor));
 
-   return CircleAvatar(
-            child: Text("${n}",
-                  style: TextStyle(
-                  //fontWeight: FontWeight.bold,
-                  fontSize: 11.0, color: textColor)),
-            maxRadius: 10.0,
-            backgroundColor: backgroundColor);
+   final Radius rd = const Radius.circular(45.0);
+   return Container(
+             margin: const EdgeInsets.all(2.0),
+             padding: const EdgeInsets.all(0.0),
+             height: 23.0,
+             width: 23.0,
+             decoration:
+                BoxDecoration(
+                   color: bgColor,
+                   borderRadius:
+                      BorderRadius.only(
+                         topLeft:  rd,
+                         topRight: rd,
+                         bottomLeft: rd,
+                         bottomRight: rd)),
+               child: Center(child: txt));
 }
 
 Card postElemFactory(BuildContext context,
