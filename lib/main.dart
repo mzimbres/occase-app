@@ -72,16 +72,6 @@ makeBottomBarItems(List<Icon> icons,
              onTap: onBotBarTapped);
 }
 
-// Returns the widget for the *new post screen*.
-Widget createBotBarScreen(
-          Widget body,
-          BottomNavigationBar bottNavBar)
-{
-   return Scaffold(
-             body: body,
-             bottomNavigationBar: bottNavBar);
-}
-
 int postIndexHelper(int i)
 {
    if (i == 0) return 1;
@@ -989,7 +979,7 @@ class MenuChatState extends State<MenuChat>
       List<FloatingActionButton> fltButtons =
             List<FloatingActionButton>(cts.tabNames.length);
 
-      List<BottomNavigationBar> bottBars =
+      List<BottomNavigationBar> bottNavBars =
             List<BottomNavigationBar>(cts.tabNames.length);
 
       List<Function> onWillPops =
@@ -1009,7 +999,7 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[0] = null;
 
-      bottBars[0] = makeBottomBarItems(
+      bottNavBars[0] = makeBottomBarItems(
                        cts.filterTabIcons,
                        cts.filterTabNames,
                        _onBotBarTapped,
@@ -1030,7 +1020,7 @@ class MenuChatState extends State<MenuChat>
                                       newPostsLength);
 
       fltButtons[1] = makeNewPostButton(_onNewPost);
-      bottBars[1] = null;
+      bottNavBars[1] = null;
       onWillPops[1] = (){return false;};
 
       if (_chatBotBarIdx == 0) {
@@ -1053,21 +1043,13 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[2] = null;
 
-      bottBars[2] = makeBottomBarItems(
+      bottNavBars[2] = makeBottomBarItems(
                        cts.chatIcons,
                        cts.chatIconTexts,
                        _onChatBotBarTapped,
                        _chatBotBarIdx);
 
       onWillPops[2] = _onOwnPostsBackPressed;
-
-      List<Widget> widgets = List<Widget>(bodies.length);
-      for (int i = 0; i < widgets.length; ++i) {
-         widgets[i] = WillPopScope(
-                         onWillPop: () async { return onWillPops[i]();},
-                         child: createBotBarScreen(
-                                   bodies[i], bottBars[i]));
-      }
 
       final int newChats = _getNumberOfUnreadChats();
 
@@ -1088,25 +1070,30 @@ class MenuChatState extends State<MenuChat>
       newMsgsCounters[1] = newPostsLength;
       newMsgsCounters[2] = newChats;
 
-      return Scaffold(
-        body: NestedScrollView(
-                 controller: _scrollCtrl,
-                 headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-                   return <Widget>[
-                     SliverAppBar(
-                       title: Text(cts.appName, style: TextStyle(color: Colors.white)),
-                       pinned: true,
-                       floating: true,
-                       forceElevated: innerBoxIsScrolled,
-                       bottom: makeTabBar(newMsgsCounters, _tabCtrl),
-                     ),
-                   ];
-                 },
-                 body: TabBarView(controller: _tabCtrl, children: widgets),
-          ),
-          backgroundColor: Colors.white,
-          floatingActionButton: fltButtons[_tabCtrl.index],
-      );
+      return WillPopScope(
+                onWillPop: () async { return onWillPops[_tabCtrl.index]();},
+                child: Scaffold(
+                    body: NestedScrollView(
+                             controller: _scrollCtrl,
+                             headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                               return <Widget>[
+                                 SliverAppBar(
+                                   title: Text(cts.appName, style: TextStyle(color: Colors.white)),
+                                   pinned: true,
+                                   floating: true,
+                                   forceElevated: innerBoxIsScrolled,
+                                   bottom: makeTabBar(newMsgsCounters, _tabCtrl),
+                                 ),
+                               ];
+                             },
+                             body: TabBarView(controller: _tabCtrl,
+                                         children: bodies),
+                      ),
+                      backgroundColor: Colors.white,
+                      floatingActionButton: fltButtons[_tabCtrl.index],
+                      bottomNavigationBar: bottNavBars[_tabCtrl.index],
+                    )
+              );
    }
 
    void _connectToServer(String from)
