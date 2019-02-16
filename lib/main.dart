@@ -121,6 +121,7 @@ createChatScreen(BuildContext context,
                color = Colors.lightGreenAccent[100];
             }
 
+            // TODO: Insert a divider for new messages here.
             return Align( alignment: align,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
