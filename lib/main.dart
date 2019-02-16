@@ -993,8 +993,7 @@ class MenuChatState extends State<MenuChat>
                         _menus[_botBarIdx].root.last,
                         _onFilterLeafNodePressed,
                         _onFilterNodePressed,
-                        _menus[_botBarIdx].isFilterLeaf(),
-                        _scrollCtrl);
+                        _menus[_botBarIdx].isFilterLeaf());
       }
 
       fltButtons[0] = null;
