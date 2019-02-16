@@ -48,8 +48,11 @@ TabBar makeTabBar(List<int> counters, TabController tabCtrl)
                  tabs: tabs);
 }
 
-List<BottomNavigationBarItem>
-makeBottomBarItems(List<Icon> icons, List<String> iconLabels)
+BottomNavigationBar
+makeBottomBarItems(List<Icon> icons,
+                   List<String> iconLabels,
+                   Function onBotBarTapped,
+                   int i)
 {
    assert(icons.length == iconLabels.length);
    final int length = icons.length;
@@ -63,25 +66,21 @@ makeBottomBarItems(List<Icon> icons, List<String> iconLabels)
                     title: Text(iconLabels[i]));
    }
 
-   return items;
+   return BottomNavigationBar(
+             items: items,
+             currentIndex: i,
+             onTap: onBotBarTapped);
 }
 
 // Returns the widget for the *new post screen*.
 Widget createBotBarScreen(
           Widget scafBody,
           Widget appBar,
-          List<BottomNavigationBarItem> items,
-          Function onBotBarTapped,
-          int i)
+          BottomNavigationBar bottNavBar)
 {
-   return Scaffold(
-               appBar: appBar,
-               body: scafBody,
-               bottomNavigationBar: BottomNavigationBar(
-                     items: items,
-                     currentIndex: i,
-                     onTap: onBotBarTapped)
-               );
+   return Scaffold(appBar: appBar,
+                   body: scafBody,
+                   bottomNavigationBar: bottNavBar);
 }
 
 int postIndexHelper(int i)
@@ -946,10 +945,11 @@ class MenuChatState extends State<MenuChat>
                    child: createBotBarScreen(
                              widget,
                              appBar,
-                             makeBottomBarItems(cts.newPostTabIcons,
-                                                cts.newPostTabNames),
-                             _onNewPostBotBarTapped,
-                             _botBarIdx));
+                             makeBottomBarItems(
+                                cts.newPostTabIcons,
+                                cts.newPostTabNames,
+                                _onNewPostBotBarTapped,
+                                _botBarIdx)));
       }
 
       if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
@@ -1003,10 +1003,11 @@ class MenuChatState extends State<MenuChat>
                       child: createBotBarScreen(
                                 filterTabWidget,
                                 null,
-                                makeBottomBarItems(cts.filterTabIcons,
-                                                   cts.filterTabNames),
-                                _onBotBarTapped,
-                                _botBarIdx));
+                                makeBottomBarItems(
+                                   cts.filterTabIcons,
+                                   cts.filterTabNames,
+                                   _onBotBarTapped,
+                                   _botBarIdx)));
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
@@ -1046,10 +1047,11 @@ class MenuChatState extends State<MenuChat>
                       child: createBotBarScreen(
                                 chatWidget,
                                 null,
-                                makeBottomBarItems(cts.chatIcons,
-                                                   cts.chatIconTexts),
-                                _onChatBotBarTapped,
-                                _chatBotBarIdx));
+                                makeBottomBarItems(
+                                   cts.chatIcons,
+                                   cts.chatIconTexts,
+                                   _onChatBotBarTapped,
+                                   _chatBotBarIdx)));
 
 
       final int newChats = _getNumberOfUnreadChats();
