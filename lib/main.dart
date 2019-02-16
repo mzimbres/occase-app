@@ -7,6 +7,7 @@ import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -84,7 +85,8 @@ createChatScreen(BuildContext context,
                  Function onWillPopScope,
                  ChatHistory chatHist,
                  TextEditingController ctrl,
-                 Function onChatSendPressed)
+                 Function onChatSendPressed,
+                 ScrollController scrollCtrl)
 {
    TextField tf = makeTextInputFieldCard(ctrl);
 
@@ -106,7 +108,8 @@ createChatScreen(BuildContext context,
    );
 
    ListView list = ListView.builder(
-         reverse:true,
+         controller: scrollCtrl,
+         reverse: false,
          padding: const EdgeInsets.all(6.0),
          itemCount: chatHist.msgs.length,
          itemBuilder: (BuildContext context, int i)
@@ -189,7 +192,8 @@ class MenuChat extends StatefulWidget {
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
    TabController _tabCtrl;
-   ScrollController _scrollCtrl;
+   ScrollController _scrollCtrl = ScrollController();
+   ScrollController _chatScrollCtrl = ScrollController();
 
    // The id we will use to communicate with the server.
    String _appId = '007';
@@ -310,8 +314,6 @@ class MenuChatState extends State<MenuChat>
 
       _tabCtrl = TabController(vsync: this,
             initialIndex: 1, length: 3);
-
-      _scrollCtrl = ScrollController();
 
       _tabCtrl.addListener(_tabCtrlChangeHandler);
 
@@ -565,7 +567,19 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
 
       _favPosts[_currFavChatIdx].addMsg(to, msg, true);
-      setState(() { });
+
+      setState(()
+      {
+         // Needed to automatically scroll the chat to the last
+         // message on the list.
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            _chatScrollCtrl.animateTo(
+               _chatScrollCtrl.position.maxScrollExtent,
+               duration: const Duration(milliseconds: 300),
+               curve: Curves.easeOut);
+         });
+      });
    }
 
    void _onOwnChatSendPressed()
@@ -590,7 +604,19 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
 
       _ownPosts[_currOwnChatIdx].addMsg(_ownPostChatPeer, msg, true);
-      setState(() { });
+
+      setState(()
+      {
+         // Needed to automatically scroll the chat to the last
+         // message on the list.
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            _chatScrollCtrl.animateTo(
+               _chatScrollCtrl.position.maxScrollExtent,
+               duration: const Duration(milliseconds: 300),
+               curve: Curves.easeOut);
+         });
+      });
    }
 
    void onWSData(msg)
@@ -878,6 +904,7 @@ class MenuChatState extends State<MenuChat>
      _newPostTextCtrl.dispose();
      _tabCtrl.dispose();
      _scrollCtrl.dispose();
+     _chatScrollCtrl.dispose();
 
      super.dispose();
    }
@@ -955,7 +982,8 @@ class MenuChatState extends State<MenuChat>
                    _onWillPopFavChatScreen,
                    chatHist,
                    _newPostTextCtrl,
-                   _onFavChatSendPressed);
+                   _onFavChatSendPressed,
+                   _chatScrollCtrl);
       }
 
       if (_tabCtrl.index == 2 &&
@@ -970,7 +998,8 @@ class MenuChatState extends State<MenuChat>
                    _onWillPopOwnChatScreen,
                    chatHist,
                    _newPostTextCtrl,
-                   _onOwnChatSendPressed);
+                   _onOwnChatSendPressed,
+                   _chatScrollCtrl);
       }
 
       List<Widget> bodies =
