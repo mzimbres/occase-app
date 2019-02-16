@@ -48,15 +48,8 @@ TabBar makeTabBar(List<int> counters, TabController tabCtrl)
                  tabs: tabs);
 }
 
-// Returns the widget for the *new post screen*.
-Widget createBotBarScreen(
-          BuildContext context,
-          Widget scafBody,
-          Widget appBar,
-          List<Icon> icons,
-          List<String> iconLabels,
-          Function onBotBarTapped,
-          int i)
+List<BottomNavigationBarItem>
+makeBottomBarItems(List<Icon> icons, List<String> iconLabels)
 {
    assert(icons.length == iconLabels.length);
    final int length = icons.length;
@@ -70,6 +63,17 @@ Widget createBotBarScreen(
                     title: Text(iconLabels[i]));
    }
 
+   return items;
+}
+
+// Returns the widget for the *new post screen*.
+Widget createBotBarScreen(
+          Widget scafBody,
+          Widget appBar,
+          List<BottomNavigationBarItem> items,
+          Function onBotBarTapped,
+          int i)
+{
    return Scaffold(
                appBar: appBar,
                body: scafBody,
@@ -940,11 +944,10 @@ class MenuChatState extends State<MenuChat>
          return WillPopScope(
                    onWillPop: () async { return _onWillPopMenu();},
                    child: createBotBarScreen(
-                             context,
                              widget,
                              appBar,
-                             cts.newPostTabIcons,
-                             cts.newPostTabNames,
+                             makeBottomBarItems(cts.newPostTabIcons,
+                                                cts.newPostTabNames),
                              _onNewPostBotBarTapped,
                              _botBarIdx));
       }
@@ -998,14 +1001,12 @@ class MenuChatState extends State<MenuChat>
       widgets[0] = WillPopScope(
                       onWillPop: () async { return _onWillPopMenu();},
                       child: createBotBarScreen(
-                                context,
                                 filterTabWidget,
                                 null,
-                                cts.filterTabIcons,
-                                cts.filterTabNames,
+                                makeBottomBarItems(cts.filterTabIcons,
+                                                   cts.filterTabNames),
                                 _onBotBarTapped,
-                                _botBarIdx)
-                      );
+                                _botBarIdx));
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
@@ -1042,13 +1043,13 @@ class MenuChatState extends State<MenuChat>
 
       widgets[2] = WillPopScope(
                       onWillPop: () async { return _onOwnPostsBackPressed();},
-                      child: createBotBarScreen(context,
-                         chatWidget,
-                         null,
-                         cts.chatIcons,
-                         cts.chatIconTexts,
-                         _onChatBotBarTapped,
-                         _chatBotBarIdx));
+                      child: createBotBarScreen(
+                                chatWidget,
+                                null,
+                                makeBottomBarItems(cts.chatIcons,
+                                                   cts.chatIconTexts),
+                                _onChatBotBarTapped,
+                                _chatBotBarIdx));
 
 
       final int newChats = _getNumberOfUnreadChats();
