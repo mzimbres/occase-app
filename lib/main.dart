@@ -942,14 +942,15 @@ class MenuChatState extends State<MenuChat>
 
          return WillPopScope(
                    onWillPop: () async { return _onWillPopMenu();},
-                   child: createBotBarScreen(
-                             widget,
-                             appBar,
-                             makeBottomBarItems(
-                                cts.newPostTabIcons,
-                                cts.newPostTabNames,
-                                _onNewPostBotBarTapped,
-                                _botBarIdx)));
+                   child: Scaffold(
+                             appBar: appBar,
+                             body: widget,
+                             bottomNavigationBar:
+                                makeBottomBarItems(
+                                   cts.newPostTabIcons,
+                                   cts.newPostTabNames,
+                                   _onNewPostBotBarTapped,
+                                   _botBarIdx)));
       }
 
       if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
