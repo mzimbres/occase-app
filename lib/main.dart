@@ -1019,12 +1019,14 @@ class MenuChatState extends State<MenuChat>
       }
 
       // This is the widget of the incoming posts screen.
-      widgets[1] = makePostTab(context,
-                              _posts,
-                              _onPostSelection,
-                              _onNewPost,
-                              _menus,
-                              newPostsLength);
+      widgets[1] = createBotBarScreen(
+                      makePostTabListView(context,
+                                          _posts,
+                                          _onPostSelection,
+                                          _menus,
+                                          newPostsLength),
+                      makeNewPostButton(_onNewPost),
+                      null);
 
       Widget chatWidget;
       if (_chatBotBarIdx == 0) {

@@ -448,23 +448,6 @@ FloatingActionButton makeNewPostButton(Function onNewPost)
              onPressed: onNewPost);
 }
 
-Widget makePostTab(BuildContext context,
-                  List<PostData> posts,
-                  Function onPostSelection,
-                  Function onNewPost,
-                  List<MenuItem> menus,
-                  int numberOfNewPosts)
-{
-   return Scaffold(
-             body: makePostTabListView(context,
-                                       posts,
-                                       onPostSelection,
-                                       menus,
-                                       numberOfNewPosts),
-             backgroundColor: Consts.scaffoldBackground,
-             floatingActionButton: makeNewPostButton(onNewPost));
-}
-
 ListView createPostMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {
