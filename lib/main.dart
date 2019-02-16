@@ -986,8 +986,17 @@ class MenuChatState extends State<MenuChat>
                    _onOwnChatSendPressed);
       }
 
-      List<Widget> bodies = List<Widget>(cts.tabNames.length);
-      List<Widget> fltButtons = List<Widget>(cts.tabNames.length);
+      List<Widget> bodies =
+            List<Widget>(cts.tabNames.length);
+
+      List<FloatingActionButton> fltButtons =
+            List<FloatingActionButton>(cts.tabNames.length);
+
+      List<BottomNavigationBar> bottBars =
+            List<BottomNavigationBar>(cts.tabNames.length);
+
+      List<Function> onWillPops =
+            List<Function>(cts.tabNames.length);
 
       if (_botBarIdx == 2) {
          bodies[0] = createSendScreen(_sendHahesToServer);
@@ -1003,18 +1012,13 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[0] = null;
 
-      List<Widget> widgets = List<Widget>(bodies.length);
+      bottBars[0] = makeBottomBarItems(
+                       cts.filterTabIcons,
+                       cts.filterTabNames,
+                       _onBotBarTapped,
+                       _botBarIdx);
 
-      widgets[0] = WillPopScope(
-                      onWillPop: () async { return _onWillPopMenu();},
-                      child: createBotBarScreen(
-                                bodies[0],
-                                fltButtons[0],
-                                makeBottomBarItems(
-                                   cts.filterTabIcons,
-                                   cts.filterTabNames,
-                                   _onBotBarTapped,
-                                   _botBarIdx)));
+      onWillPops[0] = _onWillPopMenu;
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
@@ -1029,12 +1033,8 @@ class MenuChatState extends State<MenuChat>
                                       newPostsLength);
 
       fltButtons[1] = makeNewPostButton(_onNewPost);
-
-      // This is the widget of the incoming posts screen.
-      widgets[1] = createBotBarScreen(
-                      bodies[1],
-                      fltButtons[1],
-                      null);
+      bottBars[1] = null;
+      onWillPops[1] = (){return false;};
 
       if (_chatBotBarIdx == 0) {
          // The own posts tab in the chat screen.
@@ -1056,16 +1056,23 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[2] = null;
 
-      widgets[2] = WillPopScope(
-                      onWillPop: () async { return _onOwnPostsBackPressed();},
-                      child: createBotBarScreen(
-                                bodies[2],
-                                fltButtons[2],
-                                makeBottomBarItems(
-                                   cts.chatIcons,
-                                   cts.chatIconTexts,
-                                   _onChatBotBarTapped,
-                                   _chatBotBarIdx)));
+      bottBars[2] = makeBottomBarItems(
+                       cts.chatIcons,
+                       cts.chatIconTexts,
+                       _onChatBotBarTapped,
+                       _chatBotBarIdx);
+
+      onWillPops[2] = _onOwnPostsBackPressed;
+
+      List<Widget> widgets = List<Widget>(bodies.length);
+      for (int i = 0; i < widgets.length; ++i) {
+         widgets[i] = WillPopScope(
+                         onWillPop: () async { return onWillPops[i]();},
+                         child: createBotBarScreen(
+                                   bodies[i],
+                                   fltButtons[i],
+                                   bottBars[i]));
+      }
 
       final int newChats = _getNumberOfUnreadChats();
 
