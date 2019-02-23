@@ -649,47 +649,27 @@ class MenuChatState extends State<MenuChat>
       }
 
       //print("Received from server: ${ack}");
+      if (cmd == "subscribe_ack") {
+         var items = ack['items'];
+         for (var item in items) {
+            final String from = item['from'];
+            if (from == _appId) {
+               print("subscribe_ack: Ignoring own publish message.");
+               return;
+            }
+            _unreadPosts.add(readPostData(item));
+         }
 
-      // TODO: Use automatic serialization.
+         setState(() { });
+      }
+
       if (cmd == "publish") {
          var items = ack['items'];
          for (var item in items) {
-            String msg = item['msg'];
-            String from = item['from'];
-            int id = item['id'];
-
-            if (from == _appId) {
-               // TODO: Ignore own messages.
-               print("Ignoring own publish message.");
+            final String from = item['from'];
+            if (from == _appId)
                return;
-            }
-
-            List<dynamic> to = item['to'];
-
-            List<List<List<int>>> codes = List<List<List<int>>>();
-            for (List<dynamic> a in to) {
-               List<List<int>> foo = List<List<int>>();
-               for (List<dynamic> b in a) {
-                  List<int> bar = List<int>();
-                  for (int c in b) {
-                     bar.add(c);
-                  }
-                  foo.add(bar);
-               }
-               codes.add(foo);
-            }
-
-            PostData post = PostData();
-            post.from = from;
-            post.description = msg;
-            post.codes = codes;
-            post.id = id;
-
-            // Since this post is not from this app we have to add a chat
-            // entry in it.
-            post.createChatEntryForPeer(post.from);
-
-            _unreadPosts.add(post);
+            _unreadPosts.add(readPostData(item));
          }
 
          // TODO: Before triggering a redraw we should perhaps check

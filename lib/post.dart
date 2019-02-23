@@ -572,3 +572,36 @@ Widget makePostChatTab(
    );
 }
 
+PostData readPostData(var item)
+{
+   String msg = item['msg'];
+   String from = item['from'];
+   int id = item['id'];
+
+   List<dynamic> to = item['to'];
+
+   List<List<List<int>>> codes = List<List<List<int>>>();
+   for (List<dynamic> a in to) {
+      List<List<int>> foo = List<List<int>>();
+      for (List<dynamic> b in a) {
+         List<int> bar = List<int>();
+         for (int c in b) {
+            bar.add(c);
+         }
+         foo.add(bar);
+      }
+      codes.add(foo);
+   }
+
+   PostData post = PostData();
+   post.from = from;
+   post.description = msg;
+   post.codes = codes;
+   post.id = id;
+
+   // Since this post is not from this app we have to add a chat
+   // entry in it.
+   post.createChatEntryForPeer(post.from);
+   return post;
+}
+
