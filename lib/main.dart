@@ -500,9 +500,12 @@ class MenuChatState extends State<MenuChat>
 
       var pubMap = {
          'cmd': 'publish',
-         'from': _outPostQueue.first.from,
-         'to': _outPostQueue.first.codes,
-         'msg': _outPostQueue.first.description,
+         'items': [{
+            'from': _outPostQueue.first.from,
+            'to': _outPostQueue.first.codes,
+            'msg': _outPostQueue.first.description,
+            'id': -1,
+         }]
       };
 
       final String pubText = jsonEncode(pubMap);
@@ -647,43 +650,47 @@ class MenuChatState extends State<MenuChat>
 
       //print("Received from server: ${ack}");
 
+      // TODO: Use automatic serialization.
       if (cmd == "publish") {
-         String msg = ack['msg'];
-         String from = ack['from'];
-         int id = ack['id'];
+         var items = ack['items'];
+         for (var item in items) {
+            String msg = item['msg'];
+            String from = item['from'];
+            int id = item['id'];
 
-         if (from == _appId) {
-            // TODO: Ignore own messages.
-            print("Ignoring own publish message.");
-            return;
-         }
-
-         List<dynamic> to = ack['to'];
-
-         List<List<List<int>>> codes = List<List<List<int>>>();
-         for (List<dynamic> a in to) {
-            List<List<int>> foo = List<List<int>>();
-            for (List<dynamic> b in a) {
-               List<int> bar = List<int>();
-               for (int c in b) {
-                  bar.add(c);
-               }
-               foo.add(bar);
+            if (from == _appId) {
+               // TODO: Ignore own messages.
+               print("Ignoring own publish message.");
+               return;
             }
-            codes.add(foo);
+
+            List<dynamic> to = item['to'];
+
+            List<List<List<int>>> codes = List<List<List<int>>>();
+            for (List<dynamic> a in to) {
+               List<List<int>> foo = List<List<int>>();
+               for (List<dynamic> b in a) {
+                  List<int> bar = List<int>();
+                  for (int c in b) {
+                     bar.add(c);
+                  }
+                  foo.add(bar);
+               }
+               codes.add(foo);
+            }
+
+            PostData post = PostData();
+            post.from = from;
+            post.description = msg;
+            post.codes = codes;
+            post.id = id;
+
+            // Since this post is not from this app we have to add a chat
+            // entry in it.
+            post.createChatEntryForPeer(post.from);
+
+            _unreadPosts.add(post);
          }
-
-         PostData post = PostData();
-         post.from = from;
-         post.description = msg;
-         post.codes = codes;
-         post.id = id;
-
-         // Since this post is not from this app we have to add a chat
-         // entry in it.
-         post.createChatEntryForPeer(post.from);
-
-         _unreadPosts.add(post);
 
          // TODO: Before triggering a redraw we should perhaps check
          // whether it is necessary given our current state.
