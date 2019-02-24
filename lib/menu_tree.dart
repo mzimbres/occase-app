@@ -172,6 +172,20 @@ class MenuItem {
       while (root.length != 1)
          root.removeLast();
    }
+
+   //MenuItem.fromJson(Map<String, dynamic> json)
+   // : name = json['name'],
+   //   email = json['email'];
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      {
+         'depth': filterDepth,
+         'version': version,
+         'data': serializeMenuToStr(root.first),
+      };
+   }
 }
 
 /* Counts all leaf counters of the children. If the leaf counter of a

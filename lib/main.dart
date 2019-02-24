@@ -902,8 +902,8 @@ class MenuChatState extends State<MenuChat>
    {
       if (_onNewPostPressed) {
          //_______________
-         //final String menuStr = serializeMenuToStr(_menus.first.root.first);
-         //print(menuStr);
+         //final String item = jsonEncode(_menus.first);
+         //print(item);
          //_______________
          Widget widget;
          if (_botBarIdx == 2) {
