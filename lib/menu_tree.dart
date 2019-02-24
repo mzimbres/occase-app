@@ -346,7 +346,7 @@ String serializeMenuToStr(MenuNode root)
    String menu = "";
    while (current != null) {
       final int depth = iter.getDepth();
-      menu += "${depth};${current.name}=";
+      menu += "${depth};${current.name};${current.status}=";
       current = iter.next();
    }
 
