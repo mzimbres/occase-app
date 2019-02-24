@@ -173,9 +173,14 @@ class MenuItem {
          root.removeLast();
    }
 
-   //MenuItem.fromJson(Map<String, dynamic> json)
-   // : name = json['name'],
-   //   email = json['email'];
+   MenuItem.fromJson(Map<String, dynamic> map)
+   {
+      filterDepth = map["depth"];
+      version = map["version"];
+      MenuNode node = parseTree(map["data"]);
+      loadLeafCounters(node);
+      root.add(node);
+   }
 
    Map<String, dynamic> toJson()
    {
@@ -229,12 +234,7 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
    List<MenuItem> menus = List<MenuItem>();
 
    for (var raw in rawMenus) {
-      MenuItem item = MenuItem();
-      item.filterDepth = raw["depth"];
-      item.version = raw["version"];
-      MenuNode root = parseTree(raw["data"]);
-      loadLeafCounters(root);
-      item.root.add(root);
+      MenuItem item = MenuItem.fromJson(raw);
       menus.add(item);
    }
 
