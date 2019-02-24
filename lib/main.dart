@@ -889,18 +889,22 @@ class MenuChatState extends State<MenuChat>
    @override
    void dispose()
    {
-     _newPostTextCtrl.dispose();
-     _tabCtrl.dispose();
-     _scrollCtrl.dispose();
-     _chatScrollCtrl.dispose();
+      _newPostTextCtrl.dispose();
+      _tabCtrl.dispose();
+      _scrollCtrl.dispose();
+      _chatScrollCtrl.dispose();
 
-     super.dispose();
+      super.dispose();
    }
 
    @override
    Widget build(BuildContext context)
    {
       if (_onNewPostPressed) {
+         //_______________
+         //final String menuStr = serializeMenuToStr(_menus.first.root.first);
+         //print(menuStr);
+         //_______________
          Widget widget;
          if (_botBarIdx == 2) {
             List<Card> cards = makeMenuInfoCards(

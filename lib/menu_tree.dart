@@ -292,7 +292,6 @@ List<List<int>> readHashCodes(MenuNode root, int depth)
    MenuNode current = iter.advanceToLeaf();
    List<List<int>> hashCodes = List<List<int>>();
    while (current != null) {
-      //print("===> ${current.status} ${current.code}");
       if (current.status)
          hashCodes.add(current.code);
 
@@ -300,5 +299,57 @@ List<List<int>> readHashCodes(MenuNode root, int depth)
    }
 
    return hashCodes;
+}
+
+// Serialize the menu in a way that it can be user as input in
+// parseTree.
+class MenuTraversal2 {
+   List<List<MenuNode>> st = List<List<MenuNode>>();
+
+   MenuTraversal2(MenuNode root)
+   {
+      if (root != null)
+         st.add(<MenuNode>[root]);
+   }
+
+   MenuNode advance()
+   {
+      MenuNode node = st.last.last;
+      st.last.removeLast();
+      if (!node.children.isEmpty)
+         st.add(node.children);
+
+      return node;
+   }
+
+   MenuNode next()
+   {
+      while (st.last.isEmpty) {
+         st.removeLast();
+         if (st.isEmpty)
+            return null;
+      }
+
+      return advance();
+   }
+
+   int getDepth()
+   {
+      return st.length - 1;
+   }
+}
+
+String serializeMenuToStr(MenuNode root)
+{
+   MenuTraversal2 iter = MenuTraversal2(root);
+   MenuNode current = iter.advance();
+   String menu = "";
+   while (current != null) {
+      final int depth = iter.getDepth();
+      menu += "${depth};${current.name}=";
+      current = iter.next();
+   }
+
+   return menu;
 }
 
