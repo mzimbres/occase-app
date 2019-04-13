@@ -628,14 +628,14 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
-      if (cmd == "auth_ack") {
+      if (cmd == "login_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
-            print("Handle failed auth.");
+            print("Handle failed login.");
             return;
          }
 
-         // TODO: Handle failed auths.
+         // TODO: Handle failed login.
          assert(res == 'ok');
 
          // This list will have to be written to a file.
@@ -1122,21 +1122,22 @@ class MenuChatState extends State<MenuChat>
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. The host address is 10.0.2.2.
       channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
+      //channel = IOWebSocketChannel.connect('ws://192.168.0.27:80');
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
       // This is where we will read the raw menu from files and send
       // our versions to the app. By sending -1 we will always receive
       // back from the server.
-      var authCmd = {
-         'cmd': 'auth',
+      var loginCmd = {
+         'cmd': 'login',
          'from': from,
          'menu_versions': <int>[-1, -1],
       };
 
-      final String authText = jsonEncode(authCmd);
-      print(authText);
-      channel.sink.add(authText);
+      final String loginText = jsonEncode(loginCmd);
+      print(loginText);
+      channel.sink.add(loginText);
    }
 }
 
