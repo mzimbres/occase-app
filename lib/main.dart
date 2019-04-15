@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:io' show File;
 import 'dart:collection';
 
 import 'package:web_socket_channel/io.dart';
@@ -8,6 +9,7 @@ import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/scheduler.dart';
+//import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -19,6 +21,28 @@ import 'package:menu_chat/text_constants.dart' as cts;
 Future<Null> main() async
 {
   runApp(MyApp());
+}
+
+void writeLoginToFile(String login)
+{
+   // TODO: Import the path_provider plugin to get the path to the
+   // documents dir.
+   //final Directory dir = await getApplicationDocumentsDirectory();
+   //final String path = dir.path;
+   final String path = 'login.txt';
+   File file = File(path);
+   file.create(recursive: true).then((File f) {
+      try {
+         var sink = f.openWrite();
+         sink.write(login);
+         // TODO: Clarify if we have to call this here or if we can
+         // let the sink destructor do it.
+         //await sink.flush();
+         //await sink.close();
+      } catch (e) {
+         print(e);
+      }
+   });
 }
 
 class MyApp extends StatelessWidget {
@@ -197,7 +221,8 @@ class MenuChatState extends State<MenuChat>
    ScrollController _chatScrollCtrl = ScrollController();
 
    // The id we will use to communicate with the server.
-   String _appId = '007';
+   String _appId = '';
+   String _appPwd = '';
 
    // The outermost list is an array with the length equal to the
    // number of menus there are. The inner most list is actually a
@@ -282,30 +307,62 @@ class MenuChatState extends State<MenuChat>
       _botBarIdx = 0;
    }
 
-   Future<void> readDevInfo() async
+   Future<void> readLogin() async
    {
-      Map<String, dynamic> deviceData;
+      // It looks like we do not need the following block anymore. I
+      // will keep it around for a while before removing it just in
+      // case.
+      //________________________________________________________________
+      //Map<String, dynamic> deviceData;
+
+      //try {
+      //   if (Platform.isAndroid) {
+      //      AndroidDeviceInfo info = await devInfo.androidInfo;
+      //      // To avoid colision between devices running on the same
+      //      // machine, I will also use time stamp. Remove this later.
+      //      final int now = DateTime.now().millisecondsSinceEpoch;
+      //      _appId = info.id + "${now}";
+      //      print("========>: " + _appId);
+      //   } else if (Platform.isIOS) {
+      //      // Not implemented.
+      //   }
+      //} on PlatformException {
+      //   // Id unavailable?
+      //}
+
+      //// What is this meand for?
+      //if (!mounted)
+      //   return;
+      //________________________________________________________________
 
       try {
-         if (Platform.isAndroid) {
-            AndroidDeviceInfo info = await devInfo.androidInfo;
-            // To void colision between devices running on the same
-            // machine, I will also use time stamp. Remove this later.
-            final int now = DateTime.now().millisecondsSinceEpoch;
-            _appId = info.id + "${now}";
-            print("========>: " + _appId);
-         } else if (Platform.isIOS) {
-            // Not implemented.
-         }
-      } on PlatformException {
-         // Id unavailable?
+         File file = File('login.txt');
+         final String login = await file.readAsString();
+
+         print('Login has been read from file.');
+         // We are already registered in the server.
+
+         // This is where we will read the raw menu from files and send
+         // our versions to the server. By sending -1 we will always
+         // receive the latest version. Some menus may be large and we
+         // may not want them on every connect, so we should feed our
+         // current versions here.
+         var loginCmd = {
+            'cmd': 'login',
+            'user': _appId,
+            'password': _appPwd,
+            'menu_versions': <int>[-1, -1],
+         };
+
+         final String loginText = jsonEncode(loginCmd);
+         _connectToServer(loginText);
+      } catch (e) {
+         print('The login file does not exist.');
+         // This is the firt time we are connecting to the server
+         var loginCmd = {'cmd': 'register'};
+         final String loginText = jsonEncode(loginCmd);
+         _connectToServer(loginText);
       }
-
-      // What is this meand for?
-      if (!mounted)
-         return;
-
-      _connectToServer(_appId);
    }
 
    @override
@@ -318,7 +375,7 @@ class MenuChatState extends State<MenuChat>
 
       _tabCtrl.addListener(_tabCtrlChangeHandler);
 
-      readDevInfo();
+      readLogin();
    }
 
    void _onPostSelection(PostData data, bool fav)
@@ -628,6 +685,29 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
+      if (cmd == "register_ack") {
+         final String res = ack["result"];
+         if (res == 'fail') {
+            print("register_ack: fail.");
+            return;
+         }
+
+         assert(res == 'ok');
+
+         _appId = ack["id"];
+         _appPwd = ack["password"];
+         final String login = '${_appId}:${_appPwd}';
+
+         // Writes the login to a file to be read next time the app is
+         // started.
+         //print('Writing login ${login} to file');
+         //writeLoginToFile(login);
+
+         _menus = menuReader(ack);
+         assert(_menus != null);
+         return;
+      }
+
       if (cmd == "login_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
@@ -638,13 +718,13 @@ class MenuChatState extends State<MenuChat>
          // TODO: Handle failed login.
          assert(res == 'ok');
 
-         // This list will have to be written to a file.
+         // If our menu is out of date the server will send us the new
+         // version.
          if (ack.containsKey('menus')) {
             _menus = menuReader(ack);
             assert(_menus != null);
          }
 
-         // TODO: Handle the subscribe ack.
          return;
       }
 
@@ -1117,7 +1197,7 @@ class MenuChatState extends State<MenuChat>
               );
    }
 
-   void _connectToServer(String from)
+   void _connectToServer(String login)
    {
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. The host address is 10.0.2.2.
@@ -1126,18 +1206,8 @@ class MenuChatState extends State<MenuChat>
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
-      // This is where we will read the raw menu from files and send
-      // our versions to the app. By sending -1 we will always receive
-      // back from the server.
-      var loginCmd = {
-         'cmd': 'login',
-         'from': from,
-         'menu_versions': <int>[-1, -1],
-      };
-
-      final String loginText = jsonEncode(loginCmd);
-      print(loginText);
-      channel.sink.add(loginText);
+      print(login);
+      channel.sink.add(login);
    }
 }
 
