@@ -9,7 +9,7 @@ import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/scheduler.dart';
-//import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -23,22 +23,17 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
-void writeLoginToFile(String login)
+void writeToFile(String data, String fileName) async
 {
-   // TODO: Import the path_provider plugin to get the path to the
-   // documents dir.
-   //final Directory dir = await getApplicationDocumentsDirectory();
-   //final String path = dir.path;
-   final String path = 'login.txt';
-   File file = File(path);
-   file.create(recursive: true).then((File f) {
+   final docDir = await getApplicationDocumentsDirectory();
+   final String filePath = '${docDir.path}/${fileName}';
+   File file = File(filePath);
+   file.create(recursive: true).then((File f) async {
       try {
          var sink = f.openWrite();
-         sink.write(login);
-         // TODO: Clarify if we have to call this here or if we can
-         // let the sink destructor do it.
-         //await sink.flush();
-         //await sink.close();
+         sink.write(data);
+         await sink.flush();
+         await sink.close();
       } catch (e) {
          print(e);
       }
@@ -336,16 +331,22 @@ class MenuChatState extends State<MenuChat>
       //________________________________________________________________
 
       try {
-         File file = File('login.txt');
+         final String fileName = 'login.txt';
+         final docDir = await getApplicationDocumentsDirectory();
+         final String filePath = '${docDir.path}/${fileName}';
+         File file = File(filePath);
          final String login = await file.readAsString();
+         final List<String> fields = login.split(":");
+         _appId = fields.first;
+         _appPwd = fields.last;
 
-         print('Login has been read from file.');
          // We are already registered in the server.
+         print('Login ${_appId}:${_appPwd} read from file.');
 
          // This is where we will read the raw menu from files and send
          // our versions to the server. By sending -1 we will always
          // receive the latest version. Some menus may be large and we
-         // may not want them on every connect, so we should feed our
+         // do not want them on every connect, so we should feed our
          // current versions here.
          var loginCmd = {
             'cmd': 'login',
@@ -685,6 +686,7 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
+      print(msg);
       if (cmd == "register_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
@@ -700,8 +702,8 @@ class MenuChatState extends State<MenuChat>
 
          // Writes the login to a file to be read next time the app is
          // started.
-         //print('Writing login ${login} to file');
-         //writeLoginToFile(login);
+         print('Writing login ${login} to login.txt');
+         writeToFile(login, 'login.txt');
 
          _menus = menuReader(ack);
          assert(_menus != null);
