@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+final Color whatsAppPrimaryColor = Color(0xff075E54);
+final Color whatsAppAccentColor = Color(0xff25D366);
+
 final Color coral = Color(0xFFE18A07);
 final Color darkYellow = Color(0xFF999900);
 final Color fireBrick = Color(0xFFB22222);
 final Color seaGreen = Color(0xFF2E8B57);
 final Color oliveDrab = Color(0xFF6B8E23);
-final Color primaryColor = coral;
 //final Color primaryColor = Colors.blueGrey;
-final Color accentColor = Colors.grey;
+final Color primaryColor = whatsAppPrimaryColor;
+//final Color accentColor = Colors.grey;
+final Color accentColor = whatsAppAccentColor;
 final Color newReceivedPostColor = Colors.brown[200]; 
 
 final String appName = "CarMenu";
@@ -131,3 +135,5 @@ final TextStyle expTileStl =
           TextStyle(fontSize: 15.0,
                     fontWeight: FontWeight.normal,
                     color: Colors.white);
+
+final String menuFileName = 'menu.txt';

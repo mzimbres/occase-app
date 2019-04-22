@@ -9,7 +9,7 @@ class MenuNode {
 
    List<MenuNode> children = List<MenuNode>();
 
-   MenuNode([this.name, this.code])
+   MenuNode([this.name, this.status, this.code])
    {
       status = false;
    }
@@ -101,10 +101,12 @@ MenuNode parseTree(String dataRaw)
       assert(fields.length == 3);
 
       int depth = int.parse(fields.first);
-      String name = fields[1];
+      final String name = fields[1];
+      final bool status = int.parse(fields[2]) == 1;
 
       if (st.isEmpty) {
          root.name = name;
+         root.status = status;
          st.add(root);
          continue;
       }
@@ -121,7 +123,7 @@ MenuNode parseTree(String dataRaw)
             return MenuNode();
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(name, code);
+         MenuNode p = MenuNode(name, status, code);
          st.last.children.add(p);
          st.add(p);
          ++lastDepth;
@@ -136,14 +138,14 @@ MenuNode parseTree(String dataRaw)
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(name, code);
+         MenuNode p = MenuNode(name, status, code);
          st.last.children.add(p);
          st.add(p);
 
          lastDepth = depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(name, code);
+         MenuNode p = MenuNode(name, status, code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -320,7 +322,7 @@ List<List<int>> readHashCodes(MenuNode root, int depth)
 class MenuTraversal2 {
    List<List<MenuNode>> st = List<List<MenuNode>>();
 
-   MenuTraversal2(MenuNode root)
+   MenuTraversal2(final MenuNode root)
    {
       if (root != null)
          st.add(<MenuNode>[root]);
@@ -328,10 +330,14 @@ class MenuTraversal2 {
 
    MenuNode advance()
    {
-      MenuNode node = st.last.last;
+      final MenuNode node = st.last.last;
       st.last.removeLast();
-      if (!node.children.isEmpty)
-         st.add(node.children);
+      if (!node.children.isEmpty) {
+         List<MenuNode> childrenCopy = List<MenuNode>();
+         for (MenuNode o in node.children)
+            childrenCopy.add(o);
+         st.add(childrenCopy);
+      }
 
       return node;
    }
@@ -353,14 +359,15 @@ class MenuTraversal2 {
    }
 }
 
-String serializeMenuToStr(MenuNode root)
+String serializeMenuToStr(final MenuNode root)
 {
    MenuTraversal2 iter = MenuTraversal2(root);
    MenuNode current = iter.advance();
    String menu = "";
    while (current != null) {
       final int depth = iter.getDepth();
-      menu += "${depth};${current.name};${current.status}=";
+      final int status = current.status ? 1 : 0;
+      menu += "${depth};${current.name};${status}=";
       current = iter.next();
    }
 

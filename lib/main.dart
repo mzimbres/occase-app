@@ -292,17 +292,48 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
+      print('Reading menu from consts ...');
+
       Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
-      if (rawMenuMap.containsKey('menus')) {
-         // TODO: How to deal with a null menu.
+      if (rawMenuMap.containsKey('menus'))
          _menus = menuReader(rawMenuMap);
-      }
+
+      getApplicationDocumentsDirectory().then(readMenuFromFile);
 
       _onNewPostPressed = false;
       _botBarIdx = 0;
    }
 
-   Future<void> readLogin() async
+   Future<void> readMenuFromFile(var docDir) async
+   {
+      try {
+         final String fileName = 'menu.txt';
+         final String filePath = '${docDir.path}/${fileName}';
+         print('Trying to read menu from file $filePath');
+
+         File file = File(filePath);
+         final String menu = await file.readAsString();
+         Map<String, dynamic> rawMenuMap = jsonDecode(menu);
+         if (rawMenuMap.containsKey('menus')) {
+            _menus = menuReader(rawMenuMap);
+            print('====> Menu size ${_menus.length}');
+         }
+         print('The menu has been read from file $menu.');
+      } catch (e) {
+         print('Unable to read menu from file.');
+      }
+
+      // Once we have the menu we also have its versions, so we have
+      // all the information to proceed with the login.
+      List<int> versions = List<int>();
+      for (MenuItem o in _menus)
+         versions.add(o.version);
+
+      print('Menu versions ${versions}');
+      readLogin(versions);
+   }
+
+   Future<void> readLogin(List<int> versions) async
    {
       // It looks like we do not need the following block anymore. I
       // will keep it around for a while before removing it just in
@@ -352,7 +383,7 @@ class MenuChatState extends State<MenuChat>
             'cmd': 'login',
             'user': _appId,
             'password': _appPwd,
-            'menu_versions': <int>[-1, -1],
+            'menu_versions': versions,
          };
 
          final String loginText = jsonEncode(loginCmd);
@@ -375,8 +406,6 @@ class MenuChatState extends State<MenuChat>
             initialIndex: 1, length: 3);
 
       _tabCtrl.addListener(_tabCtrlChangeHandler);
-
-      readLogin();
    }
 
    void _onPostSelection(PostData data, bool fav)
@@ -686,7 +715,7 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
-      print(msg);
+      //print(msg);
       if (cmd == "register_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
@@ -705,6 +734,8 @@ class MenuChatState extends State<MenuChat>
          print('Writing login ${login} to login.txt');
          writeToFile(login, 'login.txt');
 
+         print('Rigister_ack: Writing to file ===> $msg');
+         writeToFile(msg, cts.menuFileName);
          _menus = menuReader(ack);
          assert(_menus != null);
          return;
@@ -723,6 +754,8 @@ class MenuChatState extends State<MenuChat>
          // If our menu is out of date the server will send us the new
          // version.
          if (ack.containsKey('menus')) {
+            print('login_ack: Writing to file ===> $msg');
+            writeToFile(msg, cts.menuFileName);
             _menus = menuReader(ack);
             assert(_menus != null);
          }
@@ -732,17 +765,24 @@ class MenuChatState extends State<MenuChat>
 
       //print("Received from server: ${ack}");
       if (cmd == "subscribe_ack") {
-         var items = ack['items'];
-         for (var item in items) {
-            final String from = item['from'];
-            if (from == _appId) {
-               print("subscribe_ack: Ignoring own publish message.");
-               return;
-            }
-            _unreadPosts.add(readPostData(item));
+         final String res = ack["result"];
+         print("subscribe_ack: $res");
+         print("subscribe_ack: 1");
+         if (res == 'fail') {
+            return;
          }
+         print("subscribe_ack: 2");
 
-         setState(() { });
+         var foo = {
+            'menus': _menus
+         };
+
+         final String fileName = 'menu.txt';
+         print("subscribe_ack: 3");
+         final String bar = jsonEncode(foo);
+         print("subscribe_ack: 4");
+         print('subscribe_ack: Writing to file ===> $bar');
+         //writeToFile(bar, cts.menuFileName);
       }
 
       if (cmd == "publish") {
@@ -984,8 +1024,8 @@ class MenuChatState extends State<MenuChat>
    {
       if (_onNewPostPressed) {
          //_______________
-         //final String item = jsonEncode(_menus.first);
-         //print(item);
+         //final String str = jsonEncode(_menus.first);
+         //print(str);
          //_______________
          Widget widget;
          if (_botBarIdx == 2) {
