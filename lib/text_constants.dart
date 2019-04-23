@@ -137,3 +137,4 @@ final TextStyle expTileStl =
                     color: Colors.white);
 
 final String menuFileName = 'menu.txt';
+final String loginFileName = 'login.txt';

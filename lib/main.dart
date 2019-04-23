@@ -34,7 +34,7 @@ void writeToFile(String data, String fileName) async
          sink.write(data);
          await sink.flush();
          await sink.close();
-         print('===> Finished writing');
+         print('Finished writing $fileName');
       } catch (e) {
          print(e);
       }
@@ -307,16 +307,12 @@ class MenuChatState extends State<MenuChat>
    {
       try {
          final String filePath = '${docDir.path}/${cts.menuFileName}';
-         print('Trying to read menu from file $filePath');
-
          File file = File(filePath);
          final String menu = await file.readAsString();
          Map<String, dynamic> rawMenuMap = jsonDecode(menu);
-         if (rawMenuMap.containsKey('menus')) {
-            _menus = menuReader(rawMenuMap);
-            print('The menu has been read from file\n $menu.');
-            print('Size ===> ${_menus.length}.');
-         }
+         assert (rawMenuMap.containsKey('menus'));
+         _menus = menuReader(rawMenuMap);
+         print('The menu has been read from file.');
       } catch (e) {
          print('Unable to read menu from file.');
       }
@@ -360,9 +356,8 @@ class MenuChatState extends State<MenuChat>
       //________________________________________________________________
 
       try {
-         final String fileName = 'login.txt';
          final docDir = await getApplicationDocumentsDirectory();
-         final String filePath = '${docDir.path}/${fileName}';
+         final String filePath = '${docDir.path}/${cts.loginFileName}';
          File file = File(filePath);
          final String login = await file.readAsString();
          final List<String> fields = login.split(":");
@@ -387,8 +382,10 @@ class MenuChatState extends State<MenuChat>
          final String loginText = jsonEncode(loginCmd);
          _connectToServer(loginText);
       } catch (e) {
-         print('The login file does not exist.');
-         // This is the firt time we are connecting to the server
+         // This is the firt time we are connecting to the server (or
+         // the login file is corrupted, etc.)
+         print('${cts.loginFileName} does not exist.');
+         print('Sending a register command.');
          var loginCmd = {'cmd': 'register'};
          final String loginText = jsonEncode(loginCmd);
          _connectToServer(loginText);
@@ -713,7 +710,6 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
-      //print(msg);
       if (cmd == "register_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
@@ -727,13 +723,15 @@ class MenuChatState extends State<MenuChat>
          _appPwd = ack["password"];
          final String login = '${_appId}:${_appPwd}';
 
-         // Writes the login to a file to be read next time the app is
-         // started.
-         print('Writing login ${login} to login.txt');
-         writeToFile(login, 'login.txt');
+         // On register_ack ok we will receive our credentials to log
+         // in the server and the menu, they should both be persisted
+         // in a file.
+         print('register_ack: Persisting login.');
+         writeToFile(login, cts.loginFileName);
 
-         print('register_ack: Writing to file ===> $msg');
+         print('register_ack: Persisting the menu received.');
          writeToFile(msg, cts.menuFileName);
+
          _menus = menuReader(ack);
          assert(_menus != null);
          return;
@@ -742,17 +740,19 @@ class MenuChatState extends State<MenuChat>
       if (cmd == "login_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
-            print("Handle failed login.");
+            print("login_ack: fail.");
             return;
          }
 
-         // TODO: Handle failed login.
+         // I still do not know how this should be handled.
+         // Perhaps send a new register command?
          assert(res == 'ok');
 
-         // If our menu is out of date the server will send us the new
-         // version.
          if (ack.containsKey('menus')) {
-            print('login_ack: Writing to file ===> $msg');
+            // The server has sent us a menu, that means we have to
+            // update the current one keeping the status of each
+            // field.
+            print('login_ack: New menu received.');
             writeToFile(msg, cts.menuFileName);
             _menus = menuReader(ack);
             assert(_menus != null);
@@ -761,7 +761,6 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      //print("Received from server: ${ack}");
       if (cmd == "subscribe_ack") {
          final String res = ack["result"];
          if (res == 'fail') {
@@ -775,7 +774,7 @@ class MenuChatState extends State<MenuChat>
 
          final String fileName = 'menu.txt';
          final String bar = jsonEncode(foo);
-         print('subscribe_ack: Writing to file ===> \n $bar');
+         print('subscribe_ack: Writing menu state to file.');
          writeToFile(bar, cts.menuFileName);
       }
 
@@ -884,7 +883,7 @@ class MenuChatState extends State<MenuChat>
                readHashCodes(item.root.first, item.filterDepth);
 
          if (hashCodes.isEmpty) {
-            print("====> Menu codes is empty.");
+            print("Array with menu hash codes is empty.");
             return;
          }
 
@@ -897,7 +896,6 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String subText = jsonEncode(subCmd);
-      print(subText);
       channel.sink.add(subText);
    }
 
@@ -1017,10 +1015,6 @@ class MenuChatState extends State<MenuChat>
    Widget build(BuildContext context)
    {
       if (_onNewPostPressed) {
-         //_______________
-         //final String str = jsonEncode(_menus.first);
-         //print(str);
-         //_______________
          Widget widget;
          if (_botBarIdx == 2) {
             List<Card> cards = makeMenuInfoCards(
@@ -1242,7 +1236,6 @@ class MenuChatState extends State<MenuChat>
       channel.stream.listen(onWSData,
             onError: onWSError, onDone: onWSDone);
 
-      print(login);
       channel.sink.add(login);
    }
 }
