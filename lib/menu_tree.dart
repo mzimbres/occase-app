@@ -11,7 +11,6 @@ class MenuNode {
 
    MenuNode([this.name, this.status, this.code])
    {
-      status = false;
    }
 
    bool isLeaf()
@@ -107,6 +106,7 @@ MenuNode parseTree(String dataRaw)
       if (st.isEmpty) {
          root.name = name;
          root.status = status;
+         root.code = List<int>();
          st.add(root);
          continue;
       }
@@ -119,8 +119,10 @@ MenuNode parseTree(String dataRaw)
       code.removeWhere((o) => o == -1);
 
       if (depth > lastDepth) {
-         if (lastDepth + 1 != depth)
+         if (lastDepth + 1 != depth) {
+            print('Error on node: ${lastDepth} -- ${depth};${name};${status}');
             return MenuNode();
+         }
 
          // We found the child of the last node pushed on the stack.
          MenuNode p = MenuNode(name, status, code);
@@ -352,11 +354,6 @@ class MenuTraversal2 {
 
       return advance();
    }
-
-   int getDepth()
-   {
-      return st.length - 1;
-   }
 }
 
 String serializeMenuToStr(final MenuNode root)
@@ -365,9 +362,11 @@ String serializeMenuToStr(final MenuNode root)
    MenuNode current = iter.advance();
    String menu = "";
    while (current != null) {
-      final int depth = iter.getDepth();
+      final int depth = current.code.length;
       final int status = current.status ? 1 : 0;
-      menu += "${depth};${current.name};${status}=";
+      final String line = "${depth};${current.name};${status}=";
+      //print('===> $line');
+      menu += line;
       current = iter.next();
    }
 

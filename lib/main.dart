@@ -34,6 +34,7 @@ void writeToFile(String data, String fileName) async
          sink.write(data);
          await sink.flush();
          await sink.close();
+         print('===> Finished writing');
       } catch (e) {
          print(e);
       }
@@ -292,8 +293,6 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      print('Reading menu from consts ...');
-
       Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
       if (rawMenuMap.containsKey('menus'))
          _menus = menuReader(rawMenuMap);
@@ -307,8 +306,7 @@ class MenuChatState extends State<MenuChat>
    Future<void> readMenuFromFile(var docDir) async
    {
       try {
-         final String fileName = 'menu.txt';
-         final String filePath = '${docDir.path}/${fileName}';
+         final String filePath = '${docDir.path}/${cts.menuFileName}';
          print('Trying to read menu from file $filePath');
 
          File file = File(filePath);
@@ -316,9 +314,9 @@ class MenuChatState extends State<MenuChat>
          Map<String, dynamic> rawMenuMap = jsonDecode(menu);
          if (rawMenuMap.containsKey('menus')) {
             _menus = menuReader(rawMenuMap);
-            print('====> Menu size ${_menus.length}');
+            print('The menu has been read from file\n $menu.');
+            print('Size ===> ${_menus.length}.');
          }
-         print('The menu has been read from file $menu.');
       } catch (e) {
          print('Unable to read menu from file.');
       }
@@ -734,7 +732,7 @@ class MenuChatState extends State<MenuChat>
          print('Writing login ${login} to login.txt');
          writeToFile(login, 'login.txt');
 
-         print('Rigister_ack: Writing to file ===> $msg');
+         print('register_ack: Writing to file ===> $msg');
          writeToFile(msg, cts.menuFileName);
          _menus = menuReader(ack);
          assert(_menus != null);
@@ -766,23 +764,19 @@ class MenuChatState extends State<MenuChat>
       //print("Received from server: ${ack}");
       if (cmd == "subscribe_ack") {
          final String res = ack["result"];
-         print("subscribe_ack: $res");
-         print("subscribe_ack: 1");
          if (res == 'fail') {
+            print("subscribe_ack: $res");
             return;
          }
-         print("subscribe_ack: 2");
 
          var foo = {
             'menus': _menus
          };
 
          final String fileName = 'menu.txt';
-         print("subscribe_ack: 3");
          final String bar = jsonEncode(foo);
-         print("subscribe_ack: 4");
-         print('subscribe_ack: Writing to file ===> $bar');
-         //writeToFile(bar, cts.menuFileName);
+         print('subscribe_ack: Writing to file ===> \n $bar');
+         writeToFile(bar, cts.menuFileName);
       }
 
       if (cmd == "publish") {
