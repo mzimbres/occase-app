@@ -640,7 +640,7 @@ class MenuChatState extends State<MenuChat>
       final String to = _favPosts[_currFavChatIdx].from;
 
       var msgMap = {
-         'cmd': 'user_msg',
+         'cmd': 'message',
          'from': _appId,
          'to': to,
          'msg': msg,
@@ -677,7 +677,7 @@ class MenuChatState extends State<MenuChat>
       _newPostTextCtrl.text = "";
 
       var msgMap = {
-         'cmd': 'user_msg',
+         'cmd': 'message',
          'from': _appId,
          'to': _ownPostChatPeer,
          'msg': msg,
@@ -808,7 +808,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.add(_outPostQueue.removeFirst());
       }
 
-      if (cmd == "user_msg") {
+      if (cmd == "message") {
          final String to = ack['to'];
          if (to != _appId) {
             // The server routed us a msg that was meant for somebody
@@ -892,6 +892,7 @@ class MenuChatState extends State<MenuChat>
 
       var subCmd = {
          'cmd': 'subscribe',
+         'last_post_id': 0,
          'channels': codes,
       };
 
