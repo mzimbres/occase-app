@@ -118,6 +118,9 @@ MenuNode parseTree(String dataRaw)
       List<int> code = List<int>.from(codes);
       code.removeWhere((o) => o == -1);
 
+      // TODO: The implementation in C++ uses push_front in the deque.
+      // We should do the same here, otherwise the nodes appear in the
+      // wrong order.
       if (depth > lastDepth) {
          if (lastDepth + 1 != depth) {
             print('Error on node: ${lastDepth} -- ${depth};${name};${status}');
@@ -335,9 +338,18 @@ class MenuTraversal2 {
       final MenuNode node = st.last.last;
       st.last.removeLast();
       if (!node.children.isEmpty) {
+         // TODO: See the TODO in parseTree for why I am adding the
+         // nodes here in reverse order. Once that function is fixed
+         // the nodes have be added in same order they appear in the
+         // childrem array.
          List<MenuNode> childrenCopy = List<MenuNode>();
-         for (MenuNode o in node.children)
-            childrenCopy.add(o);
+         // This is correct.
+         //for (MenuNode o in node.children)
+         //   childrenCopy.add(o);
+
+         // Workaround, should be fixed once parseTree has been fixed.
+         for (int i = 0; i < node.children.length; ++i)
+            childrenCopy.add(node.children[node.children.length - i - 1]);
          st.add(childrenCopy);
       }
 
