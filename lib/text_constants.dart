@@ -138,3 +138,5 @@ final TextStyle expTileStl =
 
 final String menuFileName = 'menu.txt';
 final String loginFileName = 'login.txt';
+final String lastPostIdFileName = 'last_post_id.txt';
+

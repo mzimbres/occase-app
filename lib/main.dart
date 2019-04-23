@@ -284,6 +284,11 @@ class MenuChatState extends State<MenuChat>
    // post.
    String _ownPostChatPeer;
 
+   // The last post id we have received. It will be persisted on every
+   // post received and will be read when the app starts. It used by
+   // the subscribe command.
+   int _lastPostId = 0;
+
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
 
@@ -784,7 +789,11 @@ class MenuChatState extends State<MenuChat>
             final String from = item['from'];
             if (from == _appId)
                return;
-            _unreadPosts.add(readPostData(item));
+            PostData post = readPostData(item);
+            _unreadPosts.add(post);
+            _lastPostId = post.id;
+            final String lastPostIdStr = '${_lastPostId}';
+            writeToFile(lastPostIdStr, cts.lastPostIdFileName);
          }
 
          // TODO: Before triggering a redraw we should perhaps check
@@ -892,7 +901,7 @@ class MenuChatState extends State<MenuChat>
 
       var subCmd = {
          'cmd': 'subscribe',
-         'last_post_id': 0,
+         'last_post_id': _lastPostId,
          'channels': codes,
       };
 
