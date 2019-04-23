@@ -303,6 +303,7 @@ class MenuChatState extends State<MenuChat>
          _menus = menuReader(rawMenuMap);
 
       getApplicationDocumentsDirectory().then(readMenuFromFile);
+      getApplicationDocumentsDirectory().then(readLastPostIdFromFile);
 
       _onNewPostPressed = false;
       _botBarIdx = 0;
@@ -330,6 +331,20 @@ class MenuChatState extends State<MenuChat>
 
       print('Menu versions ${versions}');
       readLogin(versions);
+   }
+
+   Future<void> readLastPostIdFromFile(var docDir) async
+   {
+      try {
+         final String filePath =
+               '${docDir.path}/${cts.lastPostIdFileName}';
+         File file = File(filePath);
+         final String n = await file.readAsString();
+         _lastPostId = int.parse(n);
+         print('Last post id has been read from file: ${_lastPostId}.');
+      } catch (e) {
+         print('Unable to read last post id from file.');
+      }
    }
 
    Future<void> readLogin(List<int> versions) async
