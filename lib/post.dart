@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
@@ -9,6 +10,21 @@ class ChatItem {
    bool thisApp; 
    String msg = '';
    ChatItem(this.thisApp, this.msg) { }
+
+   ChatItem.fromJson(Map<String, dynamic> map)
+   {
+      thisApp = map["this_app"];
+      msg = map["msg"];
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      {
+         'this_app': thisApp,
+         'msg': msg,
+      };
+   }
 }
 
 class ChatHistory {
@@ -48,6 +64,22 @@ class ChatHistory {
 
       return msgs.last.msg;
    }
+
+   String toFileString()
+   {
+      String content = '';
+      content += '0 ${peer}\n';
+
+      for (ChatItem msg in msgs) {
+         final String jsonStr = jsonEncode(msg);
+         content += '1 ${jsonStr}\n';
+      }
+
+      for (ChatItem msg in unreadMsgs) {
+         final String jsonStr = jsonEncode(msg);
+         content += '2 ${jsonStr}\n';
+      }
+   }
 }
 
 class PostData {
@@ -56,7 +88,7 @@ class PostData {
 
    // Together with *from* this is a unique identifier for this post.
    // This value is sent by the server.
-   int id;
+   int id = 0;
 
    // Contains channel codes in the form
    //
@@ -144,6 +176,40 @@ class PostData {
    void removeLongPressedChats()
    {
       chats.removeWhere((e) { return e.isLongPressed; });
+   }
+
+   PostData.fromJson(Map<String, dynamic> map)
+   {
+      // Part of the object can be deserialized by readPostData. The
+      // only remaining field will be *peers*.
+      PostData pd = readPostData(map);
+      from = pd.from;
+      id = pd.id;
+      codes = pd.codes;
+      description = pd.description;
+
+      // TODO: Read files with individual chat entries and construct
+      // the chats list.
+      // I have decided it is better to put each individual chat
+      // history in a file to make it easy to append and remove.
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      List<String> peers = List<String>();
+      for (ChatHistory o in chats)
+         peers.add(o.peer);
+
+      // To make the deserialization easier, we will make the json
+      // partially deserializable by readPostData.
+      return
+      {
+         'msg': description,
+         'from': from,
+         'id': id,
+         'to': codes,
+         'peers': peers,
+      };
    }
 }
 

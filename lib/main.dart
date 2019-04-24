@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
-import 'dart:io' show File;
+import 'dart:io' show File, FileMode, Directory;
 import 'dart:collection';
 
 import 'package:web_socket_channel/io.dart';
@@ -23,22 +23,35 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
-void writeToFile(String data, String fileName) async
+void writeToFile(String data, String fullPath, FileMode mode)
 {
-   final docDir = await getApplicationDocumentsDirectory();
-   final String filePath = '${docDir.path}/${fileName}';
-   File file = File(filePath);
+   if (data.isEmpty)
+      return;
+
+   File file = File(fullPath);
    file.create(recursive: true).then((File f) async {
       try {
-         var sink = f.openWrite();
+         var sink = f.openWrite(mode: mode);
          sink.write(data);
          await sink.flush();
          await sink.close();
-         print('Finished writing $fileName');
+         print('Finished writing $fullPath');
       } catch (e) {
          print(e);
       }
    });
+}
+
+List<PostData> postsFromStrs(final List<String> posts)
+{
+   List<PostData> foo = List<PostData>();
+   for (String o in posts) {
+      //print('Decoding $o');
+      Map<String, dynamic> map = jsonDecode(o);
+      foo.add(PostData.fromJson(map));
+   }
+
+   return foo;
 }
 
 class MyApp extends StatelessWidget {
@@ -289,6 +302,9 @@ class MenuChatState extends State<MenuChat>
    // the subscribe command.
    int _lastPostId = 0;
 
+   // The directory where all data will be persisted.
+   String docDirPath = '';
+
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
 
@@ -302,17 +318,44 @@ class MenuChatState extends State<MenuChat>
       if (rawMenuMap.containsKey('menus'))
          _menus = menuReader(rawMenuMap);
 
-      getApplicationDocumentsDirectory().then(readMenuFromFile);
-      getApplicationDocumentsDirectory().then(readLastPostIdFromFile);
+      // The first thing we have to do when starting the app is to read
+      // the posts and their chat histories from file. This is so
+      // because after login the server may send us offline messages
+      // that are associated with posts. If they are not already
+      // loaded the app will ignore them and they will be lost.
+      getApplicationDocumentsDirectory().then((Directory docDir) async
+      {
+         docDirPath = docDir.path;
+         readPostsFromFile(docDir.path);
+      });
 
       _onNewPostPressed = false;
       _botBarIdx = 0;
    }
 
-   Future<void> readMenuFromFile(var docDir) async
+   Future<void> readPostsFromFile(final String docDir) async
    {
       try {
-         final String filePath = '${docDir.path}/${cts.menuFileName}';
+         final String filePath = '${docDir}/${cts.unreadPostsFileName}';
+         File file = File(filePath);
+         final List<String> posts = await file.readAsLines();
+         _unreadPosts = postsFromStrs(posts);
+         if (!posts.isEmpty)
+            setState(() { });
+         final int n = posts.length;
+         print('Unread posts read from file: $n');
+      } catch (e) {
+         print(e);
+      }
+
+      readMenuFromFile(docDir);
+      readLastPostIdFromFile(docDir);
+   }
+
+   Future<void> readMenuFromFile(final String docDir) async
+   {
+      try {
+         final String filePath = '${docDir}/${cts.menuFileName}';
          File file = File(filePath);
          final String menu = await file.readAsString();
          Map<String, dynamic> rawMenuMap = jsonDecode(menu);
@@ -333,11 +376,10 @@ class MenuChatState extends State<MenuChat>
       readLogin(versions);
    }
 
-   Future<void> readLastPostIdFromFile(var docDir) async
+   Future<void> readLastPostIdFromFile(final String docDir) async
    {
       try {
-         final String filePath =
-               '${docDir.path}/${cts.lastPostIdFileName}';
+         final String filePath = '${docDir}/${cts.lastPostIdFileName}';
          File file = File(filePath);
          final String n = await file.readAsString();
          _lastPostId = int.parse(n);
@@ -376,8 +418,7 @@ class MenuChatState extends State<MenuChat>
       //________________________________________________________________
 
       try {
-         final docDir = await getApplicationDocumentsDirectory();
-         final String filePath = '${docDir.path}/${cts.loginFileName}';
+         final String filePath = '${docDirPath}/${cts.loginFileName}';
          File file = File(filePath);
          final String login = await file.readAsString();
          final List<String> fields = login.split(":");
@@ -435,7 +476,6 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPost()
    {
-      print("Open menu selection.");
       _onNewPostPressed = true;
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
@@ -596,7 +636,6 @@ class MenuChatState extends State<MenuChat>
       // _posts since that list should not contain our own
       // posts.
       _postInput.from = _appId;
-      print(_postInput.from);
       _outPostQueue.add(_postInput.clone());
       _postInput = PostData();
 
@@ -611,7 +650,6 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String pubText = jsonEncode(pubMap);
-      print(pubText);
       channel.sink.add(pubText);
 
       setState(() { });
@@ -635,6 +673,12 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatPressed(int i, int j)
    {
+      //_______
+      // Temporary code to test post persistency.
+      final String postStr = jsonEncode(_ownPosts[i]);
+      print(postStr);
+      //_______
+
       _currOwnChatIdx = i;
      _ownPostChatPeer = _ownPosts[i].chats[j].peer;
 
@@ -747,10 +791,12 @@ class MenuChatState extends State<MenuChat>
          // in the server and the menu, they should both be persisted
          // in a file.
          print('register_ack: Persisting login.');
-         writeToFile(login, cts.loginFileName);
+         final String loginFilePath = '${docDirPath}/${cts.loginFileName}';
+         writeToFile(login, loginFilePath, FileMode.write);
 
          print('register_ack: Persisting the menu received.');
-         writeToFile(msg, cts.menuFileName);
+         final String menuFilePath = '${docDirPath}/${cts.menuFileName}';
+         writeToFile(msg, menuFilePath, FileMode.write);
 
          _menus = menuReader(ack);
          assert(_menus != null);
@@ -759,21 +805,26 @@ class MenuChatState extends State<MenuChat>
 
       if (cmd == "login_ack") {
          final String res = ack["result"];
+
+         // I still do not know how a failed login should be handled.
+         // Perhaps send a new register command? It can only happen if
+         // the server is blocking this user.
          if (res == 'fail') {
             print("login_ack: fail.");
             return;
          }
 
-         // I still do not know how this should be handled.
-         // Perhaps send a new register command?
-         assert(res == 'ok');
+         // We are loggen in and can send the channels we are
+         // subscribed to to receive posts sent while we were offline.
+         _sendHahesToServer();
 
          if (ack.containsKey('menus')) {
             // The server has sent us a menu, that means we have to
             // update the current one keeping the status of each
-            // field.
+            // field. TODO: Keep the status field.
             print('login_ack: New menu received.');
-            writeToFile(msg, cts.menuFileName);
+            final String filePath = '${docDirPath}/${cts.menuFileName}';
+            writeToFile(msg, filePath, FileMode.write);
             _menus = menuReader(ack);
             assert(_menus != null);
          }
@@ -788,6 +839,18 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
+         // When a subscribe_ack is received from the server after the
+         // app has sent a subscribe command the app will persist the
+         // menu together with the status states on a file. However
+         // sometimes we do not want to persist the menu on file, this
+         // is the case when the app successfully logs in server and
+         // proceeds with the subscribe to get the posts the may have
+         // been sent while the app was offline. In this case there
+         // has been no change in the menu. However, I do not see a
+         // need now to optimize away this redundant writes. Perhaps
+         // in the future we can introduce a flag to inform the
+         // subscribe_ack is the result of login_ack.
+
          var foo = {
             'menus': _menus
          };
@@ -795,41 +858,68 @@ class MenuChatState extends State<MenuChat>
          final String fileName = 'menu.txt';
          final String bar = jsonEncode(foo);
          print('subscribe_ack: Writing menu state to file.');
-         writeToFile(bar, cts.menuFileName);
+         final String filePath = '${docDirPath}/${cts.menuFileName}';
+         writeToFile(bar, filePath, FileMode.write);
+         return;
       }
 
       if (cmd == "publish") {
+         // Remember the size of the list to append later the new items
+         // to a file.
+         final int size = _unreadPosts.length;
          var items = ack['items'];
          for (var item in items) {
             final String from = item['from'];
-            if (from == _appId)
-               return;
+            if (from == _appId) {
+               // Our own post being sent back to us.
+               continue;
+            }
+
             PostData post = readPostData(item);
             _unreadPosts.add(post);
-            _lastPostId = post.id;
-            final String lastPostIdStr = '${_lastPostId}';
-            writeToFile(lastPostIdStr, cts.lastPostIdFileName);
+
+            // It is not guaranteed that the array of posts sent by
+            // the server has increasing post ids so we should check.
+            if (post.id > _lastPostId)
+               _lastPostId = post.id;
          }
 
-         // TODO: Before triggering a redraw we should perhaps check
-         // whether it is necessary given our current state.
+         final String lastPostIdStr = '${_lastPostId}';
+         final String lastPostIdFilePath =
+               '${docDirPath}/${cts.lastPostIdFileName}';
+         writeToFile(lastPostIdStr, lastPostIdFilePath, FileMode.write);
+
+         // Append the lastest posts to file.
+         String data = '';
+         for (int i = size; i < _unreadPosts.length; ++i) {
+            final String postStr = jsonEncode(_unreadPosts[i]);
+            data += '$postStr\n';
+         }
+
+         // TODO: Limit the size of this file to a given size. When
+         // this happens it may be easier to always overwrite the file
+         // contents.
+         final String unreadPostsFilePath =
+               '${docDirPath}/${cts.unreadPostsFileName}';
+         writeToFile(data, unreadPostsFilePath, FileMode.append);
+
+         // Consider: Before triggering a redraw we should perhaps
+         // check whether it is necessary given our current state.
          setState(() { });
       }
 
       if (cmd == "publish_ack") {
-         final String msg = ack['msg'];
+         assert(!_outPostQueue.isEmpty);
+         final PostData post =_outPostQueue.removeFirst();
          final String res = ack['result'];
          if (res != 'ok') {
-            print("Message could not be sent.");
-            // TODO: Retry to send. Since we send one by one the
-            // message that failed is in the top of the stack.
+            print("Message could not be sent. Removing post.");
             return;
          }
 
-         _outPostQueue.first.id = ack['id'];
-
-         assert(!_outPostQueue.isEmpty);
-         _ownPosts.add(_outPostQueue.removeFirst());
+         post.id = ack['id'];
+         _ownPosts.add(post);
+         return;
       }
 
       if (cmd == "message") {
@@ -907,7 +997,7 @@ class MenuChatState extends State<MenuChat>
                readHashCodes(item.root.first, item.filterDepth);
 
          if (hashCodes.isEmpty) {
-            print("Array with menu hash codes is empty.");
+            print("Menu hash codes is empty. Nothing to do ...");
             return;
          }
 
