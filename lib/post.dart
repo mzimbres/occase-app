@@ -1,10 +1,47 @@
 import 'dart:convert';
+import 'dart:io' show File, FileMode, Directory;
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+
+void writeToFile(String data, String fullPath, FileMode mode)
+{
+   // Do not do this. We also use this function to wipe out data from
+   // files.
+   //if (data.isEmpty)
+   //   return;
+
+   File file = File(fullPath);
+   file.create(recursive: true).then((File f) async {
+      try {
+         var sink = f.openWrite(mode: mode);
+         sink.write(data);
+         await sink.flush();
+         await sink.close();
+         print('Finished writing $fullPath');
+      } catch (e) {
+         print(e);
+      }
+   });
+}
+
+void appendDataToFile<T>(final List<T> data, final String fullPath)
+{
+   String content = '';
+   for (T o in data) {
+      final String postStr = jsonEncode(o);
+      content += '$postStr\n';
+   }
+
+   // TODO: Limit the size of this file to a given size. When
+   // this happens it may be easier to always overwrite the file
+   // contents.
+   writeToFile(content, fullPath, FileMode.append);
+}
 
 class ChatItem {
    bool thisApp; 
@@ -27,18 +64,65 @@ class ChatItem {
    }
 }
 
+// This is a duplicate of postsFromStrs since dart does not support
+// proper generics.
+List<ChatItem> chatItemsFromStrs(final List<String> items)
+{
+   List<ChatItem> foo = List<ChatItem>();
+   for (String o in items) {
+      Map<String, dynamic> map = jsonDecode(o);
+      foo.add(ChatItem.fromJson(map));
+   }
+
+   return foo;
+}
+
 class ChatHistory {
    String peer = '';
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
+   String _readFullPath = '';
+   String _unreadFullPath = '';
 
-   ChatHistory(this.peer);
+   ChatHistory(this.peer, final int postId)
+   {
+      getApplicationDocumentsDirectory().then((Directory dir) async
+         { _init(dir.path, postId); });
+   }
+
+   Future<void> _init(final String path, final int postId) async
+   {
+      _readFullPath = '$path/chat_read_${postId}_${peer}.txt';
+
+      try {
+         File f = File(_readFullPath);
+         final List<String> lines = await f.readAsLines();
+         msgs = chatItemsFromStrs(lines);
+      } catch (e) {
+         print(e);
+      }
+
+      _unreadFullPath = '$path/chat_unread_${postId}_${peer}.txt';
+
+      try {
+         File f = File(_unreadFullPath);
+         final List<String> lines = await f.readAsLines();
+         unreadMsgs  = chatItemsFromStrs(lines);
+      } catch (e) {
+         print(e);
+      }
+   }
 
    void moveToReadHistory()
    {
+      if (unreadMsgs.isEmpty)
+         return;
+
       msgs.addAll(unreadMsgs);
+      appendDataToFile(unreadMsgs, _readFullPath);
       unreadMsgs.clear();
+      writeToFile('', _unreadFullPath, FileMode.write);
    }
 
    String getLastUnreadMsg()
@@ -65,20 +149,18 @@ class ChatHistory {
       return msgs.last.msg;
    }
 
-   String toFileString()
+   void addMsg(final String msg, final bool thisApp)
    {
-      String content = '';
-      content += '0 ${peer}\n';
+      ChatItem item = ChatItem(thisApp, msg);
+      msgs.add(item);
+      appendDataToFile(<ChatItem>[item], _readFullPath);
+   }
 
-      for (ChatItem msg in msgs) {
-         final String jsonStr = jsonEncode(msg);
-         content += '1 ${jsonStr}\n';
-      }
-
-      for (ChatItem msg in unreadMsgs) {
-         final String jsonStr = jsonEncode(msg);
-         content += '2 ${jsonStr}\n';
-      }
+   void addUnreadMsg(final String msg, final bool thisApp)
+   {
+      ChatItem item = ChatItem(thisApp, msg);
+      unreadMsgs.add(item);
+      appendDataToFile(<ChatItem>[item], _unreadFullPath);
    }
 }
 
@@ -120,25 +202,13 @@ class PostData {
       return ret;
    }
 
-   void addMsg(String peer, String msg, bool thisApp)
-   {
-      ChatHistory history = getChatHistory(peer);
-      history.msgs.add(ChatItem(thisApp, msg));
-   }
-
-   void addUnreadMsg(String peer, String msg, bool thisApp)
-   {
-      ChatHistory history = getChatHistory(peer);
-      history.unreadMsgs.add(ChatItem(thisApp, msg));
-   }
-
    void createChatEntryForPeer(String peer)
    {
-      ChatHistory history = ChatHistory(peer);
+      ChatHistory history = ChatHistory(peer, id);
       chats.add(history);
    }
 
-   ChatHistory getChatHistory(String peer)
+   ChatHistory getChatHist(String peer)
    {
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
@@ -188,10 +258,11 @@ class PostData {
       codes = pd.codes;
       description = pd.description;
 
-      // TODO: Read files with individual chat entries and construct
-      // the chats list.
-      // I have decided it is better to put each individual chat
-      // history in a file to make it easy to append and remove.
+      chats = List<ChatHistory>();
+
+      var peers = map['peers'];
+      for (String peer in peers)
+         chats.add(ChatHistory(peer, id));
    }
 
    Map<String, dynamic> toJson()

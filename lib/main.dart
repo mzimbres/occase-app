@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'dart:io' show File, FileMode, Directory;
 import 'dart:collection';
 
@@ -23,30 +22,10 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
-void writeToFile(String data, String fullPath, FileMode mode)
-{
-   if (data.isEmpty)
-      return;
-
-   File file = File(fullPath);
-   file.create(recursive: true).then((File f) async {
-      try {
-         var sink = f.openWrite(mode: mode);
-         sink.write(data);
-         await sink.flush();
-         await sink.close();
-         print('Finished writing $fullPath');
-      } catch (e) {
-         print(e);
-      }
-   });
-}
-
 List<PostData> postsFromStrs(final List<String> posts)
 {
    List<PostData> foo = List<PostData>();
    for (String o in posts) {
-      //print('Decoding $o');
       Map<String, dynamic> map = jsonDecode(o);
       foo.add(PostData.fromJson(map));
    }
@@ -272,7 +251,7 @@ class MenuChatState extends State<MenuChat>
    // A flag that is set to true when the floating button (new
    // postertisement) is clicked. It must be carefully set to false
    // when that screens are left.
-   bool _onNewPostPressed = false;
+   bool _newPostPressed = false;
 
    // The index of the tab we are currently in in the *new
    // postertisement screen*. For example 0 for the localization menu,
@@ -282,16 +261,16 @@ class MenuChatState extends State<MenuChat>
    // Stores the last tapped botton bar of *chats* screen. See that
    // without this variable we cannot know which of the two chat
    // screens we are currently in. It should be only used when both
-   // _currFavChatIdx and _currFavChatIdx are -1.
+   // _favChatIdx and _favChatIdx are -1.
    int _chatBotBarIdx = 1;
 
    // Stores the current chat index in the array _favPosts, -1
    // means we are not in this screen.
-   int _currFavChatIdx = -1;
+   int _favChatIdx = -1;
 
-   // Similar to _currFavChatIdx but corresponds to the *my own posts*
+   // Similar to _favChatIdx but corresponds to the *my own posts*
    // screen.
-   int _currOwnChatIdx = -1;
+   int _ownChatIdx = -1;
 
    // This string will be set to the name of user interested on our
    // post.
@@ -302,8 +281,14 @@ class MenuChatState extends State<MenuChat>
    // the subscribe command.
    int _lastPostId = 0;
 
-   // The directory where all data will be persisted.
-   String docDirPath = '';
+   String _docDirPath;
+
+   // Full path to files.
+   String _unreadPostsFileFullPath;
+   String _loginFileFullPath;
+   String _menuFileFullPath;
+   String _lastPostIdFileFullPath;
+   String _postsFileFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -325,28 +310,41 @@ class MenuChatState extends State<MenuChat>
       // loaded the app will ignore them and they will be lost.
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
-         docDirPath = docDir.path;
-         readPostsFromFile(docDir.path);
+         _docDirPath = docDir.path;
+         _unreadPostsFileFullPath = '${_docDirPath}/${cts.unreadPostsFileName}';
+         _loginFileFullPath = '${_docDirPath}/${cts.loginFileName}';
+         _menuFileFullPath = '${_docDirPath}/${cts.menuFileName}';
+         _lastPostIdFileFullPath = '${_docDirPath}/${cts.lastPostIdFileName}';
+         _postsFileFullPath = '${_docDirPath}/${cts.postsFileName}';
+         readPostsFromFile(_docDirPath);
       });
 
-      _onNewPostPressed = false;
+      _newPostPressed = false;
       _botBarIdx = 0;
    }
 
    Future<void> readPostsFromFile(final String docDir) async
    {
       try {
-         final String filePath = '${docDir}/${cts.unreadPostsFileName}';
-         File file = File(filePath);
-         final List<String> posts = await file.readAsLines();
-         _unreadPosts = postsFromStrs(posts);
-         if (!posts.isEmpty)
-            setState(() { });
-         final int n = posts.length;
-         print('Unread posts read from file: $n');
+         File f1 = File(_postsFileFullPath);
+         final List<String> p1 = await f1.readAsLines();
+         _posts = postsFromStrs(p1);
+         print('Posts read from file: ${_posts.length}');
       } catch (e) {
          print(e);
       }
+
+      try {
+         File f2 = File(_unreadPostsFileFullPath);
+         final List<String> p2 = await f2.readAsLines();
+         _unreadPosts = postsFromStrs(p2);
+
+         print('Unread posts read from file: ${_unreadPosts.length}');
+      } catch (e) {
+         print(e);
+      }
+
+      setState(() { });
 
       readMenuFromFile(docDir);
       readLastPostIdFromFile(docDir);
@@ -418,8 +416,7 @@ class MenuChatState extends State<MenuChat>
       //________________________________________________________________
 
       try {
-         final String filePath = '${docDirPath}/${cts.loginFileName}';
-         File file = File(filePath);
+         File file = File(_loginFileFullPath);
          final String login = await file.readAsString();
          final List<String> fields = login.split(":");
          _appId = fields.first;
@@ -445,7 +442,7 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
          // This is the firt time we are connecting to the server (or
          // the login file is corrupted, etc.)
-         print('${cts.loginFileName} does not exist.');
+         print('${_loginFileFullPath} does not exist.');
          print('Sending a register command.');
          var loginCmd = {'cmd': 'register'};
          final String loginText = jsonEncode(loginCmd);
@@ -476,7 +473,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPost()
    {
-      _onNewPostPressed = true;
+      _newPostPressed = true;
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
       _botBarIdx = 0;
@@ -487,7 +484,7 @@ class MenuChatState extends State<MenuChat>
    bool _onWillPopMenu()
    {
       if (_menus[_botBarIdx].root.length == 1) {
-         _onNewPostPressed = false;
+         _newPostPressed = false;
          setState(() { });
          return false;
       }
@@ -499,7 +496,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopFavChatScreen()
    {
-      _currFavChatIdx = -1;
+      _favChatIdx = -1;
       setState(() { });
       return false;
    }
@@ -507,7 +504,7 @@ class MenuChatState extends State<MenuChat>
    bool _onWillPopOwnChatScreen()
    {
       _ownPostChatPeer = null;
-      //_currOwnChatIdx = -1;
+      //_ownChatIdx = -1;
       setState(() { });
       return false;
    }
@@ -614,7 +611,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onSendNewPostPressed(bool add)
    {
-      _onNewPostPressed = false;
+      _newPostPressed = false;
 
       if (!add) {
          _postInput = PostData();
@@ -659,7 +656,7 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatPressed(int i, int j)
    {
       assert(j == 0);
-      _currFavChatIdx = i;
+      _favChatIdx = i;
       setState(() { });
    }
 
@@ -679,7 +676,7 @@ class MenuChatState extends State<MenuChat>
       print(postStr);
       //_______
 
-      _currOwnChatIdx = i;
+      _ownChatIdx = i;
      _ownPostChatPeer = _ownPosts[i].chats[j].peer;
 
       setState(() { });
@@ -701,22 +698,22 @@ class MenuChatState extends State<MenuChat>
       final String msg = _newPostTextCtrl.text;
       _newPostTextCtrl.text = "";
 
-      final String to = _favPosts[_currFavChatIdx].from;
+      final String to = _favPosts[_favChatIdx].from;
+      final int id = _favPosts[_favChatIdx].id;
 
       var msgMap = {
          'cmd': 'message',
          'from': _appId,
          'to': to,
          'msg': msg,
-         'post_id': _favPosts[_currFavChatIdx].id,
+         'post_id': id,
          'is_sender_post': false,
       };
 
       final String payload = jsonEncode(msgMap);
-      print(payload);
       channel.sink.add(payload);
 
-      _favPosts[_currFavChatIdx].addMsg(to, msg, true);
+      _favPosts[_favChatIdx].getChatHist(to).addMsg(msg, true);
 
       setState(()
       {
@@ -738,6 +735,8 @@ class MenuChatState extends State<MenuChat>
          return;
 
       final String msg = _newPostTextCtrl.text;
+      final int id =_ownPosts[_ownChatIdx].id;
+
       _newPostTextCtrl.text = "";
 
       var msgMap = {
@@ -745,7 +744,7 @@ class MenuChatState extends State<MenuChat>
          'from': _appId,
          'to': _ownPostChatPeer,
          'msg': msg,
-         'post_id': _ownPosts[_currOwnChatIdx].id,
+         'post_id': id,
          'is_sender_post': true,
       };
 
@@ -753,7 +752,7 @@ class MenuChatState extends State<MenuChat>
       print(payload);
       channel.sink.add(payload);
 
-      _ownPosts[_currOwnChatIdx].addMsg(_ownPostChatPeer, msg, true);
+      _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer).addMsg(msg, true);
 
       setState(()
       {
@@ -791,12 +790,10 @@ class MenuChatState extends State<MenuChat>
          // in the server and the menu, they should both be persisted
          // in a file.
          print('register_ack: Persisting login.');
-         final String loginFilePath = '${docDirPath}/${cts.loginFileName}';
-         writeToFile(login, loginFilePath, FileMode.write);
+         writeToFile(login, _loginFileFullPath, FileMode.write);
 
          print('register_ack: Persisting the menu received.');
-         final String menuFilePath = '${docDirPath}/${cts.menuFileName}';
-         writeToFile(msg, menuFilePath, FileMode.write);
+         writeToFile(msg, _menuFileFullPath, FileMode.write);
 
          _menus = menuReader(ack);
          assert(_menus != null);
@@ -823,8 +820,7 @@ class MenuChatState extends State<MenuChat>
             // update the current one keeping the status of each
             // field. TODO: Keep the status field.
             print('login_ack: New menu received.');
-            final String filePath = '${docDirPath}/${cts.menuFileName}';
-            writeToFile(msg, filePath, FileMode.write);
+            writeToFile(msg, _menuFileFullPath, FileMode.write);
             _menus = menuReader(ack);
             assert(_menus != null);
          }
@@ -858,8 +854,7 @@ class MenuChatState extends State<MenuChat>
          final String fileName = 'menu.txt';
          final String bar = jsonEncode(foo);
          print('subscribe_ack: Writing menu state to file.');
-         final String filePath = '${docDirPath}/${cts.menuFileName}';
-         writeToFile(bar, filePath, FileMode.write);
+         writeToFile(bar, _menuFileFullPath, FileMode.write);
          return;
       }
 
@@ -885,23 +880,11 @@ class MenuChatState extends State<MenuChat>
          }
 
          final String lastPostIdStr = '${_lastPostId}';
-         final String lastPostIdFilePath =
-               '${docDirPath}/${cts.lastPostIdFileName}';
-         writeToFile(lastPostIdStr, lastPostIdFilePath, FileMode.write);
+         writeToFile(lastPostIdStr, _lastPostIdFileFullPath, FileMode.write);
 
-         // Append the lastest posts to file.
-         String data = '';
-         for (int i = size; i < _unreadPosts.length; ++i) {
-            final String postStr = jsonEncode(_unreadPosts[i]);
-            data += '$postStr\n';
-         }
-
-         // TODO: Limit the size of this file to a given size. When
-         // this happens it may be easier to always overwrite the file
-         // contents.
-         final String unreadPostsFilePath =
-               '${docDirPath}/${cts.unreadPostsFileName}';
-         writeToFile(data, unreadPostsFilePath, FileMode.append);
+         // At the moment we do not impose a limit on how big this
+         // file can grow.
+         appendDataToFile(_unreadPosts, _unreadPostsFileFullPath);
 
          // Consider: Before triggering a redraw we should perhaps
          // check whether it is necessary given our current state.
@@ -931,11 +914,11 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         final int post_id = ack['post_id'];
+         final int postId = ack['post_id'];
          final String msg = ack['msg'];
          final String from = ack['from'];
 
-         // TODO: The logic below is equal for both case. Do not
+         // TODO: The logic below is equal for both cases. Do not
          // duplicate code, move it into a function.
 
          // A user message can be either directed to one of the posts
@@ -947,7 +930,7 @@ class MenuChatState extends State<MenuChat>
             // selected as favorite. We have to search it and insert
             // this new message in the chat history.
             final int i =
-               _favPosts.indexWhere((e) { return e.id == post_id;});
+               _favPosts.indexWhere((e) { return e.id == postId;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
@@ -955,15 +938,14 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            _favPosts[i].addUnreadMsg(from, msg, false);
-
+            _favPosts[i].getChatHist(from).addUnreadMsg(msg, false);
          } else {
             // This is a message to our own post, some interested user.
             // We have to find first which one of our own posts it
             // refers to.
 
             final int i =
-               _ownPosts.indexWhere((e) { return e.id == post_id;});
+               _ownPosts.indexWhere((e) { return e.id == postId;});
 
             if (i == -1) {
                // There is a bug in the logic. Fix this.
@@ -971,7 +953,7 @@ class MenuChatState extends State<MenuChat>
                return;
             }
 
-            _ownPosts[i].addUnreadMsg(from, msg, false);
+            _ownPosts[i].getChatHist(from).addUnreadMsg(msg, false);
          }
 
          setState((){});
@@ -1038,8 +1020,8 @@ class MenuChatState extends State<MenuChat>
    {
       print("Implement me");
 
-      if (_chatBotBarIdx == 0 && _currOwnChatIdx != -1) {
-         _currOwnChatIdx = -1;
+      if (_chatBotBarIdx == 0 && _ownChatIdx != -1) {
+         _ownChatIdx = -1;
          setState(() { });
          return false;
       }
@@ -1129,7 +1111,7 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext context)
    {
-      if (_onNewPostPressed) {
+      if (_newPostPressed) {
          Widget widget;
          if (_botBarIdx == 2) {
             List<Card> cards = makeMenuInfoCards(
@@ -1186,13 +1168,12 @@ class MenuChatState extends State<MenuChat>
                                    _botBarIdx)));
       }
 
-      if (_tabCtrl.index == 2 && _currFavChatIdx != -1) {
+      if (_tabCtrl.index == 2 && _favChatIdx != -1) {
          // We are in the favorite posts screen, where pressing the
          // chat button in any of the posts leads us to the chat
          // screen with the postertiser.
-         final String peer = _favPosts[_currFavChatIdx].from;
-         ChatHistory chatHist =
-               _favPosts[_currFavChatIdx].getChatHistory(peer);
+         final String peer = _favPosts[_favChatIdx].from;
+         ChatHistory chatHist = _favPosts[_favChatIdx].getChatHist(peer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
@@ -1204,11 +1185,11 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_tabCtrl.index == 2 &&
-          _currOwnChatIdx != -1 && _ownPostChatPeer != null) {
+          _ownChatIdx != -1 && _ownPostChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific post.
          ChatHistory chatHist =
-               _ownPosts[_currOwnChatIdx].getChatHistory(_ownPostChatPeer);
+               _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer);
          chatHist.moveToReadHistory();
          return createChatScreen(
                    context,
@@ -1254,8 +1235,13 @@ class MenuChatState extends State<MenuChat>
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
-         _posts.addAll(_unreadPosts);
-         _unreadPosts.clear();
+         if (!_unreadPosts.isEmpty) {
+            _posts.addAll(_unreadPosts);
+            appendDataToFile(_unreadPosts, _postsFileFullPath);
+            _unreadPosts.clear();
+            // Wipes out all the data in the unread posts file.
+            writeToFile('', _unreadPostsFileFullPath, FileMode.write);
+         }
       }
 
       bodies[1] = makePostTabListView(context,

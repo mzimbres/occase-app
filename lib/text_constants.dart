@@ -140,4 +140,5 @@ final String menuFileName = 'menu.txt';
 final String loginFileName = 'login.txt';
 final String lastPostIdFileName = 'last_post_id.txt';
 final String unreadPostsFileName = 'unread_posts.txt';
+final String postsFileName = 'posts.txt';
 
