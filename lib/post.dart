@@ -29,7 +29,8 @@ void writeToFile(String data, String fullPath, FileMode mode)
    });
 }
 
-void appendDataToFile<T>(final List<T> data, final String fullPath)
+void writeListToDisk<T>( final List<T> data, final String fullPath
+                        , FileMode mode)
 {
    String content = '';
    for (T o in data) {
@@ -40,7 +41,7 @@ void appendDataToFile<T>(final List<T> data, final String fullPath)
    // TODO: Limit the size of this file to a given size. When
    // this happens it may be easier to always overwrite the file
    // contents.
-   writeToFile(content, fullPath, FileMode.append);
+   writeToFile(content, fullPath, mode);
 }
 
 class ChatItem {
@@ -128,7 +129,7 @@ class ChatHistory {
             '$path/chat_read_${postId}_${peer}.txt';
          final String unreadFullPath =
             '$path/chat_unread_${postId}_${peer}.txt';
-         appendDataToFile(unreadMsgs, readFullPath);
+         writeListToDisk(unreadMsgs, readFullPath, FileMode.append);
          unreadMsgs.clear();
          writeToFile('', unreadFullPath, FileMode.write);
       });
@@ -167,7 +168,8 @@ class ChatHistory {
       {
          final String readFullPath =
             '${dir.path}/chat_read_${postId}_${peer}.txt';
-         appendDataToFile(<ChatItem>[item], readFullPath);
+         writeListToDisk( <ChatItem>[item], readFullPath
+                         , FileMode.append);
       });
    }
 
@@ -180,7 +182,8 @@ class ChatHistory {
       {
          final String unreadFullPath =
             '${dir.path}/chat_unread_${postId}_${peer}.txt';
-         appendDataToFile(<ChatItem>[item], unreadFullPath);
+         writeListToDisk( <ChatItem>[item], unreadFullPath
+                         , FileMode.append);
       });
    }
 }
@@ -190,8 +193,9 @@ class PostData {
    String from = '';
 
    // Together with *from* this is a unique identifier for this post.
-   // This value is sent by the server.
-   int id = 0;
+   // Its value is sent back by the server when it acknowledges the
+   // post.
+   int id = -1;
 
    // Contains channel codes in the form
    //
@@ -269,7 +273,6 @@ class PostData {
 
    ChatHistory getChatHist(String peer)
    {
-      print('=====> 1');
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
       if (i == -1) {
@@ -306,6 +309,12 @@ class PostData {
    void removeLongPressedChats()
    {
       chats.removeWhere((e) { return e.isLongPressed; });
+
+      // TODO: Remove files from chat entries that have been remove
+      // obove.
+
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async { persistPeers(dir.path); });
    }
 
    PostData.fromJson(Map<String, dynamic> map)

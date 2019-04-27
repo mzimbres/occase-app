@@ -468,11 +468,20 @@ class MenuChatState extends State<MenuChat>
 
    void _onPostSelection(PostData data, bool fav)
    {
-      if (fav)
+      if (fav) {
          _favPosts.add(data);
+         writeListToDisk( <PostData>[data], _favPostsFileFullPath,
+            FileMode.append);
+      }
 
-      //_ownPosts.add(data);
       _posts.remove(data);
+
+      // As far as I can see, there is no way of removing the element
+      // from the posts persisted on file without rewriting it
+      // completely. We can use the oportunity to write only the
+      // newest.
+      writeListToDisk( _posts, _postsFileFullPath, FileMode.write);
+
       setState(() { });
    }
 
@@ -629,14 +638,10 @@ class MenuChatState extends State<MenuChat>
       _postInput.description = _newPostTextCtrl.text;
       _newPostTextCtrl.text = "";
 
-      // Was only useful when the app was not connected in the server.
-      // Remove this later.
-      //_posts.add(_postInput.clone());
-
       // We add it here in our own list of posts and keep in mind it
-      // will be echoed back to us and have to be filtered out from
-      // _posts since that list should not contain our own
-      // posts.
+      // will be echoed back to us if we are subscribed to its
+      // channel. It has to be filtered out from _posts since that
+      // list should not contain our own posts.
       _postInput.from = _appId;
       _outPostQueue.add(_postInput.clone());
       _postInput = PostData();
@@ -652,7 +657,6 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String pubText = jsonEncode(pubMap);
-      print('Sending $pubText');
       channel.sink.add(pubText);
 
       setState(() { });
@@ -864,7 +868,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      if (cmd == "publish") {
+      if (cmd == "post") {
          // Remember the size of the list to append later the new items
          // to a file.
          final int size = _unreadPosts.length;
@@ -893,7 +897,8 @@ class MenuChatState extends State<MenuChat>
 
          // At the moment we do not impose a limit on how big this
          // file can grow.
-         appendDataToFile(_unreadPosts, _unreadPostsFileFullPath);
+         writeListToDisk( _unreadPosts, _unreadPostsFileFullPath
+                        , FileMode.append);
 
          // Consider: Before triggering a redraw we should perhaps
          // check whether it is necessary given our current state.
@@ -911,7 +916,8 @@ class MenuChatState extends State<MenuChat>
 
          post.id = ack['id'];
          _ownPosts.add(post);
-         appendDataToFile(<PostData>[post], _ownPostsFileFullPath);
+         writeListToDisk( <PostData>[post], _ownPostsFileFullPath
+                        , FileMode.append);
          return;
       }
 
@@ -1064,6 +1070,8 @@ class MenuChatState extends State<MenuChat>
             post.removeLongPressedChats();
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
+         writeListToDisk( _favPosts, _favPostsFileFullPath,
+            FileMode.write);
 
          setState(() { });
       }
@@ -1247,7 +1255,8 @@ class MenuChatState extends State<MenuChat>
       if (_tabCtrl.index == 1) {
          if (!_unreadPosts.isEmpty) {
             _posts.addAll(_unreadPosts);
-            appendDataToFile(_unreadPosts, _postsFileFullPath);
+            writeListToDisk( _unreadPosts, _postsFileFullPath
+                           , FileMode.append);
             _unreadPosts.clear();
             // Wipes out all the data in the unread posts file.
             writeToFile('', _unreadPostsFileFullPath, FileMode.write);
