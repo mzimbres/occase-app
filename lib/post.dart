@@ -22,7 +22,7 @@ void writeToFile(String data, String fullPath, FileMode mode)
          sink.write(data);
          await sink.flush();
          await sink.close();
-         print('Finished writing $fullPath');
+         print('Finished writing to $fullPath');
       } catch (e) {
          print(e);
       }
@@ -82,10 +82,9 @@ class ChatHistory {
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
-   String _readFullPath = '';
-   String _unreadFullPath = '';
+   int postId;
 
-   ChatHistory(this.peer, final int postId)
+   ChatHistory(this.peer, this.postId)
    {
       getApplicationDocumentsDirectory().then((Directory dir) async
          { _init(dir.path, postId); });
@@ -93,20 +92,21 @@ class ChatHistory {
 
    Future<void> _init(final String path, final int postId) async
    {
-      _readFullPath = '$path/chat_read_${postId}_${peer}.txt';
+      final String readFullPath = '$path/chat_read_${postId}_${peer}.txt';
 
       try {
-         File f = File(_readFullPath);
+         File f = File(readFullPath);
          final List<String> lines = await f.readAsLines();
          msgs = chatItemsFromStrs(lines);
       } catch (e) {
          print(e);
       }
 
-      _unreadFullPath = '$path/chat_unread_${postId}_${peer}.txt';
+      final String unreadFullPath =
+         '$path/chat_unread_${postId}_${peer}.txt';
 
       try {
-         File f = File(_unreadFullPath);
+         File f = File(unreadFullPath);
          final List<String> lines = await f.readAsLines();
          unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
@@ -120,9 +120,18 @@ class ChatHistory {
          return;
 
       msgs.addAll(unreadMsgs);
-      appendDataToFile(unreadMsgs, _readFullPath);
-      unreadMsgs.clear();
-      writeToFile('', _unreadFullPath, FileMode.write);
+
+      getApplicationDocumentsDirectory().then((Directory dir) async
+      {
+         final String path = dir.path;
+         final String readFullPath =
+            '$path/chat_read_${postId}_${peer}.txt';
+         final String unreadFullPath =
+            '$path/chat_unread_${postId}_${peer}.txt';
+         appendDataToFile(unreadMsgs, readFullPath);
+         unreadMsgs.clear();
+         writeToFile('', unreadFullPath, FileMode.write);
+      });
    }
 
    String getLastUnreadMsg()
@@ -153,14 +162,26 @@ class ChatHistory {
    {
       ChatItem item = ChatItem(thisApp, msg);
       msgs.add(item);
-      appendDataToFile(<ChatItem>[item], _readFullPath);
+
+      getApplicationDocumentsDirectory().then((Directory dir) async
+      {
+         final String readFullPath =
+            '${dir.path}/chat_read_${postId}_${peer}.txt';
+         appendDataToFile(<ChatItem>[item], readFullPath);
+      });
    }
 
    void addUnreadMsg(final String msg, final bool thisApp)
    {
       ChatItem item = ChatItem(thisApp, msg);
       unreadMsgs.add(item);
-      appendDataToFile(<ChatItem>[item], _unreadFullPath);
+
+      getApplicationDocumentsDirectory().then((Directory dir) async
+      {
+         final String unreadFullPath =
+            '${dir.path}/chat_unread_${postId}_${peer}.txt';
+         appendDataToFile(<ChatItem>[item], unreadFullPath);
+      });
    }
 }
 
@@ -192,6 +213,27 @@ class PostData {
       }
    }
 
+   void loadChats()
+   {
+      getApplicationDocumentsDirectory().then((Directory dir) async
+         { _loadImpl(dir.path); });
+   }
+
+   Future<void> _loadImpl(final String path) async
+   {
+      try {
+         final String fullPath = '$path/post_peers_${id}.txt';
+         chats = List<ChatHistory>();
+         File f = File(fullPath);
+         final List<String> lines = await f.readAsLines();
+         for (String line in lines)
+            chats.add(ChatHistory(line, id));
+         print('Peers $lines read from file: $fullPath');
+      } catch (e) {
+         print(e);
+      }
+   }
+
    PostData clone()
    {
       PostData ret = PostData();
@@ -199,17 +241,35 @@ class PostData {
       ret.description = this.description;
       ret.chats = List<ChatHistory>.from(this.chats);
       ret.from = this.from;
+      ret.id = this.id;
       return ret;
+   }
+
+   void persistPeers(final String basename) async
+   {
+      // Overwrites the previous content.
+      String foo = '';
+      for (ChatHistory o in chats)
+         foo += '${o.peer}\n';
+
+      final String path = '${basename}/post_peers_${id}.txt';
+      print('Persisting peers: $foo');
+      writeToFile(foo, path, FileMode.write);
    }
 
    void createChatEntryForPeer(String peer)
    {
+      print('createChatEntryForPeer: $peer');
       ChatHistory history = ChatHistory(peer, id);
       chats.add(history);
+
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async { persistPeers(dir.path); });
    }
 
    ChatHistory getChatHist(String peer)
    {
+      print('=====> 1');
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
       if (i == -1) {
@@ -251,26 +311,18 @@ class PostData {
    PostData.fromJson(Map<String, dynamic> map)
    {
       // Part of the object can be deserialized by readPostData. The
-      // only remaining field will be *peers*.
+      // only remaining field will be *peers* and the chat history.
       PostData pd = readPostData(map);
       from = pd.from;
       id = pd.id;
       codes = pd.codes;
       description = pd.description;
 
-      chats = List<ChatHistory>();
-
-      var peers = map['peers'];
-      for (String peer in peers)
-         chats.add(ChatHistory(peer, id));
+      loadChats();
    }
 
    Map<String, dynamic> toJson()
    {
-      List<String> peers = List<String>();
-      for (ChatHistory o in chats)
-         peers.add(o.peer);
-
       // To make the deserialization easier, we will make the json
       // partially deserializable by readPostData.
       return
@@ -279,7 +331,6 @@ class PostData {
          'from': from,
          'id': id,
          'to': codes,
-         'peers': peers,
       };
    }
 }
@@ -736,9 +787,6 @@ PostData readPostData(var item)
    post.codes = codes;
    post.id = id;
 
-   // Since this post is not from this app we have to add a chat
-   // entry in it.
-   post.createChatEntryForPeer(post.from);
    return post;
 }
 

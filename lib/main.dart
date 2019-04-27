@@ -22,15 +22,25 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
-List<PostData> postsFromStrs(final List<String> posts)
+Future<List<PostData>> safeReadPostsFromFile(final String fullPath) async
 {
-   List<PostData> foo = List<PostData>();
-   for (String o in posts) {
-      Map<String, dynamic> map = jsonDecode(o);
-      foo.add(PostData.fromJson(map));
+   try {
+      File f = File(fullPath);
+      final List<String> lines = await f.readAsLines();
+
+      List<PostData> foo = List<PostData>();
+      for (String o in lines) {
+         Map<String, dynamic> map = jsonDecode(o);
+         foo.add(PostData.fromJson(map));
+      }
+
+      print('${foo.length} posts read from file: $fullPath');
+      return foo;
+   } catch (e) {
+      print(e);
    }
 
-   return foo;
+   return List<PostData>();
 }
 
 class MyApp extends StatelessWidget {
@@ -281,14 +291,14 @@ class MenuChatState extends State<MenuChat>
    // the subscribe command.
    int _lastPostId = 0;
 
-   String _docDirPath;
-
    // Full path to files.
    String _unreadPostsFileFullPath;
    String _loginFileFullPath;
    String _menuFileFullPath;
    String _lastPostIdFileFullPath;
    String _postsFileFullPath;
+   String _favPostsFileFullPath;
+   String _ownPostsFileFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -310,13 +320,15 @@ class MenuChatState extends State<MenuChat>
       // loaded the app will ignore them and they will be lost.
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
-         _docDirPath = docDir.path;
-         _unreadPostsFileFullPath = '${_docDirPath}/${cts.unreadPostsFileName}';
-         _loginFileFullPath = '${_docDirPath}/${cts.loginFileName}';
-         _menuFileFullPath = '${_docDirPath}/${cts.menuFileName}';
-         _lastPostIdFileFullPath = '${_docDirPath}/${cts.lastPostIdFileName}';
-         _postsFileFullPath = '${_docDirPath}/${cts.postsFileName}';
-         readPostsFromFile(_docDirPath);
+         final String path = docDir.path;
+         _unreadPostsFileFullPath = '${path}/${cts.unreadPostsFileName}';
+         _loginFileFullPath = '${path}/${cts.loginFileName}';
+         _menuFileFullPath = '${path}/${cts.menuFileName}';
+         _lastPostIdFileFullPath = '${path}/${cts.lastPostIdFileName}';
+         _postsFileFullPath = '${path}/${cts.postsFileName}';
+         _favPostsFileFullPath = '${path}/${cts.favPostsFileName}';
+         _ownPostsFileFullPath = '${path}/${cts.ownPostsFileName}';
+         readPostsFromFile(path);
       });
 
       _newPostPressed = false;
@@ -325,24 +337,17 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> readPostsFromFile(final String docDir) async
    {
-      try {
-         File f1 = File(_postsFileFullPath);
-         final List<String> p1 = await f1.readAsLines();
-         _posts = postsFromStrs(p1);
-         print('Posts read from file: ${_posts.length}');
-      } catch (e) {
-         print(e);
-      }
+      safeReadPostsFromFile(_postsFileFullPath)
+      .then((List<PostData> o) { _posts = o; });
 
-      try {
-         File f2 = File(_unreadPostsFileFullPath);
-         final List<String> p2 = await f2.readAsLines();
-         _unreadPosts = postsFromStrs(p2);
+      safeReadPostsFromFile(_unreadPostsFileFullPath)
+      .then((List<PostData> o) { _unreadPosts = o; });
 
-         print('Unread posts read from file: ${_unreadPosts.length}');
-      } catch (e) {
-         print(e);
-      }
+      safeReadPostsFromFile(_favPostsFileFullPath)
+      .then((List<PostData> o) { _favPosts = o; });
+
+      safeReadPostsFromFile(_ownPostsFileFullPath)
+      .then((List<PostData> o) { _ownPosts = o;});
 
       setState(() { });
 
@@ -647,6 +652,7 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String pubText = jsonEncode(pubMap);
+      print('Sending $pubText');
       channel.sink.add(pubText);
 
       setState(() { });
@@ -672,8 +678,8 @@ class MenuChatState extends State<MenuChat>
    {
       //_______
       // Temporary code to test post persistency.
-      final String postStr = jsonEncode(_ownPosts[i]);
-      print(postStr);
+      //final String postStr = jsonEncode(_ownPosts[i]);
+      //print(postStr);
       //_______
 
       _ownChatIdx = i;
@@ -789,7 +795,7 @@ class MenuChatState extends State<MenuChat>
          // On register_ack ok we will receive our credentials to log
          // in the server and the menu, they should both be persisted
          // in a file.
-         print('register_ack: Persisting login.');
+         print('register_ack: Persisting login $login');
          writeToFile(login, _loginFileFullPath, FileMode.write);
 
          print('register_ack: Persisting the menu received.');
@@ -871,6 +877,9 @@ class MenuChatState extends State<MenuChat>
             }
 
             PostData post = readPostData(item);
+            // Since this post is not from this app we have to add a chat
+            // entry in it.
+            post.createChatEntryForPeer(post.from);
             _unreadPosts.add(post);
 
             // It is not guaranteed that the array of posts sent by
@@ -902,6 +911,7 @@ class MenuChatState extends State<MenuChat>
 
          post.id = ack['id'];
          _ownPosts.add(post);
+         appendDataToFile(<PostData>[post], _ownPostsFileFullPath);
          return;
       }
 
