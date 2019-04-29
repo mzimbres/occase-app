@@ -251,12 +251,12 @@ class MenuChatState extends State<MenuChat>
    // received from the server will not be inserted here. The only
    // posts inserted here are those that have been acked with ok by the
    // server, before that they will live in the output queue
-   // _outPostQueue
+   // _outPostsQueue
    List<PostData> _ownPosts = List<PostData>();
 
    // Posts sent by the user that have not been acked by the server
    // yet.
-   Queue<PostData> _outPostQueue = Queue<PostData>();
+   Queue<PostData> _outPostsQueue = Queue<PostData>();
 
    // A flag that is set to true when the floating button (new
    // postertisement) is clicked. It must be carefully set to false
@@ -299,6 +299,7 @@ class MenuChatState extends State<MenuChat>
    String _postsFileFullPath;
    String _favPostsFileFullPath;
    String _ownPostsFileFullPath;
+   String _outPostsFileFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -328,6 +329,7 @@ class MenuChatState extends State<MenuChat>
          _postsFileFullPath = '${path}/${cts.postsFileName}';
          _favPostsFileFullPath = '${path}/${cts.favPostsFileName}';
          _ownPostsFileFullPath = '${path}/${cts.ownPostsFileName}';
+         _outPostsFileFullPath = '${path}/${cts.outPostsFileName}';
          readPostsFromFile(path);
       });
 
@@ -348,6 +350,12 @@ class MenuChatState extends State<MenuChat>
 
       safeReadPostsFromFile(_ownPostsFileFullPath)
       .then((List<PostData> o) { _ownPosts = o;});
+
+      safeReadPostsFromFile(_outPostsFileFullPath)
+      .then((List<PostData> o)
+      {
+         _outPostsQueue = Queue<PostData>.from(o);
+      });
 
       setState(() { });
 
@@ -643,15 +651,18 @@ class MenuChatState extends State<MenuChat>
       // channel. It has to be filtered out from _posts since that
       // list should not contain our own posts.
       _postInput.from = _appId;
-      _outPostQueue.add(_postInput.clone());
+      PostData post = _postInput.clone();
+      _outPostsQueue.add(post);
+      writeListToDisk( <PostData>[post], _outPostsFileFullPath
+                     , FileMode.append);
       _postInput = PostData();
 
       var pubMap = {
          'cmd': 'publish',
          'items': [{
-            'from': _outPostQueue.first.from,
-            'to': _outPostQueue.first.codes,
-            'msg': _outPostQueue.first.description,
+            'from': _outPostsQueue.first.from,
+            'to': _outPostsQueue.first.codes,
+            'msg': _outPostsQueue.first.description,
             'id': -1,
          }]
       };
@@ -906,8 +917,10 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (cmd == "publish_ack") {
-         assert(!_outPostQueue.isEmpty);
-         final PostData post =_outPostQueue.removeFirst();
+         assert(!_outPostsQueue.isEmpty);
+         final PostData post = _outPostsQueue.removeFirst();
+         writeListToDisk(List<PostData>.from(_outPostsQueue),
+                         _outPostsFileFullPath , FileMode.write);
          final String res = ack['result'];
          if (res != 'ok') {
             print("Message could not be sent. Removing post.");

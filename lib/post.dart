@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io' show File, FileMode, Directory;
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
@@ -87,8 +88,8 @@ class ChatHistory {
 
    ChatHistory(this.peer, this.postId)
    {
-      getApplicationDocumentsDirectory().then((Directory dir) async
-         { _init(dir.path, postId); });
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async { _init(dir.path, postId); });
    }
 
    Future<void> _init(final String path, final int postId) async
@@ -122,15 +123,17 @@ class ChatHistory {
 
       msgs.addAll(unreadMsgs);
 
-      getApplicationDocumentsDirectory().then((Directory dir) async
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async
       {
-         final String path = dir.path;
          final String readFullPath =
-            '$path/chat_read_${postId}_${peer}.txt';
-         final String unreadFullPath =
-            '$path/chat_unread_${postId}_${peer}.txt';
+            '${dir.path}/chat_read_${postId}_${peer}.txt';
+
          writeListToDisk(unreadMsgs, readFullPath, FileMode.append);
          unreadMsgs.clear();
+
+         final String unreadFullPath =
+            '${dir.path}/chat_unread_${postId}_${peer}.txt';
          writeToFile('', unreadFullPath, FileMode.write);
       });
    }
@@ -164,10 +167,12 @@ class ChatHistory {
       ChatItem item = ChatItem(thisApp, msg);
       msgs.add(item);
 
-      getApplicationDocumentsDirectory().then((Directory dir) async
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async
       {
          final String readFullPath =
             '${dir.path}/chat_read_${postId}_${peer}.txt';
+
          writeListToDisk( <ChatItem>[item], readFullPath
                          , FileMode.append);
       });
@@ -178,23 +183,35 @@ class ChatHistory {
       ChatItem item = ChatItem(thisApp, msg);
       unreadMsgs.add(item);
 
-      getApplicationDocumentsDirectory().then((Directory dir) async
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async
       {
          final String unreadFullPath =
             '${dir.path}/chat_unread_${postId}_${peer}.txt';
+
          writeListToDisk( <ChatItem>[item], unreadFullPath
                          , FileMode.append);
       });
    }
 }
 
+List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
+{
+   List<List<List<int>>> codes = List<List<List<int>>>(n);
+   for (int i = 0; i < n; ++i) {
+      codes[i] = List<List<int>>(1);
+      codes[i][0] = List<int>();
+   }
+
+   return codes;
+}
+
 class PostData {
    // The person that published this post.
    String from = '';
 
-   // Together with *from* this is a unique identifier for this post.
-   // Its value is sent back by the server when it acknowledges the
-   // post.
+   // The post unique identifier.  Its value is sent back by the
+   // server when the post is acknowledged.
    int id = -1;
 
    // Contains channel codes in the form
@@ -210,17 +227,13 @@ class PostData {
 
    PostData()
    {
-      codes = List<List<List<int>>>(cts.menuDepthNames.length);
-      for (int i = 0; i < codes.length; ++i) {
-         codes[i] = List<List<int>>(1);
-         codes[i][0] = List<int>();
-      }
+      codes = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
-   void loadChats()
+   void _loadChats()
    {
-      getApplicationDocumentsDirectory().then((Directory dir) async
-         { _loadImpl(dir.path); });
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async { _loadImpl(dir.path); });
    }
 
    Future<void> _loadImpl(final String path) async
@@ -249,7 +262,7 @@ class PostData {
       return ret;
    }
 
-   void persistPeers(final String basename) async
+   void _persistPeers(final String basename) async
    {
       // Overwrites the previous content.
       String foo = '';
@@ -268,7 +281,7 @@ class PostData {
       chats.add(history);
 
       getApplicationDocumentsDirectory()
-      .then((Directory dir) async { persistPeers(dir.path); });
+      .then((Directory dir) async { _persistPeers(dir.path); });
    }
 
    ChatHistory getChatHist(String peer)
@@ -296,7 +309,7 @@ class PostData {
 
    // This function will return true if there is any chat marked as
    // long pressed. It will traverse the PostData array and stop at the
-   // first PostData::chats that has isLongPressed true.
+   // first PostData::chats for which isLongPressed is true.
    bool hasLongPressed()
    {
       for (ChatHistory ch in chats)
@@ -314,7 +327,7 @@ class PostData {
       // obove.
 
       getApplicationDocumentsDirectory()
-      .then((Directory dir) async { persistPeers(dir.path); });
+      .then((Directory dir) async { _persistPeers(dir.path); });
    }
 
    PostData.fromJson(Map<String, dynamic> map)
@@ -327,7 +340,7 @@ class PostData {
       codes = pd.codes;
       description = pd.description;
 
-      loadChats();
+      _loadChats();
    }
 
    Map<String, dynamic> toJson()
