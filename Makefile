@@ -2,7 +2,7 @@ DIST_NAME = menu_chat
 
 .PHONY:
 dist:
-	git archive --format=tar.gz --prefix=menu_chat/ HEAD > menu_chat.tar.gz
+	git archive --format=tar.gz --prefix=menu_chat/ HEAD > menu_chat_app.tar.gz
 
 backup_emails = laetitiapozwolski@yahoo.fr mzimbres@gmail.com bobkahnn@gmail.com coolcatlookingforakitty@gmail.com
 

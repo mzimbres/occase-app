@@ -43,6 +43,34 @@ Future<List<PostData>> safeReadPostsFromFile(final String fullPath) async
    return List<PostData>();
 }
 
+Future<List<String>> safeReadStrFromFile(final String fullPath) async
+{
+   try {
+      File f = File(fullPath);
+      final List<String> lines = await f.readAsLines();
+      print('${lines.length} string read from file: $fullPath');
+      return lines;
+   } catch (e) {
+      print(e);
+      return List<String>();
+   }
+}
+
+String makePostPayload(final PostData post)
+{
+   var pubMap = {
+      'cmd': 'publish',
+      'items': [{
+         'from': post.from,
+         'to': post.codes,
+         'msg': post.description,
+         'id': -1,
+      }]
+   };
+
+   return jsonEncode(pubMap);
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -102,6 +130,24 @@ int postIndexHelper(int i)
    return 1;
 }
 
+// Returns an icon based on the message status.
+Icon chooseIcon(final int chatMsgStatus)
+{
+   if (chatMsgStatus == 0)
+      return Icon(Icons.clear, color: Colors.red);
+
+   if (chatMsgStatus == 1)
+      return Icon(Icons.check, color: Colors.red);
+
+   if (chatMsgStatus == 2)
+      return Icon(Icons.check_circle_outline, color: Colors.red);
+
+   if (chatMsgStatus == 3)
+      return Icon(Icons.check_circle, color: Colors.red);
+
+   assert(false);
+}
+
 Widget
 createChatScreen(BuildContext context,
                  Function onWillPopScope,
@@ -143,11 +189,23 @@ createChatScreen(BuildContext context,
                color = Colors.lightGreenAccent[100];
             }
 
+            Widget msgAndStatus;
+            if (chatHist.msgs[i].thisApp) {
+               Align foo =
+                  Align(alignment: Alignment.bottomRight,
+                        child: chooseIcon(chatHist.msgs[i].status));
+               msgAndStatus = Row(children:
+                  <Widget>[Expanded(child: Text(chatHist.msgs[i].msg)),
+                           Expanded(child: foo)]);
+            } else {
+               msgAndStatus = Text(chatHist.msgs[i].msg);
+            }
+
             // TODO: Insert a divider for new messages here.
             return Align( alignment: align,
                   child:FractionallySizedBox( child: Card(
                     child: Padding( padding: EdgeInsets.all(4.0),
-                          child: Text(chatHist.msgs[i].msg)),
+                                    child: msgAndStatus),
                     color: color,
                     margin: EdgeInsets.all(6.0),
                     elevation: 6.0,
@@ -218,7 +276,8 @@ class MenuChatState extends State<MenuChat>
    ScrollController _scrollCtrl = ScrollController();
    ScrollController _chatScrollCtrl = ScrollController();
 
-   // The id we will use to communicate with the server.
+   // The credentials we use to communicate with the server. Both are
+   // sent back to us in the acknoledge to the register command.
    String _appId = '';
    String _appPwd = '';
 
@@ -236,6 +295,9 @@ class MenuChatState extends State<MenuChat>
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
    List<PostData> _posts = List<PostData>();
+
+   // Same as _posts but stores posts that have been just received
+   // from the server and haven't viewed by the user.
    List<PostData> _unreadPosts = List<PostData>();
 
    // The list of posts the user found interesting and moved to
@@ -244,19 +306,27 @@ class MenuChatState extends State<MenuChat>
    List<PostData> _favPosts = List<PostData>();
 
    // Posts the user wrote itself and sent to the server. One issue we
-   // have to observe here is that we will send _postInput to the
-   // server and if the user is subscribed to the channel the post
-   // belongs to, we will receive it back from the server and we
-   // should not display it or duplicate it on this list. The posts
-   // received from the server will not be inserted here. The only
-   // posts inserted here are those that have been acked with ok by the
-   // server, before that they will live in the output queue
-   // _outPostsQueue
+   // have to observe that we will send _postInput to the server and
+   // if the user is subscribed to the channel the post belongs to, it
+   // will be received back and shouldn't be displayed or duplicated
+   // on this list. The posts received from the server will not be
+   // inserted in this list. The only posts inserted here are those
+   // that have been acked with ok by the server, before that they
+   // will live in the output queue _outPostsQueue
    List<PostData> _ownPosts = List<PostData>();
 
-   // Posts sent by the user that have not been acked by the server
-   // yet.
+   // Posts sent to the server that haven't been acked yet. I found it
+   // easier to have this list. For example, if the user sends more
+   // than one post while the app is offline we do not have to search
+   // _ownPosts to set the post id in the correct order. I is also
+   // more efficient in terms of persistency. The _ownPosts becomes
+   // append only, this is important if there is a large number of
+   // posts.
    Queue<PostData> _outPostsQueue = Queue<PostData>();
+
+   // Stores messages that cannot be lost in case the connection to
+   // the server is lost. 
+   Queue<String> _outChatMsgsQueue = Queue<String>();
 
    // A flag that is set to true when the floating button (new
    // postertisement) is clicked. It must be carefully set to false
@@ -300,6 +370,7 @@ class MenuChatState extends State<MenuChat>
    String _favPostsFileFullPath;
    String _ownPostsFileFullPath;
    String _outPostsFileFullPath;
+   String _outChatMsgsFileFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -330,6 +401,7 @@ class MenuChatState extends State<MenuChat>
          _favPostsFileFullPath = '${path}/${cts.favPostsFileName}';
          _ownPostsFileFullPath = '${path}/${cts.ownPostsFileName}';
          _outPostsFileFullPath = '${path}/${cts.outPostsFileName}';
+         _outChatMsgsFileFullPath = '${path}/${cts.outChatMsgsFileName}';
          readPostsFromFile(path);
       });
 
@@ -352,10 +424,10 @@ class MenuChatState extends State<MenuChat>
       .then((List<PostData> o) { _ownPosts = o;});
 
       safeReadPostsFromFile(_outPostsFileFullPath)
-      .then((List<PostData> o)
-      {
-         _outPostsQueue = Queue<PostData>.from(o);
-      });
+      .then((List<PostData> o) { _outPostsQueue = Queue<PostData>.from(o); });
+
+      safeReadStrFromFile(_outChatMsgsFileFullPath)
+      .then((List<String> o) { _outChatMsgsQueue = Queue<String>.from(o); });
 
       setState(() { });
 
@@ -631,6 +703,66 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void sendPost(PostData post)
+   {
+      final bool isEmpty = _outPostsQueue.isEmpty;
+
+      // We add it here in our own list of posts and keep in mind it
+      // will be echoed back to us if we are subscribed to its
+      // channel. It has to be filtered out from _posts since that
+      // list should not contain our own posts.
+      _outPostsQueue.add(post);
+
+      writeListToDisk( <PostData>[post], _outPostsFileFullPath
+                     , FileMode.append);
+      if (!isEmpty)
+         return;
+
+      // The queue was empty before we inserted the new post.
+      // Therefore we are not waiting for an ack.
+
+      final String payload = makePostPayload(_outPostsQueue.first);
+      channel.sink.add(payload);
+   }
+
+   void sendOfflinePosts()
+   {
+      if (_outPostsQueue.isEmpty)
+         return;
+
+      final String payload = makePostPayload(_outPostsQueue.first);
+      channel.sink.add(payload);
+   }
+
+   void handlePublishAck(final int id)
+   {
+      assert(!_outPostsQueue.isEmpty);
+
+      final PostData post = _outPostsQueue.removeFirst();
+      writeListToDisk(List<PostData>.from(_outPostsQueue),
+                      _outPostsFileFullPath , FileMode.write);
+
+      if (id == -1) {
+         // What should we do with the other elements in the queue?
+         // Should they all be discarded? This will be a very rare
+         // situation.
+         print("Publish failed. The post will be discarded.");
+         return;
+      }
+
+      post.id = id;
+      _ownPosts.add(post);
+      writeListToDisk( <PostData>[post], _ownPostsFileFullPath
+                     , FileMode.append);
+
+      if (_outPostsQueue.isEmpty)
+         return;
+
+      // If the queue is not empty we can send the next.
+      final String payload = makePostPayload(_outPostsQueue.first);
+      channel.sink.add(payload);
+   }
+
    void _onSendNewPostPressed(bool add)
    {
       _newPostPressed = false;
@@ -646,30 +778,9 @@ class MenuChatState extends State<MenuChat>
       _postInput.description = _newPostTextCtrl.text;
       _newPostTextCtrl.text = "";
 
-      // We add it here in our own list of posts and keep in mind it
-      // will be echoed back to us if we are subscribed to its
-      // channel. It has to be filtered out from _posts since that
-      // list should not contain our own posts.
       _postInput.from = _appId;
-      PostData post = _postInput.clone();
-      _outPostsQueue.add(post);
-      writeListToDisk( <PostData>[post], _outPostsFileFullPath
-                     , FileMode.append);
+      sendPost(_postInput.clone());
       _postInput = PostData();
-
-      var pubMap = {
-         'cmd': 'publish',
-         'items': [{
-            'from': _outPostsQueue.first.from,
-            'to': _outPostsQueue.first.codes,
-            'msg': _outPostsQueue.first.description,
-            'id': -1,
-         }]
-      };
-
-      final String pubText = jsonEncode(pubMap);
-      channel.sink.add(pubText);
-
       setState(() { });
    }
 
@@ -691,12 +802,6 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatPressed(int i, int j)
    {
-      //_______
-      // Temporary code to test post persistency.
-      //final String postStr = jsonEncode(_ownPosts[i]);
-      //print(postStr);
-      //_______
-
       _ownChatIdx = i;
      _ownPostChatPeer = _ownPosts[i].chats[j].peer;
 
@@ -709,6 +814,38 @@ class MenuChatState extends State<MenuChat>
       _ownPosts[i].chats[j].isLongPressed = !old;
       setState(() { });
       print("_onOwnPostChatLongPressed");
+   }
+
+   void sendChatMsg(final String payload)
+   {
+      final bool isEmpty = _outChatMsgsQueue.isEmpty;
+      _outChatMsgsQueue.add(payload);
+      writeToFile('${payload}\n', _outChatMsgsFileFullPath, FileMode.append);
+
+      if (isEmpty) {
+         print('=====> sendChatMsg:\n${_outChatMsgsQueue.first}');
+         channel.sink.add(_outChatMsgsQueue.first);
+      }
+   }
+
+   void sendOfflineChatMsgs()
+   {
+      if (!_outChatMsgsQueue.isEmpty) {
+         print('====> sendOfflineChatMsgs:\n${_outChatMsgsQueue.first}');
+         channel.sink.add(_outChatMsgsQueue.first);
+      }
+   }
+
+   void handleChatMsgServerAck()
+   {
+      assert(!_outChatMsgsQueue.isEmpty);
+
+      _outChatMsgsQueue.removeFirst();
+      final String accStr = accumulateStr(_outChatMsgsQueue);
+      print('====> handleChatMsgServerAck:\n$accStr');
+      writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
+      if (!_outChatMsgsQueue.isEmpty)
+         channel.sink.add(_outChatMsgsQueue.first);
    }
 
    void _onFavChatSendPressed()
@@ -724,6 +861,7 @@ class MenuChatState extends State<MenuChat>
 
       var msgMap = {
          'cmd': 'message',
+         'type': 'chat',
          'from': _appId,
          'to': to,
          'msg': msg,
@@ -732,9 +870,8 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      channel.sink.add(payload);
-
-      _favPosts[_favChatIdx].getChatHist(to).addMsg(msg, true);
+      sendChatMsg(payload);
+      _favPosts[_favChatIdx].addMsg(to, msg, true);
 
       setState(()
       {
@@ -762,6 +899,7 @@ class MenuChatState extends State<MenuChat>
 
       var msgMap = {
          'cmd': 'message',
+         'type': 'chat',
          'from': _appId,
          'to': _ownPostChatPeer,
          'msg': msg,
@@ -770,10 +908,8 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      print(payload);
-      channel.sink.add(payload);
-
-      _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer).addMsg(msg, true);
+      sendChatMsg(payload);
+      _ownPosts[_ownChatIdx].addMsg(_ownPostChatPeer, msg, true);
 
       setState(()
       {
@@ -787,6 +923,54 @@ class MenuChatState extends State<MenuChat>
                curve: Curves.easeOut);
          });
       });
+   }
+
+   void onMessage(Map<String, dynamic> ack)
+   {
+      final String type = ack['type'];
+      if (type == 'server_ack') {
+         handleChatMsgServerAck();
+      } else if (type == 'chat') {
+         final String to = ack['to'];
+         if (to != _appId) {
+            print("Server bug caught. Please report.");
+            return;
+         }
+
+         final int postId = ack['post_id'];
+         final String msg = ack['msg'];
+         final String from = ack['from'];
+
+         // A user message can be either directed to one of the posts
+         // published by this app or one that the app is interested
+         // in. We distinguish this with the field 'is_sender_post'
+         final bool is_sender_post = ack['is_sender_post'];
+         if (is_sender_post) {
+            findAndAddMsg(_favPosts, postId, from, msg, false);
+         } else {
+            findAndAddMsg(_ownPosts, postId, from, msg, false);
+         }
+
+         // Acks we have received the message.
+         var foo = {
+            'cmd': 'message',
+            'type': 'app_ack_received',
+            'from': _appId,
+            'to': from,
+            'post_id': postId,
+            'is_sender_post': !is_sender_post,
+         };
+
+         final String payload = jsonEncode(foo);
+         sendChatMsg(payload);
+
+      } else if (type == 'app_ack_received') {
+         print('app_ack_received');
+      } else if (type == 'app_ack_read') {
+         print('app_ack_read');
+      }
+
+      setState((){});
    }
 
    void onWSData(msg)
@@ -835,6 +1019,13 @@ class MenuChatState extends State<MenuChat>
          // We are loggen in and can send the channels we are
          // subscribed to to receive posts sent while we were offline.
          _sendHahesToServer();
+
+         // Sends any chat messages that may have been written while
+         // the app were offline.
+         sendOfflineChatMsgs();
+
+         // The same for posts.
+         sendOfflinePosts();
 
          if (ack.containsKey('menus')) {
             // The server has sent us a menu, that means we have to
@@ -914,79 +1105,25 @@ class MenuChatState extends State<MenuChat>
          // Consider: Before triggering a redraw we should perhaps
          // check whether it is necessary given our current state.
          setState(() { });
+         return;
       }
 
       if (cmd == "publish_ack") {
-         assert(!_outPostsQueue.isEmpty);
-         final PostData post = _outPostsQueue.removeFirst();
-         writeListToDisk(List<PostData>.from(_outPostsQueue),
-                         _outPostsFileFullPath , FileMode.write);
          final String res = ack['result'];
-         if (res != 'ok') {
-            print("Message could not be sent. Removing post.");
-            return;
-         }
+         if (res == 'ok')
+            handlePublishAck(ack['id']);
+         else
+            handlePublishAck(-1);
 
-         post.id = ack['id'];
-         _ownPosts.add(post);
-         writeListToDisk( <PostData>[post], _ownPostsFileFullPath
-                        , FileMode.append);
          return;
       }
 
       if (cmd == "message") {
-         final String to = ack['to'];
-         if (to != _appId) {
-            // The server routed us a msg that was meant for somebody
-            // else. This is a server bug.
-            print("Server bug caught.");
-            return;
-         }
-
-         final int postId = ack['post_id'];
-         final String msg = ack['msg'];
-         final String from = ack['from'];
-
-         // TODO: The logic below is equal for both cases. Do not
-         // duplicate code, move it into a function.
-
-         // A user message can be either directed to one of the posts
-         // published by this app or one that the app is interested
-         // in. We distinguish this with the field 'is_sender_post'
-         final bool is_sender_post = ack['is_sender_post'];
-         if (is_sender_post) {
-            // This message is meant to one of the posts this app
-            // selected as favorite. We have to search it and insert
-            // this new message in the chat history.
-            final int i =
-               _favPosts.indexWhere((e) { return e.id == postId;});
-
-            if (i == -1) {
-               // There is a bug in the logic. Fix this.
-               print("Logic error. Please fix.");
-               return;
-            }
-
-            _favPosts[i].getChatHist(from).addUnreadMsg(msg, false);
-         } else {
-            // This is a message to our own post, some interested user.
-            // We have to find first which one of our own posts it
-            // refers to.
-
-            final int i =
-               _ownPosts.indexWhere((e) { return e.id == postId;});
-
-            if (i == -1) {
-               // There is a bug in the logic. Fix this.
-               print("Logic error. Please fix.");
-               return;
-            }
-
-            _ownPosts[i].getChatHist(from).addUnreadMsg(msg, false);
-         }
-
-         setState((){});
+         onMessage(ack);
+         return;
       }
+
+      print('Unhandled message received from the server:\n$msg.');
    }
 
    void onWSError(error)
@@ -1205,7 +1342,7 @@ class MenuChatState extends State<MenuChat>
          // screen with the postertiser.
          final String peer = _favPosts[_favChatIdx].from;
          ChatHistory chatHist = _favPosts[_favChatIdx].getChatHist(peer);
-         chatHist.moveToReadHistory();
+         chatHist.moveToReadHistory(_favPosts[_favChatIdx].id);
          return createChatScreen(
                    context,
                    _onWillPopFavChatScreen,
@@ -1221,7 +1358,7 @@ class MenuChatState extends State<MenuChat>
          // specific post.
          ChatHistory chatHist =
                _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer);
-         chatHist.moveToReadHistory();
+         chatHist.moveToReadHistory(_ownPosts[_ownChatIdx].id);
          return createChatScreen(
                    context,
                    _onWillPopOwnChatScreen,

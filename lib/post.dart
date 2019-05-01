@@ -45,15 +45,44 @@ void writeListToDisk<T>( final List<T> data, final String fullPath
    writeToFile(content, fullPath, mode);
 }
 
+String accumulateStr(final Queue<String> data)
+{
+   String str = '';
+   for (String o in data)
+      str += '$o\n';
+
+   return str;
+}
+
+int cmdToChatStatus(final String cmd)
+{
+   if (cmd == 'chat')
+      return 0;
+   if (cmd == 'server_ack')
+      return 1;
+   if (cmd == 'app_ack_received')
+      return 2;
+   if (cmd == 'app_ack_read')
+      return 3;
+
+   assert(false);
+}
+
 class ChatItem {
    bool thisApp; 
    String msg = '';
-   ChatItem(this.thisApp, this.msg) { }
+   int status = 0;
+
+   ChatItem(this.thisApp, this.msg)
+   {
+      status = cmdToChatStatus('chat');
+   }
 
    ChatItem.fromJson(Map<String, dynamic> map)
    {
       thisApp = map["this_app"];
       msg = map["msg"];
+      status = map["status"];
    }
 
    Map<String, dynamic> toJson()
@@ -62,7 +91,16 @@ class ChatItem {
       {
          'this_app': thisApp,
          'msg': msg,
+         'status': status,
       };
+   }
+
+   void setStatus(final String st)
+   {
+      // This check is just in case some messages come out of order.
+      final int foo = cmdToChatStatus(st);
+      if (foo > status)
+         status = foo;
    }
 }
 
@@ -84,9 +122,8 @@ class ChatHistory {
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
-   int postId;
 
-   ChatHistory(this.peer, this.postId)
+   ChatHistory(this.peer, final int postId)
    {
       getApplicationDocumentsDirectory()
       .then((Directory dir) async { _init(dir.path, postId); });
@@ -116,7 +153,7 @@ class ChatHistory {
       }
    }
 
-   void moveToReadHistory()
+   void moveToReadHistory(final int postId)
    {
       if (unreadMsgs.isEmpty)
          return;
@@ -162,7 +199,7 @@ class ChatHistory {
       return msgs.last.msg;
    }
 
-   void addMsg(final String msg, final bool thisApp)
+   void addMsg(final String msg, final bool thisApp, final int postId)
    {
       ChatItem item = ChatItem(thisApp, msg);
       msgs.add(item);
@@ -178,7 +215,7 @@ class ChatHistory {
       });
    }
 
-   void addUnreadMsg(final String msg, final bool thisApp)
+   void addUnreadMsg(final String msg, final bool thisApp, final int postId)
    {
       ChatItem item = ChatItem(thisApp, msg);
       unreadMsgs.add(item);
@@ -297,6 +334,18 @@ class PostData {
       return chats[i];
    }
 
+   void addMsg(final String peer, final String msg, final bool thisApp)
+   {
+      ChatHistory history = getChatHist(peer);
+      history.addMsg(msg, thisApp, id);
+   }
+
+   void addUnreadMsg(final String peer, final String msg, final bool thisApp)
+   {
+      ChatHistory history = getChatHist(peer);
+      history.addUnreadMsg(msg, thisApp, id);
+   }
+
    int getNumberOfUnreadChats()
    {
       int i = 0;
@@ -364,6 +413,21 @@ bool hasLongPressed(final List<PostData> posts)
          return true;
 
    return false;
+}
+
+bool findAndAddMsg(final List<PostData> posts,
+                   final int postId,
+                   final String from,
+                   final String msg,
+                   final bool thisApp)
+{
+   final int i = posts.indexWhere((e) { return e.id == postId;});
+
+   if (i == -1)
+      return false;
+
+   posts[i].addUnreadMsg(from, msg, thisApp);
+   return true;
 }
 
 // Study how to convert this into an elipsis like whatsapp.
