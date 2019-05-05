@@ -1341,8 +1341,25 @@ class MenuChatState extends State<MenuChat>
          // chat button in any of the posts leads us to the chat
          // screen with the postertiser.
          final String peer = _favPosts[_favChatIdx].from;
+         final int id = _favPosts[_favChatIdx].id;
          ChatHistory chatHist = _favPosts[_favChatIdx].getChatHist(peer);
-         chatHist.moveToReadHistory(_favPosts[_favChatIdx].id);
+         final int n = chatHist.moveToReadHistory(id);
+
+         if (n != 0) {
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': peer,
+               'post_id': id,
+               'number_of_msgs': n,
+               'is_sender_post': false,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload);
+         }
+
          return createChatScreen(
                    context,
                    _onWillPopFavChatScreen,
@@ -1358,7 +1375,24 @@ class MenuChatState extends State<MenuChat>
          // specific post.
          ChatHistory chatHist =
                _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer);
-         chatHist.moveToReadHistory(_ownPosts[_ownChatIdx].id);
+
+         final int n = chatHist.moveToReadHistory(_ownPosts[_ownChatIdx].id);
+
+         if (n != 0) {
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': _ownPostChatPeer,
+               'post_id': _ownPosts[_ownChatIdx].id,
+               'number_of_msgs': n,
+               'is_sender_post': true,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload);
+         }
+
          return createChatScreen(
                    context,
                    _onWillPopOwnChatScreen,

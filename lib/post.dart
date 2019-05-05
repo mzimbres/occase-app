@@ -153,10 +153,14 @@ class ChatHistory {
       }
    }
 
-   void moveToReadHistory(final int postId)
+   // Returns the number of unread messages that have been moved to
+   // the read history.
+   int moveToReadHistory(final int postId)
    {
       if (unreadMsgs.isEmpty)
-         return;
+         return 0;
+
+      final int n = unreadMsgs.length;
 
       msgs.addAll(unreadMsgs);
 
@@ -173,6 +177,8 @@ class ChatHistory {
             '${dir.path}/chat_unread_${postId}_${peer}.txt';
          writeToFile('', unreadFullPath, FileMode.write);
       });
+
+      return n;
    }
 
    String getLastUnreadMsg()
