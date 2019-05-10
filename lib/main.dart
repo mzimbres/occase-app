@@ -65,6 +65,7 @@ String makePostPayload(final PostData post)
          'to': post.codes,
          'msg': post.description,
          'id': -1,
+         'filter': 0,
       }]
    };
 
@@ -925,7 +926,10 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void onMessage(Map<String, dynamic> ack)
+   //__________________________________________________________________
+   //
+   // Handlers used for each command received from the server.
+   void _onMessage(Map<String, dynamic> ack)
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
@@ -973,162 +977,168 @@ class MenuChatState extends State<MenuChat>
       setState((){});
    }
 
+   void _onRegisterAck(Map<String, dynamic> ack, final String msg)
+   {
+      final String res = ack["result"];
+      if (res == 'fail') {
+         print("register_ack: fail.");
+         return;
+      }
+
+      assert(res == 'ok');
+
+      _appId = ack["id"];
+      _appPwd = ack["password"];
+      final String login = '${_appId}:${_appPwd}';
+
+      // On register_ack ok we will receive our credentials to log
+      // in the server and the menu, they should both be persisted
+      // in a file.
+      print('register_ack: Persisting login $login');
+      writeToFile(login, _loginFileFullPath, FileMode.write);
+
+      print('register_ack: Persisting the menu received.');
+      writeToFile(msg, _menuFileFullPath, FileMode.write);
+
+      _menus = menuReader(ack);
+      assert(_menus != null);
+   }
+
+   void _onLoginAck(Map<String, dynamic> ack, final String msg)
+   {
+      final String res = ack["result"];
+
+      // I still do not know how a failed login should be handled.
+      // Perhaps send a new register command? It can only happen if
+      // the server is blocking this user.
+      if (res == 'fail') {
+         print("login_ack: fail.");
+         return;
+      }
+
+      // We are loggen in and can send the channels we are
+      // subscribed to to receive posts sent while we were offline.
+      _sendHahesToServer();
+
+      // Sends any chat messages that may have been written while
+      // the app were offline.
+      sendOfflineChatMsgs();
+
+      // The same for posts.
+      sendOfflinePosts();
+
+      if (ack.containsKey('menus')) {
+         // The server has sent us a menu, that means we have to
+         // update the current one keeping the status of each
+         // field. TODO: Keep the status field.
+         print('login_ack: New menu received.');
+         writeToFile(msg, _menuFileFullPath, FileMode.write);
+         _menus = menuReader(ack);
+         assert(_menus != null);
+      }
+   }
+
+   void _onSubscribeAck(Map<String, dynamic> ack)
+   {
+      final String res = ack["result"];
+      if (res == 'fail') {
+         print("subscribe_ack: $res");
+         return;
+      }
+
+      // When a subscribe_ack is received from the server after the
+      // app has sent a subscribe command the app will persist the
+      // menu together with the status states on a file. However
+      // sometimes we do not want to persist the menu on file, this
+      // is the case when the app successfully logs in server and
+      // proceeds with the subscribe to get the posts the may have
+      // been sent while the app was offline. In this case there
+      // has been no change in the menu. However, I do not see a
+      // need now to optimize away this redundant writes. Perhaps
+      // in the future we can introduce a flag to inform the
+      // subscribe_ack is the result of login_ack.
+
+      var foo = {
+         'menus': _menus
+      };
+
+      final String fileName = 'menu.txt';
+      final String bar = jsonEncode(foo);
+      print('subscribe_ack: Writing menu state to file.');
+      writeToFile(bar, _menuFileFullPath, FileMode.write);
+   }
+
+   void _onPost(Map<String, dynamic> ack)
+   {
+      // Remember the size of the list to append later the new items
+      // to a file.
+      final int size = _unreadPosts.length;
+      var items = ack['items'];
+      for (var item in items) {
+         final String from = item['from'];
+         if (from == _appId) {
+            // Our own post being sent back to us.
+            continue;
+         }
+
+         PostData post = readPostData(item);
+         // Since this post is not from this app we have to add a chat
+         // entry in it.
+         post.createChatEntryForPeer(post.from);
+         _unreadPosts.add(post);
+
+         // It is not guaranteed that the array of posts sent by
+         // the server has increasing post ids so we should check.
+         if (post.id > _lastPostId)
+            _lastPostId = post.id;
+      }
+
+      final String lastPostIdStr = '${_lastPostId}';
+      writeToFile(lastPostIdStr, _lastPostIdFileFullPath, FileMode.write);
+
+      // At the moment we do not impose a limit on how big this
+      // file can grow.
+      writeListToDisk( _unreadPosts, _unreadPostsFileFullPath
+                     , FileMode.append);
+
+      // Consider: Before triggering a redraw we should perhaps
+      // check whether it is necessary given our current state.
+      setState(() { });
+   }
+
+   void _onPublishAck(Map<String, dynamic> ack)
+   {
+      final String res = ack['result'];
+      if (res == 'ok')
+         handlePublishAck(ack['id']);
+      else
+         handlePublishAck(-1);
+   }
+
    void onWSData(msg)
    {
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
       if (cmd == "register_ack") {
-         final String res = ack["result"];
-         if (res == 'fail') {
-            print("register_ack: fail.");
-            return;
-         }
-
-         assert(res == 'ok');
-
-         _appId = ack["id"];
-         _appPwd = ack["password"];
-         final String login = '${_appId}:${_appPwd}';
-
-         // On register_ack ok we will receive our credentials to log
-         // in the server and the menu, they should both be persisted
-         // in a file.
-         print('register_ack: Persisting login $login');
-         writeToFile(login, _loginFileFullPath, FileMode.write);
-
-         print('register_ack: Persisting the menu received.');
-         writeToFile(msg, _menuFileFullPath, FileMode.write);
-
-         _menus = menuReader(ack);
-         assert(_menus != null);
-         return;
+         _onRegisterAck(ack, msg);
+      } else if (cmd == "login_ack") {
+         _onLoginAck(ack, msg);
+      } else if (cmd == "subscribe_ack") {
+         _onSubscribeAck(ack);
+      } else if (cmd == "post") {
+         _onPost(ack);
+      } else if (cmd == "publish_ack") {
+         _onPublishAck(ack);
+      } else if (cmd == "message") {
+         _onMessage(ack);
+      } else {
+         print('Unhandled message received from the server:\n$msg.');
       }
-
-      if (cmd == "login_ack") {
-         final String res = ack["result"];
-
-         // I still do not know how a failed login should be handled.
-         // Perhaps send a new register command? It can only happen if
-         // the server is blocking this user.
-         if (res == 'fail') {
-            print("login_ack: fail.");
-            return;
-         }
-
-         // We are loggen in and can send the channels we are
-         // subscribed to to receive posts sent while we were offline.
-         _sendHahesToServer();
-
-         // Sends any chat messages that may have been written while
-         // the app were offline.
-         sendOfflineChatMsgs();
-
-         // The same for posts.
-         sendOfflinePosts();
-
-         if (ack.containsKey('menus')) {
-            // The server has sent us a menu, that means we have to
-            // update the current one keeping the status of each
-            // field. TODO: Keep the status field.
-            print('login_ack: New menu received.');
-            writeToFile(msg, _menuFileFullPath, FileMode.write);
-            _menus = menuReader(ack);
-            assert(_menus != null);
-         }
-
-         return;
-      }
-
-      if (cmd == "subscribe_ack") {
-         final String res = ack["result"];
-         if (res == 'fail') {
-            print("subscribe_ack: $res");
-            return;
-         }
-
-         // When a subscribe_ack is received from the server after the
-         // app has sent a subscribe command the app will persist the
-         // menu together with the status states on a file. However
-         // sometimes we do not want to persist the menu on file, this
-         // is the case when the app successfully logs in server and
-         // proceeds with the subscribe to get the posts the may have
-         // been sent while the app was offline. In this case there
-         // has been no change in the menu. However, I do not see a
-         // need now to optimize away this redundant writes. Perhaps
-         // in the future we can introduce a flag to inform the
-         // subscribe_ack is the result of login_ack.
-
-         var foo = {
-            'menus': _menus
-         };
-
-         final String fileName = 'menu.txt';
-         final String bar = jsonEncode(foo);
-         print('subscribe_ack: Writing menu state to file.');
-         writeToFile(bar, _menuFileFullPath, FileMode.write);
-         return;
-      }
-
-      if (cmd == "post") {
-         // Remember the size of the list to append later the new items
-         // to a file.
-         final int size = _unreadPosts.length;
-         var items = ack['items'];
-         for (var item in items) {
-            final String from = item['from'];
-            if (from == _appId) {
-               // Our own post being sent back to us.
-               continue;
-            }
-
-            PostData post = readPostData(item);
-            // Since this post is not from this app we have to add a chat
-            // entry in it.
-            post.createChatEntryForPeer(post.from);
-            _unreadPosts.add(post);
-
-            // It is not guaranteed that the array of posts sent by
-            // the server has increasing post ids so we should check.
-            if (post.id > _lastPostId)
-               _lastPostId = post.id;
-         }
-
-         final String lastPostIdStr = '${_lastPostId}';
-         writeToFile(lastPostIdStr, _lastPostIdFileFullPath, FileMode.write);
-
-         // At the moment we do not impose a limit on how big this
-         // file can grow.
-         writeListToDisk( _unreadPosts, _unreadPostsFileFullPath
-                        , FileMode.append);
-
-         // Consider: Before triggering a redraw we should perhaps
-         // check whether it is necessary given our current state.
-         setState(() { });
-         return;
-      }
-
-      if (cmd == "publish_ack") {
-         final String res = ack['result'];
-         if (res == 'ok')
-            handlePublishAck(ack['id']);
-         else
-            handlePublishAck(-1);
-
-         return;
-      }
-
-      if (cmd == "message") {
-         onMessage(ack);
-         return;
-      }
-
-      print('Unhandled message received from the server:\n$msg.');
    }
 
    void onWSError(error)
    {
-      // TODO: Start a reconnect timer.
       print(error);
    }
 
@@ -1531,14 +1541,13 @@ class MenuChatState extends State<MenuChat>
               );
    }
 
-   void _connectToServer(String login)
+   void _connectToServer(final String login)
    {
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. The host address is 10.0.2.2.
       channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
       //channel = IOWebSocketChannel.connect('ws://192.168.0.27:80');
-      channel.stream.listen(onWSData,
-            onError: onWSError, onDone: onWSDone);
+      channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
       channel.sink.add(login);
    }
