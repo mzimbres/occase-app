@@ -837,18 +837,6 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void handleChatMsgServerAck()
-   {
-      assert(!_outChatMsgsQueue.isEmpty);
-
-      _outChatMsgsQueue.removeFirst();
-      final String accStr = accumulateStr(_outChatMsgsQueue);
-      print('====> handleChatMsgServerAck:\n$accStr');
-      writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
-      if (!_outChatMsgsQueue.isEmpty)
-         channel.sink.add(_outChatMsgsQueue.first);
-   }
-
    void _onFavChatSendPressed()
    {
       if (_newPostTextCtrl.text.isEmpty)
@@ -926,48 +914,61 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   //__________________________________________________________________
-   //
-   // Handlers used for each command received from the server.
+   void _chatMsgServerAckHandler()
+   {
+      assert(!_outChatMsgsQueue.isEmpty);
+
+      _outChatMsgsQueue.removeFirst();
+      final String accStr = accumulateStr(_outChatMsgsQueue);
+      print('====> _chatMsgServerAckHandler:\n$accStr');
+      writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
+      if (!_outChatMsgsQueue.isEmpty)
+         channel.sink.add(_outChatMsgsQueue.first);
+   }
+
+   void _chatMsgHandler(Map<String, dynamic> ack)
+   {
+      final String to = ack['to'];
+      if (to != _appId) {
+         print("Server bug caught. Please report.");
+         return;
+      }
+
+      final int postId = ack['post_id'];
+      final String msg = ack['msg'];
+      final String from = ack['from'];
+
+      // A user message can be either directed to one of the posts
+      // published by this app or one that the app is interested
+      // in. We distinguish this with the field 'is_sender_post'
+      final bool is_sender_post = ack['is_sender_post'];
+      if (is_sender_post) {
+         findAndAddMsg(_favPosts, postId, from, msg, false);
+      } else {
+         findAndAddMsg(_ownPosts, postId, from, msg, false);
+      }
+
+      // Acks we have received the message.
+      var foo = {
+         'cmd': 'message',
+         'type': 'app_ack_received',
+         'from': _appId,
+         'to': from,
+         'post_id': postId,
+         'is_sender_post': !is_sender_post,
+      };
+
+      final String payload = jsonEncode(foo);
+      sendChatMsg(payload);
+   }
+
    void _onMessage(Map<String, dynamic> ack)
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
-         handleChatMsgServerAck();
+         _chatMsgServerAckHandler();
       } else if (type == 'chat') {
-         final String to = ack['to'];
-         if (to != _appId) {
-            print("Server bug caught. Please report.");
-            return;
-         }
-
-         final int postId = ack['post_id'];
-         final String msg = ack['msg'];
-         final String from = ack['from'];
-
-         // A user message can be either directed to one of the posts
-         // published by this app or one that the app is interested
-         // in. We distinguish this with the field 'is_sender_post'
-         final bool is_sender_post = ack['is_sender_post'];
-         if (is_sender_post) {
-            findAndAddMsg(_favPosts, postId, from, msg, false);
-         } else {
-            findAndAddMsg(_ownPosts, postId, from, msg, false);
-         }
-
-         // Acks we have received the message.
-         var foo = {
-            'cmd': 'message',
-            'type': 'app_ack_received',
-            'from': _appId,
-            'to': from,
-            'post_id': postId,
-            'is_sender_post': !is_sender_post,
-         };
-
-         final String payload = jsonEncode(foo);
-         sendChatMsg(payload);
-
+         _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
          print('app_ack_received');
       } else if (type == 'app_ack_read') {
