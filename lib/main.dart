@@ -132,18 +132,18 @@ int postIndexHelper(int i)
 }
 
 // Returns an icon based on the message status.
-Icon chooseIcon(final int chatMsgStatus)
+Icon chooseIcon(final int status)
 {
-   if (chatMsgStatus == 0)
+   if (status == 0)
       return Icon(Icons.clear, color: Colors.red);
 
-   if (chatMsgStatus == 1)
+   if (status == 1)
       return Icon(Icons.check, color: Colors.red);
 
-   if (chatMsgStatus == 2)
+   if (status == 2)
       return Icon(Icons.check_circle_outline, color: Colors.red);
 
-   if (chatMsgStatus == 3)
+   if (status == 3)
       return Icon(Icons.check_circle, color: Colors.red);
 
    assert(false);
@@ -192,9 +192,10 @@ createChatScreen(BuildContext context,
 
             Widget msgAndStatus;
             if (chatHist.msgs[i].thisApp) {
+               final int st =  chatHist.msgs[i].status;
                Align foo =
                   Align(alignment: Alignment.bottomRight,
-                        child: chooseIcon(chatHist.msgs[i].status));
+                        child: chooseIcon(st));
                msgAndStatus = Row(children:
                   <Widget>[Expanded(child: Text(chatHist.msgs[i].msg)),
                            Expanded(child: foo)]);
@@ -914,7 +915,7 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _chatMsgServerAckHandler()
+   void _chatMsgServerAckHandler(Map<String, dynamic> ack)
    {
       assert(!_outChatMsgsQueue.isEmpty);
 
@@ -962,15 +963,28 @@ class MenuChatState extends State<MenuChat>
       sendChatMsg(payload);
    }
 
+   void _chatMsgAppAckReceived(Map<String, dynamic> ack)
+   {
+      final String from = ack['from'];
+      final int postId = ack['post_id'];
+
+      final bool isSenderPost = ack['is_sender_post'];
+      if (isSenderPost) {
+         findAndMarkAckReceivedMsgs(_favPosts, from, postId);
+      } else {
+         findAndMarkAckReceivedMsgs(_ownPosts, from, postId);
+      }
+   }
+
    void _onMessage(Map<String, dynamic> ack)
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
-         _chatMsgServerAckHandler();
+         _chatMsgServerAckHandler(ack);
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
-         print('app_ack_received');
+         _chatMsgAppAckReceived(ack);
       } else if (type == 'app_ack_read') {
          print('app_ack_read');
       }

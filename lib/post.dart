@@ -236,6 +236,43 @@ class ChatHistory {
                          , FileMode.append);
       });
    }
+
+   void markAppReceived()
+   {
+      assert(!msgs.isEmpty);
+
+      // Since we do not have ids to know which message exactly has
+      // been acked. We should try to find the oldest msg that has not
+      // been acked. But the algorithm is more complicated since we
+      // have to skip the chat items that are from the peer. For now,
+      // I will ack in the reverse order. This should not be
+      // perceptible to the user.
+      //
+      // Here we could use for example indexWhere to search for the
+      // index but to avoid performance later when the chat history
+      // becomes too long I will begin the search from the back.
+      int i = 0;
+      for (; i < msgs.length; ++i) {
+         final int ii = msgs.length - i - 1;
+         if (!msgs[ii].thisApp)
+            continue;
+
+         final int st = msgs[ii].status;
+         if (st < 2) // Should be >=
+            break;
+      }
+
+      int idx = msgs.length - i - 1;
+      assert(msgs[idx].thisApp);
+
+      print('====> markAppReceived $idx ${msgs.length}');
+      // If i = 0 and st >= 2 something wrong happened. I will
+      // ignore it for now.
+      msgs[idx].status = 2;
+
+      // TODO: Persist the change. For that it will be necessary to
+      // restructure the chat files.
+   }
 }
 
 List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
@@ -352,6 +389,12 @@ class PostData {
       history.addUnreadMsg(msg, thisApp, id);
    }
 
+   void markAppReceivedMsgs(final String peer)
+   {
+      ChatHistory history = getChatHist(peer);
+      history.markAppReceived();
+   }
+
    int getNumberOfUnreadChats()
    {
       int i = 0;
@@ -434,6 +477,23 @@ bool findAndAddMsg(final List<PostData> posts,
 
    posts[i].addUnreadMsg(from, msg, thisApp);
    return true;
+}
+
+void
+findAndMarkAckReceivedMsgs( final List<PostData> posts
+                          , final String from
+                          , final int postId)
+{
+   final int i = posts.indexWhere((e) { return e.id == postId;});
+
+   if (i == -1) {
+      print('====> findAndMarkAckReceivedMsgs: Cannot find msg.');
+      return;
+   }
+
+   //print('====> IndexWhere: $i');
+
+   posts[i].markAppReceivedMsgs(from);
 }
 
 // Study how to convert this into an elipsis like whatsapp.
