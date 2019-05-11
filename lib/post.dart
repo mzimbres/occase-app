@@ -117,6 +117,33 @@ List<ChatItem> chatItemsFromStrs(final List<String> items)
    return foo;
 }
 
+int findIdxToAck(final List<ChatItem> msgs, final int st)
+{
+   // Since we do not have ids to know which message exactly has
+   // been acked. We should try to find the oldest msg that has not
+   // been acked. But the algorithm is complicated since we have to
+   // skip the chat items from the peer. For now, I will ack in the
+   // reverse order. This should not be perceptible to the user.
+   //
+   // Here we could use for example indexWhere to search for the
+   // index but to avoid performance later when the chat history
+   // becomes too long I will begin the search from the back.
+   int i = 0;
+   for (; i < msgs.length; ++i) {
+      final int ii = msgs.length - i - 1;
+      if (!msgs[ii].thisApp)
+         continue;
+
+      final int st = msgs[ii].status;
+      if (st < 2) // Should be >=
+         break;
+   }
+
+   int idx = msgs.length - i - 1;
+   assert(msgs[idx].thisApp);
+   return idx;
+}
+
 class ChatHistory {
    String peer = '';
    List<ChatItem> msgs = List<ChatItem>();
@@ -237,41 +264,30 @@ class ChatHistory {
       });
    }
 
-   void markAppReceived()
+   void markAppReceived(final int postId)
    {
       assert(!msgs.isEmpty);
 
-      // Since we do not have ids to know which message exactly has
-      // been acked. We should try to find the oldest msg that has not
-      // been acked. But the algorithm is more complicated since we
-      // have to skip the chat items that are from the peer. For now,
-      // I will ack in the reverse order. This should not be
-      // perceptible to the user.
-      //
-      // Here we could use for example indexWhere to search for the
-      // index but to avoid performance later when the chat history
-      // becomes too long I will begin the search from the back.
-      int i = 0;
-      for (; i < msgs.length; ++i) {
-         final int ii = msgs.length - i - 1;
-         if (!msgs[ii].thisApp)
-            continue;
-
-         final int st = msgs[ii].status;
-         if (st < 2) // Should be >=
-            break;
-      }
-
-      int idx = msgs.length - i - 1;
-      assert(msgs[idx].thisApp);
+      final int idx = findIdxToAck(msgs, 2);
 
       print('====> markAppReceived $idx ${msgs.length}');
       // If i = 0 and st >= 2 something wrong happened. I will
       // ignore it for now.
       msgs[idx].status = 2;
 
-      // TODO: Persist the change. For that it will be necessary to
-      // restructure the chat files.
+      // TODO: Soon or later we will have to use a database. Now we
+      // are having to write the whole file of msgs on every ack which
+      // is very bad for performance. We only want to change a flag.
+      // We could also think of storing status flags in a separate
+      // file?
+      getApplicationDocumentsDirectory()
+      .then((Directory dir) async
+      {
+         final String unreadFullPath =
+            '${dir.path}/chat_read_${postId}_${peer}.txt';
+
+         writeListToDisk(msgs, unreadFullPath, FileMode.write);
+      });
    }
 }
 
@@ -392,7 +408,7 @@ class PostData {
    void markAppReceivedMsgs(final String peer)
    {
       ChatHistory history = getChatHist(peer);
-      history.markAppReceived();
+      history.markAppReceived(id);
    }
 
    int getNumberOfUnreadChats()
