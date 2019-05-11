@@ -266,7 +266,12 @@ class ChatHistory {
 
    void markAppChatAck(final int postId, final int status)
    {
-      assert(!msgs.isEmpty);
+      // TODO: Make sure to read chat messages before publishing the
+      // offline ones to the server. If the server acks before they
+      // have been completely loaded, we will miss them below.
+      //assert(!msgs.isEmpty); 
+      if (msgs.isEmpty)
+         return;
 
       int idx = findIdxToAck(msgs, status);
 

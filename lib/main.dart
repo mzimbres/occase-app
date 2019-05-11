@@ -921,7 +921,6 @@ class MenuChatState extends State<MenuChat>
 
       _outChatMsgsQueue.removeFirst();
       final String accStr = accumulateStr(_outChatMsgsQueue);
-      print('====> _chatServerAckHandler:\n$accStr');
       writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
       if (!_outChatMsgsQueue.isEmpty)
          channel.sink.add(_outChatMsgsQueue.first);
@@ -980,7 +979,11 @@ class MenuChatState extends State<MenuChat>
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
-         _chatServerAckHandler(ack);
+         final String res = ack['result'];
+         if (res == 'ok') {
+            _chatServerAckHandler(ack);
+            _chatAppAckHandler(ack, 1);
+         }
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
