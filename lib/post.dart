@@ -117,7 +117,7 @@ List<ChatItem> chatItemsFromStrs(final List<String> items)
    return foo;
 }
 
-int findIdxToAck(final List<ChatItem> msgs, final int st)
+int findIdxToAck(final List<ChatItem> msgs, final int status)
 {
    // Since we do not have ids to know which message exactly has
    // been acked. We should try to find the oldest msg that has not
@@ -135,7 +135,7 @@ int findIdxToAck(final List<ChatItem> msgs, final int st)
          continue;
 
       final int st = msgs[ii].status;
-      if (st < 2) // Should be >=
+      if (st < status) // Should be >=
          break;
    }
 
@@ -264,16 +264,20 @@ class ChatHistory {
       });
    }
 
-   void markAppReceived(final int postId)
+   void markAppChatAck(final int postId, final int status)
    {
       assert(!msgs.isEmpty);
 
-      final int idx = findIdxToAck(msgs, 2);
+      int idx = findIdxToAck(msgs, status);
 
-      print('====> markAppReceived $idx ${msgs.length}');
-      // If i = 0 and st >= 2 something wrong happened. I will
-      // ignore it for now.
-      msgs[idx].status = 2;
+      while (msgs[idx].status < status) {
+         print('====> markAppChatAck $idx ${msgs.length}');
+         msgs[idx].status = status;
+         if (idx == 0)
+            break;
+
+         --idx;
+      }
 
       // TODO: Soon or later we will have to use a database. Now we
       // are having to write the whole file of msgs on every ack which
@@ -405,10 +409,10 @@ class PostData {
       history.addUnreadMsg(msg, thisApp, id);
    }
 
-   void markAppReceivedMsgs(final String peer)
+   void markChatAppAck(final String peer, final int status)
    {
       ChatHistory history = getChatHist(peer);
-      history.markAppReceived(id);
+      history.markAppChatAck(id, status);
    }
 
    int getNumberOfUnreadChats()
@@ -496,20 +500,21 @@ bool findAndAddMsg(final List<PostData> posts,
 }
 
 void
-findAndMarkAckReceivedMsgs( final List<PostData> posts
-                          , final String from
-                          , final int postId)
+findAndMarkChatApp( final List<PostData> posts
+                  , final String from
+                  , final int postId
+                  , final int status)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
 
    if (i == -1) {
-      print('====> findAndMarkAckReceivedMsgs: Cannot find msg.');
+      print('====> findAndMarkChatApp: Cannot find msg.');
       return;
    }
 
    //print('====> IndexWhere: $i');
 
-   posts[i].markAppReceivedMsgs(from);
+   posts[i].markChatAppAck(from, status);
 }
 
 // Study how to convert this into an elipsis like whatsapp.

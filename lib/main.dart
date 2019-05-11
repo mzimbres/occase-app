@@ -915,13 +915,13 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _chatMsgServerAckHandler(Map<String, dynamic> ack)
+   void _chatServerAckHandler(Map<String, dynamic> ack)
    {
       assert(!_outChatMsgsQueue.isEmpty);
 
       _outChatMsgsQueue.removeFirst();
       final String accStr = accumulateStr(_outChatMsgsQueue);
-      print('====> _chatMsgServerAckHandler:\n$accStr');
+      print('====> _chatServerAckHandler:\n$accStr');
       writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
       if (!_outChatMsgsQueue.isEmpty)
          channel.sink.add(_outChatMsgsQueue.first);
@@ -963,16 +963,16 @@ class MenuChatState extends State<MenuChat>
       sendChatMsg(payload);
    }
 
-   void _chatMsgAppAckReceived(Map<String, dynamic> ack)
+   void _chatAppAckHandler(Map<String, dynamic> ack, final int status)
    {
       final String from = ack['from'];
       final int postId = ack['post_id'];
 
       final bool isSenderPost = ack['is_sender_post'];
       if (isSenderPost) {
-         findAndMarkAckReceivedMsgs(_favPosts, from, postId);
+         findAndMarkChatApp(_favPosts, from, postId, status);
       } else {
-         findAndMarkAckReceivedMsgs(_ownPosts, from, postId);
+         findAndMarkChatApp(_ownPosts, from, postId, status);
       }
    }
 
@@ -980,13 +980,13 @@ class MenuChatState extends State<MenuChat>
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
-         _chatMsgServerAckHandler(ack);
+         _chatServerAckHandler(ack);
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
-         _chatMsgAppAckReceived(ack);
+         _chatAppAckHandler(ack, 2);
       } else if (type == 'app_ack_read') {
-         print('app_ack_read');
+         _chatAppAckHandler(ack, 3);
       }
 
       setState((){});
@@ -1377,7 +1377,7 @@ class MenuChatState extends State<MenuChat>
                'from': _appId,
                'to': peer,
                'post_id': id,
-               'number_of_msgs': n,
+               'number_of_msgs': n, // Still unused on the app.
                'is_sender_post': false,
             };
 
