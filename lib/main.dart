@@ -352,8 +352,8 @@ class MenuChatState extends State<MenuChat>
    bool _newPostPressed = false;
 
    // The index of the tab we are currently in in the *new
-   // postertisement screen*. For example 0 for the localization menu,
-   // 1 for the models menu etc.
+   // post* or *Filters* screen. For example 0 for the localization
+   // menu, 1 for the models menu etc.
    int _botBarIdx = 0;
 
    // Stores the last tapped botton bar of *chats* screen. See that
@@ -1065,7 +1065,7 @@ class MenuChatState extends State<MenuChat>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _sendHahesToServer();
+      _sendHahesToServer(false);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -1196,7 +1196,7 @@ class MenuChatState extends State<MenuChat>
       print("Communication closed by peer.");
    }
 
-   void _sendHahesToServer()
+   void _sendHahesToServer(bool goToPostsScreen)
    {
       List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
@@ -1219,6 +1219,12 @@ class MenuChatState extends State<MenuChat>
 
       final String subText = jsonEncode(subCmd);
       channel.sink.add(subText);
+
+      if (goToPostsScreen) {
+         _tabCtrl.index = 1;
+         _botBarIdx = 0;
+         setState(() { });
+      }
    }
 
    // Called when the main tab changes.
@@ -1474,7 +1480,7 @@ class MenuChatState extends State<MenuChat>
             List<Function>(cts.tabNames.length);
 
       if (_botBarIdx == 2) {
-         bodies[0] = createSendScreen(_sendHahesToServer);
+         bodies[0] = createSendScreen((){_sendHahesToServer(true);});
       } else {
          bodies[0] = createFilterListView(
                         context,

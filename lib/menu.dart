@@ -149,7 +149,7 @@ ListView createFilterListView(BuildContext context,
 Center createSendScreen(Function sendHahesToServer)
 {
    return Center(child:RaisedButton(
-               child: Text( "Enviar",
+               child: Text( "Aplicar",
                      style: TextStyle(
                            fontWeight: FontWeight.bold,
                            fontSize: Consts.mainFontSize )
