@@ -1407,8 +1407,8 @@ class MenuChatState extends State<MenuChat>
          // screen with the postertiser.
          final String peer = _favPosts[_favChatIdx].from;
          final int id = _favPosts[_favChatIdx].id;
-         ChatHistory chatHist = _favPosts[_favChatIdx].getChatHist(peer);
-         final int n = chatHist.moveToReadHistory(id);
+         final int idx = _favPosts[_favChatIdx].getChatHistIdx(peer);
+         final int n = _favPosts[_favChatIdx].moveToReadHistory(idx);
 
          if (n != 0) {
             var msgMap = {
@@ -1428,7 +1428,7 @@ class MenuChatState extends State<MenuChat>
          return createChatScreen(
                    context,
                    _onWillPopFavChatScreen,
-                   chatHist,
+                   _favPosts[_favChatIdx].chats[idx],
                    _newPostTextCtrl,
                    _onFavChatSendPressed,
                    _chatScrollCtrl);
@@ -1438,10 +1438,10 @@ class MenuChatState extends State<MenuChat>
           _ownChatIdx != -1 && _ownPostChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific post.
-         ChatHistory chatHist =
-               _ownPosts[_ownChatIdx].getChatHist(_ownPostChatPeer);
-
-         final int n = chatHist.moveToReadHistory(_ownPosts[_ownChatIdx].id);
+         final int idx =
+            _ownPosts[_ownChatIdx].getChatHistIdx(_ownPostChatPeer);
+         final ChatHistory chatHist = _ownPosts[_ownChatIdx].chats[idx];
+         final int n = _ownPosts[_ownChatIdx].moveToReadHistory(idx);
 
          if (n != 0) {
             var msgMap = {

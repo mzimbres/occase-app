@@ -390,16 +390,23 @@ class PostData {
       .then((Directory dir) async { _persistPeers(dir.path); });
    }
 
-   ChatHistory getChatHist(String peer)
+   int getChatHistIdx(final String peer)
    {
       final int i = chats.indexWhere((e) {return e.peer == peer;});
 
       if (i == -1) {
          // This is the first message with this user (peer).
+         final int l = chats.length;
          createChatEntryForPeer(peer);
-         return chats.last;
+         return l;
       }
 
+      return i;
+   }
+
+   ChatHistory getChatHist(final String peer)
+   {
+      final int i = getChatHistIdx(peer);
       return chats[i];
    }
 
@@ -411,8 +418,20 @@ class PostData {
 
    void addUnreadMsg(final String peer, final String msg, final bool thisApp)
    {
-      ChatHistory history = getChatHist(peer);
+      final int j = getChatHistIdx(peer);
+      ChatHistory history = chats[j];
       history.addUnreadMsg(msg, thisApp, id);
+
+      // This chat history is now the most recent and should appear
+      // first int the list of chats. It is enough to rotate the list
+      // one element.
+      if (j == 0)
+         return; // This already the first element.
+
+      for (int i = j; i > 0; --i)
+         chats[i] = chats[i - 1];
+
+      chats[0] = history;
    }
 
    void markChatAppAck(final String peer, final int status)
@@ -478,6 +497,35 @@ class PostData {
          'id': id,
          'to': codes,
       };
+   }
+
+   int moveToReadHistory(int i)
+   {
+      final int n = chats[i].moveToReadHistory(id);
+
+      // Now we have to put this chatHistory behind any other that has
+      // unread messages.
+
+      // If this is already the last history we have nothing to do.
+      if ((i + 1) == chats.length)
+         return n;
+
+      // We know now it is not the last element.
+
+      if (chats[i + 1].getNumberOfUnreadMsgs() == 0)
+         return n;
+
+      // We known the next element has unread messages. We can loop.
+
+      ChatHistory hist = chats[i];
+      while ((i + 1) != chats.length &&
+             chats[i + 1].getNumberOfUnreadMsgs() > 0) {
+         chats[i] = chats[i + 1];
+         ++i;
+      }
+
+      chats[i] = hist;
+      return n;
    }
 }
 
