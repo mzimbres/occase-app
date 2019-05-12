@@ -22,6 +22,21 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
+class ChatMsgOutQueueElem {
+   int isChat = 0;
+   String payload = '';
+   ChatMsgOutQueueElem(this.isChat, this.payload);
+}
+
+String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
+{
+   String str = '';
+   for (ChatMsgOutQueueElem o in data)
+      str += '${o.isChat} ${o.payload}\n';
+
+   return str;
+}
+
 Future<List<PostData>> safeReadPostsFromFile(final String fullPath) async
 {
    try {
@@ -328,7 +343,8 @@ class MenuChatState extends State<MenuChat>
 
    // Stores messages that cannot be lost in case the connection to
    // the server is lost. 
-   Queue<String> _outChatMsgsQueue = Queue<String>();
+   Queue<ChatMsgOutQueueElem> _outChatMsgsQueue =
+         Queue<ChatMsgOutQueueElem>();
 
    // A flag that is set to true when the floating button (new
    // postertisement) is clicked. It must be carefully set to false
@@ -429,7 +445,16 @@ class MenuChatState extends State<MenuChat>
       .then((List<PostData> o) { _outPostsQueue = Queue<PostData>.from(o); });
 
       safeReadStrFromFile(_outChatMsgsFileFullPath)
-      .then((List<String> o) { _outChatMsgsQueue = Queue<String>.from(o); });
+      .then((List<String> o)
+      {
+         for (String s in o) {
+            final List<String> foo = s.split(' ');
+            assert(foo.length == 2);
+            final int isChat = int.parse(foo.first);
+            _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
+         }
+
+      });
 
       setState(() { });
 
@@ -818,23 +843,25 @@ class MenuChatState extends State<MenuChat>
       print("_onOwnPostChatLongPressed");
    }
 
-   void sendChatMsg(final String payload)
+   void sendChatMsg(final String payload, int isChat)
    {
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
-      _outChatMsgsQueue.add(payload);
-      writeToFile('${payload}\n', _outChatMsgsFileFullPath, FileMode.append);
+      _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, payload));
+      writeToFile( '${isChat} ${payload}\n'
+                 , _outChatMsgsFileFullPath
+                 , FileMode.append);
 
       if (isEmpty) {
-         print('=====> sendChatMsg:\n${_outChatMsgsQueue.first}');
-         channel.sink.add(_outChatMsgsQueue.first);
+         print('=====> sendChatMsg: ${_outChatMsgsQueue.first.payload}');
+         channel.sink.add(_outChatMsgsQueue.first.payload);
       }
    }
 
    void sendOfflineChatMsgs()
    {
       if (!_outChatMsgsQueue.isEmpty) {
-         print('====> sendOfflineChatMsgs:\n${_outChatMsgsQueue.first}');
-         channel.sink.add(_outChatMsgsQueue.first);
+         print('====> OfflineChatMsgs: ${_outChatMsgsQueue.first.payload}');
+         channel.sink.add(_outChatMsgsQueue.first.payload);
       }
    }
 
@@ -860,7 +887,7 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      sendChatMsg(payload);
+      sendChatMsg(payload, 1);
       _favPosts[_favChatIdx].addMsg(to, msg, true);
 
       setState(()
@@ -898,7 +925,7 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      sendChatMsg(payload);
+      sendChatMsg(payload, 1);
       _ownPosts[_ownChatIdx].addMsg(_ownPostChatPeer, msg, true);
 
       setState(()
@@ -920,10 +947,10 @@ class MenuChatState extends State<MenuChat>
       assert(!_outChatMsgsQueue.isEmpty);
 
       _outChatMsgsQueue.removeFirst();
-      final String accStr = accumulateStr(_outChatMsgsQueue);
+      final String accStr = accumulateChatMsgs(_outChatMsgsQueue);
       writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
       if (!_outChatMsgsQueue.isEmpty)
-         channel.sink.add(_outChatMsgsQueue.first);
+         channel.sink.add(_outChatMsgsQueue.first.payload);
    }
 
    void _chatMsgHandler(Map<String, dynamic> ack)
@@ -959,7 +986,7 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(foo);
-      sendChatMsg(payload);
+      sendChatMsg(payload, 0);
    }
 
    void _chatAppAckHandler(Map<String, dynamic> ack, final int status)
@@ -981,8 +1008,10 @@ class MenuChatState extends State<MenuChat>
       if (type == 'server_ack') {
          final String res = ack['result'];
          if (res == 'ok') {
+            final int isChat = _outChatMsgsQueue.first.isChat;
             _chatServerAckHandler(ack);
-            _chatAppAckHandler(ack, 1);
+            if (isChat == 1)
+               _chatAppAckHandler(ack, 1);
          }
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
@@ -1138,6 +1167,7 @@ class MenuChatState extends State<MenuChat>
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
+      // TODO: Put most used commands first to improve performance.
       if (cmd == "register_ack") {
          _onRegisterAck(ack, msg);
       } else if (cmd == "login_ack") {
@@ -1149,6 +1179,7 @@ class MenuChatState extends State<MenuChat>
       } else if (cmd == "publish_ack") {
          _onPublishAck(ack);
       } else if (cmd == "message") {
+         print('onWSData ===> $msg');
          _onMessage(ack);
       } else {
          print('Unhandled message received from the server:\n$msg.');
@@ -1385,7 +1416,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload);
+            sendChatMsg(payload, 0);
          }
 
          return createChatScreen(
@@ -1418,7 +1449,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload);
+            sendChatMsg(payload, 0);
          }
 
          return createChatScreen(

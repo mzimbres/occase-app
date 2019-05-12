@@ -45,15 +45,6 @@ void writeListToDisk<T>( final List<T> data, final String fullPath
    writeToFile(content, fullPath, mode);
 }
 
-String accumulateStr(final Queue<String> data)
-{
-   String str = '';
-   for (String o in data)
-      str += '$o\n';
-
-   return str;
-}
-
 int cmdToChatStatus(final String cmd)
 {
    if (cmd == 'chat')
@@ -130,16 +121,24 @@ int findIdxToAck(final List<ChatItem> msgs, final int status)
    // becomes too long I will begin the search from the back.
    int i = 0;
    for (; i < msgs.length; ++i) {
-      final int ii = msgs.length - i - 1;
-      if (!msgs[ii].thisApp)
-         continue;
+      final int j = msgs.length - i - 1; // Idx of the last element.
+      if (!msgs[j].thisApp)
+         continue; // Not a message from this app.
 
-      final int st = msgs[ii].status;
+      final int st = msgs[j].status;
       if (st < status) // Should be >=
          break;
    }
 
-   int idx = msgs.length - i - 1;
+   if (i == msgs.length) {
+      // Most likely an out of order problem. Catching this here may
+      // hide the source of problem, that maybe for example be on the
+      // server. For debuging one may think of replacing it with an
+      // assert.
+      return -1;
+   }
+
+   final int idx = msgs.length - i - 1;
    assert(msgs[idx].thisApp);
    return idx;
 }
@@ -274,6 +273,8 @@ class ChatHistory {
          return;
 
       int idx = findIdxToAck(msgs, status);
+      if (idx == -1)
+         return;
 
       while (msgs[idx].status < status) {
          print('====> markAppChatAck $idx ${msgs.length}');
