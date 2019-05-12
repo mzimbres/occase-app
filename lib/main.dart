@@ -49,10 +49,9 @@ Future<List<PostData>> safeReadPostsFromFile(final String fullPath) async
          foo.add(PostData.fromJson(map));
       }
 
-      print('${foo.length} posts read from file: $fullPath');
+      //print('${foo.length} posts read from file: $fullPath');
       return foo;
    } catch (e) {
-      print(e);
    }
 
    return List<PostData>();
@@ -63,10 +62,9 @@ Future<List<String>> safeReadStrFromFile(final String fullPath) async
    try {
       File f = File(fullPath);
       final List<String> lines = await f.readAsLines();
-      print('${lines.length} string read from file: $fullPath');
+      //print('${lines.length} string read from file: $fullPath');
       return lines;
    } catch (e) {
-      print(e);
       return List<String>();
    }
 }

@@ -146,7 +146,7 @@ int findIdxToAck(final List<ChatItem> msgs, final int status)
 class ChatHistory {
    String peer = '';
    List<ChatItem> msgs = List<ChatItem>();
-   List<ChatItem> unreadMsgs = List<ChatItem>();
+   List<ChatItem> _unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
 
    ChatHistory(this.peer, final int postId)
@@ -173,7 +173,7 @@ class ChatHistory {
       try {
          File f = File(unreadFullPath);
          final List<String> lines = await f.readAsLines();
-         unreadMsgs  = chatItemsFromStrs(lines);
+         _unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
          print(e);
       }
@@ -183,12 +183,12 @@ class ChatHistory {
    // the read history.
    int moveToReadHistory(final int postId)
    {
-      if (unreadMsgs.isEmpty)
+      if (_unreadMsgs.isEmpty)
          return 0;
 
-      final int n = unreadMsgs.length;
+      final int n = _unreadMsgs.length;
 
-      msgs.addAll(unreadMsgs);
+      msgs.addAll(_unreadMsgs);
 
       getApplicationDocumentsDirectory()
       .then((Directory dir) async
@@ -196,8 +196,8 @@ class ChatHistory {
          final String readFullPath =
             '${dir.path}/chat_read_${postId}_${peer}.txt';
 
-         writeListToDisk(unreadMsgs, readFullPath, FileMode.append);
-         unreadMsgs.clear();
+         writeListToDisk(_unreadMsgs, readFullPath, FileMode.append);
+         _unreadMsgs.clear();
 
          final String unreadFullPath =
             '${dir.path}/chat_unread_${postId}_${peer}.txt';
@@ -209,18 +209,18 @@ class ChatHistory {
 
    String getLastUnreadMsg()
    {
-      if (unreadMsgs.isEmpty)
+      if (_unreadMsgs.isEmpty)
          return '';
 
-      return unreadMsgs.last.msg;
+      return _unreadMsgs.last.msg;
    }
 
    int getNumberOfUnreadMsgs()
    {
-      if (unreadMsgs.isEmpty)
+      if (_unreadMsgs.isEmpty)
          return 0;
 
-      return unreadMsgs.length;
+      return _unreadMsgs.length;
    }
 
    String getLastReadMsg()
@@ -250,7 +250,7 @@ class ChatHistory {
    void addUnreadMsg(final String msg, final bool thisApp, final int postId)
    {
       ChatItem item = ChatItem(thisApp, msg);
-      unreadMsgs.add(item);
+      _unreadMsgs.add(item);
 
       getApplicationDocumentsDirectory()
       .then((Directory dir) async
@@ -444,7 +444,7 @@ class PostData {
    {
       int i = 0;
       for (ChatHistory h in chats)
-         if (!h.unreadMsgs.isEmpty)
+         if (h.getNumberOfUnreadMsgs() > 0)
             ++i;
 
       return i;
