@@ -117,6 +117,7 @@ final double postElemTextPadding = 4.0;
 final double outerPostCardPadding = 1.0;
 
 final String deleteChatStr = "Remover conversa";
+final String blockUserChatStr = "Bloquear usuário";
 
 final TextStyle firstLetterStl =
       TextStyle(color: Colors.white);

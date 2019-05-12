@@ -1269,6 +1269,7 @@ class MenuChatState extends State<MenuChat>
    void _removeLongPressedChatEntries()
    {
       assert(_tabCtrl.index == 2);
+
       if (_chatBotBarIdx == 0) {
          for (PostData post in _ownPosts)
             post.removeLongPressedChats();
@@ -1552,11 +1553,19 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> actions = List<Widget>();
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
-         IconButton ib = IconButton(
-            icon: Icon(Icons.delete, color: Colors.white),
+         // Delete chat forever button.
+         IconButton delChatBut = IconButton(
+            icon: Icon(Icons.delete_forever, color: Colors.white),
             tooltip: cts.deleteChatStr,
             onPressed: () { _deleteChatEntryDialog(context); });
-         actions.add(ib);
+         actions.add(delChatBut);
+
+         // Block user button.
+         IconButton blockUserBut = IconButton(
+            icon: Icon(Icons.block, color: Colors.white),
+            tooltip: cts.blockUserChatStr,
+            onPressed: () { print('Kabuff'); });
+         actions.add(blockUserBut);
       }
 
       actions.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0)));

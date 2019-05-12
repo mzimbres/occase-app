@@ -23,7 +23,7 @@ void writeToFile(String data, String fullPath, FileMode mode)
          sink.write(data);
          await sink.flush();
          await sink.close();
-         print('Finished writing to $fullPath');
+         //print('Finished writing to $fullPath');
       } catch (e) {
          print(e);
       }
@@ -351,7 +351,7 @@ class PostData {
          final List<String> lines = await f.readAsLines();
          for (String line in lines)
             chats.add(ChatHistory(line, id));
-         print('Peers $lines read from file: $fullPath');
+         //print('Peers $lines read from file: $fullPath');
       } catch (e) {
          print(e);
       }
