@@ -1063,7 +1063,7 @@ class MenuChatState extends State<MenuChat>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _sendHahesToServer(false);
+      _sendHahesToServer();
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -1194,7 +1194,42 @@ class MenuChatState extends State<MenuChat>
       print("Communication closed by peer.");
    }
 
-   void _sendHahesToServer(bool goToPostsScreen)
+   void _onOkDialAfterSendHashes()
+   {
+      _tabCtrl.index = 1;
+      _botBarIdx = 0;
+      setState(() { });
+   }
+
+   void _dialogAfterSendHashes(BuildContext context)
+   {
+      // First send the hashes then show the dialog.
+      _sendHahesToServer();
+
+      showDialog(
+         context: context,
+         builder: (BuildContext context)
+         {
+            final FlatButton ok = FlatButton(
+                     child: Text('Ok'),
+                     onPressed: ()
+                     {
+                        _onOkDialAfterSendHashes();
+                        Navigator.of(context).pop();
+                     });
+
+            List<FlatButton> actions = List<FlatButton>(1);
+            actions[0] = ok;
+
+            return AlertDialog(
+                  title: Text('Changes applied'),
+                  content: Text(""),
+                  actions: actions);
+         },
+      );
+   }
+
+   void _sendHahesToServer()
    {
       List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
@@ -1217,12 +1252,6 @@ class MenuChatState extends State<MenuChat>
 
       final String subText = jsonEncode(subCmd);
       channel.sink.add(subText);
-
-      if (goToPostsScreen) {
-         _tabCtrl.index = 1;
-         _botBarIdx = 0;
-         setState(() { });
-      }
    }
 
    // Called when the main tab changes.
@@ -1479,7 +1508,8 @@ class MenuChatState extends State<MenuChat>
             List<Function>(cts.tabNames.length);
 
       if (_botBarIdx == 2) {
-         bodies[0] = createSendScreen((){_sendHahesToServer(true);});
+         bodies[0] =
+            createSendScreen((){_dialogAfterSendHashes(context);});
       } else {
          bodies[0] = createFilterListView(
                         context,
