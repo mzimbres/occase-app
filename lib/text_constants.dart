@@ -147,3 +147,13 @@ final String ownPostsFileName = 'own_posts.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 
+// The texts showed on the *Posts* screen
+final List<String> postsDialScreenTitleText = <String>
+[ 'Deletar post?'
+, 'Mover para chats?'
+];
+
+final List<String> postsDialScreenBodyText = <String>
+[ 'O post será deletado definitivamente.'
+, 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
+];

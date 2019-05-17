@@ -571,12 +571,47 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl.addListener(_tabCtrlChangeHandler);
    }
 
-   void _onPostSelection(PostData data, bool fav)
+   void _alertUserOnselectPost( BuildContext context
+                              , PostData data, int fav)
    {
-      if (fav) {
+      showDialog(
+         context: context,
+         builder: (BuildContext context)
+         {
+            final FlatButton ok = FlatButton(
+                     child: Text('Ok'),
+                     onPressed: ()
+                     {
+                        _onPostSelection(data, fav);
+                        Navigator.of(context).pop();
+                     });
+
+            final FlatButton cancel = FlatButton(
+                     child: Text('Cancelar'),
+                     onPressed: ()
+                     {
+                        Navigator.of(context).pop();
+                     });
+
+            List<FlatButton> actions = List<FlatButton>(2);
+            actions[0] = cancel;
+            actions[1] = ok;
+
+            return AlertDialog(
+                   title: Text(cts.postsDialScreenTitleText[fav]),
+                   content: Text(cts.postsDialScreenBodyText[fav]),
+                   actions: actions);
+         },
+      );
+   }
+
+   void _onPostSelection(PostData data, int fav)
+   {
+      if (fav == 1) {
          _favPosts.add(data);
-         writeListToDisk( <PostData>[data], _favPostsFileFullPath,
-            FileMode.append);
+         writeListToDisk( <PostData>[data]
+                        , _favPostsFileFullPath
+                        , FileMode.append);
       }
 
       _posts.remove(data);
@@ -1223,7 +1258,7 @@ class MenuChatState extends State<MenuChat>
 
             return AlertDialog(
                   title: Text('Changes applied'),
-                  content: Text(""),
+                  content: Text("Você será notificado de novos anúnicos."),
                   actions: actions);
          },
       );
@@ -1541,11 +1576,13 @@ class MenuChatState extends State<MenuChat>
          }
       }
 
-      bodies[1] = makePostTabListView(context,
-                                      _posts,
-                                      _onPostSelection,
-                                      _menus,
-                                      newPostsLength);
+      bodies[1] =
+         makePostTabListView( context
+                            , _posts
+                            , (PostData data, int fav)
+                              {_alertUserOnselectPost(context, data, fav);}
+                            , _menus
+                            , newPostsLength);
 
       fltButtons[1] = makeNewPostButton(_onNewPost);
       bottNavBars[1] = null;

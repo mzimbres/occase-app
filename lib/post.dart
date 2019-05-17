@@ -753,19 +753,19 @@ Card createChatEntry(BuildContext context,
 }
 
 Card makePostWidget(BuildContext context,
-                   List<Card> cards,
-                   Function onPressed,
-                   Icon icon,
-                   Color color)
+                    List<Card> cards,
+                    Function onPressed,
+                    Icon icon,
+                    Color color)
 {
    IconButton icon1 = IconButton(
                          icon: Icon(Icons.clear, color: Colors.white),
                          iconSize: 30.0,
-                         onPressed: () {onPressed(false);});
+                         onPressed: () {onPressed(0);});
 
    IconButton icon2 = IconButton(
                          icon: icon,
-                         onPressed: () {onPressed(true);},
+                         onPressed: () {onPressed(1);},
                          color: Theme.of(context).primaryColor,
                          iconSize: 30.0);
 
@@ -849,7 +849,7 @@ makePostTabListView(BuildContext context,
                 return makePostWidget(
                           context,
                           cards,
-                          (fav) {onPostSelection(posts[idx], fav);},
+                          (int fav) {onPostSelection(posts[idx], fav);},
                           cts.favIcon,
                           color);
              });
