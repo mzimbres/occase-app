@@ -6,6 +6,7 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
+import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -151,31 +152,30 @@ class ChatHistory {
 
    ChatHistory(this.peer, final int postId)
    {
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async { _init(dir.path, postId); });
+      _init(postId);
    }
 
-   Future<void> _init(final String path, final int postId) async
+   String _makeFullPath(final String prefix, final int postId)
    {
-      final String readFullPath = '$path/chat_read_${postId}_${peer}.txt';
+      return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
+   }
 
+   void _init(final int postId)
+   {
       try {
-         File f = File(readFullPath);
-         final List<String> lines = await f.readAsLines();
+         File f = File(_makeFullPath('chat_read', postId));
+         final List<String> lines = f.readAsLinesSync();
          msgs = chatItemsFromStrs(lines);
       } catch (e) {
-         print(e);
+         //print(e);
       }
 
-      final String unreadFullPath =
-         '$path/chat_unread_${postId}_${peer}.txt';
-
       try {
-         File f = File(unreadFullPath);
-         final List<String> lines = await f.readAsLines();
+         File f = File(_makeFullPath('chat_unread', postId));
+         final List<String> lines = f.readAsLinesSync();
          _unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
-         print(e);
+         //print(e);
       }
    }
 
@@ -190,19 +190,15 @@ class ChatHistory {
 
       msgs.addAll(_unreadMsgs);
 
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async
-      {
-         final String readFullPath =
-            '${dir.path}/chat_read_${postId}_${peer}.txt';
+      writeListToDisk( _unreadMsgs
+                     , _makeFullPath('chat_read', postId)
+                     , FileMode.append);
 
-         writeListToDisk(_unreadMsgs, readFullPath, FileMode.append);
-         _unreadMsgs.clear();
+      _unreadMsgs.clear();
 
-         final String unreadFullPath =
-            '${dir.path}/chat_unread_${postId}_${peer}.txt';
-         writeToFile('', unreadFullPath, FileMode.write);
-      });
+      writeToFile( ''
+                 , _makeFullPath('chat_unread', postId)
+                 , FileMode.write);
 
       return n;
    }
@@ -236,15 +232,9 @@ class ChatHistory {
       ChatItem item = ChatItem(thisApp, msg);
       msgs.add(item);
 
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async
-      {
-         final String readFullPath =
-            '${dir.path}/chat_read_${postId}_${peer}.txt';
-
-         writeListToDisk( <ChatItem>[item], readFullPath
-                         , FileMode.append);
-      });
+      writeListToDisk( <ChatItem>[item]
+                     , _makeFullPath('chat_read', postId)
+                     , FileMode.append);
    }
 
    void addUnreadMsg(final String msg, final bool thisApp, final int postId)
@@ -252,15 +242,9 @@ class ChatHistory {
       ChatItem item = ChatItem(thisApp, msg);
       _unreadMsgs.add(item);
 
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async
-      {
-         final String unreadFullPath =
-            '${dir.path}/chat_unread_${postId}_${peer}.txt';
-
-         writeListToDisk( <ChatItem>[item], unreadFullPath
-                         , FileMode.append);
-      });
+      writeListToDisk( <ChatItem>[item]
+                     , _makeFullPath('chat_unread', postId)
+                     , FileMode.append);
    }
 
    void markAppChatAck(final int postId, final int status)
@@ -284,23 +268,12 @@ class ChatHistory {
          --idx;
       }
 
-      // TODO: Soon or later we will have to use a database. Now we
-      // are having to write the whole file of msgs on every ack which
-      // is very bad for performance. We only want to change a flag.
-      // We could also think of storing status flags in a separate
-      // file?
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async
-      {
-         final String unreadFullPath =
-            '${dir.path}/chat_read_${postId}_${peer}.txt';
-
-         ChatItem item = ChatItem(true, '');
-         item.status = status;
-         final String str = jsonEncode(item);
-         print(str);
-         writeToFile('${str}\n', unreadFullPath, FileMode.append);
-      });
+      ChatItem item = ChatItem(true, '');
+      item.status = status;
+      final String str = jsonEncode(item);
+      writeToFile( '${str}\n'
+                 , _makeFullPath('chat_read', postId)
+                 , FileMode.append);
    }
 }
 

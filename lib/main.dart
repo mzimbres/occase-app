@@ -16,6 +16,7 @@ import 'package:menu_chat/menu.dart';
 import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
+import 'package:menu_chat/globals.dart' as glob;
 
 Future<Null> main() async
 {
@@ -408,6 +409,7 @@ class MenuChatState extends State<MenuChat>
       // loaded the app will ignore them and they will be lost.
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
+         glob.docDir = docDir.path;
          final String path = docDir.path;
          _unreadPostsFileFullPath = '${path}/${cts.unreadPostsFileName}';
          _loginFileFullPath = '${path}/${cts.loginFileName}';
