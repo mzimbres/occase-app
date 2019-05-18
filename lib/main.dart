@@ -921,7 +921,6 @@ class MenuChatState extends State<MenuChat>
       var msgMap = {
          'cmd': 'message',
          'type': 'chat',
-         'from': _appId,
          'to': to,
          'msg': msg,
          'post_id': id,
@@ -959,7 +958,6 @@ class MenuChatState extends State<MenuChat>
       var msgMap = {
          'cmd': 'message',
          'type': 'chat',
-         'from': _appId,
          'to': _ownPostChatPeer,
          'msg': msg,
          'post_id': id,
@@ -1021,7 +1019,6 @@ class MenuChatState extends State<MenuChat>
       var foo = {
          'cmd': 'message',
          'type': 'app_ack_received',
-         'from': _appId,
          'to': from,
          'post_id': postId,
          'is_sender_post': !is_sender_post,
@@ -1221,7 +1218,6 @@ class MenuChatState extends State<MenuChat>
       } else if (cmd == "publish_ack") {
          _onPublishAck(ack);
       } else if (cmd == "message") {
-         print('onWSData ===> $msg');
          _onMessage(ack);
       } else {
          print('Unhandled message received from the server:\n$msg.');
