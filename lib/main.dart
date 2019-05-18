@@ -598,8 +598,8 @@ class MenuChatState extends State<MenuChat>
             actions[1] = ok;
 
             return AlertDialog(
-                   title: Text(cts.postsDialScreenTitleText[fav]),
-                   content: Text(cts.postsDialScreenBodyText[fav]),
+                   title: Text(cts.dialTitleStrs[fav]),
+                   content: Text(cts.dialBodyStrs[fav]),
                    actions: actions);
          },
       );
@@ -823,11 +823,11 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   void _onSendNewPostPressed(bool add)
+   void _onSendNewPostPressedImpl(final int i)
    {
       _newPostPressed = false;
 
-      if (!add) {
+      if (i == 0) {
          _postInput = PostData();
          _postInput.from = _appId;
          setState(() { });
@@ -842,6 +842,15 @@ class MenuChatState extends State<MenuChat>
       sendPost(_postInput.clone());
       _postInput = PostData();
       setState(() { });
+   }
+
+   void _onSendNewPostPressed(BuildContext ctx, final int add)
+   {
+      _onSendNewPostPressedImpl(add);
+
+      // If the user cancels the operation we do not show the dialog.
+      if (add == 1)
+         _showSimpleDial(ctx, (){}, 3);
    }
 
    // This function is called with the index in _favPosts.
@@ -1229,39 +1238,42 @@ class MenuChatState extends State<MenuChat>
       print("Communication closed by peer.");
    }
 
-   void _onOkDialAfterSendHashes()
+   void _onOkDialAfterSendFilters()
    {
       _tabCtrl.index = 1;
       _botBarIdx = 0;
       setState(() { });
    }
 
-   void _dialogAfterSendHashes(BuildContext context)
+   void _showSimpleDial(BuildContext ctx, Function onOk, final int i)
    {
-      // First send the hashes then show the dialog.
-      _sendHahesToServer();
-
       showDialog(
-         context: context,
+         context: ctx,
          builder: (BuildContext context)
          {
             final FlatButton ok = FlatButton(
                      child: Text('Ok'),
                      onPressed: ()
                      {
-                        _onOkDialAfterSendHashes();
+                        onOk();
                         Navigator.of(context).pop();
                      });
 
             List<FlatButton> actions = List<FlatButton>(1);
             actions[0] = ok;
 
-            return AlertDialog(
-                  title: Text('Changes applied'),
-                  content: Text("Você será notificado de novos anúnicos."),
-                  actions: actions);
+            return AlertDialog( title: Text(cts.dialTitleStrs[i])
+                              , content: Text(cts.dialBodyStrs[i])
+                              , actions: actions);
          },
       );
+   }
+
+   void _onSendFilters(BuildContext ctx)
+   {
+      // First send the hashes then show the dialog.
+      _sendHahesToServer();
+      _showSimpleDial(ctx, _onOkDialAfterSendFilters, 2);
    }
 
    void _sendHahesToServer()
@@ -1410,21 +1422,24 @@ class MenuChatState extends State<MenuChat>
       if (_newPostPressed) {
          Widget widget;
          if (_botBarIdx == 2) {
-            List<Card> cards = makeMenuInfoCards(
-                                  context,
-                                  _postInput,
-                                  _menus,
-                                  Theme.of(context).primaryColor);
+            List<Card> cards =
+               makeMenuInfoCards( context
+                                , _postInput
+                                , _menus
+                                , Theme.of(context).primaryColor);
 
             cards.add(makeCard(makeTextInputFieldCard(_newPostTextCtrl)));
    
-            Widget widget_tmp = makePostWidget(
-                                   context,
-                                   cards,
-                                   _onSendNewPostPressed,
-                                   Icon( Icons.publish,
-                                        color: Colors.white),
-                                   Theme.of(context).primaryColor);
+            Widget widget_tmp =
+               makePostWidget( context
+                             , cards
+                             , (final int add)
+                               {
+                                  _onSendNewPostPressed(context, add);
+                               }
+                             , Icon( Icons.publish
+                                   , color: Colors.white)
+                             , Theme.of(context).primaryColor);
 
             // I added this ListView to prevent widget_tmp from
             // extending the whole screen. Inside the ListView it
@@ -1544,7 +1559,7 @@ class MenuChatState extends State<MenuChat>
 
       if (_botBarIdx == 2) {
          bodies[0] =
-            createSendScreen((){_dialogAfterSendHashes(context);});
+            createSendScreen((){_onSendFilters(context);});
       } else {
          bodies[0] = createFilterListView(
                         context,

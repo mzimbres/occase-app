@@ -71,7 +71,7 @@ List<Icon> filterTabIcons = <Icon>[
 
 // Text used in the chat screen.
 final List<String> chatIconTexts = <String>[
-   'Meus anúncios',
+   'Meus posts',
    'Favoritos'
 ];
 
@@ -147,13 +147,18 @@ final String ownPostsFileName = 'own_posts.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 
-// The texts showed on the *Posts* screen
-final List<String> postsDialScreenTitleText = <String>
+// The texts showed on the dialog in the *Posts* screen
+final List<String> dialTitleStrs = <String>
 [ 'Deletar post?'
 , 'Mover para chats?'
+, 'Alteracoes aplicadas'
+, 'Post enviado.'
 ];
 
-final List<String> postsDialScreenBodyText = <String>
+final List<String> dialBodyStrs = <String>
 [ 'O post será deletado definitivamente.'
 , 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
+, 'Novos posts serao encaminhados automaticamente pra você.'
+, 'Seu post pode ser encontrado agora na tela \"Chats\" na aba \"Menus posts\".'
 ];
+
