@@ -9,25 +9,16 @@ import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
-void writeToFile(String data, String fullPath, FileMode mode)
+void writeToFile( final String data
+                , final String fullPath
+                , final FileMode mode)
 {
-   // Do not do this. We also use this function to wipe out data from
-   // files.
-   //if (data.isEmpty)
-   //   return;
-
-   File file = File(fullPath);
-   file.create(recursive: true).then((File f) async {
-      try {
-         var sink = f.openWrite(mode: mode);
-         sink.write(data);
-         await sink.flush();
-         await sink.close();
-         //print('Finished writing to $fullPath');
-      } catch (e) {
-         print(e);
-      }
-   });
+   try {
+      File file = File(fullPath);
+      file.writeAsStringSync(data, mode: mode);
+   } catch (e) {
+      print(e);
+   }
 }
 
 void writeListToDisk<T>( final List<T> data, final String fullPath
@@ -95,14 +86,23 @@ class ChatItem {
    }
 }
 
-// This is a duplicate of postsFromStrs since dart does not support
-// proper generics.
-List<ChatItem> chatItemsFromStrs(final List<String> items)
+List<ChatItem> chatItemsFromStrs(final List<String> lines)
 {
    List<ChatItem> foo = List<ChatItem>();
-   for (String o in items) {
-      Map<String, dynamic> map = jsonDecode(o);
-      foo.add(ChatItem.fromJson(map));
+   for (String line in lines) {
+      Map<String, dynamic> map = jsonDecode(line);
+      ChatItem item = ChatItem.fromJson(map);
+      if (item.msg.isEmpty) {
+         assert(!foo.isEmpty);
+         for (int i = 0; i < foo.length; ++i) {
+            final int j = foo.length - i - 1;
+            if (foo[j].status >= item.status)
+               break;
+            foo[j].status = item.status;
+         }
+      } else {
+         foo.add(item);
+      }
    }
 
    return foo;
@@ -277,7 +277,6 @@ class ChatHistory {
          return;
 
       while (msgs[idx].status < status) {
-         print('====> markAppChatAck $idx ${msgs.length}');
          msgs[idx].status = status;
          if (idx == 0)
             break;
@@ -296,7 +295,11 @@ class ChatHistory {
          final String unreadFullPath =
             '${dir.path}/chat_read_${postId}_${peer}.txt';
 
-         writeListToDisk(msgs, unreadFullPath, FileMode.write);
+         ChatItem item = ChatItem(true, '');
+         item.status = status;
+         final String str = jsonEncode(item);
+         print(str);
+         writeToFile('${str}\n', unreadFullPath, FileMode.append);
       });
    }
 }
