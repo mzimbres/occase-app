@@ -18,6 +18,32 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
+// It looks like we do not need the following block anymore. I
+// will keep it around for a while before removing it just in
+// case.
+//________________________________________________________________
+//Map<String, dynamic> deviceData;
+
+//try {
+//   if (Platform.isAndroid) {
+//      AndroidDeviceInfo info = await devInfo.androidInfo;
+//      // To avoid colision between devices running on the same
+//      // machine, I will also use time stamp. Remove this later.
+//      final int now = DateTime.now().millisecondsSinceEpoch;
+//      _appId = info.id + "${now}";
+//      print("========>: " + _appId);
+//   } else if (Platform.isIOS) {
+//      // Not implemented.
+//   }
+//} on PlatformException {
+//   // Id unavailable?
+//}
+
+//// What is this meand for?
+//if (!mounted)
+//   return;
+//________________________________________________________________
+
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -38,33 +64,27 @@ String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
    return str;
 }
 
-Future<List<PostData>> safeReadPostsFromFile(final String fullPath) async
+List<PostData> safeReadPostsFromFile(final String fullPath)
 {
-   try {
-      File f = File(fullPath);
-      final List<String> lines = await f.readAsLines();
+   List<PostData> foo = List<PostData>();
 
-      List<PostData> foo = List<PostData>();
+   try {
+      final List<String> lines = File(fullPath).readAsLinesSync();
       for (String o in lines) {
          Map<String, dynamic> map = jsonDecode(o);
          foo.add(PostData.fromJson(map));
       }
 
-      //print('${foo.length} posts read from file: $fullPath');
-      return foo;
    } catch (e) {
    }
 
-   return List<PostData>();
+   return foo;
 }
 
-Future<List<String>> safeReadStrFromFile(final String fullPath) async
+List<String> safeReadFileAsLines(final String fullPath)
 {
    try {
-      File f = File(fullPath);
-      final List<String> lines = await f.readAsLines();
-      //print('${lines.length} string read from file: $fullPath');
-      return lines;
+      return File(fullPath).readAsLinesSync();
    } catch (e) {
       return List<String>();
    }
@@ -84,6 +104,26 @@ String makePostPayload(final PostData post)
    };
 
    return jsonEncode(pubMap);
+}
+
+String makeLoginCmd( final String id
+                    , final String pwd
+                    , final List<int> versions)
+{
+   var loginCmd = {
+      'cmd': 'login',
+      'user': id,
+      'password': pwd,
+      'menu_versions': versions,
+   };
+
+   return jsonEncode(loginCmd);
+}
+
+String makeRegisterCmd()
+{
+   var loginCmd = {'cmd': 'register'};
+   return jsonEncode(loginCmd);
 }
 
 class MyApp extends StatelessWidget {
@@ -396,6 +436,19 @@ class MenuChatState extends State<MenuChat>
 
    static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
 
+   void _initPaths()
+   {
+      _unreadPostsFileFullPath = '${glob.docDir}/${cts.unreadPostsFileName}';
+      _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
+      _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
+      _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
+      _postsFileFullPath       = '${glob.docDir}/${cts.postsFileName}';
+      _favPostsFileFullPath    = '${glob.docDir}/${cts.favPostsFileName}';
+      _ownPostsFileFullPath    = '${glob.docDir}/${cts.ownPostsFileName}';
+      _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
+      _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
+   }
+
    MenuChatState()
    {
       Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
@@ -410,166 +463,119 @@ class MenuChatState extends State<MenuChat>
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
          glob.docDir = docDir.path;
-         final String path = docDir.path;
-         _unreadPostsFileFullPath = '${path}/${cts.unreadPostsFileName}';
-         _loginFileFullPath = '${path}/${cts.loginFileName}';
-         _menuFileFullPath = '${path}/${cts.menuFileName}';
-         _lastPostIdFileFullPath = '${path}/${cts.lastPostIdFileName}';
-         _postsFileFullPath = '${path}/${cts.postsFileName}';
-         _favPostsFileFullPath = '${path}/${cts.favPostsFileName}';
-         _ownPostsFileFullPath = '${path}/${cts.ownPostsFileName}';
-         _outPostsFileFullPath = '${path}/${cts.outPostsFileName}';
-         _outChatMsgsFileFullPath = '${path}/${cts.outChatMsgsFileName}';
-         readPostsFromFile(path);
+         _initPaths();
+         _load(docDir.path);
       });
 
       _newPostPressed = false;
       _botBarIdx = 0;
    }
 
-   Future<void> readPostsFromFile(final String docDir) async
+   void _load(final String docDir)
    {
-      safeReadPostsFromFile(_postsFileFullPath)
-      .then((List<PostData> o) { _posts = o; });
+      _menus = _readMenuFromFile();
+      _lastPostId = _readLastPostIdFromFile(docDir);
+      _posts = safeReadPostsFromFile(_postsFileFullPath);
+      _unreadPosts = safeReadPostsFromFile(_unreadPostsFileFullPath);
+      _favPosts = safeReadPostsFromFile(_favPostsFileFullPath);
+      _ownPosts = safeReadPostsFromFile(_ownPostsFileFullPath);
 
-      safeReadPostsFromFile(_unreadPostsFileFullPath)
-      .then((List<PostData> o) { _unreadPosts = o; });
+      List<PostData> tmp =
+            safeReadPostsFromFile(_outPostsFileFullPath);
 
-      safeReadPostsFromFile(_favPostsFileFullPath)
-      .then((List<PostData> o) { _favPosts = o; });
+      _outPostsQueue = Queue<PostData>.from(tmp);
 
-      safeReadPostsFromFile(_ownPostsFileFullPath)
-      .then((List<PostData> o) { _ownPosts = o;});
+      final List<String> tmp2 =
+         safeReadFileAsLines(_outChatMsgsFileFullPath);
 
-      safeReadPostsFromFile(_outPostsFileFullPath)
-      .then((List<PostData> o) { _outPostsQueue = Queue<PostData>.from(o); });
+      for (String s in tmp2) {
+         final List<String> foo = s.split(' ');
+         assert(foo.length == 2);
+         final int isChat = int.parse(foo.first);
+         _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
+      }
 
-      safeReadStrFromFile(_outChatMsgsFileFullPath)
-      .then((List<String> o)
-      {
-         for (String s in o) {
-            final List<String> foo = s.split(' ');
-            assert(foo.length == 2);
-            final int isChat = int.parse(foo.first);
-            _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
-         }
+      _connectToServer();
 
-      });
+      _loadLogin();
+      final List<int> versions = _makeMenuVersions(_menus);
+      final String cmd = _makeConnCmd(versions);
+      channel.sink.add(cmd);
 
+      print('Last post id: ${_lastPostId}.');
+      print('Menu versions: ${versions}');
+      print('Login: ${_appId}:${_appPwd}.');
       setState(() { });
-
-      readMenuFromFile(docDir);
-      readLastPostIdFromFile(docDir);
    }
 
-   Future<void> readMenuFromFile(final String docDir) async
+   List<int> _makeMenuVersions(final List<MenuItem> menus)
    {
+      List<int> versions = List<int>();
+      for (MenuItem o in menus)
+         versions.add(o.version);
+
+      return versions;
+   }
+
+   List<MenuItem> _readMenuFromFile()
+   {
+      List<MenuItem> menus = List<MenuItem>();
+
       try {
-         final String filePath = '${docDir}/${cts.menuFileName}';
-         File file = File(filePath);
-         final String menu = await file.readAsString();
+         final String filePath = '${glob.docDir}/${cts.menuFileName}';
+         final String menu = File(filePath).readAsStringSync();
          Map<String, dynamic> rawMenuMap = jsonDecode(menu);
-         assert (rawMenuMap.containsKey('menus'));
-         _menus = menuReader(rawMenuMap);
+         assert(rawMenuMap.containsKey('menus'));
+         menus = menuReader(rawMenuMap);
          print('The menu has been read from file.');
       } catch (e) {
          print('Unable to read menu from file.');
       }
 
-      // Once we have the menu we also have its versions, so we have
-      // all the information to proceed with the login.
-      List<int> versions = List<int>();
-      for (MenuItem o in _menus)
-         versions.add(o.version);
-
-      print('Menu versions ${versions}');
-      readLogin(versions);
+      return menus;
    }
 
-   Future<void> readLastPostIdFromFile(final String docDir) async
+   int _readLastPostIdFromFile(final String docDir)
    {
       try {
          final String filePath = '${docDir}/${cts.lastPostIdFileName}';
-         File file = File(filePath);
-         final String n = await file.readAsString();
-         _lastPostId = int.parse(n);
-         print('Last post id has been read from file: ${_lastPostId}.');
+         final String n = File(filePath).readAsStringSync();
+         return int.parse(n);
       } catch (e) {
          print('Unable to read last post id from file.');
+         return 0;
       }
    }
 
-   Future<void> readLogin(List<int> versions) async
+   void _loadLogin()
    {
-      // It looks like we do not need the following block anymore. I
-      // will keep it around for a while before removing it just in
-      // case.
-      //________________________________________________________________
-      //Map<String, dynamic> deviceData;
+      final List<String> login = safeReadFileAsLines(_loginFileFullPath);
+      if (login.isEmpty)
+         return;
 
-      //try {
-      //   if (Platform.isAndroid) {
-      //      AndroidDeviceInfo info = await devInfo.androidInfo;
-      //      // To avoid colision between devices running on the same
-      //      // machine, I will also use time stamp. Remove this later.
-      //      final int now = DateTime.now().millisecondsSinceEpoch;
-      //      _appId = info.id + "${now}";
-      //      print("========>: " + _appId);
-      //   } else if (Platform.isIOS) {
-      //      // Not implemented.
-      //   }
-      //} on PlatformException {
-      //   // Id unavailable?
-      //}
+      final List<String> fields = login.first.split(":");
 
-      //// What is this meand for?
-      //if (!mounted)
-      //   return;
-      //________________________________________________________________
+      _appId = fields.first;
+      _appPwd = fields.last;
+   }
 
-      try {
-         File file = File(_loginFileFullPath);
-         final String login = await file.readAsString();
-         final List<String> fields = login.split(":");
-         _appId = fields.first;
-         _appPwd = fields.last;
-
-         // We are already registered in the server.
-         print('Login ${_appId}:${_appPwd} read from file.');
-
-         // This is where we will read the raw menu from files and send
-         // our versions to the server. By sending -1 we will always
-         // receive the latest version. Some menus may be large and we
-         // do not want them on every connect, so we should feed our
-         // current versions here.
-         var loginCmd = {
-            'cmd': 'login',
-            'user': _appId,
-            'password': _appPwd,
-            'menu_versions': versions,
-         };
-
-         final String loginText = jsonEncode(loginCmd);
-         _connectToServer(loginText);
-      } catch (e) {
-         // This is the firt time we are connecting to the server (or
+   String _makeConnCmd(final List<int> versions)
+   {
+      if (_appId.isEmpty) {
+         // This is the first time we are connecting to the server (or
          // the login file is corrupted, etc.)
-         print('${_loginFileFullPath} does not exist.');
-         print('Sending a register command.');
-         var loginCmd = {'cmd': 'register'};
-         final String loginText = jsonEncode(loginCmd);
-         _connectToServer(loginText);
+         return makeRegisterCmd();
       }
+
+      // We are already registered in the server.
+      return makeLoginCmd(_appId, _appPwd, versions);
    }
 
    @override
    void initState()
    {
       super.initState();
-
-      _tabCtrl = TabController(vsync: this,
-            initialIndex: 1, length: 3);
-
+      _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
       _tabCtrl.addListener(_tabCtrlChangeHandler);
    }
 
@@ -896,7 +902,7 @@ class MenuChatState extends State<MenuChat>
                  , FileMode.append);
 
       if (isEmpty) {
-         print('=====> sendChatMsg: ${_outChatMsgsQueue.first.payload}');
+         //print('=====> sendChatMsg: ${_outChatMsgsQueue.first.payload}');
          channel.sink.add(_outChatMsgsQueue.first.payload);
       }
    }
@@ -1683,15 +1689,13 @@ class MenuChatState extends State<MenuChat>
               );
    }
 
-   void _connectToServer(final String login)
+   void _connectToServer()
    {
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. The host address is 10.0.2.2.
       channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
       //channel = IOWebSocketChannel.connect('ws://192.168.0.27:80');
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
-
-      channel.sink.add(login);
    }
 }
 
