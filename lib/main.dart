@@ -452,8 +452,8 @@ class MenuChatState extends State<MenuChat>
    MenuChatState()
    {
       Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
-      if (rawMenuMap.containsKey('menus'))
-         _menus = menuReader(rawMenuMap);
+      //if (rawMenuMap.containsKey('menus'))
+      _menus = menuReader(rawMenuMap);
 
       // The first thing we have to do when starting the app is to read
       // the posts and their chat histories from file. This is so
@@ -478,7 +478,9 @@ class MenuChatState extends State<MenuChat>
       _posts = safeReadPostsFromFile(_postsFileFullPath);
       _unreadPosts = safeReadPostsFromFile(_unreadPostsFileFullPath);
       _favPosts = safeReadPostsFromFile(_favPostsFileFullPath);
+      _favPosts.sort(CompPostData);
       _ownPosts = safeReadPostsFromFile(_ownPostsFileFullPath);
+      _ownPosts.sort(CompPostData);
 
       List<PostData> tmp =
             safeReadPostsFromFile(_outPostsFileFullPath);

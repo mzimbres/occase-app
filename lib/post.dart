@@ -62,10 +62,10 @@ class ChatItem {
    bool thisApp; 
    String msg = '';
    int status = 0;
+   int date = 0;
 
-   ChatItem(this.thisApp, this.msg)
+   ChatItem(this.thisApp, this.msg, this.status, this.date)
    {
-      status = cmdToChatStatus('chat');
    }
 
    ChatItem.fromJson(Map<String, dynamic> map)
@@ -167,6 +167,17 @@ class ChatHistory {
       return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
    }
 
+   int getMostRecentTimestamp()
+   {
+      if (!msgs.isEmpty)
+         return msgs.last.date;
+
+      if (!_unreadMsgs.isEmpty)
+         return _unreadMsgs.last.date;
+
+      return 0;
+   }
+
    void _init(final int postId)
    {
       try {
@@ -236,7 +247,8 @@ class ChatHistory {
 
    void addMsg(final String msg, final bool thisApp, final int postId)
    {
-      ChatItem item = ChatItem(thisApp, msg);
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      ChatItem item = ChatItem(thisApp, msg, 0, now);
       msgs.add(item);
 
       writeListToDisk( <ChatItem>[item]
@@ -246,7 +258,8 @@ class ChatHistory {
 
    void addUnreadMsg(final String msg, final bool thisApp, final int postId)
    {
-      ChatItem item = ChatItem(thisApp, msg);
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      ChatItem item = ChatItem(thisApp, msg, 0, now);
       _unreadMsgs.add(item);
 
       writeListToDisk( <ChatItem>[item]
@@ -272,13 +285,21 @@ class ChatHistory {
          --idx;
       }
 
-      ChatItem item = ChatItem(true, '');
-      item.status = status;
+      ChatItem item = ChatItem(true, '', status, 0);
       final String str = jsonEncode(item);
       writeToFile( '${str}\n'
                  , makeFullPath(cts.chatHistReadPrefix, postId)
                  , FileMode.append);
    }
+}
+
+ChatHistory
+selectMostRecentChat(final ChatHistory lhs, final ChatHistory rhs)
+{
+   final int t1 = lhs.getMostRecentTimestamp();
+   final int t2 = rhs.getMostRecentTimestamp();
+
+   return t1 < t2 ? lhs : rhs;
 }
 
 List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
@@ -426,6 +447,29 @@ class PostData {
       return i;
    }
 
+   bool hasUnreadChats()
+   {
+      // This is more eficient than comparing
+      // getNumberOfUnreadChats != 0
+
+      for (ChatHistory h in chats)
+         if (h.getNumberOfUnreadMsgs() > 0)
+            return true;
+
+      return false;
+   }
+
+   int getMostRecentTimestamp()
+   {
+      if (chats.isEmpty)
+         return 0;
+
+      final ChatHistory hist =
+         chats.reduce(selectMostRecentChat);
+
+      return hist.getMostRecentTimestamp();
+   }
+
    // This function will return true if there is any chat marked as
    // long pressed. It will traverse the PostData array and stop at the
    // first PostData::chats for which isLongPressed is true.
@@ -505,6 +549,25 @@ class PostData {
       chats[i] = hist;
       return n;
    }
+}
+
+int CompPostData(final PostData lhs, final PostData rhs)
+{
+   //final bool b1 = lhs.hasUnreadChats();
+   //final bool b2 = rhs.hasUnreadChats();
+
+   //// The first criterium is having unread messages.
+   //if (b1 && !b2)
+   //   return true;
+
+   //if (!b1 && b2)
+   //   return false;
+
+   // At this point both posts have unread messages. The one with the
+   // most recent unread msgs wins.
+   final int ts1 = lhs.getMostRecentTimestamp();
+   final int ts2 = rhs.getMostRecentTimestamp();
+   return ts1 < ts2 ? -1 : 1;
 }
 
 bool hasLongPressed(final List<PostData> posts)
