@@ -146,6 +146,8 @@ final String favPostsFileName = 'favorite_posts.txt';
 final String ownPostsFileName = 'own_posts.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
+final String chatHistReadPrefix = 'chat_read';
+final String chatHistUnreadPrefix = 'chat_unread';
 
 // The texts showed on the dialog in the *Posts* screen
 final List<String> dialTitleStrs = <String>

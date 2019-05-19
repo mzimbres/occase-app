@@ -10,15 +10,22 @@ import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
+void safeDeleteFile(final String path)
+{
+   try {
+      File(path).deleteSync();
+   } catch (e) {
+      print(e);
+   }
+}
+
 void writeToFile( final String data
                 , final String fullPath
                 , final FileMode mode)
 {
    try {
-      File file = File(fullPath);
-      file.writeAsStringSync(data, mode: mode);
+      File(fullPath).writeAsStringSync(data, mode: mode);
    } catch (e) {
-      print(e);
    }
 }
 
@@ -155,7 +162,7 @@ class ChatHistory {
       _init(postId);
    }
 
-   String _makeFullPath(final String prefix, final int postId)
+   String makeFullPath(final String prefix, final int postId)
    {
       return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
    }
@@ -163,7 +170,7 @@ class ChatHistory {
    void _init(final int postId)
    {
       try {
-         File f = File(_makeFullPath('chat_read', postId));
+         File f = File(makeFullPath(cts.chatHistReadPrefix, postId));
          final List<String> lines = f.readAsLinesSync();
          msgs = chatItemsFromStrs(lines);
       } catch (e) {
@@ -171,7 +178,7 @@ class ChatHistory {
       }
 
       try {
-         File f = File(_makeFullPath('chat_unread', postId));
+         File f = File(makeFullPath(cts.chatHistUnreadPrefix, postId));
          final List<String> lines = f.readAsLinesSync();
          _unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
@@ -191,13 +198,13 @@ class ChatHistory {
       msgs.addAll(_unreadMsgs);
 
       writeListToDisk( _unreadMsgs
-                     , _makeFullPath('chat_read', postId)
+                     , makeFullPath(cts.chatHistReadPrefix, postId)
                      , FileMode.append);
 
       _unreadMsgs.clear();
 
       writeToFile( ''
-                 , _makeFullPath('chat_unread', postId)
+                 , makeFullPath(cts.chatHistUnreadPrefix, postId)
                  , FileMode.write);
 
       return n;
@@ -233,7 +240,7 @@ class ChatHistory {
       msgs.add(item);
 
       writeListToDisk( <ChatItem>[item]
-                     , _makeFullPath('chat_read', postId)
+                     , makeFullPath(cts.chatHistReadPrefix, postId)
                      , FileMode.append);
    }
 
@@ -243,15 +250,12 @@ class ChatHistory {
       _unreadMsgs.add(item);
 
       writeListToDisk( <ChatItem>[item]
-                     , _makeFullPath('chat_unread', postId)
+                     , makeFullPath(cts.chatHistUnreadPrefix, postId)
                      , FileMode.append);
    }
 
    void markAppChatAck(final int postId, final int status)
    {
-      // TODO: Make sure to read chat messages before publishing the
-      // offline ones to the server. If the server acks before they
-      // have been completely loaded, we will miss them below.
       //assert(!msgs.isEmpty); 
       if (msgs.isEmpty)
          return;
@@ -272,7 +276,7 @@ class ChatHistory {
       item.status = status;
       final String str = jsonEncode(item);
       writeToFile( '${str}\n'
-                 , _makeFullPath('chat_read', postId)
+                 , makeFullPath(cts.chatHistReadPrefix, postId)
                  , FileMode.append);
    }
 }
@@ -312,7 +316,7 @@ class PostData {
       codes = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
-   String _makeFullPath()
+   String makeFullPath()
    {
       return '${glob.docDir}/post_peers_${id}.txt';
    }
@@ -321,7 +325,7 @@ class PostData {
    {
       try {
          chats = List<ChatHistory>();
-         File f = File(_makeFullPath());
+         File f = File(makeFullPath());
          final List<String> lines = f.readAsLinesSync();
          print('Peers: $lines');
          for (String line in lines)
@@ -351,7 +355,7 @@ class PostData {
 
       print('Persisting peers: $data');
 
-      writeToFile(data, _makeFullPath(), FileMode.write);
+      writeToFile(data, makeFullPath(), FileMode.write);
    }
 
    void createChatEntryForPeer(String peer)
@@ -436,11 +440,14 @@ class PostData {
 
    void removeLongPressedChats()
    {
+      for (ChatHistory hist in chats) {
+         if (hist.isLongPressed) {
+            safeDeleteFile(hist.makeFullPath(cts.chatHistReadPrefix, id));
+            safeDeleteFile(hist.makeFullPath(cts.chatHistUnreadPrefix, id));
+         }
+      }
+
       chats.removeWhere((e) { return e.isLongPressed; });
-
-      // TODO: Remove files from chat entries that have been remove
-      // above.
-
       _persistPeers();
    }
 
