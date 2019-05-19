@@ -342,7 +342,7 @@ class MenuChatState extends State<MenuChat>
    // stack whose first element is the menu root node. When menu
    // entries are selected we push those items on the stack. Used both
    // on the filter and on the postertizement screens.
-   List<MenuItem> _menus;
+   List<MenuItem> _menus = List<MenuItem>();
 
    // The temporary variable used to store the post the user sends.
    PostData _postInput = PostData();
@@ -451,24 +451,15 @@ class MenuChatState extends State<MenuChat>
 
    MenuChatState()
    {
-      Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
-      //if (rawMenuMap.containsKey('menus'))
-      _menus = menuReader(rawMenuMap);
+      _newPostPressed = false;
+      _botBarIdx = 0;
 
-      // The first thing we have to do when starting the app is to read
-      // the posts and their chat histories from file. This is so
-      // because after login the server may send us offline messages
-      // that are associated with posts. If they are not already
-      // loaded the app will ignore them and they will be lost.
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
          glob.docDir = docDir.path;
          _initPaths();
          _load(docDir.path);
       });
-
-      _newPostPressed = false;
-      _botBarIdx = 0;
    }
 
    void _load(final String docDir)
@@ -521,20 +512,19 @@ class MenuChatState extends State<MenuChat>
 
    List<MenuItem> _readMenuFromFile()
    {
-      List<MenuItem> menus = List<MenuItem>();
-
+      print('================> here.');
       try {
          final String filePath = '${glob.docDir}/${cts.menuFileName}';
          final String menu = File(filePath).readAsStringSync();
          Map<String, dynamic> rawMenuMap = jsonDecode(menu);
          assert(rawMenuMap.containsKey('menus'));
-         menus = menuReader(rawMenuMap);
          print('The menu has been read from file.');
+         return menuReader(rawMenuMap);
       } catch (e) {
-         print('Unable to read menu from file.');
+         Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
+         assert(rawMenuMap.containsKey('menus'));
+         return menuReader(rawMenuMap);
       }
-
-      return menus;
    }
 
    int _readLastPostIdFromFile(final String docDir)
@@ -1425,6 +1415,10 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext context)
    {
+      if (_menus.isEmpty) {
+         return Scaffold();
+      }
+
       if (_newPostPressed) {
          Widget widget;
          if (_botBarIdx == 2) {
