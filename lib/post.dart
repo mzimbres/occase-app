@@ -23,7 +23,7 @@ void writeToFile( final String data
 }
 
 void writeListToDisk<T>( final List<T> data, final String fullPath
-                        , FileMode mode)
+                       , FileMode mode)
 {
    String content = '';
    for (T o in data) {
@@ -312,24 +312,22 @@ class PostData {
       codes = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
-   void _loadChats()
+   String _makeFullPath()
    {
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async { _loadImpl(dir.path); });
+      return '${glob.docDir}/post_peers_${id}.txt';
    }
 
-   Future<void> _loadImpl(final String path) async
+   void _loadChats()
    {
       try {
-         final String fullPath = '$path/post_peers_${id}.txt';
          chats = List<ChatHistory>();
-         File f = File(fullPath);
-         final List<String> lines = await f.readAsLines();
+         File f = File(_makeFullPath());
+         final List<String> lines = f.readAsLinesSync();
+         print('Peers: $lines');
          for (String line in lines)
             chats.add(ChatHistory(line, id));
-         //print('Peers $lines read from file: $fullPath');
       } catch (e) {
-         print(e);
+         //print(e);
       }
    }
 
@@ -344,26 +342,24 @@ class PostData {
       return ret;
    }
 
-   void _persistPeers(final String basename) async
+   void _persistPeers()
    {
       // Overwrites the previous content.
-      String foo = '';
+      String data = '';
       for (ChatHistory o in chats)
-         foo += '${o.peer}\n';
+         data += '${o.peer}\n';
 
-      final String path = '${basename}/post_peers_${id}.txt';
-      print('Persisting peers: $foo');
-      writeToFile(foo, path, FileMode.write);
+      print('Persisting peers: $data');
+
+      writeToFile(data, _makeFullPath(), FileMode.write);
    }
 
    void createChatEntryForPeer(String peer)
    {
-      print('createChatEntryForPeer: $peer');
+      print('Creating chat entry for: $peer');
       ChatHistory history = ChatHistory(peer, id);
       chats.add(history);
-
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async { _persistPeers(dir.path); });
+      _persistPeers();
    }
 
    int getChatHistIdx(final String peer)
@@ -443,10 +439,9 @@ class PostData {
       chats.removeWhere((e) { return e.isLongPressed; });
 
       // TODO: Remove files from chat entries that have been remove
-      // obove.
+      // above.
 
-      getApplicationDocumentsDirectory()
-      .then((Directory dir) async { _persistPeers(dir.path); });
+      _persistPeers();
    }
 
    PostData.fromJson(Map<String, dynamic> map)
