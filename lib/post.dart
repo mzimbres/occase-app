@@ -293,6 +293,18 @@ class ChatHistory {
    }
 }
 
+void rotateChatHistory(List<ChatHistory> chats, int j)
+{
+   if (j == 0)
+      return; // This already the first element.
+
+   ChatHistory history = chats[j];
+   for (int i = j; i > 0; --i)
+      chats[i] = chats[i - 1];
+
+   chats[0] = history;
+}
+
 ChatHistory
 selectMostRecentChat(final ChatHistory lhs, final ChatHistory rhs)
 {
@@ -409,8 +421,11 @@ class PostData {
 
    void addMsg(final String peer, final String msg, final bool thisApp)
    {
-      ChatHistory history = getChatHist(peer);
+      final int j = getChatHistIdx(peer);
+      ChatHistory history = chats[j];
       history.addMsg(msg, thisApp, id);
+      rotateChatHistory(chats, j);
+      _persistPeers();
    }
 
    void addUnreadMsg(final String peer, final String msg, final bool thisApp)
@@ -418,17 +433,8 @@ class PostData {
       final int j = getChatHistIdx(peer);
       ChatHistory history = chats[j];
       history.addUnreadMsg(msg, thisApp, id);
-
-      // This chat history is now the most recent and should appear
-      // first int the list of chats. It is enough to rotate the list
-      // one element.
-      if (j == 0)
-         return; // This already the first element.
-
-      for (int i = j; i > 0; --i)
-         chats[i] = chats[i - 1];
-
-      chats[0] = history;
+      rotateChatHistory(chats, j);
+      _persistPeers();
    }
 
    void markChatAppAck(final String peer, final int status)
@@ -524,29 +530,6 @@ class PostData {
    int moveToReadHistory(int i)
    {
       final int n = chats[i].moveToReadHistory(id);
-
-      // Now we have to put this chatHistory behind any other that has
-      // unread messages.
-
-      // If this is already the last history we have nothing to do.
-      if ((i + 1) == chats.length)
-         return n;
-
-      // We know now it is not the last element.
-
-      if (chats[i + 1].getNumberOfUnreadMsgs() == 0)
-         return n;
-
-      // We known the next element has unread messages. We can loop.
-
-      ChatHistory hist = chats[i];
-      while ((i + 1) != chats.length &&
-             chats[i + 1].getNumberOfUnreadMsgs() > 0) {
-         chats[i] = chats[i + 1];
-         ++i;
-      }
-
-      chats[i] = hist;
       return n;
    }
 }
