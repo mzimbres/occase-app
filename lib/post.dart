@@ -293,16 +293,17 @@ class ChatHistory {
    }
 }
 
-void rotateChatHistory(List<ChatHistory> chats, int j)
+// Used to rotate a new chat item in a chat history and also posts.
+void rotateElements<T>(List<T> elems, int j)
 {
    if (j == 0)
-      return; // This already the first element.
+      return; // This is already the first element.
 
-   ChatHistory history = chats[j];
+   T elem = elems[j];
    for (int i = j; i > 0; --i)
-      chats[i] = chats[i - 1];
+      elems[i] = elems[i - 1];
 
-   chats[0] = history;
+   elems[0] = elem;
 }
 
 ChatHistory
@@ -424,7 +425,7 @@ class PostData {
       final int j = getChatHistIdx(peer);
       ChatHistory history = chats[j];
       history.addMsg(msg, thisApp, id);
-      rotateChatHistory(chats, j);
+      rotateElements(chats, j);
       _persistPeers();
    }
 
@@ -433,7 +434,7 @@ class PostData {
       final int j = getChatHistIdx(peer);
       ChatHistory history = chats[j];
       history.addUnreadMsg(msg, thisApp, id);
-      rotateChatHistory(chats, j);
+      rotateElements(chats, j);
       _persistPeers();
    }
 
@@ -562,11 +563,11 @@ bool hasLongPressed(final List<PostData> posts)
    return false;
 }
 
-bool findAndAddMsg(final List<PostData> posts,
-                   final int postId,
-                   final String from,
-                   final String msg,
-                   final bool thisApp)
+bool findAndInsertNewMsg(List<PostData> posts,
+                         final int postId,
+                         final String from,
+                         final String msg,
+                         final bool thisApp)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
 
@@ -574,6 +575,7 @@ bool findAndAddMsg(final List<PostData> posts,
       return false;
 
    posts[i].addUnreadMsg(from, msg, thisApp);
+   rotateElements(posts, i);
    return true;
 }
 

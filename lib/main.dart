@@ -620,7 +620,7 @@ class MenuChatState extends State<MenuChat>
       // from the posts persisted on file without rewriting it
       // completely. We can use the oportunity to write only the
       // newest.
-      writeListToDisk( _posts, _postsFileFullPath, FileMode.write);
+      writeListToDisk(_posts, _postsFileFullPath, FileMode.write);
 
       setState(() { });
    }
@@ -930,6 +930,7 @@ class MenuChatState extends State<MenuChat>
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
       _favPosts[_favChatIdx].addMsg(to, msg, true);
+      rotateElements(_favPosts, _favChatIdx);
 
       setState(()
       {
@@ -967,6 +968,7 @@ class MenuChatState extends State<MenuChat>
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
       _ownPosts[_ownChatIdx].addMsg(_ownPostChatPeer, msg, true);
+      rotateElements(_ownPosts, _ownChatIdx);
 
       setState(()
       {
@@ -1010,9 +1012,9 @@ class MenuChatState extends State<MenuChat>
       // in. We distinguish this with the field 'is_sender_post'
       final bool is_sender_post = ack['is_sender_post'];
       if (is_sender_post) {
-         findAndAddMsg(_favPosts, postId, from, msg, false);
+         findAndInsertNewMsg(_favPosts, postId, from, msg, false);
       } else {
-         findAndAddMsg(_ownPosts, postId, from, msg, false);
+         findAndInsertNewMsg(_ownPosts, postId, from, msg, false);
       }
 
       // Acks we have received the message.
