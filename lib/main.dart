@@ -418,6 +418,8 @@ class MenuChatState extends State<MenuChat>
    // the subscribe command.
    int _lastPostId = 0;
 
+   bool _showSelectPostDialog = true;
+
    // Full path to files.
    String _unreadPostsFileFullPath;
    String _loginFileFullPath;
@@ -574,33 +576,71 @@ class MenuChatState extends State<MenuChat>
    void _alertUserOnselectPost( BuildContext context
                               , PostData data, int fav)
    {
+      if (!_showSelectPostDialog) {
+         _onPostSelection(data, fav);
+         return;
+      }
+
       showDialog(
          context: context,
          builder: (BuildContext context)
          {
-            final FlatButton ok = FlatButton(
-                     child: Text('Ok'),
-                     onPressed: ()
-                     {
-                        _onPostSelection(data, fav);
-                        Navigator.of(context).pop();
-                     });
+            final SimpleDialogOption ok =
+               SimpleDialogOption(
+                  child:
+                     Text('Ok'
+                         , style: TextStyle( color: Colors.blue
+                                           , fontSize: 16.0)),
+                  onPressed: ()
+                  {
+                     _onPostSelection(data, fav);
+                     Navigator.of(context).pop();
+                  });
 
-            final FlatButton cancel = FlatButton(
-                     child: Text('Cancelar'),
-                     onPressed: ()
-                     {
-                        Navigator.of(context).pop();
-                     });
+            final SimpleDialogOption cancel =
+               SimpleDialogOption(
+                  child:
+                     Text('Cancelar'
+                         , style: TextStyle( color: Colors.blue
+                                           , fontSize: 16.0)),
+                  onPressed: ()
+                  {
+                     Navigator.of(context).pop();
+                  });
 
-            List<FlatButton> actions = List<FlatButton>(2);
+            List<SimpleDialogOption> actions =
+                  List<SimpleDialogOption>(2);
             actions[0] = cancel;
             actions[1] = ok;
 
-            return AlertDialog(
+            Row row =
+               Row(children: <Widget>
+                  [Icon(Icons.check_circle_outline, color: Colors.red)]);
+
+            CheckboxListTile tile = CheckboxListTile(
+                      title: Text('Nao mostrar novamente'),
+                      value: !_showSelectPostDialog,
+                      onChanged: (bool v)
+                                 {
+                                    print(v);
+                                    _showSelectPostDialog = !v;
+                                    setState(() { });
+                                 },
+                      controlAffinity: ListTileControlAffinity.leading
+                      );
+
+            return SimpleDialog(
                    title: Text(cts.dialTitleStrs[fav]),
-                   content: Text(cts.dialBodyStrs[fav]),
-                   actions: actions);
+                   children: <Widget>
+                   [ Padding( child: Center(child:
+                                 Text( cts.dialBodyStrs[fav]
+                                     , style: TextStyle(fontSize: 16.0)))
+                            , padding: EdgeInsets.all(25.0))
+                   , tile
+                   , Padding( child: Row(children: actions)
+                            , padding: EdgeInsets.only(left: 120.0))
+                                 
+                   ]);
          },
       );
    }
