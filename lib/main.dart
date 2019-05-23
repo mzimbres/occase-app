@@ -319,6 +319,112 @@ Widget makeTabWidget(int n, String title)
    return Row(children: widgets);
 }
 
+//_____________________________________________________________________
+
+class DialogWithOp extends StatefulWidget {
+   DialogWithOp( this.idx
+               , this.getValueFunc
+               , this.setValueFunc
+               , this.onPostSelection
+               , this.title
+               , this.body);
+
+   int idx = 0;
+   Function getValueFunc;
+   Function setValueFunc;
+   Function onPostSelection;
+   String title;
+   String body;
+
+   @override
+   DialogWithOpState createState() => DialogWithOpState();
+}
+
+class DialogWithOpState extends State<DialogWithOp> {
+   int _idx = 0;
+   Function _getValueFunc;
+   Function _setValueFunc;
+   Function _onPostSelection;
+   String _title;
+   String _body;
+   
+   @override
+   void initState()
+   {
+      _idx = widget.idx;
+      _getValueFunc = widget.getValueFunc;
+      _setValueFunc = widget.setValueFunc;
+      _onPostSelection = widget.onPostSelection;
+      _title = widget.title;
+      _body = widget.body;
+
+      super.initState();
+   }
+
+   @override
+   Widget build(BuildContext context)
+   {
+      final SimpleDialogOption ok =
+         SimpleDialogOption(
+            child:
+               Text('Ok'
+                   , style: TextStyle( color: Colors.blue
+                                     , fontSize: 16.0)),
+            onPressed: ()
+            {
+               _onPostSelection();
+               Navigator.of(context).pop();
+            });
+
+      final SimpleDialogOption cancel =
+         SimpleDialogOption(
+            child:
+               Text('Cancelar'
+                   , style: TextStyle( color: Colors.blue
+                                     , fontSize: 16.0)),
+            onPressed: ()
+            {
+               Navigator.of(context).pop();
+            });
+
+      List<SimpleDialogOption> actions =
+            List<SimpleDialogOption>(2);
+      actions[0] = cancel;
+      actions[1] = ok;
+
+      Row row =
+         Row(children: <Widget>
+            [Icon(Icons.check_circle_outline, color: Colors.red)]);
+
+      CheckboxListTile tile = CheckboxListTile(
+                title: Text('Nao mostrar novamente'),
+                value: !_getValueFunc(),
+                onChanged: (bool v)
+                           {
+                              print(v);
+                              _setValueFunc(!v);
+                              setState(() { });
+                           },
+                controlAffinity: ListTileControlAffinity.leading
+                );
+
+      return SimpleDialog(
+             title: Text(_title),
+             children: <Widget>
+             [ Padding( child: Center(child:
+                           Text( _body
+                               , style: TextStyle(fontSize: 16.0)))
+                      , padding: EdgeInsets.all(25.0))
+             , tile
+             , Padding( child: Row(children: actions)
+                      , padding: EdgeInsets.only(left: 120.0))
+                           
+             ]);
+   }
+}
+
+//_____________________________________________________________________
+
 class MenuChat extends StatefulWidget {
   MenuChat();
 
@@ -418,7 +524,7 @@ class MenuChatState extends State<MenuChat>
    // the subscribe command.
    int _lastPostId = 0;
 
-   bool _showSelectPostDialog = true;
+   List<bool> _showSelectPostDialog = List<bool>(2);
 
    // Full path to files.
    String _unreadPostsFileFullPath;
@@ -430,6 +536,7 @@ class MenuChatState extends State<MenuChat>
    String _ownPostsFileFullPath;
    String _outPostsFileFullPath;
    String _outChatMsgsFileFullPath;
+   String _postsSelectDoNotShowOpFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -449,12 +556,16 @@ class MenuChatState extends State<MenuChat>
       _ownPostsFileFullPath    = '${glob.docDir}/${cts.ownPostsFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
+      _postsSelectDoNotShowOpFullPath =
+         '${glob.docDir}/${cts.postsSelectDoNotShowOp}';
    }
 
    MenuChatState()
    {
       _newPostPressed = false;
       _botBarIdx = 0;
+      _showSelectPostDialog[0] = true;
+      _showSelectPostDialog[1] = true;
 
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
@@ -576,7 +687,7 @@ class MenuChatState extends State<MenuChat>
    void _alertUserOnselectPost( BuildContext context
                               , PostData data, int fav)
    {
-      if (!_showSelectPostDialog) {
+      if (!_showSelectPostDialog[fav]) {
          _onPostSelection(data, fav);
          return;
       }
@@ -585,62 +696,13 @@ class MenuChatState extends State<MenuChat>
          context: context,
          builder: (BuildContext context)
          {
-            final SimpleDialogOption ok =
-               SimpleDialogOption(
-                  child:
-                     Text('Ok'
-                         , style: TextStyle( color: Colors.blue
-                                           , fontSize: 16.0)),
-                  onPressed: ()
-                  {
-                     _onPostSelection(data, fav);
-                     Navigator.of(context).pop();
-                  });
-
-            final SimpleDialogOption cancel =
-               SimpleDialogOption(
-                  child:
-                     Text('Cancelar'
-                         , style: TextStyle( color: Colors.blue
-                                           , fontSize: 16.0)),
-                  onPressed: ()
-                  {
-                     Navigator.of(context).pop();
-                  });
-
-            List<SimpleDialogOption> actions =
-                  List<SimpleDialogOption>(2);
-            actions[0] = cancel;
-            actions[1] = ok;
-
-            Row row =
-               Row(children: <Widget>
-                  [Icon(Icons.check_circle_outline, color: Colors.red)]);
-
-            CheckboxListTile tile = CheckboxListTile(
-                      title: Text('Nao mostrar novamente'),
-                      value: !_showSelectPostDialog,
-                      onChanged: (bool v)
-                                 {
-                                    print(v);
-                                    _showSelectPostDialog = !v;
-                                    setState(() { });
-                                 },
-                      controlAffinity: ListTileControlAffinity.leading
-                      );
-
-            return SimpleDialog(
-                   title: Text(cts.dialTitleStrs[fav]),
-                   children: <Widget>
-                   [ Padding( child: Center(child:
-                                 Text( cts.dialBodyStrs[fav]
-                                     , style: TextStyle(fontSize: 16.0)))
-                            , padding: EdgeInsets.all(25.0))
-                   , tile
-                   , Padding( child: Row(children: actions)
-                            , padding: EdgeInsets.only(left: 120.0))
-                                 
-                   ]);
+            return DialogWithOp( fav
+                               , () {return _showSelectPostDialog[fav];}
+                               , (bool v) {_showSelectPostDialog[fav] = v;}
+                               , (){_onPostSelection(data, fav);}
+                               , cts.dialTitleStrs[fav]
+                               , cts.dialBodyStrs[fav]);
+            
          },
       );
    }
