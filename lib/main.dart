@@ -504,16 +504,16 @@ class MenuChatState extends State<MenuChat>
    // Stores the last tapped botton bar of *chats* screen. See that
    // without this variable we cannot know which of the two chat
    // screens we are currently in. It should be only used when both
-   // _favChatIdx and _favChatIdx are -1.
+   // _favPostIdx and _favPostIdx are -1.
    int _chatBotBarIdx = 1;
 
    // Stores the current chat index in the array _favPosts, -1
    // means we are not in this screen.
-   int _favChatIdx = -1;
+   int _favPostIdx = -1;
 
-   // Similar to _favChatIdx but corresponds to the *my own posts*
+   // Similar to _favPostIdx but corresponds to the *my own posts*
    // screen.
-   int _ownChatIdx = -1;
+   int _ownPostIdx = -1;
 
    // This string will be set to the name of user interested on our
    // post.
@@ -752,7 +752,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopFavChatScreen()
    {
-      _favChatIdx = -1;
+      _favPostIdx = -1;
       setState(() { });
       return false;
    }
@@ -760,7 +760,6 @@ class MenuChatState extends State<MenuChat>
    bool _onWillPopOwnChatScreen()
    {
       _ownPostChatPeer = null;
-      //_ownChatIdx = -1;
       setState(() { });
       return false;
    }
@@ -959,7 +958,7 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatPressed(int i, int j)
    {
       assert(j == 0);
-      _favChatIdx = i;
+      _favPostIdx = i;
       setState(() { });
    }
 
@@ -973,7 +972,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatPressed(int i, int j)
    {
-      _ownChatIdx = i;
+      _ownPostIdx = i;
      _ownPostChatPeer = _ownPosts[i].chats[j].peer;
 
       setState(() { });
@@ -1009,7 +1008,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onFavChatSendPressed()
+   void _onFavChatSendPressed(final int chatIdx)
    {
       if (_newPostTextCtrl.text.isEmpty)
          return;
@@ -1017,8 +1016,8 @@ class MenuChatState extends State<MenuChat>
       final String msg = _newPostTextCtrl.text;
       _newPostTextCtrl.text = "";
 
-      final String to = _favPosts[_favChatIdx].from;
-      final int id = _favPosts[_favChatIdx].id;
+      final String to = _favPosts[_favPostIdx].from;
+      final int id = _favPosts[_favPostIdx].id;
 
       var msgMap = {
          'cmd': 'message',
@@ -1031,8 +1030,10 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
-      _favPosts[_favChatIdx].addMsg(to, msg, true);
-      rotateElements(_favPosts, _favChatIdx);
+      _favPosts[_favPostIdx].addMsg(chatIdx, msg, true);
+      _favPosts[_favPostIdx].moveToFront(chatIdx);
+      rotateElements(_favPosts, _favPostIdx);
+      _favPostIdx = 0;
 
       setState(()
       {
@@ -1048,13 +1049,13 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _onOwnChatSendPressed()
+   void _onOwnChatSendPressed(final int chatIdx)
    {
       if (_newPostTextCtrl.text.isEmpty)
          return;
 
       final String msg = _newPostTextCtrl.text;
-      final int id =_ownPosts[_ownChatIdx].id;
+      final int id =_ownPosts[_ownPostIdx].id;
 
       _newPostTextCtrl.text = "";
 
@@ -1069,8 +1070,10 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
-      _ownPosts[_ownChatIdx].addMsg(_ownPostChatPeer, msg, true);
-      rotateElements(_ownPosts, _ownChatIdx);
+      _ownPosts[_ownPostIdx].addMsg(chatIdx, msg, true);
+      _ownPosts[_ownPostIdx].moveToFront(chatIdx);
+      rotateElements(_ownPosts, _ownPostIdx);
+      _ownPostIdx = 0;
 
       setState(()
       {
@@ -1425,8 +1428,8 @@ class MenuChatState extends State<MenuChat>
    {
       print("Implement me");
 
-      if (_chatBotBarIdx == 0 && _ownChatIdx != -1) {
-         _ownChatIdx = -1;
+      if (_chatBotBarIdx == 0 && _ownPostIdx != -1) {
+         _ownPostIdx = -1;
          setState(() { });
          return false;
       }
@@ -1583,14 +1586,15 @@ class MenuChatState extends State<MenuChat>
                                    _botBarIdx)));
       }
 
-      if (_tabCtrl.index == 2 && _favChatIdx != -1) {
+      if (_tabCtrl.index == 2 && _favPostIdx != -1) {
          // We are in the favorite posts screen, where pressing the
          // chat button in any of the posts leads us to the chat
          // screen with the postertiser.
-         final String peer = _favPosts[_favChatIdx].from;
-         final int id = _favPosts[_favChatIdx].id;
-         final int idx = _favPosts[_favChatIdx].getChatHistIdx(peer);
-         final int n = _favPosts[_favChatIdx].moveToReadHistory(idx);
+         final String peer = _favPosts[_favPostIdx].from;
+         final int id = _favPosts[_favPostIdx].id;
+         final int chatIdx = _favPosts[_favPostIdx].getChatHistIdx(peer);
+         final int n =
+            _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
 
          if (n != 0) {
             var msgMap = {
@@ -1610,20 +1614,20 @@ class MenuChatState extends State<MenuChat>
          return createChatScreen(
                    context,
                    _onWillPopFavChatScreen,
-                   _favPosts[_favChatIdx].chats[idx],
+                   _favPosts[_favPostIdx].chats[chatIdx],
                    _newPostTextCtrl,
-                   _onFavChatSendPressed,
+                   (){_onFavChatSendPressed(chatIdx);},
                    _chatScrollCtrl);
       }
 
       if (_tabCtrl.index == 2 &&
-          _ownChatIdx != -1 && _ownPostChatPeer != null) {
+          _ownPostIdx != -1 && _ownPostChatPeer != null) {
          // We are in the chat screen with one interested user on a
          // specific post.
-         final int idx =
-            _ownPosts[_ownChatIdx].getChatHistIdx(_ownPostChatPeer);
-         final ChatHistory chatHist = _ownPosts[_ownChatIdx].chats[idx];
-         final int n = _ownPosts[_ownChatIdx].moveToReadHistory(idx);
+         final int chatIdx =
+            _ownPosts[_ownPostIdx].getChatHistIdx(_ownPostChatPeer);
+         final int n =
+               _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
 
          if (n != 0) {
             var msgMap = {
@@ -1631,7 +1635,7 @@ class MenuChatState extends State<MenuChat>
                'type': 'app_ack_read',
                'from': _appId,
                'to': _ownPostChatPeer,
-               'post_id': _ownPosts[_ownChatIdx].id,
+               'post_id': _ownPosts[_ownPostIdx].id,
                'number_of_msgs': n,
                'is_sender_post': true,
             };
@@ -1643,9 +1647,9 @@ class MenuChatState extends State<MenuChat>
          return createChatScreen(
                    context,
                    _onWillPopOwnChatScreen,
-                   chatHist,
+                   _ownPosts[_ownPostIdx].chats[chatIdx],
                    _newPostTextCtrl,
-                   _onOwnChatSendPressed,
+                   (){_onOwnChatSendPressed(chatIdx);},
                    _chatScrollCtrl);
       }
 

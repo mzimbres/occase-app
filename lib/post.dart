@@ -420,11 +420,13 @@ class PostData {
       return chats[i];
    }
 
-   void addMsg(final String peer, final String msg, final bool thisApp)
+   void addMsg(final int j, final String msg, final bool thisApp)
    {
-      final int j = getChatHistIdx(peer);
-      ChatHistory history = chats[j];
-      history.addMsg(msg, thisApp, id);
+      chats[j].addMsg(msg, thisApp, id);
+   }
+
+   void moveToFront(final int j)
+   {
       rotateElements(chats, j);
       _persistPeers();
    }
