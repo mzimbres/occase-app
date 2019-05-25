@@ -491,17 +491,25 @@ class PostData {
       return false;
    }
 
-   void removeLongPressedChats()
+   void removeLongPressedChats(int idx)
    {
-      for (ChatHistory hist in chats) {
-         if (hist.isLongPressed) {
-            safeDeleteFile(hist.makeFullPath(cts.chatHistReadPrefix, id));
-            safeDeleteFile(hist.makeFullPath(cts.chatHistUnreadPrefix, id));
-         }
+      assert(!chats.isEmpty);
+      assert(idx < chats.length);
+
+      if (chats[idx].isLongPressed) {
+         safeDeleteFile(chats[idx].makeFullPath(cts.chatHistReadPrefix, id));
+         safeDeleteFile(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id));
       }
 
-      chats.removeWhere((e) { return e.isLongPressed; });
+      chats.removeAt(idx);
       _persistPeers();
+   }
+
+   void unmarkLongPressedChats(int idx)
+   {
+      assert(!chats.isEmpty);
+      assert(idx < chats.length);
+      chats[idx].isLongPressed = false;
    }
 
    PostData.fromJson(Map<String, dynamic> map)

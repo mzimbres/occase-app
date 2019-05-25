@@ -18,6 +18,12 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
+class IdxPair {
+   int i = 0;
+   int j = 0;
+   IdxPair(this.i, this.j);
+}
+
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -525,6 +531,12 @@ class MenuChatState extends State<MenuChat>
    String _outChatMsgsFileFullPath;
    String _dialogPrefsFullPath;
 
+   // This list will store the posts in _fav or _own chat screens that
+   // have been long pressed by the user. However, once one post is
+   // long pressed to select the others is enough to perform a simple
+   // click.
+   List<IdxPair> _postsWithLongPressed = List<IdxPair>();
+
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
 
@@ -807,6 +819,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatBotBarTapped(int i)
    {
+      _unmarkLongPressedChatEntries();
       setState(() { _chatScreenIdx = i; });
    }
 
@@ -966,8 +979,12 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatPressed(int i, int j)
    {
       assert(j == 0);
-      _favPostIdx = i;
-      setState(() { });
+      if (!_postsWithLongPressed.isEmpty) {
+         _onFavChatLongPressed(i, j);
+      } else {
+         _favPostIdx = i;
+         setState((){});
+      }
    }
 
    void _onFavChatLongPressed(int i, int j)
@@ -975,23 +992,27 @@ class MenuChatState extends State<MenuChat>
       assert(j == 0);
       final bool old = _favPosts[i].chats[0].isLongPressed;
       _favPosts[i].chats[0].isLongPressed = !old;
+      _postsWithLongPressed.add(IdxPair(i, j));
       setState(() { });
    }
 
    void _onOwnPostChatPressed(int i, int j)
    {
-      _ownPostIdx = i;
-     _ownPostChatPeer = _ownPosts[i].chats[j].peer;
-
-      setState(() { });
+      if (!_postsWithLongPressed.isEmpty) {
+         _onOwnPostChatLongPressed(i, j);
+      } else {
+         _ownPostIdx = i;
+         _ownPostChatPeer = _ownPosts[i].chats[j].peer;
+         setState(() { });
+      }
    }
 
    void _onOwnPostChatLongPressed(int i, int j)
    {
       final bool old = _ownPosts[i].chats[j].isLongPressed;
       _ownPosts[i].chats[j].isLongPressed = !old;
+      _postsWithLongPressed.add(IdxPair(i, j));
       setState(() { });
-      print("_onOwnPostChatLongPressed");
    }
 
    void sendChatMsg(final String payload, int isChat)
@@ -1427,7 +1448,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onOwnPostsBackPressed()
    {
-      print("Implement me");
+      _unmarkLongPressedChatEntries();
 
       if (_chatScreenIdx == 0 && _ownPostIdx != -1) {
          _ownPostIdx = -1;
@@ -1440,35 +1461,52 @@ class MenuChatState extends State<MenuChat>
 
    bool hasLongPressedChat()
    {
-      if (_chatScreenIdx == 0)
-         return hasLongPressed(_ownPosts);
-      else
-         return hasLongPressed(_favPosts);
+      return !_postsWithLongPressed.isEmpty;
+   }
+
+   void _unmarkLongPressedChatEntries()
+   {
+      // Optimization to avoid writing files.
+      if (_postsWithLongPressed.isEmpty)
+         return;
+
+      if (_chatScreenIdx == 0) {
+         for (IdxPair e in _postsWithLongPressed)
+            _ownPosts[e.i].unmarkLongPressedChats(e.j);
+      } else {
+         for (IdxPair e in _postsWithLongPressed)
+            _favPosts[e.i].unmarkLongPressedChats(e.j);
+      }
+
+      _postsWithLongPressed = List<IdxPair>();
+      setState(() { });
    }
 
    void _removeLongPressedChatEntries()
    {
       assert(_tabCtrl.index == 2);
 
-      if (_chatScreenIdx == 0) {
-         for (PostData post in _ownPosts)
-            post.removeLongPressedChats();
+      // Optimization to avoid writing files.
+      if (_postsWithLongPressed.isEmpty)
+         return;
 
-         // TODO: Should the whole post be removed if after this
-         // action it became empty or should we keep it. If we remove
-         // it and a user sends a message to this chat it will have to
-         // be ignored.
-         setState(() { });
+      if (_chatScreenIdx == 0) {
+         for (IdxPair e in _postsWithLongPressed)
+            _ownPosts[e.i].removeLongPressedChats(e.j);
+
+         // We do not remove the post from the list of own posts if it
+         // became empty. Otherwise other chat messages directed to it
+         // would be ignored.
       } else {
-         for (PostData post in _favPosts)
-            post.removeLongPressedChats();
+         for (IdxPair e in _postsWithLongPressed)
+            _favPosts[e.i].removeLongPressedChats(e.j);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
-         writeListToDisk( _favPosts, _favPostsFileFullPath,
-            FileMode.write);
-
-         setState(() { });
+         writeListToDisk(_favPosts, _favPostsFileFullPath, FileMode.write);
       }
+
+      _postsWithLongPressed = List<IdxPair>();
+      setState(() { });
    }
 
    void _deleteChatEntryDialog(BuildContext context)
@@ -1523,6 +1561,13 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext context)
    {
+      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2)) {
+         _unmarkLongPressedChatEntries();
+      }
+
+      // TODO: Still has to handle the case index == 2 but were are
+      // moving from _own to _fav and vice versa.
+
       if (_menus.isEmpty) {
          return Scaffold();
       }
