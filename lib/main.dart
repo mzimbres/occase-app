@@ -983,7 +983,13 @@ class MenuChatState extends State<MenuChat>
          _onFavChatLongPressed(i, j);
       } else {
          _favPostIdx = i;
-         setState((){});
+         setState(() {
+            SchedulerBinding.instance.addPostFrameCallback((_)
+            {
+               _chatScrollCtrl.jumpTo(
+                  _chatScrollCtrl.position.maxScrollExtent);
+            });
+         });
       }
    }
 
@@ -1003,7 +1009,13 @@ class MenuChatState extends State<MenuChat>
       } else {
          _ownPostIdx = i;
          _ownPostChatPeer = _ownPosts[i].chats[j].peer;
-         setState(() { });
+         setState(() {
+            SchedulerBinding.instance.addPostFrameCallback((_)
+            {
+               _chatScrollCtrl.jumpTo(
+                  _chatScrollCtrl.position.maxScrollExtent);
+            });
+         });
       }
    }
 
@@ -1564,9 +1576,6 @@ class MenuChatState extends State<MenuChat>
       if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2)) {
          _unmarkLongPressedChatEntries();
       }
-
-      // TODO: Still has to handle the case index == 2 but were are
-      // moving from _own to _fav and vice versa.
 
       if (_menus.isEmpty) {
          return Scaffold();
