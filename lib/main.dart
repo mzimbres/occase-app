@@ -90,6 +90,20 @@ List<String> safeReadFileAsLines(final String fullPath)
    }
 }
 
+List<bool> readFileAsBoolStrs(final String path)
+{
+   final List<String> list = safeReadFileAsLines(path);
+   List<bool> ret = List<bool>();
+   for (String s in list) {
+      if (s == 'true')
+         ret.add(true);
+      else
+         ret.add(false);
+   }
+
+   return ret;
+}
+
 String makePostPayload(final PostData post)
 {
    var pubMap = {
@@ -523,7 +537,7 @@ class MenuChatState extends State<MenuChat>
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
-   List<bool> _showSelectPostDialog = List<bool>(2);
+   List<bool> _dialogPrefs = List<bool>(2);
 
    // Full path to files.
    String _unreadPostsFileFullPath;
@@ -535,7 +549,7 @@ class MenuChatState extends State<MenuChat>
    String _ownPostsFileFullPath;
    String _outPostsFileFullPath;
    String _outChatMsgsFileFullPath;
-   String _postsSelectDoNotShowOpFullPath;
+   String _dialogPrefsFullPath;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -555,8 +569,7 @@ class MenuChatState extends State<MenuChat>
       _ownPostsFileFullPath    = '${glob.docDir}/${cts.ownPostsFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
-      _postsSelectDoNotShowOpFullPath =
-         '${glob.docDir}/${cts.postsSelectDoNotShowOp}';
+      _dialogPrefsFullPath     = '${glob.docDir}/${cts.dialogPrefsFullPath}';
    }
 
    MenuChatState()
@@ -564,8 +577,8 @@ class MenuChatState extends State<MenuChat>
       _newPostPressed = false;
       _botBarIdx = 0;
 
-      _showSelectPostDialog[0] = true;
-      _showSelectPostDialog[1] = true;
+      _dialogPrefs[0] = true;
+      _dialogPrefs[1] = true;
 
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
@@ -600,6 +613,10 @@ class MenuChatState extends State<MenuChat>
          final int isChat = int.parse(foo.first);
          _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
       }
+
+      _dialogPrefs = readFileAsBoolStrs(_dialogPrefsFullPath);
+      assert(_dialogPrefs.length == 2);
+      print('====> dialogPref: $_dialogPrefs');
 
       _connectToServer();
 
@@ -684,10 +701,22 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl.addListener(_tabCtrlChangeHandler);
    }
 
+   void _setDialogPref(final int idx, bool v)
+   {
+      _dialogPrefs[idx] = v;
+
+      // At the moment there are only two options so I will not loop.
+      String data = '';
+      data += '${_dialogPrefs[0]}\n';
+      data += '${_dialogPrefs[1]}\n';
+
+      writeToFile(data, _dialogPrefsFullPath, FileMode.write);
+   }
+
    void _alertUserOnselectPost( BuildContext context
                               , PostData data, int fav)
    {
-      if (!_showSelectPostDialog[fav]) {
+      if (!_dialogPrefs[fav]) {
          _onPostSelection(data, fav);
          return;
       }
@@ -696,12 +725,13 @@ class MenuChatState extends State<MenuChat>
          context: context,
          builder: (BuildContext context)
          {
-            return DialogWithOp( fav
-                               , () {return _showSelectPostDialog[fav];}
-                               , (bool v) {_showSelectPostDialog[fav] = v;}
-                               , (){_onPostSelection(data, fav);}
-                               , cts.dialTitleStrs[fav]
-                               , cts.dialBodyStrs[fav]);
+            return
+               DialogWithOp( fav
+                           , () {return _dialogPrefs[fav];}
+                           , (bool v) {_setDialogPref(fav, v);}
+                           , (){_onPostSelection(data, fav);}
+                           , cts.dialTitleStrs[fav]
+                           , cts.dialBodyStrs[fav]);
             
          },
       );
