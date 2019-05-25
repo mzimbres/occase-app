@@ -163,11 +163,14 @@ MenuNode parseTree(String dataRaw)
 class MenuItem {
    int filterDepth;
    int version;
+
+   // The list below is used as a stack whose first element is the
+   // menu root node. When a menu entries is selected it is pushed on
+   // the stack and the element is treated a the root of the subtree.
    List<MenuNode> root = List<MenuNode>();
 
    bool isFilterLeaf()
    {
-      //print('${root.length} == ${filterDepth}');
       return root.length == filterDepth;
    }
 

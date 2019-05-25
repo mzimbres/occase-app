@@ -439,15 +439,13 @@ class MenuChatState extends State<MenuChat>
    ScrollController _chatScrollCtrl = ScrollController();
 
    // The credentials we use to communicate with the server. Both are
-   // sent back to us in the acknoledge to the register command.
+   // sent back by the server in the acknowledge to the register
+   // command.
    String _appId = '';
    String _appPwd = '';
 
-   // The outermost list is an array with the length equal to the
-   // number of menus there are. The inner most list is actually a
-   // stack whose first element is the menu root node. When menu
-   // entries are selected we push those items on the stack. Used both
-   // on the filter and on the postertizement screens.
+   // Array with the length equal to the number of menus there
+   // are. Used both on the filter and on the *new post* screens.
    List<MenuItem> _menus = List<MenuItem>();
 
    // The temporary variable used to store the post the user sends.
@@ -459,41 +457,40 @@ class MenuChatState extends State<MenuChat>
    List<PostData> _posts = List<PostData>();
 
    // Same as _posts but stores posts that have been just received
-   // from the server and haven't viewed by the user.
+   // from the server and haven't been viewed by the user.
    List<PostData> _unreadPosts = List<PostData>();
 
-   // The list of posts the user found interesting and moved to
-   // favorites. They are moved from the list of posts received from
-   // the server to this list.
+   // The list of posts the user has selected in the posts screen.
+   // They are moved from _posts to here.
    List<PostData> _favPosts = List<PostData>();
 
    // Posts the user wrote itself and sent to the server. One issue we
-   // have to observe that we will send _postInput to the server and
-   // if the user is subscribed to the channel the post belongs to, it
-   // will be received back and shouldn't be displayed or duplicated
-   // on this list. The posts received from the server will not be
-   // inserted in this list. The only posts inserted here are those
-   // that have been acked with ok by the server, before that they
-   // will live in the output queue _outPostsQueue
+   // have to observe is that if the user is subscribed to the channel
+   // the post belongs to, it will be received back and shouldn't be
+   // displayed or duplicated on this list. The posts received from
+   // the server will not be inserted in _posts.
+   //
+   // The only posts inserted here are those that have been acked with
+   // ok by the server, before that they will live in _outPostsQueue
    List<PostData> _ownPosts = List<PostData>();
 
    // Posts sent to the server that haven't been acked yet. I found it
    // easier to have this list. For example, if the user sends more
    // than one post while the app is offline we do not have to search
-   // _ownPosts to set the post id in the correct order. I is also
+   // _ownPosts to set the post id in the correct order. It is also
    // more efficient in terms of persistency. The _ownPosts becomes
    // append only, this is important if there is a large number of
    // posts.
    Queue<PostData> _outPostsQueue = Queue<PostData>();
 
-   // Stores messages that cannot be lost in case the connection to
-   // the server is lost. 
+   // Stores chat messages that cannot be lost in case the connection
+   // to the server is lost. 
    Queue<ChatMsgOutQueueElem> _outChatMsgsQueue =
          Queue<ChatMsgOutQueueElem>();
 
-   // A flag that is set to true when the floating button (new
-   // postertisement) is clicked. It must be carefully set to false
-   // when that screens are left.
+   // A flag that is set to true when the floating button (new post)
+   // is clicked. It must be carefully set to false when that screen
+   // are left.
    bool _newPostPressed = false;
 
    // The index of the tab we are currently in in the *new
@@ -501,11 +498,11 @@ class MenuChatState extends State<MenuChat>
    // menu, 1 for the models menu etc.
    int _botBarIdx = 0;
 
-   // Stores the last tapped botton bar of *chats* screen. See that
-   // without this variable we cannot know which of the two chat
+   // Stores the last tapped botton bar of the *chats* screen. See
+   // that without this variable we cannot know which of the two chat
    // screens we are currently in. It should be only used when both
    // _favPostIdx and _favPostIdx are -1.
-   int _chatBotBarIdx = 1;
+   int _chatScreenIdx = 1;
 
    // Stores the current chat index in the array _favPosts, -1
    // means we are not in this screen.
@@ -517,13 +514,15 @@ class MenuChatState extends State<MenuChat>
 
    // This string will be set to the name of user interested on our
    // post.
-   String _ownPostChatPeer;
+   String _ownPostChatPeer = '';
 
    // The last post id we have received. It will be persisted on every
    // post received and will be read when the app starts. It used by
    // the subscribe command.
    int _lastPostId = 0;
 
+   // Whether or not to show the dialog informing the user what
+   // happens to selected or deleted posts in the posts screen.
    List<bool> _showSelectPostDialog = List<bool>(2);
 
    // Full path to files.
@@ -564,6 +563,7 @@ class MenuChatState extends State<MenuChat>
    {
       _newPostPressed = false;
       _botBarIdx = 0;
+
       _showSelectPostDialog[0] = true;
       _showSelectPostDialog[1] = true;
 
@@ -733,7 +733,6 @@ class MenuChatState extends State<MenuChat>
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
       _botBarIdx = 0;
-      //_chatBotBarIdx = 0;
       setState(() { });
    }
 
@@ -759,7 +758,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopOwnChatScreen()
    {
-      _ownPostChatPeer = null;
+      _ownPostChatPeer = '';
       setState(() { });
       return false;
    }
@@ -799,7 +798,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatBotBarTapped(int i)
    {
-      setState(() { _chatBotBarIdx = i; });
+      setState(() { _chatScreenIdx = i; });
    }
 
    void _onPostLeafPressed(int i)
@@ -1428,7 +1427,7 @@ class MenuChatState extends State<MenuChat>
    {
       print("Implement me");
 
-      if (_chatBotBarIdx == 0 && _ownPostIdx != -1) {
+      if (_chatScreenIdx == 0 && _ownPostIdx != -1) {
          _ownPostIdx = -1;
          setState(() { });
          return false;
@@ -1439,7 +1438,7 @@ class MenuChatState extends State<MenuChat>
 
    bool hasLongPressedChat()
    {
-      if (_chatBotBarIdx == 0)
+      if (_chatScreenIdx == 0)
          return hasLongPressed(_ownPosts);
       else
          return hasLongPressed(_favPosts);
@@ -1449,7 +1448,7 @@ class MenuChatState extends State<MenuChat>
    {
       assert(_tabCtrl.index == 2);
 
-      if (_chatBotBarIdx == 0) {
+      if (_chatScreenIdx == 0) {
          for (PostData post in _ownPosts)
             post.removeLongPressedChats();
 
@@ -1496,7 +1495,7 @@ class MenuChatState extends State<MenuChat>
             actions[1] = ok;
 
             Text txt = cts.delOwnChatTitleText;
-            if (_chatBotBarIdx == 1) {
+            if (_chatScreenIdx == 1) {
                txt = cts.delFavChatTitleText;
             }
 
@@ -1621,7 +1620,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_tabCtrl.index == 2 &&
-          _ownPostIdx != -1 && _ownPostChatPeer != null) {
+          _ownPostIdx != -1 && !_ownPostChatPeer.isEmpty) {
          // We are in the chat screen with one interested user on a
          // specific post.
          final int chatIdx =
@@ -1711,7 +1710,7 @@ class MenuChatState extends State<MenuChat>
       bottNavBars[1] = null;
       onWillPops[1] = (){return false;};
 
-      if (_chatBotBarIdx == 0) {
+      if (_chatScreenIdx == 0) {
          // The own posts tab in the chat screen.
          bodies[2] = makePostChatTab(
                         context,
@@ -1735,7 +1734,7 @@ class MenuChatState extends State<MenuChat>
                        cts.chatIcons,
                        cts.chatIconTexts,
                        _onChatBotBarTapped,
-                       _chatBotBarIdx);
+                       _chatScreenIdx);
 
       onWillPops[2] = _onOwnPostsBackPressed;
 
