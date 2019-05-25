@@ -3,13 +3,18 @@ import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 
-String makeSubItemsString(int n)
+String makeLeafCounterString(int n)
 {
    if (n != 0) {
-      return '${n} items';
+      return 'Subitems: ${n}';
    }
 
    return null;
+}
+
+String makeFilterNonLeafSubStr(int n)
+{
+   return 'Filtros aplicados: ${n}';
 }
 
 Text createMenuItemSubStrWidget(String str, FontWeight fw)
@@ -54,9 +59,8 @@ String getFirstLetter(String str)
 
 /*
  *  To support the "Todos" field in the menu checkbox we have to add
- *  some relatively complex logic.  First we note that the "Todos"
- *  checkbox should appear in all screens that present checkboxes,
- *  namely, when
+ *  some complex logic.  First we note that the "Todos" checkbox
+ *  should appear in all screens that present checkboxes, namely, when
  *  
  *  1. makeLeaf is true, or
  *  2. isLeaf is true for more than one node.
@@ -80,9 +84,8 @@ ListView createFilterListView(BuildContext context,
       itemCount: o.children.length + shift,
       itemBuilder: (BuildContext context, int i)
       {
-         // Handles the *Marcar todos* button.
          if (shift == 1 && i == 0) {
-            //final String title = "Marcar todos (${o.leafCounter} items)";
+            // Handles the *Marcar todos* button.
             final String title = "Marcar todos";
             final TextStyle fls =
                   TextStyle(color: Theme.of(context).accentColor);
@@ -108,7 +111,7 @@ ListView createFilterListView(BuildContext context,
                      color: Theme.of(context).primaryColor);
             }
 
-            final String subStr = makeSubItemsString(child.leafCounter);
+            final String subStr = makeLeafCounterString(child.leafCounter);
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
@@ -128,20 +131,26 @@ ListView createFilterListView(BuildContext context,
          }
 
          MenuNode child = o.children[i];
-         final String subStr = makeSubItemsString(child.leafCounter);
+         // Works only if the next level in the tree is its filter
+         // depth.
+         final int c = child.getCounterOfFilterChildren();
+         final String subStr = makeFilterNonLeafSubStr(c);
          final String firstLetter = getFirstLetter(child.name);
-         return createListViewItem(
-                         context,
-                         child.name,
-                         createMenuItemSubStrWidget(
-                               subStr,
-                               FontWeight.normal),
-                         null,
-                         Theme.of(context).primaryColor,
-                         () { onNodePressed(i); },
-                         (){},
-                         Text(firstLetter,
-                              style: cts.firstLetterStl));
+
+         Color filterNodeParentColor = Theme.of(context).primaryColor;
+         if (c != 0)
+            filterNodeParentColor = cts.coral;
+
+         return
+            createListViewItem(
+               context,
+               child.name,
+               createMenuItemSubStrWidget(subStr, FontWeight.normal),
+               null,
+               filterNodeParentColor,
+               () { onNodePressed(i); },
+               (){},
+               Text(firstLetter, style: cts.firstLetterStl));
       },
    );
 }

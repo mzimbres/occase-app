@@ -9,13 +9,23 @@ class MenuNode {
 
    List<MenuNode> children = List<MenuNode>();
 
-   MenuNode([this.name, this.status, this.code])
-   {
-   }
+   MenuNode([this.name, this.status, this.code]);
 
    bool isLeaf()
    {
       return children.isEmpty;
+   }
+
+   // Gets the counter of children that have filter status true.
+   int getCounterOfFilterChildren()
+   {
+      int c = 0;
+      for (int i = 0; i < children.length; ++i) {
+         if (children[i].status)
+            ++c;
+      }
+
+      return c;
    }
 }
 

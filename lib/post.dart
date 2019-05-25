@@ -901,7 +901,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
       {
          MenuNode child = o.children[i];
          final String firstLetter = getFirstLetter(child.name);
-         final String subStr = makeSubItemsString(child.leafCounter);
+         final String subStr = makeLeafCounterString(child.leafCounter);
          if (child.isLeaf()) {
             return createListViewItem(
                          context,
