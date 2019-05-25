@@ -165,3 +165,5 @@ final List<String> dialBodyStrs = <String>
 , 'Seu post pode ser encontrado agora na tela \"Chats\" na aba \"Menus posts\".'
 ];
 
+final String postTimePrefix = 'Detalhes do post';
+

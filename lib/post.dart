@@ -748,7 +748,8 @@ Card createChatEntry(BuildContext context,
    final Color ac = Colors.blueGrey[400];
    ExpansionTile et = ExpansionTile(
              //key: PageStorageKey<Entry>(root),
-             title: Text("Detalhes do post", style: cts.expTileStl),
+             title: Text( '${cts.postTimePrefix}: ${post.id}'
+                        , style: cts.expTileStl),
              children: ListTile.divideTiles(
                         context: context,
                         tiles: textCards,
