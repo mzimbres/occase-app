@@ -588,8 +588,13 @@ class MenuChatState extends State<MenuChat>
          _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
       }
 
-      _dialogPrefs = readFileAsBoolStrs(_dialogPrefsFullPath);
-      assert(_dialogPrefs.length == 2);
+      final List<bool> dialogPrefs =
+         readFileAsBoolStrs(_dialogPrefsFullPath);
+      if (!dialogPrefs.isEmpty) {
+         _dialogPrefs = dialogPrefs;
+         assert(_dialogPrefs.length == 2);
+      }
+
       print('====> dialogPref: $_dialogPrefs');
 
       _connectToServer();
@@ -1193,11 +1198,11 @@ class MenuChatState extends State<MenuChat>
       print('register_ack: Persisting login $login');
       writeToFile(login, _loginFileFullPath, FileMode.write);
 
-      print('register_ack: Persisting the menu received.');
-      writeToFile(msg, _menuFileFullPath, FileMode.write);
-
       _menus = menuReader(ack);
       assert(_menus != null);
+
+      print('register_ack: Persisting the menu received.');
+      _persistMenu();
    }
 
    void _onLoginAck(Map<String, dynamic> ack, final String msg)
@@ -1227,10 +1232,10 @@ class MenuChatState extends State<MenuChat>
          // The server has sent us a menu, that means we have to
          // update the current one keeping the status of each
          // field. TODO: Keep the status field.
-         print('login_ack: New menu received.');
-         writeToFile(msg, _menuFileFullPath, FileMode.write);
          _menus = menuReader(ack);
          assert(_menus != null);
+         print('login_ack: Persisting new menu received.');
+         _persistMenu();
       }
    }
 
@@ -1354,6 +1359,13 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
+   void _persistMenu()
+   {
+      var foo = {'menus': _menus};
+      final String bar = jsonEncode(foo);
+      writeToFile(bar, _menuFileFullPath, FileMode.write);
+   }
+
    void _onSendFilters(BuildContext ctx)
    {
       // First send the hashes then show the dialog.
@@ -1363,10 +1375,7 @@ class MenuChatState extends State<MenuChat>
       // not receive a subscribe_ack if the app is offline. In this
       // case if the user kills the app, the changes in the filter
       // will be lost.
-      var foo = {'menus': _menus};
-      final String bar = jsonEncode(foo);
-      print('_onSendFilters: Writing menu state to file.');
-      writeToFile(bar, _menuFileFullPath, FileMode.write);
+      _persistMenu();
 
       _showSimpleDial(ctx, _onOkDialAfterSendFilters, 2);
    }
