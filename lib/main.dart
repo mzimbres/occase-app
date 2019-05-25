@@ -18,32 +18,6 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
-// It looks like we do not need the following block anymore. I
-// will keep it around for a while before removing it just in
-// case.
-//________________________________________________________________
-//Map<String, dynamic> deviceData;
-
-//try {
-//   if (Platform.isAndroid) {
-//      AndroidDeviceInfo info = await devInfo.androidInfo;
-//      // To avoid colision between devices running on the same
-//      // machine, I will also use time stamp. Remove this later.
-//      final int now = DateTime.now().millisecondsSinceEpoch;
-//      _appId = info.id + "${now}";
-//      print("========>: " + _appId);
-//   } else if (Platform.isIOS) {
-//      // Not implemented.
-//   }
-//} on PlatformException {
-//   // Id unavailable?
-//}
-
-//// What is this meand for?
-//if (!mounted)
-//   return;
-//________________________________________________________________
-
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -1240,7 +1214,7 @@ class MenuChatState extends State<MenuChat>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _sendHahesToServer();
+      _subscribeToChannels();
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -1267,27 +1241,6 @@ class MenuChatState extends State<MenuChat>
          print("subscribe_ack: $res");
          return;
       }
-
-      // When a subscribe_ack is received from the server after the
-      // app has sent a subscribe command the app will persist the
-      // menu together with the status states on a file. However
-      // sometimes we do not want to persist the menu on file, this
-      // is the case when the app successfully logs in server and
-      // proceeds with the subscribe to get the posts the may have
-      // been sent while the app was offline. In this case there
-      // has been no change in the menu. However, I do not see a
-      // need now to optimize away this redundant writes. Perhaps
-      // in the future we can introduce a flag to inform the
-      // subscribe_ack is the result of login_ack.
-
-      var foo = {
-         'menus': _menus
-      };
-
-      final String fileName = 'menu.txt';
-      final String bar = jsonEncode(foo);
-      print('subscribe_ack: Writing menu state to file.');
-      writeToFile(bar, _menuFileFullPath, FileMode.write);
    }
 
    void _onPost(Map<String, dynamic> ack)
@@ -1404,11 +1357,21 @@ class MenuChatState extends State<MenuChat>
    void _onSendFilters(BuildContext ctx)
    {
       // First send the hashes then show the dialog.
-      _sendHahesToServer();
+      _subscribeToChannels();
+
+      // We also have to persist the menu on file here since we may
+      // not receive a subscribe_ack if the app is offline. In this
+      // case if the user kills the app, the changes in the filter
+      // will be lost.
+      var foo = {'menus': _menus};
+      final String bar = jsonEncode(foo);
+      print('_onSendFilters: Writing menu state to file.');
+      writeToFile(bar, _menuFileFullPath, FileMode.write);
+
       _showSimpleDial(ctx, _onOkDialAfterSendFilters, 2);
    }
 
-   void _sendHahesToServer()
+   void _subscribeToChannels()
    {
       List<List<List<int>>> codes = List<List<List<int>>>();
       for (MenuItem item in _menus) {
