@@ -633,36 +633,10 @@ Container makeCircleUnreadMsgs(int n,
                child: Center(child: txt));
 }
 
-Card postElemFactory(BuildContext context,
-                    List<String> values,
-                    List<String> keys,
-                    Icon ic)
+Card makePostElemSimple(Icon ic, Column leftCol, Column rightCol)
 {
    List<Widget> r = List<Widget>();
    r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
-
-   List<Widget> leftList = List<Widget>();
-   List<Widget> rightList = List<Widget>();
-
-   for (int i = 0; i < values.length; ++i) {
-      RichText left =
-         RichText(text: TextSpan( text: keys[i] + ': '
-                                , style: cts.menuTitleStl));
-      leftList.add(left);
-
-      RichText right =
-         RichText(text: TextSpan( text: values[i]
-                                , style: cts.valueTextStl));
-      rightList.add(right);
-   }
-
-   Column leftCol =
-      Column( children: leftList
-            , crossAxisAlignment: CrossAxisAlignment.start);
-
-   Column rightCol =
-      Column( children: rightList
-            , crossAxisAlignment: CrossAxisAlignment.start);
 
    Row row = Row(children: <Widget>[leftCol, rightCol]);
    r.add(row);
@@ -687,6 +661,35 @@ Card postElemFactory(BuildContext context,
    );
 }
 
+Card makePostElem(BuildContext context, List<String> values,
+                  List<String> keys, Icon ic)
+{
+   List<Widget> leftList = List<Widget>();
+   List<Widget> rightList = List<Widget>();
+
+   for (int i = 0; i < values.length; ++i) {
+      RichText left =
+         RichText(text: TextSpan( text: keys[i] + ': '
+                                , style: cts.menuTitleStl));
+      leftList.add(left);
+
+      RichText right =
+         RichText(text: TextSpan( text: values[i]
+                                , style: cts.valueTextStl));
+      rightList.add(right);
+   }
+
+   Column leftCol =
+      Column( children: leftList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   Column rightCol =
+      Column( children: rightList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   return makePostElemSimple(ic, leftCol, rightCol);
+}
+
 List<Card>
 makeMenuInfoCards(BuildContext context,
                   PostData data,
@@ -699,11 +702,11 @@ makeMenuInfoCards(BuildContext context,
       List<String> names =
             loadNames(menus[i].root.first, data.codes[i][0]);
 
-      Card card = postElemFactory(
-                  context,
-                  names,
-                  cts.menuDepthNames[i],
-                  cts.newPostTabIcons[i]);
+      Card card = makePostElem(
+                     context,
+                     names,
+                     cts.menuDepthNames[i],
+                     cts.newPostTabIcons[i]);
 
       list.add(card);
    }
@@ -728,8 +731,8 @@ List<Card> postTextAssembler(BuildContext context,
    values.add(dateString);
    values.add(data.description);
 
-   Card descCard = postElemFactory(context, values, cts.descList,
-                                  cts.personIcon);
+   Card descCard = makePostElem(context, values, cts.descList,
+                                cts.personIcon);
 
    list.add(descCard);
 
