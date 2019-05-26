@@ -120,6 +120,29 @@ String makeRegisterCmd()
    return jsonEncode(loginCmd);
 }
 
+ListView makePostDetailScreen(Function proceed, int filter)
+{
+   return ListView.builder(
+      padding: const EdgeInsets.all(3.0),
+      itemCount: cts.postDetails.length + 1,
+      itemBuilder: (BuildContext context, int i)
+      {
+         if (i == cts.postDetails.length)
+            return createSendScreen((){proceed(i);});
+
+         return CheckboxListTile(
+            title: Text(cts.postDetails[i]),
+            value: ((filter & (1 << i)) != 0),
+            onChanged: (bool v)
+            {
+               proceed(i);
+            },
+            //controlAffinity: ListTileControlAffinity.leading
+         );
+      },
+   );
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -1566,6 +1589,18 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
+   void _onNewPostDetail(int i)
+   {
+      if (i == cts.postDetails.length) {
+         _botBarIdx = 3;
+         setState(() { });
+         return;
+      }
+
+      _postInput.filter ^= 1 << i;
+      setState(() { });
+   }
+
    @override
    void dispose()
    {
@@ -1620,10 +1655,10 @@ class MenuChatState extends State<MenuChat>
             );
 
          } else if (_botBarIdx == 2) {
-            wid = createSendScreen((){
-               _botBarIdx = 3;
-               setState(() { });
-            ;});
+            final ListView lv =
+               makePostDetailScreen(_onNewPostDetail,
+                     _postInput.filter);
+            wid = lv;
          } else {
             wid = createPostMenuListView(
                         context,
