@@ -17,26 +17,26 @@ final Color newReceivedPostColor = Colors.brown[200];
 final String appName = "CarMenu";
 
 // Text used for the main tabs.
-final List<String> tabNames = <String>[
-   "FILTROS",
-   "POSTS",
-   "CHATS"
+final List<String> tabNames = <String>
+[ "FILTROS"
+, "POSTS"
+, "CHATS"
 ];
 
 //______________
 
 // Text used in the *new postertisement screens* on the bottom
 // navigation bar.
-final List<String> newPostTabNames = <String>[
-   'Localizacao',
-   'Modelos',
-   'Publicar'
+final List<String> newPostTabNames = <String>
+[ 'Localizacao'
+, 'Modelos'
+, 'Publicar'
 ];
 
-List<Icon> newPostTabIcons = <Icon>[
-   Icon(Icons.home),
-   Icon(Icons.directions_car),
-   Icon(Icons.publish)
+List<Icon> newPostTabIcons = <Icon>
+[ Icon(Icons.home)
+, Icon(Icons.directions_car)
+, Icon(Icons.publish)
 ];
 
 //______________
@@ -55,29 +55,29 @@ final Text deleteChatCancelText =
 
 //______________
 
-final List<String> filterTabNames = <String>[
-   'Localizacao',
-   'Modelos',
-   'Salvar'
+final List<String> filterTabNames = <String>
+[ 'Localizacao'
+, 'Modelos'
+, 'Aplicar'
 ];
 
-List<Icon> filterTabIcons = <Icon>[
-   Icon(Icons.home),
-   Icon(Icons.directions_car),
-   Icon(Icons.send)
+List<Icon> filterTabIcons = <Icon>
+[ Icon(Icons.home)
+, Icon(Icons.directions_car)
+, Icon(Icons.send)
 ];
 
 //______________
 
 // Text used in the chat screen.
-final List<String> chatIconTexts = <String>[
-   'Meus posts',
-   'Favoritos'
+final List<String> chatIconTexts = <String>
+[ 'Meus posts'
+, 'Favoritos'
 ];
 
-List<Icon> chatIcons = <Icon>[
-   Icon(Icons.list),
-   Icon(Icons.star)
+List<Icon> chatIcons = <Icon>
+[ Icon(Icons.list)
+, Icon(Icons.star)
 ];
 
 final Icon favIcon = Icon(Icons.star, color: Colors.amber);
@@ -87,14 +87,15 @@ final Icon personIcon = Icon(Icons.person);
 
 // The text shown on the app bar for each tab on the *new
 // postertisement screen.*
-final List<String> postAppBarMsg = <String>[
-   "Escolha uma localizacao",
-   "Escolha um modelo",
-   "Verificacao e envio"
+final List<String> postAppBarMsg = <String>
+[ "Escolha uma localizacao"
+, "Escolha um modelo"
+, "Verificacao e envio"
 ];
 
 // The name of the fields at each menu depth.
-final List<List<String>> menuDepthNames = <List<String>>[
+final List<List<String>> menuDepthNames = <List<String>>
+[
    <String>["Estado", "Cidade", "Bairro"],
    <String>["Marca",  "Tipo", "Modelo", "Ano", "Combustivel", "Preco Fipe"],
 ];

@@ -1583,7 +1583,7 @@ class MenuChatState extends State<MenuChat>
 
       if (_newPostPressed) {
          Widget widget;
-         if (_botBarIdx == 2) {
+         if ((_botBarIdx + 1) == cts.newPostTabNames.length) {
             List<Card> cards =
                makeMenuInfoCards( context
                                 , _postInput
