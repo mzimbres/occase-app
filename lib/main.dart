@@ -88,13 +88,7 @@ String makePostPayload(final PostData post)
 {
    var pubMap = {
       'cmd': 'publish',
-      'items': [{
-         'from': post.from,
-         'to': post.codes,
-         'msg': post.description,
-         'id': -1,
-         'filter': post.filter,
-      }]
+      'items': <PostData>[post]
    };
 
    return jsonEncode(pubMap);
@@ -120,11 +114,11 @@ String makeRegisterCmd()
    return jsonEncode(loginCmd);
 }
 
-ListView makePostDetailScreen(Function proceed, int filter)
+ListView makePostDetailScreen(Function proceed, int filter, int shift)
 {
    return ListView.builder(
       padding: const EdgeInsets.all(3.0),
-      itemCount: cts.postDetails.length + 1,
+      itemCount: cts.postDetails.length + shift,
       itemBuilder: (BuildContext context, int i)
       {
          if (i == cts.postDetails.length)
@@ -561,6 +555,9 @@ class MenuChatState extends State<MenuChat>
    // long pressed to select the others is enough to perform a simple
    // click.
    List<IdxPair> _postsWithLongPressed = List<IdxPair>();
+
+   // The menu details filter.
+   int _filter = 0;
 
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
@@ -1601,6 +1598,12 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onFilterDetail(int i)
+   {
+      _filter ^= 1 << i;
+      setState(() { });
+   }
+
    @override
    void dispose()
    {
@@ -1657,7 +1660,7 @@ class MenuChatState extends State<MenuChat>
          } else if (_botBarIdx == 2) {
             final ListView lv =
                makePostDetailScreen(_onNewPostDetail,
-                     _postInput.filter);
+                     _postInput.filter, 1);
             wid = lv;
          } else {
             wid = createPostMenuListView(
@@ -1771,7 +1774,10 @@ class MenuChatState extends State<MenuChat>
          bodies[0] =
             createSendScreen((){_onSendFilters(context);});
       } else if (_botBarIdx == 2) {
-         bodies[0] = createSendScreen((){print('===> 2 <===');});
+         bodies[0] =
+            makePostDetailScreen( _onFilterDetail
+                                , _filter
+                                , 0);
       } else {
          bodies[0] = createFilterListView(
                         context,
@@ -1783,7 +1789,6 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[0] = null;
 
-      print('Is this being called?');
       bottNavBars[0] = makeBottomBarItems(
                           cts.filterTabIcons,
                           cts.filterTabNames,

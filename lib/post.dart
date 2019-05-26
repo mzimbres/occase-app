@@ -338,7 +338,7 @@ class PostData {
    //
    List<List<List<int>>> codes;
 
-   int filter = 1023;
+   int filter = 0;
 
    // The string *description* inputed when user writes an post.
    String description = '';
@@ -479,20 +479,10 @@ class PostData {
       return hist.getMostRecentTimestamp();
    }
 
-   // This function will return true if there is any chat marked as
-   // long pressed. It will traverse the PostData array and stop at the
-   // first PostData::chats for which isLongPressed is true.
-   bool hasLongPressed()
-   {
-      for (ChatHistory ch in chats)
-         if (ch.isLongPressed)
-            return true;
-
-      return false;
-   }
-
    void removeLongPressedChats(int idx)
    {
+      print('removeLPC($idx), length = ${chats.length}, id = $id');
+
       assert(!chats.isEmpty);
       assert(idx < chats.length);
 
@@ -507,6 +497,8 @@ class PostData {
 
    void unmarkLongPressedChats(int idx)
    {
+      print('removeLPC($idx), length = ${chats.length}, id = $id');
+
       assert(!chats.isEmpty);
       assert(idx < chats.length);
       chats[idx].isLongPressed = false;
@@ -531,10 +523,11 @@ class PostData {
       // partially deserializable by readPostData.
       return
       {
-         'msg': description,
          'from': from,
-         'id': id,
          'to': codes,
+         'id': id,
+         'filter': filter,
+         'msg': description,
       };
    }
 
@@ -562,15 +555,6 @@ int CompPostData(final PostData lhs, final PostData rhs)
    final int ts1 = lhs.getMostRecentTimestamp();
    final int ts2 = rhs.getMostRecentTimestamp();
    return ts1 < ts2 ? -1 : 1;
-}
-
-bool hasLongPressed(final List<PostData> posts)
-{
-   for (PostData post in posts)
-      if (post.hasLongPressed())
-         return true;
-
-   return false;
 }
 
 bool findAndInsertNewMsg(List<PostData> posts,
@@ -1069,6 +1053,7 @@ PostData readPostData(var item)
    String msg = item['msg'];
    String from = item['from'];
    int id = item['id'];
+   int filter = item['filter'];
 
    List<dynamic> to = item['to'];
 
@@ -1090,6 +1075,7 @@ PostData readPostData(var item)
    post.description = msg;
    post.codes = codes;
    post.id = id;
+   post.filter = filter;
 
    return post;
 }
