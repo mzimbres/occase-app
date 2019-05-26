@@ -629,7 +629,7 @@ class MenuChatState extends State<MenuChat>
          assert(_dialogPrefs.length == 2);
       }
 
-      print('====> dialogPref: $_dialogPrefs');
+      //print('====> dialogPref: $_dialogPrefs');
 
       _connectToServer();
 
@@ -655,7 +655,6 @@ class MenuChatState extends State<MenuChat>
 
    List<MenuItem> _readMenuFromFile()
    {
-      print('================> here.');
       try {
          final String filePath = '${glob.docDir}/${cts.menuFileName}';
          final String menu = File(filePath).readAsStringSync();
@@ -1022,6 +1021,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onFavChatLongPressed(int i, int j)
    {
+      print('===> id = ${_favPosts[i].id}, $i, $j');
       assert(j == 0);
       final bool old = _favPosts[i].chats[0].isLongPressed;
       _favPosts[i].chats[0].isLongPressed = !old;
@@ -1048,6 +1048,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatLongPressed(int i, int j)
    {
+      print('===> id = ${_ownPosts[i].id}, $i, $j');
       final bool old = _ownPosts[i].chats[j].isLongPressed;
       _ownPosts[i].chats[j].isLongPressed = !old;
       _postsWithLongPressed.add(IdxPair(i, j));
@@ -1528,6 +1529,16 @@ class MenuChatState extends State<MenuChat>
       // Optimization to avoid writing files.
       if (_postsWithLongPressed.isEmpty)
          return;
+
+      // Now we have to observe carefully that the indexes contained
+      // in _postsWithLongPressed may come in any other the user
+      // selected the chats. So if we can removeLongPressedChats on
+      // say 2 and then with 3, it will be a bug since the order of
+      // the element will change. It may even cause a crash. Therefore
+      // we have move bigger indexes to the front.
+      _postsWithLongPressed.sort((IdxPair a, IdxPair b) {
+         return a.j < b.j ? 1 : -1;
+      });
 
       if (_chatScreenIdx == 0) {
          for (IdxPair e in _postsWithLongPressed)
