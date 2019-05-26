@@ -64,9 +64,7 @@ class ChatItem {
    int status = 0;
    int date = 0;
 
-   ChatItem(this.thisApp, this.msg, this.status, this.date)
-   {
-   }
+   ChatItem(this.thisApp, this.msg, this.status, this.date);
 
    ChatItem.fromJson(Map<String, dynamic> map)
    {
@@ -643,24 +641,35 @@ Card postElemFactory(BuildContext context,
    List<Widget> r = List<Widget>();
    r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
 
-   for (int i = 0; i < values.length; ++i) {
-      RichText rt = RichText(
-            text: TextSpan(
-                  text: keys[i] + ': ',
-                  style: cts.menuTitleStl,
-                  children: <TextSpan>[
-                     TextSpan(text: values[i],
-                              style: cts.valueTextStl),
-                  ],
-            ),
-         );
+   List<Widget> leftList = List<Widget>();
+   List<Widget> rightList = List<Widget>();
 
-      r.add(rt);
+   for (int i = 0; i < values.length; ++i) {
+      RichText left =
+         RichText(text: TextSpan( text: keys[i] + ': '
+                                , style: cts.menuTitleStl));
+      leftList.add(left);
+
+      RichText right =
+         RichText(text: TextSpan( text: values[i]
+                                , style: cts.valueTextStl));
+      rightList.add(right);
    }
+
+   Column leftCol =
+      Column( children: leftList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   Column rightCol =
+      Column( children: rightList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   Row row = Row(children: <Widget>[leftCol, rightCol]);
+   r.add(row);
 
    // Padding needed to show the text inside the post element with some
    // distance from the border.
-   Padding padd = Padding(
+   Padding leftWidget = Padding(
          padding: EdgeInsets.all(cts.postElemTextPadding),
          child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -671,7 +680,7 @@ Card postElemFactory(BuildContext context,
    // Here we need another padding to make the post inner element have
    // some distance to the outermost card.
    return Card(
-            child: padd,
+            child: leftWidget,
             color: Colors.white,
             margin: EdgeInsets.all(Consts.postInnerMargin),
             elevation: 0.0,

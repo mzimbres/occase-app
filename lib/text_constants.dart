@@ -112,7 +112,7 @@ final IconData newPostIcon = Icons.publish;
 final String hintTextChat = "Digite sua mensagem";
 
 // The padding used for the text inside the post element.
-final double postElemTextPadding = 4.0;
+final double postElemTextPadding = 7.0;
 
 final double outerPostCardPadding = 1.0;
 
