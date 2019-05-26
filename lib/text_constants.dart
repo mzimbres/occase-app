@@ -100,10 +100,34 @@ final List<List<String>> menuDepthNames = <List<String>>[
 ];
 
 // The text in the post description field.
-final List<String> descList = <String>[
-   'Anunciante',
-   'Data',
-   "Descricao"];
+final List<String> descList = <String>
+[ 'Anunciante'
+, 'Data'
+, "Descricao"
+];
+
+final List<String> postDetails = <String>
+[ 'Airbag'
+, 'Alarme'
+, 'Ar quente'
+, 'Ar condicionado'
+, 'Banco com regulagem de altura'
+, 'Computador de bordo'
+, 'Desembacador traseiro'
+, 'Encosto de cabeca trazeiro'
+, 'Freio ABS'
+, 'Controle automatico de velocidade'
+, 'Rodas de liga leve'
+, 'Sensor de chuva'
+, 'Sensor de estacionamento'
+, 'Teto solar'
+, 'Retrovisor fotocrômico'
+, 'Travas elétricas'
+, 'Vidros elétricos'
+, 'Volante com regulagen de altura'
+, 'Farol de xenônio'
+, 'Direcao hidráulica'
+];
 
 final String newPostDescDeco = "Digite aqui informacoes adicionais";
 

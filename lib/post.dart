@@ -338,6 +338,8 @@ class PostData {
    //
    List<List<List<int>>> codes;
 
+   int filter = 1023;
+
    // The string *description* inputed when user writes an post.
    String description = '';
 
@@ -633,12 +635,12 @@ Container makeCircleUnreadMsgs(int n,
                child: Center(child: txt));
 }
 
-Card makePostElemSimple(Icon ic, Column leftCol, Column rightCol)
+Card makePostElemSimple(Icon ic, List<Column> cols)
 {
    List<Widget> r = List<Widget>();
    r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
 
-   Row row = Row(children: <Widget>[leftCol, rightCol]);
+   Row row = Row(children: cols);
    r.add(row);
 
    // Padding needed to show the text inside the post element with some
@@ -687,7 +689,30 @@ Card makePostElem(BuildContext context, List<String> values,
       Column( children: rightList
             , crossAxisAlignment: CrossAxisAlignment.start);
 
-   return makePostElemSimple(ic, leftCol, rightCol);
+   return makePostElemSimple(ic, <Column>[leftCol, rightCol]);
+}
+
+Card makePostDetailElem(Icon ic, int filter)
+{
+   List<Widget> leftList = List<Widget>();
+
+   for (int i = 0; i < cts.postDetails.length; ++i) {
+      final bool b = (filter & (1 << i)) == 0;
+      if (b)
+         continue;
+
+      Icon icTmp = Icon(Icons.check, color: Colors.red);
+      Text txt = Text( ' ${cts.postDetails[i]}'
+                     , style: cts.valueTextStl);
+      Row row = Row(children: <Widget>[icTmp, txt]); 
+      leftList.add(row);
+   }
+
+   Column col =
+      Column( children: leftList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   return makePostElemSimple(ic, <Column>[col]);
 }
 
 List<Card>
@@ -731,10 +756,13 @@ List<Card> postTextAssembler(BuildContext context,
    values.add(dateString);
    values.add(data.description);
 
-   Card descCard = makePostElem(context, values, cts.descList,
-                                cts.personIcon);
+   Card dc1 = makePostElem(context, values, cts.descList,
+                           cts.personIcon);
 
-   list.add(descCard);
+   list.add(dc1);
+
+   Card dc2 = makePostDetailElem(cts.personIcon, data.filter);
+   list.add(dc2);
 
    return list;
 }

@@ -93,7 +93,7 @@ String makePostPayload(final PostData post)
          'to': post.codes,
          'msg': post.description,
          'id': -1,
-         'filter': 0,
+         'filter': post.filter,
       }]
    };
 
