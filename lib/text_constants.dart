@@ -30,11 +30,13 @@ final List<String> tabNames = <String>
 final List<String> newPostTabNames = <String>
 [ 'Localizacao'
 , 'Modelos'
+, 'Detalhes'
 , 'Publicar'
 ];
 
 List<Icon> newPostTabIcons = <Icon>
 [ Icon(Icons.home)
+, Icon(Icons.directions_car)
 , Icon(Icons.directions_car)
 , Icon(Icons.publish)
 ];
@@ -58,11 +60,13 @@ final Text deleteChatCancelText =
 final List<String> filterTabNames = <String>
 [ 'Localizacao'
 , 'Modelos'
+, 'Detalhes'
 , 'Aplicar'
 ];
 
 List<Icon> filterTabIcons = <Icon>
 [ Icon(Icons.home)
+, Icon(Icons.directions_car)
 , Icon(Icons.directions_car)
 , Icon(Icons.send)
 ];
@@ -90,6 +94,7 @@ final Icon personIcon = Icon(Icons.person);
 final List<String> postAppBarMsg = <String>
 [ "Escolha uma localizacao"
 , "Escolha um modelo"
+, "Adicione detalhes"
 , "Verificacao e envio"
 ];
 

@@ -168,6 +168,7 @@ makeBottomBarItems(List<Icon> icons,
 
    return BottomNavigationBar(
              items: items,
+             type: BottomNavigationBarType.fixed,
              currentIndex: i,
              onTap: onBotBarTapped);
 }
@@ -176,6 +177,7 @@ int postIndexHelper(int i)
 {
    if (i == 0) return 1;
    if (i == 1) return 2;
+   if (i == 2) return 3;
    return 1;
 }
 
@@ -786,7 +788,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if ((_botBarIdx + 1) != cts.newPostTabNames.length)
+      if (_botBarIdx < _menus.length)
          _menus[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
@@ -802,11 +804,16 @@ class MenuChatState extends State<MenuChat>
 
       // The desired tab is *i* the current tab is _botBarIdx. For any
       // tab we land on or walk through we have to restore the menu
-      // stack, except for the last tab or any *non-menu* tab that we
-      // happen to add.
+      // stack, except for the last two tabs.
+
+      if (i == 3) {
+         _botBarIdx = 3;
+         setState(() { });
+         return;
+      }
 
       // To handle the boundary condition on the last tab.
-      if ((_botBarIdx + 1) != cts.newPostTabNames.length)
+      if (_botBarIdx < _menus.length)
          ++_botBarIdx;
 
       do {
@@ -1582,8 +1589,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (_newPostPressed) {
-         Widget widget;
-         if ((_botBarIdx + 1) == cts.newPostTabNames.length) {
+         Widget wid;
+         if (_botBarIdx == 3) {
             List<Card> cards =
                makeMenuInfoCards( context
                                 , _postInput
@@ -1606,14 +1613,19 @@ class MenuChatState extends State<MenuChat>
             // I added this ListView to prevent widget_tmp from
             // extending the whole screen. Inside the ListView it
             // appears compact. Remove this later.
-            widget = ListView(
+            wid = ListView(
                shrinkWrap: true,
                //padding: const EdgeInsets.all(20.0),
                children: <Widget>[widget_tmp]
             );
 
+         } else if (_botBarIdx == 2) {
+            wid = createSendScreen((){
+               _botBarIdx = 3;
+               setState(() { });
+            ;});
          } else {
-            widget = createPostMenuListView(
+            wid = createPostMenuListView(
                         context,
                         _menus[_botBarIdx].root.last,
                         _onPostLeafPressed,
@@ -1632,7 +1644,7 @@ class MenuChatState extends State<MenuChat>
                    onWillPop: () async { return _onWillPopMenu();},
                    child: Scaffold(
                              appBar: appBar,
-                             body: widget,
+                             body: wid,
                              bottomNavigationBar:
                                 makeBottomBarItems(
                                    cts.newPostTabIcons,
@@ -1720,9 +1732,11 @@ class MenuChatState extends State<MenuChat>
       List<Function> onWillPops =
             List<Function>(cts.tabNames.length);
 
-      if (_botBarIdx == 2) {
+      if (_botBarIdx == 3) {
          bodies[0] =
             createSendScreen((){_onSendFilters(context);});
+      } else if (_botBarIdx == 2) {
+         bodies[0] = createSendScreen((){print('===> 2 <===');});
       } else {
          bodies[0] = createFilterListView(
                         context,
@@ -1734,11 +1748,12 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[0] = null;
 
+      print('Is this being called?');
       bottNavBars[0] = makeBottomBarItems(
-                       cts.filterTabIcons,
-                       cts.filterTabNames,
-                       _onBotBarTapped,
-                       _botBarIdx);
+                          cts.filterTabIcons,
+                          cts.filterTabNames,
+                          _onBotBarTapped,
+                          _botBarIdx);
 
       onWillPops[0] = _onWillPopMenu;
 
@@ -1787,10 +1802,10 @@ class MenuChatState extends State<MenuChat>
       fltButtons[2] = null;
 
       bottNavBars[2] = makeBottomBarItems(
-                       cts.chatIcons,
-                       cts.chatIconTexts,
-                       _onChatBotBarTapped,
-                       _chatScreenIdx);
+                          cts.chatIcons,
+                          cts.chatIconTexts,
+                          _onChatBotBarTapped,
+                          _chatScreenIdx);
 
       onWillPops[2] = _onOwnPostsBackPressed;
 
