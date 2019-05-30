@@ -138,7 +138,11 @@ final List<String> postDetails = <String>
 , 'Direcao hidráulica'
 ];
 
-final String newPostDescDeco = "Digite aqui informacoes adicionais";
+final String newPostTextFieldHistStr = "Informacoes adicionais";
+final String chatTextFieldHintStr = "Mensagem";
+final String nichTextFieldHintStr = "Digite seu nome";
+
+final int nickMaxLength = 10;
 
 final IconData newPostIcon = Icons.publish;
 
@@ -182,6 +186,7 @@ final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatHistReadPrefix = 'chat_read';
 final String chatHistUnreadPrefix = 'chat_unread';
 final String dialogPrefsFullPath = 'dialog_prefs.txt';
+final String nickFullPath = 'nick.txt';
 
 // The texts showed on the dialog in the *Posts* screen
 final List<String> dialTitleStrs = <String>

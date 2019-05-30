@@ -86,6 +86,15 @@ List<String> safeReadFileAsLines(final String fullPath)
    }
 }
 
+String safeReadFileStr(final String fullPath)
+{
+   try {
+      return File(fullPath).readAsStringSync();
+   } catch (e) {
+      return '';
+   }
+}
+
 List<bool> readFileAsBoolStrs(final String path)
 {
    final List<String> list = safeReadFileAsLines(path);
@@ -248,7 +257,11 @@ createChatScreen(BuildContext context,
                  Function onChatSendPressed,
                  ScrollController scrollCtrl)
 {
-   TextField tf = makeTextInputFieldCard(ctrl);
+   TextField tf =
+      makeTextInputFieldCard(
+         ctrl,
+         null,
+         InputDecoration.collapsed(hintText: cts.chatTextFieldHintStr));
 
    CircleAvatar sendButCol =
          CircleAvatar(
@@ -578,16 +591,17 @@ class MenuChatState extends State<MenuChat>
    List<bool> _dialogPrefs = List<bool>(2);
 
    // Full path to files.
-   String _unreadPostsFileFullPath;
-   String _loginFileFullPath;
-   String _menuFileFullPath;
-   String _lastPostIdFileFullPath;
-   String _postsFileFullPath;
-   String _favPostsFileFullPath;
-   String _ownPostsFileFullPath;
-   String _outPostsFileFullPath;
-   String _outChatMsgsFileFullPath;
-   String _dialogPrefsFullPath;
+   String _nickFullPath = '';
+   String _unreadPostsFileFullPath = '';
+   String _loginFileFullPath = '';
+   String _menuFileFullPath = '';
+   String _lastPostIdFileFullPath = '';
+   String _postsFileFullPath = '';
+   String _favPostsFileFullPath = '';
+   String _ownPostsFileFullPath = '';
+   String _outPostsFileFullPath = '';
+   String _outChatMsgsFileFullPath = '';
+   String _dialogPrefsFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -598,6 +612,9 @@ class MenuChatState extends State<MenuChat>
    // The menu details filter.
    int _filter = 0;
 
+   // The nickname provided by the user.
+   String _nick = '';
+
    // The *new post* text controler
    TextEditingController _newPostTextCtrl = TextEditingController();
 
@@ -607,6 +624,7 @@ class MenuChatState extends State<MenuChat>
 
    void _initPaths()
    {
+      _nickFullPath            = '${glob.docDir}/${cts.dialogPrefsFullPath}';
       _unreadPostsFileFullPath = '${glob.docDir}/${cts.unreadPostsFileName}';
       _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
@@ -637,6 +655,7 @@ class MenuChatState extends State<MenuChat>
 
    void _load(final String docDir)
    {
+      _nick = safeReadFileStr(_nickFullPath);
       _menus = _readMenuFromFile();
       _lastPostId = _readLastPostIdFromFile(docDir);
       _posts = safeReadPostsFromFile(_postsFileFullPath);
@@ -1023,7 +1042,7 @@ class MenuChatState extends State<MenuChat>
 
       _botBarIdx = 0;
       _postInput.description = _newPostTextCtrl.text;
-      _newPostTextCtrl.text = "";
+      _newPostTextCtrl.text = '';
 
       _postInput.from = _appId;
       sendPost(_postInput.clone());
@@ -1630,6 +1649,14 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
+   void _onNickPressed()
+   {
+      _nick = _newPostTextCtrl.text;;
+      writeToFile(_nick, _nickFullPath, FileMode.write);
+      _newPostTextCtrl.text = '';
+      setState(() { });
+   }
+
    void _onNewPostDetail(int i)
    {
       if (i == cts.postDetails.length) {
@@ -1662,12 +1689,47 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext context)
    {
-      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2)) {
-         _unmarkLongPressedChatEntries();
+      if (_menus.isEmpty) { // Just for safety.
+         return Scaffold();
       }
 
-      if (_menus.isEmpty) {
-         return Scaffold();
+      if (_nick.isEmpty) {
+         TextField tf =
+            makeTextInputFieldCard(
+               _newPostTextCtrl,
+               null,
+               InputDecoration(
+                  hintText: cts.nichTextFieldHintStr,
+                  hintStyle: TextStyle(fontSize: 25.0,
+                    fontWeight: FontWeight.normal)));
+
+         Padding padd =
+            Padding( child: tf
+                   , padding: EdgeInsets.all(20.0));
+
+         RaisedButton but =
+            RaisedButton(
+               child: Text( 'Continuar'
+                          , style: TextStyle(
+                               fontWeight: FontWeight.bold,
+                               fontSize: 20.0)),
+               color: Theme.of(context).accentColor,
+               onPressed: _onNickPressed
+               );
+
+         Column col =
+            Column( mainAxisAlignment: MainAxisAlignment.center
+                  , crossAxisAlignment: CrossAxisAlignment.center
+                  , children: <Widget>
+                    [ padd
+                    , but
+                    ]);
+
+         return Scaffold(body: Center(child: col));
+      }
+
+      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2)) {
+         _unmarkLongPressedChatEntries();
       }
 
       if (_newPostPressed) {
@@ -1679,7 +1741,13 @@ class MenuChatState extends State<MenuChat>
                                 , _menus
                                 , Theme.of(context).primaryColor);
 
-            cards.add(makeCard(makeTextInputFieldCard(_newPostTextCtrl)));
+            cards.add(
+               makeCard(
+                  makeTextInputFieldCard(
+                     _newPostTextCtrl,
+                     null,
+                     InputDecoration.collapsed(
+                        hintText: cts.newPostTextFieldHistStr))));
    
             Widget widget_tmp =
                makePostWidget( context

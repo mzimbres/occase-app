@@ -592,12 +592,12 @@ findAndMarkChatApp( final List<PostData> posts
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-Container makeCircleUnreadMsgs(int n,
-                               Color bgColor,
-                               Color textColor)
+Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
 {
-   // TODO: The container width has to be wide enough to fit the
-   // number of digits in string.
+   // We still cannot deal with more than 100.
+   if (n >= 100)
+      n = 100;
+
    final Text txt = Text("${n}", style: TextStyle(
                   color: textColor));
 
@@ -605,8 +605,8 @@ Container makeCircleUnreadMsgs(int n,
    return Container(
              margin: const EdgeInsets.all(2.0),
              padding: const EdgeInsets.all(0.0),
-             height: 23.0,
-             width: 23.0,
+             height: 21.0,
+             width: 21.0,
              decoration:
                 BoxDecoration(
                    color: bgColor,
@@ -854,7 +854,7 @@ Card makePostWidget(BuildContext context,
    );
 }
 
-Card makeCard(Widget widget)
+Card makeCard(Widget widget, )
 {
    return Card(
          child:
@@ -866,7 +866,10 @@ Card makeCard(Widget widget)
    );
 }
 
-TextField makeTextInputFieldCard(TextEditingController ctrl)
+TextField
+makeTextInputFieldCard( TextEditingController ctrl
+                      , int maxLength
+                      , InputDecoration deco)
 {
    // TODO: Set a max length.
    return TextField(
@@ -875,8 +878,8 @@ TextField makeTextInputFieldCard(TextEditingController ctrl)
              //onSubmitted: onTextFieldPressed,
              keyboardType: TextInputType.multiline,
              maxLines: null,
-             decoration:
-                InputDecoration.collapsed(hintText: cts.newPostDescDeco));
+             maxLength: maxLength,
+             decoration: deco);
 }
 
 ListView
