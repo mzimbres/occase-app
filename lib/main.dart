@@ -24,6 +24,22 @@ class IdxPair {
    IdxPair(this.i, this.j);
 }
 
+void
+handleLongPressedChat( List<IdxPair> pairs
+                     , final List<PostData> posts
+                     , int i, int j)
+{
+   ChatHistory history = posts[i].chats[j];
+   final bool old = history.isLongPressed;
+   if (old) {
+      history.isLongPressed = false;
+      pairs.removeWhere((IdxPair e){ return e == IdxPair(i, j); });
+   } else {
+      history.isLongPressed = true;
+      pairs.add(IdxPair(i, j));
+   }
+}
+
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -1021,11 +1037,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onFavChatLongPressed(int i, int j)
    {
-      print('===> id = ${_favPosts[i].id}, $i, $j');
       assert(j == 0);
-      final bool old = _favPosts[i].chats[0].isLongPressed;
-      _favPosts[i].chats[0].isLongPressed = !old;
-      _postsWithLongPressed.add(IdxPair(i, j));
+      handleLongPressedChat(_postsWithLongPressed, _favPosts, i, j);
       setState(() { });
    }
 
@@ -1048,10 +1061,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatLongPressed(int i, int j)
    {
-      print('===> id = ${_ownPosts[i].id}, $i, $j');
-      final bool old = _ownPosts[i].chats[j].isLongPressed;
-      _ownPosts[i].chats[j].isLongPressed = !old;
-      _postsWithLongPressed.add(IdxPair(i, j));
+      handleLongPressedChat(_postsWithLongPressed, _ownPosts, i, j);
       setState(() { });
    }
 
@@ -1919,7 +1929,8 @@ class MenuChatState extends State<MenuChat>
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. The host address is 10.0.2.2.
       //channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
-      channel = IOWebSocketChannel.connect('ws://192.168.2.102:80');
+      //channel = IOWebSocketChannel.connect('ws://192.168.2.102:80');
+      channel = IOWebSocketChannel.connect('ws://37.24.165.216:80');
       //channel = IOWebSocketChannel.connect('ws://192.168.0.27:80');
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
    }

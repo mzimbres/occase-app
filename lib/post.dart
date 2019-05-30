@@ -387,7 +387,7 @@ class PostData {
       for (ChatHistory o in chats)
          data += '${o.peer}\n';
 
-      print('Persisting peers: $data');
+      print('Persisting peers: \n$data');
 
       writeToFile(data, makeFullPath(), FileMode.write);
    }
