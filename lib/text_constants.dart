@@ -204,4 +204,5 @@ final List<String> dialBodyStrs = <String>
 ];
 
 final String postTimePrefix = 'Detalhes do post';
+final String unknownNick = 'Desconhecido';
 

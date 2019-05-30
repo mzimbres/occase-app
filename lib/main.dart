@@ -624,7 +624,7 @@ class MenuChatState extends State<MenuChat>
 
    void _initPaths()
    {
-      _nickFullPath            = '${glob.docDir}/${cts.dialogPrefsFullPath}';
+      _nickFullPath            = '${glob.docDir}/${cts.nickFullPath}';
       _unreadPostsFileFullPath = '${glob.docDir}/${cts.unreadPostsFileName}';
       _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
@@ -685,6 +685,8 @@ class MenuChatState extends State<MenuChat>
       if (!dialogPrefs.isEmpty) {
          _dialogPrefs = dialogPrefs;
          assert(_dialogPrefs.length == 2);
+         // To avoid problems it may be a good idea to set the file
+         // empty and let the user choose the options again.
       }
 
       //print('====> dialogPref: $_dialogPrefs');
@@ -1124,7 +1126,7 @@ class MenuChatState extends State<MenuChat>
    void sendOfflineChatMsgs()
    {
       if (!_outChatMsgsQueue.isEmpty) {
-         print('====> OfflineChatMsgs: ${_outChatMsgsQueue.first.payload}');
+         //print('====> OfflineChatMsgs: ${_outChatMsgsQueue.first.payload}');
          channel.sink.add(_outChatMsgsQueue.first.payload);
       }
    }
@@ -1236,15 +1238,41 @@ class MenuChatState extends State<MenuChat>
       // A user message can be either directed to one of the posts
       // published by this app or one that the app is interested
       // in. We distinguish this with the field 'is_sender_post'
+      List<PostData> foo = _ownPosts;
       final bool is_sender_post = ack['is_sender_post'];
-      if (is_sender_post) {
-         findAndInsertNewMsg(_favPosts, postId, from, msg, false);
-      } else {
-         findAndInsertNewMsg(_ownPosts, postId, from, msg, false);
+      if (is_sender_post)
+         foo = _favPosts;
+
+      final int postIdIdx =
+         findAndInsertNewMsg(foo, postId, from, msg, false);
+
+      if (postIdIdx == -1) {
+         print('===> Error: Ignoring chat msg.');
+         return;
+      }
+
+      // When we insert the message above the chat history it belongs
+      // to is moved to the front in that history. Now, we have to
+      // check if we already have the user's nick.
+      if (foo.first.chats.first.nick.isEmpty) {
+         // We do not have its nick. We set it unknown and request it
+         // from the user.
+         foo.first.chats.first.nick = cts.unknownNick;
+
+         var map = {
+            'cmd': 'message',
+            'type': 'nick_req',
+            'to': from,
+            'is_sender_post': !is_sender_post,
+            'post_id': postId,
+         };
+
+         final String payload = jsonEncode(map);
+         sendChatMsg(payload, 0);
       }
 
       // Acks we have received the message.
-      var foo = {
+      var map = {
          'cmd': 'message',
          'type': 'app_ack_received',
          'to': from,
@@ -1252,7 +1280,7 @@ class MenuChatState extends State<MenuChat>
          'is_sender_post': !is_sender_post,
       };
 
-      final String payload = jsonEncode(foo);
+      final String payload = jsonEncode(map);
       sendChatMsg(payload, 0);
    }
 
@@ -1267,6 +1295,27 @@ class MenuChatState extends State<MenuChat>
       } else {
          findAndMarkChatApp(_ownPosts, from, postId, status);
       }
+   }
+
+   void _nickReqHandler(Map<String, dynamic> ack)
+   {
+      print('Nick request being processed.');
+
+      final String from = ack['from'];
+      final int postId = ack['post_id'];
+      final bool isSenderPost = ack['is_sender_post'];
+
+      var map = {
+         'cmd': 'message',
+         'type': 'nick_req_ack',
+         'to': from,
+         'is_sender_post': !isSenderPost,
+         'post_id': postId,
+         'nick': _nick,
+      };
+
+      final String payload = jsonEncode(map);
+      sendChatMsg(payload, 0);
    }
 
    void _onMessage(Map<String, dynamic> ack)
@@ -1286,6 +1335,10 @@ class MenuChatState extends State<MenuChat>
          _chatAppAckHandler(ack, 2);
       } else if (type == 'app_ack_read') {
          _chatAppAckHandler(ack, 3);
+      } else if (type == 'nick_req') {
+         _nickReqHandler(ack);
+      } else if (type == 'nick_req_ack') {
+         print('Received a nick_req_ack');
       }
 
       setState((){});

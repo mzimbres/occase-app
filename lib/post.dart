@@ -151,6 +151,7 @@ int findIdxToAck(final List<ChatItem> msgs, final int status)
 
 class ChatHistory {
    String peer = '';
+   String nick = '';
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> _unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
@@ -431,9 +432,9 @@ class PostData {
       _persistPeers();
    }
 
-   void addUnreadMsg(final String peer, final String msg, final bool thisApp)
+   void addUnreadMsg(final int j, final String msg, final bool thisApp)
    {
-      final int j = getChatHistIdx(peer);
+      print('PostData::addUnreadMsg: ${chats.length}');
       ChatHistory history = chats[j];
       history.addUnreadMsg(msg, thisApp, id);
       rotateElements(chats, j);
@@ -540,37 +541,29 @@ class PostData {
 
 int CompPostData(final PostData lhs, final PostData rhs)
 {
-   //final bool b1 = lhs.hasUnreadChats();
-   //final bool b2 = rhs.hasUnreadChats();
-
-   //// The first criterium is having unread messages.
-   //if (b1 && !b2)
-   //   return true;
-
-   //if (!b1 && b2)
-   //   return false;
-
-   // At this point both posts have unread messages. The one with the
-   // most recent unread msgs wins.
    final int ts1 = lhs.getMostRecentTimestamp();
    final int ts2 = rhs.getMostRecentTimestamp();
    return ts1 < ts2 ? -1 : 1;
 }
 
-bool findAndInsertNewMsg(List<PostData> posts,
-                         final int postId,
-                         final String from,
-                         final String msg,
-                         final bool thisApp)
+// Returns the old index in posts that has postId. Will rotate
+// elements so that it becomes the first in the list.
+int
+findAndInsertNewMsg(List<PostData> posts,
+                    final int postId,
+                    final String from,
+                    final String msg,
+                    final bool thisApp)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
 
    if (i == -1)
-      return false;
+      return -1;
 
-   posts[i].addUnreadMsg(from, msg, thisApp);
+   final int j = posts[i].getChatHistIdx(from);
+   posts[i].addUnreadMsg(j, msg, thisApp);
    rotateElements(posts, i);
-   return true;
+   return i;
 }
 
 void
@@ -993,8 +986,9 @@ Widget makePostChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
+      final String chatName = '${ch[i].nick} (${ch[i].peer})';
       ListTile lt = createListViewItem(context,
-                        ch[i].peer,
+                        chatName,
                         makeChatSubStrWidget(ch[i]),
                         makeCircleUnreadMsgs(n, cc, Colors.white),
                         Theme.of(context).primaryColor,
