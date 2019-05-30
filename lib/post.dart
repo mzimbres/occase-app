@@ -979,7 +979,7 @@ Widget makePostChatCol(BuildContext context,
       Color bgColor;
       if (ch[i].isLongPressed) {
          widget = Icon(Icons.check);
-         bgColor = Theme.of(context).accentColor;
+         bgColor = cts.chatLongPressendColor;
       } else {
          final String firstLetter = getFirstLetter(ch[i].peer);
          widget = Text(firstLetter, style: cts.firstLetterStl);

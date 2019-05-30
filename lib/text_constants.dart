@@ -13,6 +13,7 @@ final Color primaryColor = whatsAppPrimaryColor;
 //final Color accentColor = Colors.grey;
 final Color accentColor = whatsAppAccentColor;
 final Color newReceivedPostColor = Colors.brown[200]; 
+final Color chatLongPressendColor = Colors.grey[400]; 
 
 final String appName = "CarMenu";
 
