@@ -252,12 +252,27 @@ createChatScreen(BuildContext context,
                backgroundColor: Theme.of(context).primaryColor
                );
 
-   Row row = Row(
-         children: <Widget>[
-            Expanded(child: makeCard(tf)),
-            makeCard(sendButCol)
-         ],
+   Container cont = Container(
+       child: ConstrainedBox(
+           constraints: BoxConstraints(maxHeight: 100.0),
+           child: Scrollbar(
+               child: SingleChildScrollView(
+                   scrollDirection: Axis.vertical,
+                   reverse: true,
+                   child: makeCard(tf),
+               ),
+           ),
+       ),
    );
+
+   Row row = Row(
+      children: <Widget>
+      [ Expanded(child: cont)
+      , makeCard(sendButCol)
+      ],
+   );
+ 
+   //_____________
 
    ListView list = ListView.builder(
          controller: scrollCtrl,

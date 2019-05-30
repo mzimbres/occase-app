@@ -876,7 +876,7 @@ TextField makeTextInputFieldCard(TextEditingController ctrl)
              keyboardType: TextInputType.multiline,
              maxLines: null,
              decoration:
-                InputDecoration(hintText: cts.newPostDescDeco));
+                InputDecoration.collapsed(hintText: cts.newPostDescDeco));
 }
 
 ListView
