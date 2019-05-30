@@ -113,6 +113,8 @@ final List<String> descList = <String>
 , "Descricao"
 ];
 
+// WARNING: These strings must have size at least two. I won't check
+// that in code.
 final List<String> postDetails = <String>
 [ 'Airbag'
 , 'Alarme'

@@ -1,4 +1,4 @@
-DIST_NAME = menu_chat
+DIST_NAME = menu_chat_app
 
 .PHONY:
 dist:

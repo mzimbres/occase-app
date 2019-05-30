@@ -130,7 +130,11 @@ String makeRegisterCmd()
    return jsonEncode(loginCmd);
 }
 
-ListView makePostDetailScreen(Function proceed, int filter, int shift)
+ListView
+makePostDetailScreen( BuildContext context
+                    , Function proceed
+                    , int filter
+                    , int shift)
 {
    return ListView.builder(
       padding: const EdgeInsets.all(3.0),
@@ -141,6 +145,10 @@ ListView makePostDetailScreen(Function proceed, int filter, int shift)
             return createSendScreen((){proceed(i);});
 
          return CheckboxListTile(
+            secondary:
+               CircleAvatar(
+                  child: Text(cts.postDetails[i].substring(0, 2)),
+                  backgroundColor: Theme.of(context).primaryColor),
             title: Text(cts.postDetails[i]),
             value: ((filter & (1 << i)) != 0),
             onChanged: (bool v)
@@ -1695,8 +1703,10 @@ class MenuChatState extends State<MenuChat>
 
          } else if (_botBarIdx == 2) {
             final ListView lv =
-               makePostDetailScreen(_onNewPostDetail,
-                     _postInput.filter, 1);
+               makePostDetailScreen( context
+                                   , _onNewPostDetail
+                                   , _postInput.filter
+                                   , 1);
             wid = lv;
          } else {
             wid = createPostMenuListView(
@@ -1811,7 +1821,8 @@ class MenuChatState extends State<MenuChat>
             createSendScreen((){_onSendFilters(context);});
       } else if (_botBarIdx == 2) {
          bodies[0] =
-            makePostDetailScreen( _onFilterDetail
+            makePostDetailScreen( context
+                                , _onFilterDetail
                                 , _filter
                                 , 0);
       } else {
