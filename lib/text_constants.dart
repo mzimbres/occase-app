@@ -17,6 +17,8 @@ final Color chatLongPressendColor = Colors.grey[400];
 
 final double mainFontSize = 15.0;
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
+final Color selectedMenuColor = Colors.blueGrey[400];
+final Color postFrameColor = Colors.blueGrey[400];
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
@@ -46,11 +48,11 @@ final List<String> newPostTabNames = <String>
 , 'Publicar'
 ];
 
-List<Icon> newPostTabIcons = <Icon>
-[ Icon(Icons.home)
-, Icon(Icons.directions_car)
-, Icon(Icons.details)
-, Icon(Icons.publish)
+List<IconData> newPostTabIcons = <IconData>
+[ Icons.home
+, Icons.directions_car
+, Icons.details
+, Icons.publish
 ];
 
 //______________
@@ -76,11 +78,11 @@ final List<String> filterTabNames = <String>
 , 'Aplicar'
 ];
 
-List<Icon> filterTabIcons = <Icon>
-[ Icon(Icons.home)
-, Icon(Icons.directions_car)
-, Icon(Icons.details)
-, Icon(Icons.send)
+List<IconData> filterTabIcons = <IconData>
+[ Icons.home
+, Icons.directions_car
+, Icons.details
+, Icons.send
 ];
 
 //______________
@@ -91,9 +93,9 @@ final List<String> chatIconTexts = <String>
 , 'Favoritos'
 ];
 
-List<Icon> chatIcons = <Icon>
-[ Icon(Icons.list)
-, Icon(Icons.star)
+List<IconData> chatIcons = <IconData>
+[ Icons.list
+, Icons.star
 ];
 
 final Icon favIcon = Icon(Icons.star, color: Colors.amber);
@@ -173,10 +175,21 @@ final TextStyle menuTitleStl =
              fontWeight: FontWeight.bold,
              color: Colors.black);
 
+final TextStyle postTitleStl =
+   TextStyle(fontSize: 15.0,
+             fontWeight: FontWeight.bold,
+             color: Colors.grey[800]);
+
+
 final TextStyle valueTextStl =
           TextStyle(fontSize: 15.0,
                     fontWeight: FontWeight.normal,
                     color: Colors.black);
+
+final TextStyle postValueTextStl =
+          TextStyle(fontSize: 15.0,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.grey[800]);
 
 final TextStyle expTileStl =
           TextStyle(fontSize: 15.0,

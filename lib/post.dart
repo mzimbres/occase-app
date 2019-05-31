@@ -685,8 +685,10 @@ Card makePostElemSimple(Icon ic, List<Column> cols)
    );
 }
 
-Card makePostElem(BuildContext context, List<String> values,
-                  List<String> keys, Icon ic)
+Card makePostElem( BuildContext context
+                 , List<String> values
+                 , List<String> keys
+                 , Icon ic)
 {
    List<Widget> leftList = List<Widget>();
    List<Widget> rightList = List<Widget>();
@@ -694,12 +696,12 @@ Card makePostElem(BuildContext context, List<String> values,
    for (int i = 0; i < values.length; ++i) {
       RichText left =
          RichText(text: TextSpan( text: keys[i] + ': '
-                                , style: cts.menuTitleStl));
+                                , style: cts.postTitleStl));
       leftList.add(left);
 
       RichText right =
          RichText(text: TextSpan( text: values[i]
-                                , style: cts.valueTextStl));
+                                , style: cts.postValueTextStl));
       rightList.add(right);
    }
 
@@ -725,7 +727,7 @@ Card makePostDetailElem(Icon ic, int filter)
 
       Icon icTmp = Icon(Icons.check, color: Colors.red);
       Text txt = Text( ' ${cts.postDetails[i]}'
-                     , style: cts.valueTextStl);
+                     , style: cts.postValueTextStl);
       Row row = Row(children: <Widget>[icTmp, txt]); 
       leftList.add(row);
    }
@@ -753,7 +755,8 @@ makeMenuInfoCards(BuildContext context,
                      context,
                      names,
                      cts.menuDepthNames[i],
-                     cts.newPostTabIcons[i]);
+                     Icon( cts.newPostTabIcons[i]
+                         , color: cts.postFrameColor));
 
       list.add(card);
    }
@@ -778,12 +781,17 @@ List<Card> postTextAssembler(BuildContext context,
    values.add(dateString);
    values.add(data.description);
 
-   Card dc1 = makePostElem(context, values, cts.descList,
-                           Icon(Icons.description));
+   Card dc1 =
+      makePostElem( context, values, cts.descList
+                  , Icon( Icons.description
+                        , color: cts.postFrameColor));
 
    list.add(dc1);
 
-   Card dc2 = makePostDetailElem(Icon(Icons.details), data.filter);
+   Card dc2 =
+      makePostDetailElem( Icon( Icons.details
+                              , color: cts.postFrameColor)
+                        , data.filter);
    list.add(dc2);
 
    return list;
@@ -815,7 +823,6 @@ Card createChatEntry(BuildContext context,
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        Theme.of(context).primaryColor);
 
-   final Color ac = Colors.blueGrey[400];
    ExpansionTile et = ExpansionTile(
              //key: PageStorageKey<Entry>(root),
              title: Text( '${cts.postTimePrefix}: ${post.id}'
@@ -827,14 +834,14 @@ Card createChatEntry(BuildContext context,
 
    List<Widget> cards = List<Card>();
    cards.add(Card(child: et,
-                  color: ac,
+                  color: cts.postFrameColor,
                   margin: EdgeInsets.all(0.0),
                   elevation: 0.0));
 
    //cards.add(makeTextSeparator(context));
 
    Card chatCard = Card(child: chats,
-                        color: ac,
+                        color: cts.postFrameColor,
                         margin: EdgeInsets.all(cts.postInnerMargin),
                         elevation: 0.0);
 
@@ -845,7 +852,7 @@ Card createChatEntry(BuildContext context,
    final double padding = cts.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: ac,
+      color: cts.postFrameColor,
       margin: EdgeInsets.all(cts.postMarging),
       elevation: 0.0,
    );

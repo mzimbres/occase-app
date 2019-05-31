@@ -153,19 +153,25 @@ makePostDetailScreen( BuildContext context
          if (i == cts.postDetails.length)
             return createSendScreen((){proceed(i);});
 
+         bool v = ((filter & (1 << i)) != 0);
+         Color color = Theme.of(context).primaryColor;
+         if (v)
+            color = cts.selectedMenuColor;
+
          return CheckboxListTile(
             secondary:
-               CircleAvatar(
-                  child: Text(cts.postDetails[i].substring(0, 2)),
-                  backgroundColor: Theme.of(context).primaryColor),
+               makeCircleAvatar(
+                  Text( cts.postDetails[i].substring(0, 2)
+                      , style: cts.abbrevStl),
+                  color),
             title: Text(cts.postDetails[i]),
-            value: ((filter & (1 << i)) != 0),
+            value: v,
             onChanged: (bool v)
             {
                proceed(i);
             },
             //controlAffinity: ListTileControlAffinity.leading
-            activeColor: Theme.of(context).primaryColor,
+            activeColor: color,
          );
       },
    );
@@ -205,7 +211,7 @@ TabBar makeTabBar( List<int> counters
 }
 
 BottomNavigationBar
-makeBottomBarItems(List<Icon> icons,
+makeBottomBarItems(List<IconData> icons,
                    List<String> iconLabels,
                    Function onBotBarTapped,
                    int i)
@@ -218,7 +224,7 @@ makeBottomBarItems(List<Icon> icons,
 
    for (int i = 0; i < length; ++i) {
       items[i] = BottomNavigationBarItem(
-                    icon: icons[i],
+                    icon: Icon(icons[i]),
                     title: Text(iconLabels[i]));
    }
 

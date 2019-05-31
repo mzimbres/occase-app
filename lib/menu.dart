@@ -108,12 +108,13 @@ ListView createFilterListView(BuildContext context,
          if (shift == 1) {
             MenuNode child = o.children[i - 1];
             Widget icon = null;
+            Color color = Theme.of(context).primaryColor;
             if (child.status) {
-               icon = Icon(Icons.check_box,
-                     color: Theme.of(context).primaryColor);
+               color = cts.selectedMenuColor;
+               icon = Icon(Icons.check_box, color: color);
             } else {
                icon = Icon(Icons.check_box_outline_blank,
-                     color: Theme.of(context).primaryColor);
+                     color: color);
             }
 
             final String subStr = makeLeafCounterString(child.leafCounter);
@@ -130,7 +131,7 @@ ListView createFilterListView(BuildContext context,
                          FontWeight.normal),
                    icon,
                    makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
-                                   , Theme.of(context).primaryColor),
+                                   , color),
                    () { onLeafPressed(i);},
                    (){});
          }
@@ -144,7 +145,7 @@ ListView createFilterListView(BuildContext context,
 
          Color filterNodeParentColor = Theme.of(context).primaryColor;
          if (c != 0)
-            filterNodeParentColor = cts.coral;
+            filterNodeParentColor = cts.selectedMenuColor;
 
          return
             createListViewItem(
