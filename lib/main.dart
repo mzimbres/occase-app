@@ -33,7 +33,7 @@ handleLongPressedChat( List<IdxPair> pairs
    final bool old = history.isLongPressed;
    if (old) {
       history.isLongPressed = false;
-      pairs.removeWhere((IdxPair e){ return e == IdxPair(i, j); });
+      pairs.removeWhere((IdxPair e) { return e.i == i && e.j == j; });
    } else {
       history.isLongPressed = true;
       pairs.add(IdxPair(i, j));
@@ -1321,7 +1321,6 @@ class MenuChatState extends State<MenuChat>
 
    void _nickReqAckHandler(Map<String, dynamic> ack)
    {
-      print('_nickReqAckHandler1');
       final String from = ack['from'];
       final int postId = ack['post_id'];
       final bool isSenderPost = ack['is_sender_post'];
@@ -1339,7 +1338,6 @@ class MenuChatState extends State<MenuChat>
          // So there is no need or way to proceeed.
          return;
       }
-      print('_nickReqAckHandler2');
 
       final int j = foo[i].getChatHistIdx(from);
       if (j == -1) {
@@ -1347,8 +1345,6 @@ class MenuChatState extends State<MenuChat>
          // cannot be found anymore, just leave.
          return;
       }
-
-      print('_nickReqAckHandler3');
 
       foo[i].chats[j].nick = nick;
    }
