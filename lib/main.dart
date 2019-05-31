@@ -250,12 +250,12 @@ Icon chooseIcon(final int status)
 }
 
 Widget
-createChatScreen(BuildContext context,
-                 Function onWillPopScope,
-                 ChatHistory chatHist,
-                 TextEditingController ctrl,
-                 Function onChatSendPressed,
-                 ScrollController scrollCtrl)
+makeChatScreen(BuildContext context,
+               Function onWillPopScope,
+               ChatHistory chatHist,
+               TextEditingController ctrl,
+               Function onChatSendPressed,
+               ScrollController scrollCtrl)
 {
    TextField tf =
       makeTextInputFieldCard(
@@ -348,11 +348,12 @@ createChatScreen(BuildContext context,
           child: Scaffold(
              appBar : AppBar(
                 title: ListTile(
-                   leading: CircleAvatar(child: Text("")),
-                   title: Text( chatHist.peer,
+                   //leading: CircleAvatar(child: Icon(Icons.person)),
+                   //leading: Icon(Icons.person, color: Colors.white),
+                   title: Text( chatHist.getChatDisplayName(),
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: Consts.mainFontSize,
+                            fontSize: cts.mainFontSize,
                             color: Color(0xFFFFFFFF)
                       )
                    ),
@@ -1355,14 +1356,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      final int j = foo[i].getChatHistIdx(from);
-      if (j == -1) {
-         // Similar to what has been said above. The specific entry
-         // cannot be found anymore, just leave.
-         return;
-      }
-
-      foo[i].chats[j].nick = nick;
+      foo[i].setNick(from, nick);
    }
 
    void _onMessage(Map<String, dynamic> ack)
@@ -1936,7 +1930,7 @@ class MenuChatState extends State<MenuChat>
             sendChatMsg(payload, 0);
          }
 
-         return createChatScreen(
+         return makeChatScreen(
                    context,
                    _onWillPopFavChatScreen,
                    _favPosts[_favPostIdx].chats[chatIdx],
@@ -1970,7 +1964,7 @@ class MenuChatState extends State<MenuChat>
             sendChatMsg(payload, 0);
          }
 
-         return createChatScreen(
+         return makeChatScreen(
                    context,
                    _onWillPopOwnChatScreen,
                    _ownPosts[_ownPostIdx].chats[chatIdx],

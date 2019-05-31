@@ -161,7 +161,7 @@ Center createSendScreen(Function sendHahesToServer)
                child: Text( "Aplicar",
                      style: TextStyle(
                            fontWeight: FontWeight.bold,
-                           fontSize: Consts.mainFontSize )
+                           fontSize: cts.mainFontSize)
                ),
                onPressed: sendHahesToServer,
                //color: const Color(0xFFFFFF),

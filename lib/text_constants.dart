@@ -15,6 +15,17 @@ final Color accentColor = whatsAppAccentColor;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
+final double mainFontSize = 15.0;
+final Color postLocHeaderColor = Color(0xFFFFFFFF);
+
+// Margin used so that the post card boarder has some distance from
+// the screen border or whatever widget it happens to be inside of.
+final double postMarging = 7.0;
+
+// Marging user to separate the post element cards from the
+// outermost cards.
+final double postInnerMargin = 3.0;
+
 final String appName = "CarMenu";
 
 // Text used for the main tabs.
@@ -38,7 +49,7 @@ final List<String> newPostTabNames = <String>
 List<Icon> newPostTabIcons = <Icon>
 [ Icon(Icons.home)
 , Icon(Icons.directions_car)
-, Icon(Icons.directions_car)
+, Icon(Icons.details)
 , Icon(Icons.publish)
 ];
 
@@ -68,7 +79,7 @@ final List<String> filterTabNames = <String>
 List<Icon> filterTabIcons = <Icon>
 [ Icon(Icons.home)
 , Icon(Icons.directions_car)
-, Icon(Icons.directions_car)
+, Icon(Icons.details)
 , Icon(Icons.send)
 ];
 
@@ -86,7 +97,6 @@ List<Icon> chatIcons = <Icon>
 ];
 
 final Icon favIcon = Icon(Icons.star, color: Colors.amber);
-final Icon personIcon = Icon(Icons.person);
 
 //______________
 

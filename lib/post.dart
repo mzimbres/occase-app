@@ -156,6 +156,14 @@ class ChatHistory {
    List<ChatItem> _unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
 
+   String getChatDisplayName()
+   {
+      if (nick.isEmpty)
+         return '$peer';
+
+      return '$nick/$peer';
+   }
+
    ChatHistory(this.peer, this.nick, final int postId)
    {
       _init(postId);
@@ -383,6 +391,21 @@ class PostData {
       ret.from = this.from;
       ret.id = this.id;
       return ret;
+   }
+
+   void setNick(final String peer, final String nick)
+   {
+      final int j = getChatHistIdx(peer);
+      if (j == -1) {
+         // AFAIK, the only way this can happen ist if the app user
+         // has deleted the ChatHistory in the time between the
+         // nick_req has been sent and the ack has been received.  So
+         // there is no need or way to proceeed.
+         return;
+      }
+
+      chats[j].nick = nick;
+      _persistPeers();
    }
 
    void _persistPeers()
@@ -643,7 +666,7 @@ Card makePostElemSimple(Icon ic, List<Column> cols)
    return Card(
             child: leftWidget,
             color: Colors.white,
-            margin: EdgeInsets.all(Consts.postInnerMargin),
+            margin: EdgeInsets.all(cts.postInnerMargin),
             elevation: 0.0,
    );
 }
@@ -742,11 +765,11 @@ List<Card> postTextAssembler(BuildContext context,
    values.add(data.description);
 
    Card dc1 = makePostElem(context, values, cts.descList,
-                           cts.personIcon);
+                           Icon(Icons.description));
 
    list.add(dc1);
 
-   Card dc2 = makePostDetailElem(cts.personIcon, data.filter);
+   Card dc2 = makePostDetailElem(Icon(Icons.details), data.filter);
    list.add(dc2);
 
    return list;
@@ -798,7 +821,7 @@ Card createChatEntry(BuildContext context,
 
    Card chatCard = Card(child: chats,
                         color: ac,
-                        margin: EdgeInsets.all(Consts.postInnerMargin),
+                        margin: EdgeInsets.all(cts.postInnerMargin),
                         elevation: 0.0);
 
    cards.add(chatCard);
@@ -809,7 +832,7 @@ Card createChatEntry(BuildContext context,
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: ac,
-      margin: EdgeInsets.all(Consts.postMarging),
+      margin: EdgeInsets.all(cts.postMarging),
       elevation: 0.0,
    );
 }
@@ -838,7 +861,7 @@ Card makePostWidget(BuildContext context,
    Card c4 = Card(
       child: row,
       color: color,
-      margin: EdgeInsets.all(Consts.postInnerMargin),
+      margin: EdgeInsets.all(cts.postInnerMargin),
       elevation: 0.0,
    );
 
@@ -850,7 +873,7 @@ Card makePostWidget(BuildContext context,
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
-      margin: EdgeInsets.all(Consts.postMarging),
+      margin: EdgeInsets.all(cts.postMarging),
       elevation: 5.0,
    );
 }
@@ -861,8 +884,8 @@ Card makeCard(Widget widget, )
          child:
             Padding(child: widget,
                     padding: EdgeInsets.all( cts.postElemTextPadding)),
-         color: Consts.postLocHeaderColor,
-         margin: EdgeInsets.all(Consts.postInnerMargin),
+         color: cts.postLocHeaderColor,
+         margin: EdgeInsets.all(cts.postInnerMargin),
          elevation: 0.0,
    );
 }
@@ -994,12 +1017,8 @@ Widget makePostChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
-      String chatName = '${ch[i].nick}/${ch[i].peer}';
-      if (ch[i].nick.isEmpty)
-         chatName = '${ch[i].peer}';
-
       ListTile lt = createListViewItem(context,
-                        chatName,
+                        ch[i].getChatDisplayName(),
                         makeChatSubStrWidget(ch[i]),
                         makeCircleUnreadMsgs(n, cc, Colors.white),
                         Theme.of(context).primaryColor,
