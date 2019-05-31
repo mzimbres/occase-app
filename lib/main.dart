@@ -165,6 +165,7 @@ makePostDetailScreen( BuildContext context
                proceed(i);
             },
             //controlAffinity: ListTileControlAffinity.leading
+            activeColor: Theme.of(context).primaryColor,
          );
       },
    );

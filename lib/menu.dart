@@ -50,11 +50,12 @@ ListTile createListViewItem(BuildContext context,
              onLongPress: onLongPress);
 }
 
-String getFirstLetter(String str)
+String makeStrAbbrev(final String str)
 {
-   if (str.isEmpty)
-      return '';
-   return str[0];
+   if (str.length < 2)
+      return str;
+
+   return str.substring(0, 2);
 }
 
 /*
@@ -115,7 +116,7 @@ ListView createFilterListView(BuildContext context,
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
-            final String firstLetter = getFirstLetter(child.name);
+            final String firstLetter = makeStrAbbrev(child.name);
             return createListViewItem(
                             context,
                             child.name,
@@ -135,7 +136,7 @@ ListView createFilterListView(BuildContext context,
          // depth.
          final int c = child.getCounterOfFilterChildren();
          final String subStr = makeFilterNonLeafSubStr(c);
-         final String firstLetter = getFirstLetter(child.name);
+         final String firstLetter = makeStrAbbrev(child.name);
 
          Color filterNodeParentColor = Theme.of(context).primaryColor;
          if (c != 0)

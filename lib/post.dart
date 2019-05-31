@@ -164,6 +164,21 @@ class ChatHistory {
       return '$nick/$peer';
    }
 
+   String getChatAbbrevStr()
+   {
+      if (nick.isEmpty) { // For safety
+         if (peer.length < 2)
+            return peer;
+
+         return peer.substring(0, 2);
+      }
+               
+      if (nick.length < 2)
+         return nick;
+
+      return nick.substring(0, 2);
+   }
+
    ChatHistory(this.peer, this.nick, final int postId)
    {
       _init(postId);
@@ -960,7 +975,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
       itemBuilder: (BuildContext context, int i)
       {
          MenuNode child = o.children[i];
-         final String firstLetter = getFirstLetter(child.name);
+         final String firstLetter = makeStrAbbrev(child.name);
          final String subStr = makeLeafCounterString(child.leafCounter);
          if (child.isLeaf()) {
             return createListViewItem(
@@ -1008,8 +1023,8 @@ Widget makePostChatCol(BuildContext context,
          widget = Icon(Icons.check);
          bgColor = cts.chatLongPressendColor;
       } else {
-         final String firstLetter = getFirstLetter(ch[i].peer);
-         widget = Text(firstLetter, style: cts.firstLetterStl);
+         widget = Text( ch[i].getChatAbbrevStr()
+                      , style: cts.firstLetterStl);
          bgColor = Colors.white;
       }
 
