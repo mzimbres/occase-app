@@ -637,8 +637,7 @@ Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
    if (n >= 100)
       n = 100;
 
-   final Text txt = Text("${n}", style: TextStyle(
-                  color: textColor));
+   final Text txt = Text("${n}", style: TextStyle(color: textColor));
 
    final Radius rd = const Radius.circular(45.0);
    return Container(

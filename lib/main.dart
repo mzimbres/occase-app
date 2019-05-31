@@ -187,12 +187,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-TabBar makeTabBar(List<int> counters, TabController tabCtrl)
+TabBar makeTabBar( List<int> counters
+                 , TabController tabCtrl
+                 , double opacity)
 {
    List<Widget> tabs = List<Widget>(cts.tabNames.length);
 
-   for (int i = 0; i < tabs.length; ++i)
-      tabs[i] = Tab(child: makeTabWidget(counters[i], cts.tabNames[i]));
+   for (int i = 0; i < tabs.length; ++i) {
+      tabs[i] =
+         Tab(child: makeTabWidget( counters[i], cts.tabNames[i]
+                                 , opacity));
+   }
 
    return TabBar(controller: tabCtrl,
                  indicatorColor: Colors.white,
@@ -372,19 +377,21 @@ makeChatScreen(BuildContext context,
     );
 }
 
-Widget makeTabWidget(int n, String title)
+Widget makeTabWidget(int n, String title, double opacity)
 {
    if (n == 0)
-      return Text(title, style: TextStyle(color: Colors.white));
+      return Text(title);
 
    List<Widget> widgets = List<Widget>(2);
-   widgets[0] = Text(title, style: TextStyle(color: Colors.white));
+   widgets[0] = Text(title);
 
    // TODO: The container should change from white to the color when
    // it is not focused. 
    // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
-   widgets[1] = makeCircleUnreadMsgs(n, Colors.white,
-                   cts.primaryColor);
+   widgets[1] =
+      Opacity( child: makeCircleUnreadMsgs(n, Colors.white,
+                      cts.primaryColor)
+             , opacity: opacity);
 
    return Row(children: widgets);
 }
@@ -2092,6 +2099,9 @@ class MenuChatState extends State<MenuChat>
       newMsgsCounters[1] = newPostsLength;
       newMsgsCounters[2] = newChats;
 
+      final double newMsgCircleOpacity =
+         _tabCtrl.index == 2 ? 1.0 : 0.70;
+
       return WillPopScope(
                 onWillPop: () async { return onWillPops[_tabCtrl.index]();},
                 child: Scaffold(
@@ -2104,7 +2114,9 @@ class MenuChatState extends State<MenuChat>
                                    pinned: true,
                                    floating: true,
                                    forceElevated: innerBoxIsScrolled,
-                                   bottom: makeTabBar(newMsgsCounters, _tabCtrl),
+                                   bottom: makeTabBar( newMsgsCounters
+                                                     , _tabCtrl
+                                                     , newMsgCircleOpacity),
                                    actions: actions,
                                    leading: null
                                  ),
