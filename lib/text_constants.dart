@@ -166,13 +166,12 @@ final double outerPostCardPadding = 1.0;
 final String deleteChatStr = "Remover conversa";
 final String blockUserChatStr = "Bloquear usuário";
 
-final TextStyle firstLetterStl =
-      TextStyle(color: Colors.white);
+final TextStyle abbrevStl = TextStyle(color: Colors.white);
 
 final TextStyle menuTitleStl =
-          TextStyle(fontSize: 15.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black);
+   TextStyle(fontSize: 15.0,
+             fontWeight: FontWeight.bold,
+             color: Colors.black);
 
 final TextStyle valueTextStl =
           TextStyle(fontSize: 15.0,
@@ -215,4 +214,6 @@ final List<String> dialBodyStrs = <String>
 
 final String postTimePrefix = 'Detalhes do post';
 final String unknownNick = 'Desconhecido';
+
+final String menuSelectAllStr = 'Selecionar todos';
 

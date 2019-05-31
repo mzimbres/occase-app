@@ -975,35 +975,36 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
       itemBuilder: (BuildContext context, int i)
       {
          MenuNode child = o.children[i];
-         final String firstLetter = makeStrAbbrev(child.name);
+         final String abbrev = makeStrAbbrev(child.name);
          final String subStr = makeLeafCounterString(child.leafCounter);
          if (child.isLeaf()) {
-            return createListViewItem(
-                         context,
-                         child.name,
-                         createMenuItemSubStrWidget(
-                               subStr,
-                               FontWeight.normal),
-                         null,
-                         Theme.of(context).primaryColor,
-                         () { onLeafPressed(i);},
-                         (){},
-                         Text(firstLetter,
-                              style: cts.firstLetterStl));
+            return 
+               createListViewItem(
+                   context,
+                   child.name,
+                   createMenuItemSubStrWidget(
+                         subStr,
+                         FontWeight.normal),
+                   null,
+                   makeCircleAvatar(
+                      Text(abbrev, style: cts.abbrevStl),
+                      Theme.of(context).primaryColor),
+                   () { onLeafPressed(i);},
+                   (){});
          }
          
-         return createListViewItem(
-                         context,
-                         child.name,
-                         createMenuItemSubStrWidget(
-                               subStr,
-                               FontWeight.normal),
-                         null,
-                         Theme.of(context).primaryColor,
-                         () { onNodePressed(i); },
-                         (){},
-                         Text(firstLetter,
-                              style: cts.firstLetterStl));
+         return 
+            createListViewItem(
+                context,
+                child.name,
+                createMenuItemSubStrWidget(
+                   subStr,
+                   FontWeight.normal),
+                null,
+                makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
+                                , Theme.of(context).primaryColor),
+                () { onNodePressed(i); },
+                (){});
       },
    );
 }
@@ -1024,7 +1025,7 @@ Widget makePostChatCol(BuildContext context,
          bgColor = cts.chatLongPressendColor;
       } else {
          widget = Text( ch[i].getChatAbbrevStr()
-                      , style: cts.firstLetterStl);
+                      , style: cts.abbrevStl);
          bgColor = Colors.white;
       }
 
@@ -1032,14 +1033,15 @@ Widget makePostChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
-      ListTile lt = createListViewItem(context,
-                        ch[i].getChatDisplayName(),
-                        makeChatSubStrWidget(ch[i]),
-                        makeCircleUnreadMsgs(n, cc, Colors.white),
-                        Theme.of(context).primaryColor,
-                        () { onPressed(i); },
-                        () { onLongPressed(i); },
-                        widget);
+      ListTile lt =
+         createListViewItem(
+            context,
+            ch[i].getChatDisplayName(),
+            makeChatSubStrWidget(ch[i]),
+            makeCircleUnreadMsgs(n, cc, Colors.white),
+            makeCircleAvatar(widget, Theme.of(context).primaryColor),
+            () { onPressed(i); },
+            () { onLongPressed(i); });
 
       list[i] = Container(decoration: BoxDecoration(color: bgColor),
                   child: lt);

@@ -27,19 +27,21 @@ Text createMenuItemSubStrWidget(String str, FontWeight fw)
                overflow: TextOverflow.clip);
 }
 
+CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
+{
+   return CircleAvatar(child: child, backgroundColor: bgcolor);
+}
+
 ListTile createListViewItem(BuildContext context,
                             String name,
                             Text subItemWidget,
                             Widget trailing,
-                            Color circleColor,
+                            Widget leading,
                             Function onTap,
-                            Function onLongPress,
-                            Widget circleChild)
+                            Function onLongPress)
 {
    return ListTile(
-             leading: CircleAvatar(
-                         child: circleChild,
-                         backgroundColor: circleColor),
+             leading: leading,
              title: Text(name, style: cts.menuTitleStl),
              //dense: false,
              subtitle: subItemWidget,
@@ -87,18 +89,18 @@ ListView createFilterListView(BuildContext context,
       {
          if (shift == 1 && i == 0) {
             // Handles the *Marcar todos* button.
-            final String title = "Marcar todos";
+            final String title = cts.menuSelectAllStr;
             final TextStyle fls =
                   TextStyle(color: Theme.of(context).accentColor);
-            return createListViewItem(
-                            context,
-                            title,
-                            null,
-                            null,
-                            Theme.of(context).accentColor,
-                            () { onLeafPressed(0); },
-                            (){},
-                            Text(title[0], style: fls));
+            return
+               createListViewItem(
+                   context,
+                   title,
+                   null,
+                   Icon(Icons.select_all),
+                   makeCircleAvatar(Text(''), cts.chatLongPressendColor),
+                   () { onLeafPressed(0); },
+                   (){});
          }
 
          if (shift == 1) {
@@ -116,19 +118,19 @@ ListView createFilterListView(BuildContext context,
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
-            final String firstLetter = makeStrAbbrev(child.name);
-            return createListViewItem(
-                            context,
-                            child.name,
-                            createMenuItemSubStrWidget(
-                                  subStr,
-                                  FontWeight.normal),
-                            icon,
-                            Theme.of(context).primaryColor,
-                            () { onLeafPressed(i);},
-                            (){},
-                            Text(firstLetter,
-                                 style: cts.firstLetterStl));
+            final String abbrev = makeStrAbbrev(child.name);
+            return 
+               createListViewItem(
+                   context,
+                   child.name,
+                   createMenuItemSubStrWidget(
+                         subStr,
+                         FontWeight.normal),
+                   icon,
+                   makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
+                                   , Theme.of(context).primaryColor),
+                   () { onLeafPressed(i);},
+                   (){});
          }
 
          MenuNode child = o.children[i];
@@ -136,7 +138,7 @@ ListView createFilterListView(BuildContext context,
          // depth.
          final int c = child.getCounterOfFilterChildren();
          final String subStr = makeFilterNonLeafSubStr(c);
-         final String firstLetter = makeStrAbbrev(child.name);
+         final String abbrev = makeStrAbbrev(child.name);
 
          Color filterNodeParentColor = Theme.of(context).primaryColor;
          if (c != 0)
@@ -148,10 +150,10 @@ ListView createFilterListView(BuildContext context,
                child.name,
                createMenuItemSubStrWidget(subStr, FontWeight.normal),
                null,
-               filterNodeParentColor,
+               makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
+                               , filterNodeParentColor),
                () { onNodePressed(i); },
-               (){},
-               Text(firstLetter, style: cts.firstLetterStl));
+               (){});
       },
    );
 }
