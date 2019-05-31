@@ -843,8 +843,21 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopMenu()
    {
+      // TODO: Split this function in two: One for the filters and one
+      // for the new post screen.
+      if (_botBarIdx >= _menus.length) {
+         --_botBarIdx;
+         setState(() { });
+         return false;
+      }
+
       if (_menus[_botBarIdx].root.length == 1) {
-         _newPostPressed = false;
+         if (_botBarIdx == 0){
+            _newPostPressed = false;
+         } else {
+            --_botBarIdx;
+         }
+
          setState(() { });
          return false;
       }
@@ -1878,7 +1891,10 @@ class MenuChatState extends State<MenuChat>
                title: Text(cts.postAppBarMsg[_botBarIdx],
                            style: TextStyle(color: Colors.white)),
                elevation: 0.7,
-               toolbarOpacity : 1.0
+               toolbarOpacity : 1.0,
+               leading: IconButton( icon: Icon( Icons.arrow_back
+                                              , color: Colors.white)
+                                  , onPressed:_onWillPopMenu)
          );
 
          return WillPopScope(
