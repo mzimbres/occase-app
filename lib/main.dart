@@ -360,6 +360,9 @@ createChatScreen(BuildContext context,
                    //subtitle: subtitle
                 ),
                 backgroundColor: Theme.of(context).primaryColor,
+                leading: IconButton( icon: Icon( Icons.arrow_back
+                                               , color: Colors.white)
+                                   , onPressed:onWillPopScope)
              ),
           body: mainCol,
           backgroundColor: Colors.white,
@@ -2071,7 +2074,6 @@ class MenuChatState extends State<MenuChat>
          actions.add(blockUserBut);
       }
 
-      actions.add(Padding(padding: const EdgeInsets.symmetric(horizontal: 5.0)));
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
@@ -2092,7 +2094,8 @@ class MenuChatState extends State<MenuChat>
                                    floating: true,
                                    forceElevated: innerBoxIsScrolled,
                                    bottom: makeTabBar(newMsgsCounters, _tabCtrl),
-                                   actions: actions
+                                   actions: actions,
+                                   leading: null
                                  ),
                                ];
                              },
