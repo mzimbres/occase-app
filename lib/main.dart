@@ -1234,17 +1234,17 @@ class MenuChatState extends State<MenuChat>
       final int postId = ack['post_id'];
       final String msg = ack['msg'];
       final String from = ack['from'];
+      final bool is_sender_post = ack['is_sender_post'];
 
       // A user message can be either directed to one of the posts
       // published by this app or one that the app is interested
       // in. We distinguish this with the field 'is_sender_post'
       List<PostData> foo = _ownPosts;
-      final bool is_sender_post = ack['is_sender_post'];
       if (is_sender_post)
          foo = _favPosts;
 
       final int postIdIdx =
-         findAndInsertNewMsg(foo, postId, from, msg, false);
+         findAndInsertNewMsg(foo, postId, from, msg, false, '');
 
       if (postIdIdx == -1) {
          print('===> Error: Ignoring chat msg.');
@@ -1259,6 +1259,7 @@ class MenuChatState extends State<MenuChat>
          // from the user.
          foo.first.chats.first.nick = cts.unknownNick;
 
+         print('Sending a nick request.');
          var map = {
             'cmd': 'message',
             'type': 'nick_req',
@@ -1318,6 +1319,40 @@ class MenuChatState extends State<MenuChat>
       sendChatMsg(payload, 0);
    }
 
+   void _nickReqAckHandler(Map<String, dynamic> ack)
+   {
+      print('_nickReqAckHandler1');
+      final String from = ack['from'];
+      final int postId = ack['post_id'];
+      final bool isSenderPost = ack['is_sender_post'];
+      final String nick = ack['nick'];
+
+      List<PostData> foo = _ownPosts;
+      if (isSenderPost)
+         foo = _favPosts;
+
+      final int i = foo.indexWhere((e) { return e.id == postId;});
+      if (i == -1) {
+         // AFAIK, the only way this can happen ist if the app user
+         // has deleted the a post in _fav_post in the time between
+         // the nick_req has been sent and the ack has been received.
+         // So there is no need or way to proceeed.
+         return;
+      }
+      print('_nickReqAckHandler2');
+
+      final int j = foo[i].getChatHistIdx(from);
+      if (j == -1) {
+         // Similar to what has been said above. The specific entry
+         // cannot be found anymore, just leave.
+         return;
+      }
+
+      print('_nickReqAckHandler3');
+
+      foo[i].chats[j].nick = nick;
+   }
+
    void _onMessage(Map<String, dynamic> ack)
    {
       final String type = ack['type'];
@@ -1338,7 +1373,7 @@ class MenuChatState extends State<MenuChat>
       } else if (type == 'nick_req') {
          _nickReqHandler(ack);
       } else if (type == 'nick_req_ack') {
-         print('Received a nick_req_ack');
+         _nickReqAckHandler(ack);
       }
 
       setState((){});
@@ -1429,8 +1464,10 @@ class MenuChatState extends State<MenuChat>
 
          PostData post = readPostData(item);
          // Since this post is not from this app we have to add a chat
-         // entry in it.
-         post.createChatEntryForPeer(post.from);
+         // entry in it. It is important to let the nick empty, this
+         // is how we will detect that the nick must be requested from
+         // the user.
+         post.createChatEntryForPeer(post.from, '');
          _unreadPosts.add(post);
 
          // It is not guaranteed that the array of posts sent by
@@ -1865,6 +1902,7 @@ class MenuChatState extends State<MenuChat>
          final String peer = _favPosts[_favPostIdx].from;
          final int id = _favPosts[_favPostIdx].id;
          final int chatIdx = _favPosts[_favPostIdx].getChatHistIdx(peer);
+         assert(chatIdx != -1);
          final int n =
             _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
 
@@ -1897,7 +1935,8 @@ class MenuChatState extends State<MenuChat>
          // We are in the chat screen with one interested user on a
          // specific post.
          final int chatIdx =
-            _ownPosts[_ownPostIdx].getChatHistIdx(_ownPostChatPeer);
+               _ownPosts[_ownPostIdx].getChatHistIdx(_ownPostChatPeer);
+         assert(chatIdx != -1);
          final int n =
                _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
 

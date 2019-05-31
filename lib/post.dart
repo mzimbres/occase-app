@@ -156,7 +156,7 @@ class ChatHistory {
    List<ChatItem> _unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
 
-   ChatHistory(this.peer, final int postId)
+   ChatHistory(this.peer, this.nick, final int postId)
    {
       _init(postId);
    }
@@ -351,7 +351,7 @@ class PostData {
       codes = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
-   String makeFullPath()
+   String makePathToPeersFile()
    {
       return '${glob.docDir}/post_peers_${id}.txt';
    }
@@ -360,11 +360,15 @@ class PostData {
    {
       try {
          chats = List<ChatHistory>();
-         File f = File(makeFullPath());
+         File f = File(makePathToPeersFile());
          final List<String> lines = f.readAsLinesSync();
          print('Peers: $lines');
-         for (String line in lines)
-            chats.add(ChatHistory(line, id));
+         for (String line in lines) {
+            final List<String> fields = line.split(';');
+            // The assertion should be for == not >=.
+            assert(fields.length >= 2);
+            chats.add(ChatHistory(fields.first, fields.last, id));
+         }
       } catch (e) {
          //print(e);
       }
@@ -386,39 +390,37 @@ class PostData {
       // Overwrites the previous content.
       String data = '';
       for (ChatHistory o in chats)
-         data += '${o.peer}\n';
+         data += '${o.peer};${o.nick}\n';
 
       print('Persisting peers: \n$data');
 
-      writeToFile(data, makeFullPath(), FileMode.write);
+      writeToFile(data, makePathToPeersFile(), FileMode.write);
    }
 
-   void createChatEntryForPeer(String peer)
+   void createChatEntryForPeer(String peer, final String nick)
    {
       print('Creating chat entry for: $peer');
-      ChatHistory history = ChatHistory(peer, id);
+      ChatHistory history = ChatHistory(peer, nick, id);
       chats.add(history);
       _persistPeers();
    }
 
    int getChatHistIdx(final String peer)
    {
-      final int i = chats.indexWhere((e) {return e.peer == peer;});
+      return chats.indexWhere((e) {return e.peer == peer;});
+   }
 
+   int getChatHistIdxOrCreate(final String peer, final String nick)
+   {
+      final int i = getChatHistIdx(peer);
       if (i == -1) {
          // This is the first message with this user (peer).
          final int l = chats.length;
-         createChatEntryForPeer(peer);
+         createChatEntryForPeer(peer, nick);
          return l;
       }
 
       return i;
-   }
-
-   ChatHistory getChatHist(final String peer)
-   {
-      final int i = getChatHistIdx(peer);
-      return chats[i];
    }
 
    void addMsg(final int j, final String msg, final bool thisApp)
@@ -443,8 +445,13 @@ class PostData {
 
    void markChatAppAck(final String peer, final int status)
    {
-      ChatHistory history = getChatHist(peer);
-      history.markAppChatAck(id, status);
+      final int i = getChatHistIdx(peer);
+      if (i == -1) {
+         print('markChatAppAck: Ignoring ack.');
+         return;
+      }
+
+      chats[i].markAppChatAck(id, status);
    }
 
    int getNumberOfUnreadChats()
@@ -547,20 +554,21 @@ int CompPostData(final PostData lhs, final PostData rhs)
 }
 
 // Returns the old index in posts that has postId. Will rotate
-// elements so that it becomes the first in the list.
+// elements so that it becomes the first in the list. The nick is used
+// only creation is necessary.
 int
 findAndInsertNewMsg(List<PostData> posts,
                     final int postId,
                     final String from,
                     final String msg,
-                    final bool thisApp)
+                    final bool thisApp,
+                    final String nick)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
-
    if (i == -1)
       return -1;
 
-   final int j = posts[i].getChatHistIdx(from);
+   final int j = posts[i].getChatHistIdxOrCreate(from, nick);
    posts[i].addUnreadMsg(j, msg, thisApp);
    rotateElements(posts, i);
    return i;
@@ -986,7 +994,10 @@ Widget makePostChatCol(BuildContext context,
       if (n == 0)
          cc = bgColor;
 
-      final String chatName = '${ch[i].nick} (${ch[i].peer})';
+      String chatName = '${ch[i].nick}/${ch[i].peer}';
+      if (ch[i].nick.isEmpty)
+         chatName = '${ch[i].peer}';
+
       ListTile lt = createListViewItem(context,
                         chatName,
                         makeChatSubStrWidget(ch[i]),
