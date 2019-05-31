@@ -97,8 +97,10 @@ ListView createFilterListView(BuildContext context,
                    context,
                    title,
                    null,
-                   Icon(Icons.select_all),
-                   makeCircleAvatar(Text(''), cts.chatLongPressendColor),
+                   null,
+                   Icon( Icons.select_all
+                       , size: 35.0
+                       , color: Theme.of(context).primaryColor),
                    () { onLeafPressed(0); },
                    (){});
          }
