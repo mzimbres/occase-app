@@ -821,14 +821,19 @@ Card createChatEntry(BuildContext context,
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        Theme.of(context).primaryColor);
 
-   ExpansionTile et = ExpansionTile(
-             //key: PageStorageKey<Entry>(root),
-             title: Text( '${cts.postTimePrefix}: ${post.id}'
-                        , style: cts.expTileStl),
-             children: ListTile.divideTiles(
-                        context: context,
-                        tiles: textCards,
-                        color: Colors.grey).toList());
+   ExpansionTile et =
+      ExpansionTile(
+          //leading:
+          //      IconButton( icon: Icon(Icons.delete_forever
+          //                , color: cts.fireBrick)
+          //                , onPressed: (){print('===> jdjdjd');}),
+          //key: PageStorageKey<Entry>(root),
+          title: Text( '${cts.postTimePrefix}: ${post.id}'
+                     , style: cts.expTileStl),
+          children: ListTile.divideTiles(
+                     context: context,
+                     tiles: textCards,
+                     color: Colors.grey).toList());
 
    List<Widget> cards = List<Card>();
    cards.add(Card(child: et,
@@ -1016,12 +1021,17 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
 Widget makePostChatCol(BuildContext context,
                       List<ChatHistory> ch,
                       Function onPressed,
-                      Function onLongPressed)
+                      Function onLongPressed,
+                      int postId)
 {
    List<Widget> list = List<Widget>(ch.length);
 
+   int nUnredChats = 0;
    for (int i = 0; i < list.length; ++i) {
       final int n = ch[i].getNumberOfUnreadMsgs();
+      if (n > 0)
+         ++nUnredChats;
+
       Widget widget;
       Color bgColor;
       if (ch[i].isLongPressed) {
@@ -1062,9 +1072,13 @@ Widget makePostChatCol(BuildContext context,
                        fontWeight: FontWeight.normal,
                        color: Colors.white);
 
+   String str = '${ch.length} conversas';
+   if (nUnredChats != 0)
+      str = '${ch.length} conversas / $nUnredChats nao lidas';
    return ExpansionTile(
-             //key: PageStorageKey<Entry>(root),
-             title: Text("Conversas", style: cts.expTileStl),
+             leading: Icon(Icons.chat, color: Colors.white),
+             key: PageStorageKey<int>(postId),
+             title: Text(str, style: cts.expTileStl),
              children: ListTile.divideTiles(
                         context: context,
                         tiles: list,
@@ -1091,7 +1105,8 @@ Widget makePostChatTab(
                             context,
                             data[i].chats,
                             (j) {onPressed(i, j);},
-                            (j) {onLongPressed(i, j);}));
+                            (j) {onLongPressed(i, j);},
+                            data[i].id));
          },
    );
 }
