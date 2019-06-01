@@ -559,6 +559,7 @@ class PostData {
       id = pd.id;
       codes = pd.codes;
       description = pd.description;
+      filter = pd.filter;
 
       _loadChats();
    }

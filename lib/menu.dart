@@ -61,8 +61,8 @@ String makeStrAbbrev(final String str)
 }
 
 /*
- *  To support the "Todos" field in the menu checkbox we have to add
- *  some complex logic.  First we note that the "Todos" checkbox
+ *  To support the "select all" buttom in the menu checkbox we have to
+ *  add some complex logic.  First we note that the "Todos" checkbox
  *  should appear in all screens that present checkboxes, namely, when
  *  
  *  1. makeLeaf is true, or

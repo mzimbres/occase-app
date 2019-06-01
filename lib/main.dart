@@ -139,8 +139,169 @@ String makeRegisterCmd()
    return jsonEncode(loginCmd);
 }
 
+List<Widget>
+makeChatScreenActionsList( BuildContext ctx
+                         , Function deleteChatEntryDialog)
+{
+   List<Widget> actions = List<Widget>();
+
+   // Delete chat forever button.
+   IconButton delChatBut = IconButton(
+      icon: Icon(Icons.delete_forever, color: Colors.white),
+      tooltip: cts.deleteChatStr,
+      onPressed: () { deleteChatEntryDialog(ctx); });
+
+   actions.add(delChatBut);
+
+   // Block user button.
+   IconButton blockUserBut = IconButton(
+      icon: Icon(Icons.block, color: Colors.white),
+      tooltip: cts.blockUserChatStr,
+      onPressed: () { print('Kabuff'); });
+
+   actions.add(blockUserBut);
+
+   return actions;
+}
+
+Scaffold
+makeNickRegisterScreen( TextEditingController txtCtrl
+                      , Function onNickPressed)
+{
+   TextField tf =
+      makeTextInputFieldCard(
+         txtCtrl,
+         null,
+         InputDecoration(
+            hintText: cts.nichTextFieldHintStr,
+            hintStyle: TextStyle(fontSize: 25.0,
+              fontWeight: FontWeight.normal)));
+
+   Padding padd =
+      Padding( child: tf
+             , padding: EdgeInsets.all(20.0));
+
+   RaisedButton but =
+      RaisedButton(
+         child: Text( 'Continuar'
+                    , style: TextStyle(
+                         fontWeight: FontWeight.bold,
+                         fontSize: 20.0)),
+         color: cts.postFrameColor,
+         onPressed: onNickPressed
+         );
+
+   Column col =
+      Column( mainAxisAlignment: MainAxisAlignment.center
+            , crossAxisAlignment: CrossAxisAlignment.center
+            , children: <Widget>
+              [ padd
+              , but
+              ]);
+
+   return Scaffold(body: Center(child: col));
+}
+
 ListView
-makePostDetailScreen( BuildContext context
+makeNewPostFinalScreenWidget( BuildContext ctx
+                            , PostData postInput
+                            , final List<MenuItem> menu
+                            , TextEditingController txtCtrl
+                            , onSendNewPostPressed)
+{
+   List<Card> cards =
+      makeMenuInfoCards( ctx
+                       , postInput
+                       , menu
+                       , Theme.of(ctx).primaryColor);
+
+   cards.add(
+      makeCard(
+         makeTextInputFieldCard(
+            txtCtrl,
+            null,
+            InputDecoration.collapsed(
+               hintText: cts.newPostTextFieldHistStr))));
+
+   Widget widget_tmp =
+      makePostWidget( ctx
+                    , cards
+                    , (final int add) { onSendNewPostPressed(ctx, add); }
+                    , Icon( Icons.publish
+                          , color: Colors.white)
+                    , Theme.of(ctx).primaryColor);
+
+   // I added this ListView to prevent widget_tmp from
+   // extending the whole screen. Inside the ListView it
+   // appears compact. Remove this later.
+   return ListView(
+      shrinkWrap: true,
+      //padding: const EdgeInsets.all(20.0),
+      children: <Widget>[widget_tmp]
+   );
+}
+
+WillPopScope
+makeNewPostScreens( BuildContext ctx
+                  , PostData postInput
+                  , final List<MenuItem> menu
+                  , TextEditingController txtCtrl
+                  , onSendNewPostPressed
+                  , int screen
+                  , Function onNewPostDetail
+                  , Function onPostLeafPressed
+                  , Function onPostNodePressed
+                  , Function onWillPopMenu
+                  , Function onNewPostBotBarTapped)
+{
+   Widget wid;
+   if (screen == 3) {
+      wid = makeNewPostFinalScreenWidget(
+               ctx,
+               postInput,
+               menu,
+               txtCtrl,
+               onSendNewPostPressed);
+
+   } else if (screen == 2) {
+      wid = makePostDetailScreen(
+               ctx,
+               onNewPostDetail,
+               postInput.filter,
+               1);
+   } else {
+      wid = createPostMenuListView(
+               ctx,
+               menu[screen].root.last,
+               onPostLeafPressed,
+               onPostNodePressed);
+   }
+
+   AppBar appBar = AppBar(
+         title: Text(cts.postAppBarMsg[screen],
+                     style: TextStyle(color: Colors.white)),
+         elevation: 0.7,
+         toolbarOpacity : 1.0,
+         leading: IconButton( icon: Icon( Icons.arrow_back
+                                        , color: Colors.white)
+                            , onPressed: onWillPopMenu)
+   );
+
+   return WillPopScope(
+             onWillPop: () async { return onWillPopMenu();},
+             child: Scaffold(
+                       appBar: appBar,
+                       body: wid,
+                       bottomNavigationBar:
+                          makeBottomBarItems(
+                             cts.newPostTabIcons,
+                             cts.newPostTabNames,
+                             onNewPostBotBarTapped,
+                             screen)));
+}
+
+ListView
+makePostDetailScreen( BuildContext ctx
                     , Function proceed
                     , int filter
                     , int shift)
@@ -148,13 +309,13 @@ makePostDetailScreen( BuildContext context
    return ListView.builder(
       padding: const EdgeInsets.all(3.0),
       itemCount: cts.postDetails.length + shift,
-      itemBuilder: (BuildContext context, int i)
+      itemBuilder: (BuildContext ctx, int i)
       {
          if (i == cts.postDetails.length)
             return createSendScreen((){proceed(i);});
 
          bool v = ((filter & (1 << i)) != 0);
-         Color color = Theme.of(context).primaryColor;
+         Color color = Theme.of(ctx).primaryColor;
          if (v)
             color = cts.selectedMenuColor;
 
@@ -179,7 +340,7 @@ makePostDetailScreen( BuildContext context
 
 class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext ctx) {
     return MaterialApp(
       title: cts.appName,
       theme: ThemeData(
@@ -262,7 +423,7 @@ Icon chooseIcon(final int status)
 }
 
 Widget
-makeChatScreen(BuildContext context,
+makeChatScreen(BuildContext ctx,
                Function onWillPopScope,
                ChatHistory chatHist,
                TextEditingController ctrl,
@@ -282,7 +443,7 @@ makeChatScreen(BuildContext context,
                   onPressed: onChatSendPressed,
                   color: Color(0xFFFFFFFF)
                   ),
-               backgroundColor: Theme.of(context).primaryColor
+               backgroundColor: Theme.of(ctx).primaryColor
                );
 
    Container cont = Container(
@@ -312,7 +473,7 @@ makeChatScreen(BuildContext context,
          reverse: false,
          padding: const EdgeInsets.all(6.0),
          itemCount: chatHist.msgs.length,
-         itemBuilder: (BuildContext context, int i)
+         itemBuilder: (BuildContext ctx, int i)
          {
             Alignment align = Alignment.bottomLeft;
             Color color = Color(0xFFFFFFFF);
@@ -372,7 +533,7 @@ makeChatScreen(BuildContext context,
                    dense: false,
                    //subtitle: subtitle
                 ),
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Theme.of(ctx).primaryColor,
                 leading: IconButton( icon: Icon( Icons.arrow_back
                                                , color: Colors.white)
                                    , onPressed:onWillPopScope)
@@ -445,7 +606,7 @@ class DialogWithOpState extends State<DialogWithOp> {
    }
 
    @override
-   Widget build(BuildContext context)
+   Widget build(BuildContext ctx)
    {
       final SimpleDialogOption ok =
          SimpleDialogOption(
@@ -456,7 +617,7 @@ class DialogWithOpState extends State<DialogWithOp> {
             onPressed: ()
             {
                _onPostSelection();
-               Navigator.of(context).pop();
+               Navigator.of(ctx).pop();
             });
 
       final SimpleDialogOption cancel =
@@ -467,7 +628,7 @@ class DialogWithOpState extends State<DialogWithOp> {
                                      , fontSize: 16.0)),
             onPressed: ()
             {
-               Navigator.of(context).pop();
+               Navigator.of(ctx).pop();
             });
 
       List<SimpleDialogOption> actions =
@@ -500,7 +661,7 @@ class DialogWithOpState extends State<DialogWithOp> {
                       , padding: EdgeInsets.all(25.0))
              , tile
              , Padding( child: Row(children: actions)
-                      , padding: EdgeInsets.only(left: 120.0))
+                      , padding: EdgeInsets.only(left: 105.0))
                            
              ]);
    }
@@ -634,7 +795,7 @@ class MenuChatState extends State<MenuChat>
    String _nick = '';
 
    // The *new post* text controler
-   TextEditingController _newPostTextCtrl = TextEditingController();
+   TextEditingController _txtCtrl = TextEditingController();
 
    IOWebSocketChannel channel;
 
@@ -803,7 +964,7 @@ class MenuChatState extends State<MenuChat>
       writeToFile(data, _dialogPrefsFullPath, FileMode.write);
    }
 
-   void _alertUserOnselectPost( BuildContext context
+   void _alertUserOnselectPost( BuildContext ctx
                               , PostData data, int fav)
    {
       if (!_dialogPrefs[fav]) {
@@ -812,8 +973,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       showDialog(
-         context: context,
-         builder: (BuildContext context)
+         context: ctx,
+         builder: (BuildContext ctx)
          {
             return
                DialogWithOp( fav
@@ -1074,8 +1235,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       _botBarIdx = 0;
-      _postInput.description = _newPostTextCtrl.text;
-      _newPostTextCtrl.text = '';
+      _postInput.description = _txtCtrl.text;
+      _txtCtrl.text = '';
 
       _postInput.from = _appId;
       sendPost(_postInput.clone());
@@ -1164,11 +1325,11 @@ class MenuChatState extends State<MenuChat>
 
    void _onFavChatSendPressed(final int chatIdx)
    {
-      if (_newPostTextCtrl.text.isEmpty)
+      if (_txtCtrl.text.isEmpty)
          return;
 
-      final String msg = _newPostTextCtrl.text;
-      _newPostTextCtrl.text = "";
+      final String msg = _txtCtrl.text;
+      _txtCtrl.text = "";
 
       final String to = _favPosts[_favPostIdx].from;
       final int id = _favPosts[_favPostIdx].id;
@@ -1205,13 +1366,13 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnChatSendPressed(final int chatIdx)
    {
-      if (_newPostTextCtrl.text.isEmpty)
+      if (_txtCtrl.text.isEmpty)
          return;
 
-      final String msg = _newPostTextCtrl.text;
+      final String msg = _txtCtrl.text;
       final int id =_ownPosts[_ownPostIdx].id;
 
-      _newPostTextCtrl.text = "";
+      _txtCtrl.text = "";
 
       var msgMap = {
          'cmd': 'message',
@@ -1562,14 +1723,14 @@ class MenuChatState extends State<MenuChat>
    {
       showDialog(
          context: ctx,
-         builder: (BuildContext context)
+         builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
                      child: Text('Ok'),
                      onPressed: ()
                      {
                         onOk();
-                        Navigator.of(context).pop();
+                        Navigator.of(ctx).pop();
                      });
 
             List<FlatButton> actions = List<FlatButton>(1);
@@ -1721,25 +1882,25 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _deleteChatEntryDialog(BuildContext context)
+   void _deleteChatEntryDialog(BuildContext ctx)
    {
       showDialog(
-         context: context,
-         builder: (BuildContext context)
+         context: ctx,
+         builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
                      child: cts.deleteChatOkText,
                      onPressed: ()
                      {
                         _removeLongPressedChatEntries();
-                        Navigator.of(context).pop();
+                        Navigator.of(ctx).pop();
                      });
 
             final FlatButton cancel = FlatButton(
                      child: cts.deleteChatCancelText,
                      onPressed: ()
                      {
-                        Navigator.of(context).pop();
+                        Navigator.of(ctx).pop();
                      });
 
             List<FlatButton> actions = List<FlatButton>(2);
@@ -1761,9 +1922,9 @@ class MenuChatState extends State<MenuChat>
 
    void _onNickPressed()
    {
-      _nick = _newPostTextCtrl.text;;
+      _nick = _txtCtrl.text;;
       writeToFile(_nick, _nickFullPath, FileMode.write);
-      _newPostTextCtrl.text = '';
+      _txtCtrl.text = '';
       setState(() { });
    }
 
@@ -1788,7 +1949,7 @@ class MenuChatState extends State<MenuChat>
    @override
    void dispose()
    {
-      _newPostTextCtrl.dispose();
+      _txtCtrl.dispose();
       _tabCtrl.dispose();
       _scrollCtrl.dispose();
       _chatScrollCtrl.dispose();
@@ -1797,126 +1958,31 @@ class MenuChatState extends State<MenuChat>
    }
 
    @override
-   Widget build(BuildContext context)
+   Widget build(BuildContext ctx)
    {
-      if (_menus.isEmpty) { // Just for safety.
+      // Just for safety we did not load the menu fast enough.
+      if (_menus.isEmpty)
          return Scaffold();
-      }
 
-      if (_nick.isEmpty) {
-         TextField tf =
-            makeTextInputFieldCard(
-               _newPostTextCtrl,
-               null,
-               InputDecoration(
-                  hintText: cts.nichTextFieldHintStr,
-                  hintStyle: TextStyle(fontSize: 25.0,
-                    fontWeight: FontWeight.normal)));
+      if (_nick.isEmpty)
+         return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
-         Padding padd =
-            Padding( child: tf
-                   , padding: EdgeInsets.all(20.0));
-
-         RaisedButton but =
-            RaisedButton(
-               child: Text( 'Continuar'
-                          , style: TextStyle(
-                               fontWeight: FontWeight.bold,
-                               fontSize: 20.0)),
-               color: Theme.of(context).accentColor,
-               onPressed: _onNickPressed
-               );
-
-         Column col =
-            Column( mainAxisAlignment: MainAxisAlignment.center
-                  , crossAxisAlignment: CrossAxisAlignment.center
-                  , children: <Widget>
-                    [ padd
-                    , but
-                    ]);
-
-         return Scaffold(body: Center(child: col));
-      }
-
-      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2)) {
+      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2))
          _unmarkLongPressedChatEntries();
-      }
 
-      if (_newPostPressed) {
-         Widget wid;
-         if (_botBarIdx == 3) {
-            List<Card> cards =
-               makeMenuInfoCards( context
-                                , _postInput
-                                , _menus
-                                , Theme.of(context).primaryColor);
-
-            cards.add(
-               makeCard(
-                  makeTextInputFieldCard(
-                     _newPostTextCtrl,
-                     null,
-                     InputDecoration.collapsed(
-                        hintText: cts.newPostTextFieldHistStr))));
-   
-            Widget widget_tmp =
-               makePostWidget( context
-                             , cards
-                             , (final int add)
-                               {
-                                  _onSendNewPostPressed(context, add);
-                               }
-                             , Icon( Icons.publish
-                                   , color: Colors.white)
-                             , Theme.of(context).primaryColor);
-
-            // I added this ListView to prevent widget_tmp from
-            // extending the whole screen. Inside the ListView it
-            // appears compact. Remove this later.
-            wid = ListView(
-               shrinkWrap: true,
-               //padding: const EdgeInsets.all(20.0),
-               children: <Widget>[widget_tmp]
-            );
-
-         } else if (_botBarIdx == 2) {
-            final ListView lv =
-               makePostDetailScreen( context
-                                   , _onNewPostDetail
-                                   , _postInput.filter
-                                   , 1);
-            wid = lv;
-         } else {
-            wid = createPostMenuListView(
-                        context,
-                        _menus[_botBarIdx].root.last,
-                        _onPostLeafPressed,
-                        _onPostNodePressed
-                     );
-         }
-
-         AppBar appBar = AppBar(
-               title: Text(cts.postAppBarMsg[_botBarIdx],
-                           style: TextStyle(color: Colors.white)),
-               elevation: 0.7,
-               toolbarOpacity : 1.0,
-               leading: IconButton( icon: Icon( Icons.arrow_back
-                                              , color: Colors.white)
-                                  , onPressed:_onWillPopMenu)
-         );
-
-         return WillPopScope(
-                   onWillPop: () async { return _onWillPopMenu();},
-                   child: Scaffold(
-                             appBar: appBar,
-                             body: wid,
-                             bottomNavigationBar:
-                                makeBottomBarItems(
-                                   cts.newPostTabIcons,
-                                   cts.newPostTabNames,
-                                   _onNewPostBotBarTapped,
-                                   _botBarIdx)));
-      }
+      if (_newPostPressed)
+         return makeNewPostScreens(
+                   ctx,
+                   _postInput,
+                   _menus,
+                   _txtCtrl,
+                   _onSendNewPostPressed,
+                   _botBarIdx,
+                   _onNewPostDetail,
+                   _onPostLeafPressed,
+                   _onPostNodePressed,
+                   _onWillPopMenu,
+                   _onNewPostBotBarTapped);
 
       if (_tabCtrl.index == 2 && _favPostIdx != -1) {
          // We are in the favorite posts screen, where pressing the
@@ -1945,10 +2011,10 @@ class MenuChatState extends State<MenuChat>
          }
 
          return makeChatScreen(
-                   context,
+                   ctx,
                    _onWillPopFavChatScreen,
                    _favPosts[_favPostIdx].chats[chatIdx],
-                   _newPostTextCtrl,
+                   _txtCtrl,
                    (){_onFavChatSendPressed(chatIdx);},
                    _chatScrollCtrl);
       }
@@ -1979,10 +2045,10 @@ class MenuChatState extends State<MenuChat>
          }
 
          return makeChatScreen(
-                   context,
+                   ctx,
                    _onWillPopOwnChatScreen,
                    _ownPosts[_ownPostIdx].chats[chatIdx],
-                   _newPostTextCtrl,
+                   _txtCtrl,
                    (){_onOwnChatSendPressed(chatIdx);},
                    _chatScrollCtrl);
       }
@@ -2001,16 +2067,16 @@ class MenuChatState extends State<MenuChat>
 
       if (_botBarIdx == 3) {
          bodies[0] =
-            createSendScreen((){_onSendFilters(context);});
+            createSendScreen((){_onSendFilters(ctx);});
       } else if (_botBarIdx == 2) {
          bodies[0] =
-            makePostDetailScreen( context
+            makePostDetailScreen( ctx
                                 , _onFilterDetail
                                 , _filter
                                 , 0);
       } else {
          bodies[0] = createFilterListView(
-                        context,
+                        ctx,
                         _menus[_botBarIdx].root.last,
                         _onFilterLeafNodePressed,
                         _onFilterNodePressed,
@@ -2040,10 +2106,10 @@ class MenuChatState extends State<MenuChat>
       }
 
       bodies[1] =
-         makePostTabListView( context
+         makePostTabListView( ctx
                             , _posts
                             , (PostData data, int fav)
-                              {_alertUserOnselectPost(context, data, fav);}
+                              {_alertUserOnselectPost(ctx, data, fav);}
                             , _menus
                             , newPostsLength);
 
@@ -2054,7 +2120,7 @@ class MenuChatState extends State<MenuChat>
       if (_chatScreenIdx == 0) {
          // The own posts tab in the chat screen.
          bodies[2] = makePostChatTab(
-                        context,
+                        ctx,
                         _ownPosts,
                         _onOwnPostChatPressed,
                         _onOwnPostChatLongPressed,
@@ -2062,7 +2128,7 @@ class MenuChatState extends State<MenuChat>
       } else {
          // The favorite tab in the chat screen.
          bodies[2] = makePostChatTab(
-                        context,
+                        ctx,
                         _favPosts,
                         _onFavChatPressed,
                         _onFavChatLongPressed,
@@ -2083,19 +2149,18 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> actions = List<Widget>();
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
-         // Delete chat forever button.
-         IconButton delChatBut = IconButton(
-            icon: Icon(Icons.delete_forever, color: Colors.white),
-            tooltip: cts.deleteChatStr,
-            onPressed: () { _deleteChatEntryDialog(context); });
-         actions.add(delChatBut);
-
-         // Block user button.
-         IconButton blockUserBut = IconButton(
-            icon: Icon(Icons.block, color: Colors.white),
-            tooltip: cts.blockUserChatStr,
-            onPressed: () { print('Kabuff'); });
-         actions.add(blockUserBut);
+         actions = makeChatScreenActionsList(ctx, _deleteChatEntryDialog);
+      }
+      
+      Widget leading = null;
+      if (_tabCtrl.index == 0) {
+         if (_botBarIdx == 0 && _menus[_botBarIdx].root.length == 1) {
+         } else {
+            leading =
+               IconButton( icon: Icon( Icons.arrow_back
+                                     , color: Colors.white)
+                         , onPressed: _onWillPopMenu);
+         }
       }
 
       actions.add(Icon(Icons.more_vert, color: Colors.white));
@@ -2113,7 +2178,7 @@ class MenuChatState extends State<MenuChat>
                 child: Scaffold(
                     body: NestedScrollView(
                              controller: _scrollCtrl,
-                             headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+                             headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
                                return <Widget>[
                                  SliverAppBar(
                                    title: Text(cts.appName, style: TextStyle(color: Colors.white)),
@@ -2124,7 +2189,7 @@ class MenuChatState extends State<MenuChat>
                                                      , _tabCtrl
                                                      , newMsgCircleOpacity),
                                    actions: actions,
-                                   leading: null
+                                   leading: leading
                                  ),
                                ];
                              },
