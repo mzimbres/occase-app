@@ -405,6 +405,7 @@ class PostData {
       ret.chats = List<ChatHistory>.from(this.chats);
       ret.from = this.from;
       ret.id = this.id;
+      ret.filter = this.filter;
       return ret;
    }
 
@@ -717,7 +718,7 @@ Card makePostElem( BuildContext context
    return makePostElemSimple(ic, <Column>[leftCol, rightCol]);
 }
 
-Card makePostDetailElem(Icon ic, int filter)
+Card makePostDetailElem(int filter)
 {
    List<Widget> leftList = List<Widget>();
 
@@ -726,7 +727,7 @@ Card makePostDetailElem(Icon ic, int filter)
       if (b)
          continue;
 
-      Icon icTmp = Icon(Icons.check, color: Colors.red);
+      Icon icTmp = Icon(Icons.check, color: cts.postFrameColor);
       Text txt = Text( ' ${cts.postDetails[i]}'
                      , style: cts.postValueTextStl);
       Row row = Row(children: <Widget>[icTmp, txt]); 
@@ -737,6 +738,7 @@ Card makePostDetailElem(Icon ic, int filter)
       Column( children: leftList
             , crossAxisAlignment: CrossAxisAlignment.start);
 
+   Icon ic = Icon(Icons.details, color: cts.postFrameColor);
    return makePostElemSimple(ic, <Column>[col]);
 }
 
@@ -788,12 +790,7 @@ List<Card> postTextAssembler(BuildContext context,
                         , color: cts.postFrameColor));
 
    list.add(dc1);
-
-   Card dc2 =
-      makePostDetailElem( Icon( Icons.details
-                              , color: cts.postFrameColor)
-                        , data.filter);
-   list.add(dc2);
+   list.add(makePostDetailElem(data.filter));
 
    return list;
 }
@@ -1101,14 +1098,15 @@ Widget makePostChatTab(
 
 PostData readPostData(var item)
 {
-   String msg = item['msg'];
-   String from = item['from'];
-   int id = item['id'];
-   int filter = item['filter'];
+   PostData post = PostData();
+   post.description = item['msg'];
+   post.from = item['from'];
+   post.id = item['id'];
+   post.filter = item['filter'];
+   post.codes = List<List<List<int>>>();
 
    List<dynamic> to = item['to'];
 
-   List<List<List<int>>> codes = List<List<List<int>>>();
    for (List<dynamic> a in to) {
       List<List<int>> foo = List<List<int>>();
       for (List<dynamic> b in a) {
@@ -1118,15 +1116,8 @@ PostData readPostData(var item)
          }
          foo.add(bar);
       }
-      codes.add(foo);
+      post.codes.add(foo);
    }
-
-   PostData post = PostData();
-   post.from = from;
-   post.description = msg;
-   post.codes = codes;
-   post.id = id;
-   post.filter = filter;
 
    return post;
 }

@@ -204,17 +204,15 @@ makeNickRegisterScreen( TextEditingController txtCtrl
 
 ListView
 makeNewPostFinalScreenWidget( BuildContext ctx
-                            , PostData postInput
+                            , PostData post
                             , final List<MenuItem> menu
                             , TextEditingController txtCtrl
                             , onSendNewPostPressed)
 {
    List<Card> cards =
-      makeMenuInfoCards( ctx
-                       , postInput
-                       , menu
-                       , Theme.of(ctx).primaryColor);
+      makeMenuInfoCards(ctx, post, menu, Theme.of(ctx).primaryColor);
 
+   cards.add(makePostDetailElem(post.filter));
    cards.add(
       makeCard(
          makeTextInputFieldCard(
@@ -227,9 +225,8 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       makePostWidget( ctx
                     , cards
                     , (final int add) { onSendNewPostPressed(ctx, add); }
-                    , Icon( Icons.publish
-                          , color: Colors.white)
-                    , Theme.of(ctx).primaryColor);
+                    , Icon(Icons.publish, color: Colors.white)
+                    , cts.postFrameColor);
 
    // I added this ListView to prevent widget_tmp from
    // extending the whole screen. Inside the ListView it
@@ -327,11 +324,7 @@ makePostDetailScreen( BuildContext ctx
                   color),
             title: Text(cts.postDetails[i]),
             value: v,
-            onChanged: (bool v)
-            {
-               proceed(i);
-            },
-            //controlAffinity: ListTileControlAffinity.leading
+            onChanged: (bool v) { proceed(i); },
             activeColor: color,
          );
       },
@@ -1182,6 +1175,7 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
+      print('sendPost: ${_outPostsQueue.first.filter}');
       channel.sink.add(payload);
    }
 
