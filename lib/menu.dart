@@ -161,18 +161,19 @@ ListView createFilterListView(BuildContext context,
    );
 }
 
-Center createSendScreen(Function sendHahesToServer)
+Center
+createSendScreen( Function onPressed
+                , final String txt)
 {
-   return Center(child:RaisedButton(
-               child: Text( "Aplicar",
-                     style: TextStyle(
-                           fontWeight: FontWeight.bold,
-                           fontSize: cts.mainFontSize)
-               ),
-               onPressed: sendHahesToServer,
-               //color: const Color(0xFFFFFF),
-               //highlightColor: const Color(0xFFFFFF)
-         )
-   );
+   RaisedButton but =
+      RaisedButton(
+         child: Text(txt,
+            style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: cts.mainFontSize)),
+         color: cts.postFrameColor,
+         onPressed: onPressed);
+
+   return Center(child: but);
 }
 

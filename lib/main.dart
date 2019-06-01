@@ -309,7 +309,7 @@ makePostDetailScreen( BuildContext ctx
       itemBuilder: (BuildContext ctx, int i)
       {
          if (i == cts.postDetails.length)
-            return createSendScreen((){proceed(i);});
+            return createSendScreen((){proceed(i);}, 'Continuar');
 
          bool v = ((filter & (1 << i)) != 0);
          Color color = Theme.of(ctx).primaryColor;
@@ -2061,7 +2061,7 @@ class MenuChatState extends State<MenuChat>
 
       if (_botBarIdx == 3) {
          bodies[0] =
-            createSendScreen((){_onSendFilters(ctx);});
+            createSendScreen((){_onSendFilters(ctx);}, 'Enviar');
       } else if (_botBarIdx == 2) {
          bodies[0] =
             makePostDetailScreen( ctx
