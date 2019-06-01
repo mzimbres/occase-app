@@ -34,7 +34,7 @@ CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
 
 ListTile createListViewItem(BuildContext context,
                             String name,
-                            Text subItemWidget,
+                            Widget subItemWidget,
                             Widget trailing,
                             Widget leading,
                             Function onTap,
@@ -43,7 +43,7 @@ ListTile createListViewItem(BuildContext context,
    return ListTile(
              leading: leading,
              title: Text(name, style: cts.menuTitleStl),
-             //dense: false,
+             dense: true,
              subtitle: subItemWidget,
              trailing: trailing,
              contentPadding: EdgeInsets.symmetric(horizontal: 10.0),

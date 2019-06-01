@@ -317,6 +317,7 @@ makePostDetailScreen( BuildContext ctx
             color = cts.selectedMenuColor;
 
          return CheckboxListTile(
+            dense: true,
             secondary:
                makeCircleAvatar(
                   Text( cts.postDetails[i].substring(0, 2)
@@ -395,24 +396,6 @@ int postIndexHelper(int i)
    if (i == 1) return 2;
    if (i == 2) return 3;
    return 1;
-}
-
-// Returns an icon based on the message status.
-Icon chooseIcon(final int status)
-{
-   if (status == 0)
-      return Icon(Icons.clear, color: Colors.red);
-
-   if (status == 1)
-      return Icon(Icons.check, color: Colors.red);
-
-   if (status == 2)
-      return Icon(Icons.check_circle_outline, color: Colors.red);
-
-   if (status == 3)
-      return Icon(Icons.check_circle, color: Colors.red);
-
-   assert(false);
 }
 
 Widget
@@ -985,8 +968,7 @@ class MenuChatState extends State<MenuChat>
    {
       if (fav == 1) {
          _favPosts.add(data);
-         writeListToDisk( <PostData>[data]
-                        , _favPostsFileFullPath
+         writeListToDisk( <PostData>[data], _favPostsFileFullPath
                         , FileMode.append);
       }
 
@@ -1582,7 +1564,7 @@ class MenuChatState extends State<MenuChat>
          // entry in it. It is important to let the nick empty, this
          // is how we will detect that the nick must be requested from
          // the user.
-         post.createChatEntryForPeer(post.from, '');
+         post.createChatEntryForPeer(post.from, post.nick);
          _unreadPosts.add(post);
 
          // It is not guaranteed that the array of posts sent by

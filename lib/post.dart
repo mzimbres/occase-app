@@ -1023,6 +1023,40 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
    );
 }
 
+// Returns an icon based on the message status.
+Icon chooseIcon(final int status)
+{
+   if (status == 0)
+      return Icon(Icons.clear, color: Colors.red, size: 17.0);
+
+   if (status == 1)
+      return Icon(Icons.check, color: Colors.red, size: 17.0);
+
+   if (status == 2)
+      return Icon(Icons.check_circle_outline, color: Colors.red, size: 17.0);
+
+   if (status == 3)
+      return Icon(Icons.check_circle, color: Colors.red, size: 17.0);
+
+   assert(false);
+}
+
+Widget makeChatTileSubStr(final ChatHistory ch)
+{
+   if (ch.getNumberOfUnreadMsgs() > 0)
+      return makeChatSubStrWidget(ch);
+
+   if (ch.msgs.isEmpty)
+      return makeChatSubStrWidget(ch);
+
+   if (!ch.msgs.last.thisApp)
+      return makeChatSubStrWidget(ch);
+
+   return Row(children: <Widget>
+             [ chooseIcon(ch.msgs.last.status)
+             , Expanded(child: makeChatSubStrWidget(ch))]);
+}
+
 Widget makePostChatCol(BuildContext context,
                       List<ChatHistory> ch,
                       Function onPressed,
@@ -1053,14 +1087,21 @@ Widget makePostChatCol(BuildContext context,
          cc = bgColor;
 
       ListTile lt =
-         createListViewItem(
-            context,
-            ch[i].getChatDisplayName(),
-            makeChatSubStrWidget(ch[i]),
-            makeCircleUnreadMsgs(n, cc, Colors.white),
-            makeCircleAvatar(widget, Theme.of(context).primaryColor),
-            () { onPressed(i); },
-            () { onLongPressed(i); });
+         ListTile(
+            dense: true,
+            enabled: true,
+            leading: makeCircleAvatar(
+                        widget,
+                        Theme.of(context).primaryColor),
+            trailing: makeCircleUnreadMsgs(n, cc, Colors.white),
+            title: Text(ch[i].getChatDisplayName(),
+                        maxLines: 1,
+                        overflow: TextOverflow.clip,
+                        style: cts.menuTitleStl),
+            subtitle: makeChatTileSubStr(ch[i]),
+            //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+            onTap: () { onPressed(i); },
+            onLongPress: () { onLongPressed(i); });
 
       list[i] = Container(decoration: BoxDecoration(color: bgColor),
                   child: lt);
