@@ -367,6 +367,9 @@ class PostData {
    // The string *description* inputed when user writes an post.
    String description = '';
 
+   // The user nick name.
+   String nick = cts.unknownNick;
+
    List<ChatHistory> chats = List<ChatHistory>();
 
    PostData()
@@ -561,6 +564,7 @@ class PostData {
       codes = pd.codes;
       description = pd.description;
       filter = pd.filter;
+      nick = pd.nick;
 
       _loadChats();
    }
@@ -576,6 +580,7 @@ class PostData {
          'id': id,
          'filter': filter,
          'msg': description,
+         'nick': nick,
       };
    }
 
@@ -1118,6 +1123,7 @@ PostData readPostData(var item)
    post.from = item['from'];
    post.id = item['id'];
    post.filter = item['filter'];
+   post.nick = item['nick'];
    post.codes = List<List<List<int>>>();
 
    List<dynamic> to = item['to'];

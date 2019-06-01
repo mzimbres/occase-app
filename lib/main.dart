@@ -1224,6 +1224,7 @@ class MenuChatState extends State<MenuChat>
       if (i == 0) {
          _postInput = PostData();
          _postInput.from = _appId;
+         _postInput.nick = _nick;
          setState(() { });
          return;
       }
@@ -1235,6 +1236,7 @@ class MenuChatState extends State<MenuChat>
       _postInput.from = _appId;
       sendPost(_postInput.clone());
       _postInput = PostData();
+      _postInput.nick = _nick;
       setState(() { });
    }
 
@@ -1335,6 +1337,7 @@ class MenuChatState extends State<MenuChat>
          'msg': msg,
          'post_id': id,
          'is_sender_post': false,
+         'nick': _nick
       };
 
       final String payload = jsonEncode(msgMap);
@@ -1375,6 +1378,7 @@ class MenuChatState extends State<MenuChat>
          'msg': msg,
          'post_id': id,
          'is_sender_post': true,
+         'nick': _nick
       };
 
       final String payload = jsonEncode(msgMap);
@@ -1420,6 +1424,7 @@ class MenuChatState extends State<MenuChat>
       final int postId = ack['post_id'];
       final String msg = ack['msg'];
       final String from = ack['from'];
+      final String nick = ack['nick'];
       final bool is_sender_post = ack['is_sender_post'];
 
       // A user message can be either directed to one of the posts
@@ -1438,25 +1443,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       // When we insert the message above the chat history it belongs
-      // to is moved to the front in that history. Now, we have to
-      // check if we already have the user's nick.
-      if (foo.first.chats.first.nick.isEmpty) {
-         // We do not have its nick. We set it unknown and request it
-         // from the user.
-         foo.first.chats.first.nick = cts.unknownNick;
-
-         print('Sending a nick request.');
-         var map = {
-            'cmd': 'message',
-            'type': 'nick_req',
-            'to': from,
-            'is_sender_post': !is_sender_post,
-            'post_id': postId,
-         };
-
-         final String payload = jsonEncode(map);
-         sendChatMsg(payload, 0);
-      }
+      // to is moved to the front in that history.
+      foo.first.chats.first.nick = nick;
 
       // Acks we have received the message.
       var map = {
@@ -1484,50 +1472,6 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _nickReqHandler(Map<String, dynamic> ack)
-   {
-      print('Nick request being processed.');
-
-      final String from = ack['from'];
-      final int postId = ack['post_id'];
-      final bool isSenderPost = ack['is_sender_post'];
-
-      var map = {
-         'cmd': 'message',
-         'type': 'nick_req_ack',
-         'to': from,
-         'is_sender_post': !isSenderPost,
-         'post_id': postId,
-         'nick': _nick,
-      };
-
-      final String payload = jsonEncode(map);
-      sendChatMsg(payload, 0);
-   }
-
-   void _nickReqAckHandler(Map<String, dynamic> ack)
-   {
-      final String from = ack['from'];
-      final int postId = ack['post_id'];
-      final bool isSenderPost = ack['is_sender_post'];
-      final String nick = ack['nick'];
-
-      List<PostData> foo = _ownPosts;
-      if (isSenderPost)
-         foo = _favPosts;
-
-      final int i = foo.indexWhere((e) { return e.id == postId;});
-      if (i == -1) {
-         // AFAIK, the only way this can happen ist if the app user
-         // has deleted the a post in _fav_post in the time between
-         // the nick_req has been sent and the ack has been received.
-         // So there is no need or way to proceeed.
-         return;
-      }
-
-      foo[i].setNick(from, nick);
-   }
-
    void _onMessage(Map<String, dynamic> ack)
    {
       final String type = ack['type'];
@@ -1545,10 +1489,6 @@ class MenuChatState extends State<MenuChat>
          _chatAppAckHandler(ack, 2);
       } else if (type == 'app_ack_read') {
          _chatAppAckHandler(ack, 3);
-      } else if (type == 'nick_req') {
-         _nickReqHandler(ack);
-      } else if (type == 'nick_req_ack') {
-         _nickReqAckHandler(ack);
       }
 
       setState((){});
