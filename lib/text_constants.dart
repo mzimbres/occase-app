@@ -81,7 +81,7 @@ final List<String> filterTabNames = <String>
 List<IconData> filterTabIcons = <IconData>
 [ Icons.home
 , Icons.directions_car
-, Icons.details
+, Icons.filter_list
 , Icons.send
 ];
 

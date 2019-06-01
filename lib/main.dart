@@ -1777,6 +1777,7 @@ class MenuChatState extends State<MenuChat>
          'cmd': 'subscribe',
          'last_post_id': _lastPostId,
          'channels': codes,
+         'filter': _filter
       };
 
       final String subText = jsonEncode(subCmd);
