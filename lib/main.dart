@@ -506,7 +506,7 @@ makeChatScreen(BuildContext ctx,
                             color: Color(0xFFFFFFFF)
                       )
                    ),
-                   dense: false,
+                   dense: true,
                    //subtitle: subtitle
                 ),
                 backgroundColor: Theme.of(ctx).primaryColor,

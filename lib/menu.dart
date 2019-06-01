@@ -127,8 +127,8 @@ ListView createFilterListView(BuildContext context,
                    context,
                    child.name,
                    createMenuItemSubStrWidget(
-                         subStr,
-                         FontWeight.normal),
+                      subStr,
+                      FontWeight.normal),
                    icon,
                    makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
                                    , color),
@@ -151,7 +151,9 @@ ListView createFilterListView(BuildContext context,
             createListViewItem(
                context,
                child.name,
-               createMenuItemSubStrWidget(subStr, FontWeight.normal),
+               createMenuItemSubStrWidget(
+                  subStr,
+                  FontWeight.normal),
                null,
                makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
                                , filterNodeParentColor),
