@@ -10,6 +10,12 @@ import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
+class IdxPair {
+   int i = 0;
+   int j = 0;
+   IdxPair(this.i, this.j);
+}
+
 void safeDeleteFile(final String path)
 {
    try {
@@ -154,7 +160,7 @@ class ChatHistory {
    String peer = '';
    String nick = '';
    List<ChatItem> msgs = List<ChatItem>();
-   List<ChatItem> _unreadMsgs = List<ChatItem>();
+   List<ChatItem> unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
    int date = 0;
 
@@ -196,8 +202,8 @@ class ChatHistory {
       if (!msgs.isEmpty)
          return msgs.last.date;
 
-      if (!_unreadMsgs.isEmpty)
-         return _unreadMsgs.last.date;
+      if (!unreadMsgs.isEmpty)
+         return unreadMsgs.last.date;
 
       return date;
    }
@@ -215,7 +221,7 @@ class ChatHistory {
       try {
          File f = File(makeFullPath(cts.chatHistUnreadPrefix, postId));
          final List<String> lines = f.readAsLinesSync();
-         _unreadMsgs  = chatItemsFromStrs(lines);
+         unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
          //print(e);
       }
@@ -225,18 +231,18 @@ class ChatHistory {
    // the read history.
    int moveToReadHistory(final int postId)
    {
-      if (_unreadMsgs.isEmpty)
+      if (unreadMsgs.isEmpty)
          return 0;
 
-      final int n = _unreadMsgs.length;
+      final int n = unreadMsgs.length;
 
-      msgs.addAll(_unreadMsgs);
+      msgs.addAll(unreadMsgs);
 
-      writeListToDisk( _unreadMsgs
+      writeListToDisk( unreadMsgs
                      , makeFullPath(cts.chatHistReadPrefix, postId)
                      , FileMode.append);
 
-      _unreadMsgs.clear();
+      unreadMsgs.clear();
 
       writeToFile( ''
                  , makeFullPath(cts.chatHistUnreadPrefix, postId)
@@ -247,18 +253,25 @@ class ChatHistory {
 
    String getLastUnreadMsg()
    {
-      if (_unreadMsgs.isEmpty)
+      if (unreadMsgs.isEmpty)
          return '';
 
-      return _unreadMsgs.last.msg;
+      return unreadMsgs.last.msg;
+   }
+
+   int getNumberOfMsgs()
+   {
+      return msgs.length;
    }
 
    int getNumberOfUnreadMsgs()
    {
-      if (_unreadMsgs.isEmpty)
-         return 0;
+      return unreadMsgs.length;
+   }
 
-      return _unreadMsgs.length;
+   bool hasUnreadMsgs()
+   {
+      return !unreadMsgs.isEmpty;
    }
 
    String getLastReadMsg()
@@ -284,7 +297,7 @@ class ChatHistory {
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       ChatItem item = ChatItem(thisApp, msg, 0, now);
-      _unreadMsgs.add(item);
+      unreadMsgs.add(item);
 
       writeListToDisk( <ChatItem>[item]
                      , makeFullPath(cts.chatHistUnreadPrefix, postId)
@@ -597,8 +610,7 @@ class PostData {
 
    int moveToReadHistory(int i)
    {
-      final int n = chats[i].moveToReadHistory(id);
-      return n;
+      return chats[i].moveToReadHistory(id);
    }
 }
 
@@ -611,23 +623,23 @@ int CompPostData(final PostData lhs, final PostData rhs)
 
 // Returns the old index in posts that has postId. Will rotate
 // elements so that it becomes the first in the list. The nick is used
-// only creation is necessary.
-int
-findAndInsertNewMsg(List<PostData> posts,
-                    final int postId,
-                    final String from,
-                    final String msg,
-                    final bool thisApp,
-                    final String nick)
+// only if creation is necessary.
+IdxPair
+findInsertAndRotateMsg(List<PostData> posts,
+                       final int postId,
+                       final String from,
+                       final String msg,
+                       final bool thisApp,
+                       final String nick)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
    if (i == -1)
-      return -1;
+      return IdxPair(-1, -1);
 
    final int j = posts[i].getChatHistIdxOrCreate(from, nick);
    posts[i].addUnreadMsg(j, msg, thisApp);
    rotateElements(posts, i);
-   return i;
+   return IdxPair(i, j);
 }
 
 void

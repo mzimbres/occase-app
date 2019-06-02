@@ -20,12 +20,6 @@ import 'package:menu_chat/globals.dart' as glob;
 
 // TODO: Consider making _posts, _favPosts and _ownPosts a queue.
 
-class IdxPair {
-   int i = 0;
-   int j = 0;
-   IdxPair(this.i, this.j);
-}
-
 void
 handleLongPressedChat( List<IdxPair> pairs
                      , final List<PostData> posts
@@ -404,7 +398,7 @@ int postIndexHelper(int i)
 Widget
 makeChatScreen(BuildContext ctx,
                Function onWillPopScope,
-               ChatHistory chatHist,
+               ChatHistory ch,
                TextEditingController ctrl,
                Function onChatSendPressed,
                ScrollController scrollCtrl)
@@ -452,45 +446,64 @@ makeChatScreen(BuildContext ctx,
 
    //_____________
 
+   final int nMsgs = ch.msgs.length;
+   final int nUnreadMsgs = ch.unreadMsgs.length;
+   final int shift = nUnreadMsgs == 0 ? 0 : 1;
+
    ListView list = ListView.builder(
-         controller: scrollCtrl,
-         reverse: false,
-         padding: const EdgeInsets.all(6.0),
-         itemCount: chatHist.msgs.length,
-         itemBuilder: (BuildContext ctx, int i)
-         {
-            Alignment align = Alignment.bottomLeft;
-            Color color = Color(0xFFFFFFFF);
-            if (chatHist.msgs[i].thisApp) {
-               align = Alignment.bottomRight;
-               color = Colors.lightGreenAccent[100];
+      controller: scrollCtrl,
+      reverse: false,
+      padding: const EdgeInsets.all(6.0),
+      itemCount: nMsgs + nUnreadMsgs + shift,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+         List<ChatItem> items = ch.msgs;
+         if (shift == 1) {
+            if (i == nMsgs) {
+               return Card(
+                  color: cts.postFrameColor,
+                  //margin: const EdgeInsets.all(6.0),
+                  child: Center(child: Text('$nUnreadMsgs nao lidas.')));
             }
 
-            Widget msgAndStatus;
-            if (chatHist.msgs[i].thisApp) {
-               final int st =  chatHist.msgs[i].status;
-               Align foo =
-                  Align(alignment: Alignment.bottomRight,
-                        child: chooseIcon(st));
-               msgAndStatus = Row(children:
-                  <Widget>[Expanded(child: Text(chatHist.msgs[i].msg)),
-                           Expanded(child: foo)]);
-            } else {
-               msgAndStatus = Text(chatHist.msgs[i].msg);
+            if (i > nMsgs) {
+               items = ch.unreadMsgs;
+               i -= nMsgs; // For the read msgs
+               i -= 1;     // For the shift
             }
+         }
 
-            // TODO: Insert a divider for new messages here.
-            return Align( alignment: align,
-                  child:FractionallySizedBox( child: Card(
-                    child: Padding( padding: EdgeInsets.all(4.0),
-                                    child: msgAndStatus),
-                    color: color,
-                    margin: EdgeInsets.all(6.0),
-                    elevation: 6.0,
-                  ),
-                  widthFactor: 0.8
-            ));
-         },
+         Alignment align = Alignment.bottomLeft;
+         Color color = Color(0xFFFFFFFF);
+         if (items[i].thisApp) {
+            align = Alignment.bottomRight;
+            color = Colors.lightGreenAccent[100];
+         }
+
+         Widget msgAndStatus;
+         if (items[i].thisApp) {
+            final int st =  items[i].status;
+            Align foo =
+               Align(alignment: Alignment.bottomRight,
+                     child: chooseIcon(st));
+            msgAndStatus = Row(children:
+               <Widget>[Expanded(child: Text(items[i].msg)),
+                        Expanded(child: foo)]);
+         } else {
+            msgAndStatus = Text(items[i].msg);
+         }
+
+         return Align( alignment: align,
+               child:FractionallySizedBox( child: Card(
+                 child: Padding( padding: EdgeInsets.all(4.0),
+                                 child: msgAndStatus),
+                 color: color,
+                 margin: EdgeInsets.all(6.0),
+                 elevation: 6.0,
+               ),
+               widthFactor: 0.8
+         ));
+      },
    );
 
    Column mainCol = Column(
@@ -507,7 +520,7 @@ makeChatScreen(BuildContext ctx,
                 title: ListTile(
                    //leading: CircleAvatar(child: Icon(Icons.person)),
                    //leading: Icon(Icons.person, color: Colors.white),
-                   title: Text( chatHist.getChatDisplayName(),
+                   title: Text(ch.getChatDisplayName(),
                       style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: cts.mainFontSize,
@@ -978,6 +991,7 @@ class MenuChatState extends State<MenuChat>
          // posts.
          _favPosts.add(data);
          rotateElements(_favPosts, _favPosts.length - 1);
+         assert(_favPostIdx == -1);
          writeListToDisk( <PostData>[data], _favPostsFileFullPath
                         , FileMode.append);
       }
@@ -1028,8 +1042,9 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
-   bool _onWillPopFavChatScreen()
+   bool _onWillPopFavChatScreen(final int chatIdx)
    {
+      _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
       _favPostIdx = -1;
       setState(() { });
       return false;
@@ -1200,6 +1215,13 @@ class MenuChatState extends State<MenuChat>
       post.date = timestamp;
       _ownPosts.add(post);
       rotateElements(_ownPosts, _ownPosts.length - 1);
+      // We have to keep _ownPostIdx pointing to its post. Since
+      // elements are torated by only one element and we know the post
+      // of _ownPostIdx has rotated for sure we can only increase its
+      // index.
+      if (_ownPostIdx != -1)
+         ++_ownPostIdx;
+
       writeListToDisk( <PostData>[post], _ownPostsFileFullPath
                      , FileMode.append);
 
@@ -1250,10 +1272,27 @@ class MenuChatState extends State<MenuChat>
       if (!_postsWithLongPressed.isEmpty) {
          _onFavChatLongPressed(i, j);
       } else {
+         if (_favPosts[i].chats[j].hasUnreadMsgs()) {
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': _favPosts[i].from,
+               'post_id': _favPosts[i].id,
+               'is_sender_post': false,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload, 0);
+         }
+
          _favPostIdx = i;
+
          setState(() {
             SchedulerBinding.instance.addPostFrameCallback((_)
             {
+               // TODO: Jump only up to the first index with unread
+               // msgs.
                _chatScrollCtrl.jumpTo(
                   _chatScrollCtrl.position.maxScrollExtent);
             });
@@ -1336,6 +1375,8 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
+      // TODO: addMsg causes the messages to be shown in the wrong
+      // order, using unreadMsg causes other problems.
       _favPosts[_favPostIdx].addMsg(chatIdx, msg, true);
       _favPosts[_favPostIdx].moveToFront(chatIdx);
       rotateElements(_favPosts, _favPostIdx);
@@ -1428,10 +1469,10 @@ class MenuChatState extends State<MenuChat>
       if (is_sender_post)
          foo = _favPosts;
 
-      final int postIdIdx =
-         findAndInsertNewMsg(foo, postId, from, msg, false, '');
+      final IdxPair pair =
+         findInsertAndRotateMsg(foo, postId, from, msg, false, '');
 
-      if (postIdIdx == -1) {
+      if (pair.i == -1) {
          print('===> Error: Ignoring chat msg.');
          return;
       }
@@ -1439,6 +1480,45 @@ class MenuChatState extends State<MenuChat>
       // When we insert the message above the chat history it belongs
       // to is moved to the front in that history.
       foo.first.chats.first.nick = nick;
+
+      // At this point we know a rotation of the posts has taken place
+      // and we have to compensate any indexes ponting to them. Since
+      // they may be in use.
+      if (_favPostIdx != -1) {
+         if (_favPostIdx == pair.i)
+            _favPostIdx = 0;
+         else if (pair.i > _favPostIdx)
+            ++_favPostIdx; // Rotations are by ony element.
+      }
+
+      if (_ownPostIdx != -1) {
+         if (_ownPostIdx == pair.i)
+            _ownPostIdx = 0;
+         else if (pair.i > _ownPostIdx)
+            ++_ownPostIdx; // Rotations are by ony element.
+      }
+
+      // If we are in the screen having chat with the user we can ack
+      // it with app_ack_read and skip app_ack_received. Additionaly
+      // we have to move the unread msgs into the read msgs.
+      if (_tabCtrl.index == 2 && _favPostIdx != -1) {
+         // Yes, we are chatting with an user from the fav list.
+         if (_favPostIdx == 0) {
+            foo.first.chats.first.moveToReadHistory(postId);
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': from,
+               'post_id': postId,
+               'is_sender_post': false,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload, 0);
+            return;
+         }
+      }
 
       // Acks we have received the message.
       var map = {
@@ -1916,36 +1996,19 @@ class MenuChatState extends State<MenuChat>
       if (_tabCtrl.index == 2 && _favPostIdx != -1) {
          // We are in the favorite posts screen, where pressing the
          // chat button in any of the posts leads us to the chat
-         // screen with the postertiser.
+         // screen with the peer.
          final String peer = _favPosts[_favPostIdx].from;
-         final int id = _favPosts[_favPostIdx].id;
          final int chatIdx = _favPosts[_favPostIdx].getChatHistIdx(peer);
          assert(chatIdx != -1);
-         final int n =
-            _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
 
-         if (n != 0) {
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'from': _appId,
-               'to': peer,
-               'post_id': id,
-               'number_of_msgs': n, // Still unused on the app.
-               'is_sender_post': false,
-            };
-
-            final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
-         }
-
-         return makeChatScreen(
-                   ctx,
-                   _onWillPopFavChatScreen,
-                   _favPosts[_favPostIdx].chats[chatIdx],
-                   _txtCtrl,
-                   (){_onFavChatSendPressed(chatIdx);},
-                   _chatScrollCtrl);
+         return
+            makeChatScreen(
+                ctx,
+                (){_onWillPopFavChatScreen(chatIdx);},
+                _favPosts[_favPostIdx].chats[chatIdx],
+                _txtCtrl,
+                (){_onFavChatSendPressed(chatIdx);},
+                _chatScrollCtrl);
       }
 
       if (_tabCtrl.index == 2 &&
