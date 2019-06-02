@@ -967,7 +967,10 @@ class MenuChatState extends State<MenuChat>
    void _onPostSelection(PostData data, int fav)
    {
       if (fav == 1) {
+         // Had I use a queue, there would be no need of rotating the
+         // posts.
          _favPosts.add(data);
+         rotateElements(_favPosts, _favPosts.length - 1);
          writeListToDisk( <PostData>[data], _favPostsFileFullPath
                         , FileMode.append);
       }

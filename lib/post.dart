@@ -149,12 +149,14 @@ int findIdxToAck(final List<ChatItem> msgs, final int status)
    return idx;
 }
 
+// TODO: Write the json serialize functions.
 class ChatHistory {
    String peer = '';
    String nick = '';
    List<ChatItem> msgs = List<ChatItem>();
    List<ChatItem> _unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
+   int date = 0;
 
    String getChatDisplayName()
    {
@@ -179,7 +181,7 @@ class ChatHistory {
       return nick.substring(0, 2);
    }
 
-   ChatHistory(this.peer, this.nick, final int postId)
+   ChatHistory(this.peer, this.nick, this.date, final int postId)
    {
       _init(postId);
    }
@@ -197,7 +199,7 @@ class ChatHistory {
       if (!_unreadMsgs.isEmpty)
          return _unreadMsgs.last.date;
 
-      return 0;
+      return date;
    }
 
    void _init(final int postId)
@@ -392,8 +394,10 @@ class PostData {
          for (String line in lines) {
             final List<String> fields = line.split(';');
             // The assertion should be for == not >=.
-            assert(fields.length >= 2);
-            chats.add(ChatHistory(fields.first, fields.last, id));
+            assert(fields.length >= 3);
+            chats.add(ChatHistory( fields[0]
+                                 , fields[1]
+                                 , int.parse(fields[2]), id));
          }
       } catch (e) {
          //print(e);
@@ -433,7 +437,7 @@ class PostData {
       // Overwrites the previous content.
       String data = '';
       for (ChatHistory o in chats)
-         data += '${o.peer};${o.nick}\n';
+         data += '${o.peer};${o.nick};${o.date}\n';
 
       print('Persisting peers: \n$data');
 
@@ -443,7 +447,8 @@ class PostData {
    void createChatEntryForPeer(String peer, final String nick)
    {
       print('Creating chat entry for: $peer');
-      ChatHistory history = ChatHistory(peer, nick, id);
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      ChatHistory history = ChatHistory(peer, nick, now, id);
       chats.add(history);
       _persistPeers();
    }
@@ -781,6 +786,8 @@ List<Card> postTextAssembler(BuildContext context,
 {
    List<Card> list = makeMenuInfoCards(context, data, menus, color);
 
+   // TODO: Fix the date below. It is wrong. I will use id for the
+   // moment.
    DateTime date = DateTime.fromMillisecondsSinceEpoch(data.id);
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
@@ -960,7 +967,7 @@ makePostTabListView(BuildContext context,
 
                 List<Card> cards = postTextAssembler(
                                       context,
-                                      posts[i],
+                                      posts[idx],
                                       menus,
                                       color);
    
