@@ -1307,11 +1307,26 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   // TODO: Collapse this and the _fav version in a single function.
    void _onOwnPostChatPressed(int i, int j)
    {
       if (!_postsWithLongPressed.isEmpty) {
          _onOwnPostChatLongPressed(i, j);
       } else {
+         if (_ownPosts[i].chats[j].hasUnreadMsgs()) {
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': _ownPosts[i].from,
+               'post_id': _ownPosts[i].id,
+               'is_sender_post': true,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload, 0);
+         }
+
          _ownPostIdx = i;
          _ownPostChatPeer = _ownPosts[i].chats[j].peer;
          setState(() {
@@ -1375,8 +1390,7 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
-      // TODO: addMsg causes the messages to be shown in the wrong
-      // order, using unreadMsg causes other problems.
+      _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
       _favPosts[_favPostIdx].addMsg(chatIdx, msg, true);
       _favPosts[_favPostIdx].moveToFront(chatIdx);
       rotateElements(_favPosts, _favPostIdx);
@@ -1418,6 +1432,7 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       sendChatMsg(payload, 1);
+      _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
       _ownPosts[_ownPostIdx].addMsg(chatIdx, msg, true);
       _ownPosts[_ownPostIdx].moveToFront(chatIdx);
       rotateElements(_ownPosts, _ownPostIdx);
@@ -1512,6 +1527,26 @@ class MenuChatState extends State<MenuChat>
                'to': from,
                'post_id': postId,
                'is_sender_post': false,
+            };
+
+            final String payload = jsonEncode(msgMap);
+            sendChatMsg(payload, 0);
+            return;
+         }
+      } else if (_tabCtrl.index == 2 && _ownPostIdx != -1 && !_ownPostChatPeer.isEmpty) {
+         // Performs the same steps as above, but with the difference
+         // that we have to search the chat entry.
+         if (_ownPostIdx == 0) {
+            final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
+            assert(bar != -1);
+            foo.first.moveToReadHistory(bar);
+            var msgMap = {
+               'cmd': 'message',
+               'type': 'app_ack_read',
+               'from': _appId,
+               'to': from,
+               'post_id': postId,
+               'is_sender_post': true,
             };
 
             final String payload = jsonEncode(msgMap);
@@ -2018,23 +2053,6 @@ class MenuChatState extends State<MenuChat>
          final int chatIdx =
                _ownPosts[_ownPostIdx].getChatHistIdx(_ownPostChatPeer);
          assert(chatIdx != -1);
-         final int n =
-               _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
-
-         if (n != 0) {
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'from': _appId,
-               'to': _ownPostChatPeer,
-               'post_id': _ownPosts[_ownPostIdx].id,
-               'number_of_msgs': n,
-               'is_sender_post': true,
-            };
-
-            final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
-         }
 
          return makeChatScreen(
                    ctx,
