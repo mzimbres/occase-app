@@ -409,21 +409,22 @@ makeChatScreen(BuildContext ctx,
                Function onChatSendPressed,
                ScrollController scrollCtrl)
 {
-   TextField tf =
-      makeTextInputFieldCard(
-         ctrl,
-         null,
-         InputDecoration.collapsed(hintText: cts.chatTextFieldHintStr));
+   IconButton sendButCol =
+      IconButton(
+         icon: Icon(Icons.send),
+         onPressed: onChatSendPressed,
+         color: Theme.of(ctx).primaryColor
+         );
 
-   CircleAvatar sendButCol =
-         CircleAvatar(
-               child: IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: onChatSendPressed,
-                  color: Color(0xFFFFFFFF)
-                  ),
-               backgroundColor: Theme.of(ctx).primaryColor
-               );
+   TextField tf = TextField(
+       controller: ctrl,
+       //textInputAction: TextInputAction.go,
+       //onSubmitted: onTextFieldPressed,
+       keyboardType: TextInputType.multiline,
+       maxLines: null,
+       maxLength: null,
+       decoration:
+          InputDecoration.collapsed( hintText: cts.chatTextFieldHintStr));
 
    Container cont = Container(
        child: ConstrainedBox(
@@ -431,15 +432,21 @@ makeChatScreen(BuildContext ctx,
            child: Row(children: <Widget>
               [ Expanded( child: Column(children: <Widget>
                   [ Expanded(child: Scrollbar(
-                        child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            reverse: true,
-                            child: makeCard(tf, Colors.white))))
+                     child: SingleChildScrollView(
+                         //padding: EdgeInsets.all(10.0),
+                         scrollDirection: Axis.vertical,
+                         reverse: true,
+                         child: Card(
+                            margin: EdgeInsets.all(0.0),
+                            color: Colors.white,
+                            child: Padding(
+                               padding: EdgeInsets.all(14.0),
+                               child: tf))))),
                     
                     ]))
               , Column(children: <Widget>
                     [ Spacer()
-                    , makeCard(sendButCol, Colors.grey[200])])
+                    , sendButCol])
               ])),
    );
 
@@ -516,7 +523,7 @@ makeChatScreen(BuildContext ctx,
                                    , onPressed:onWillPopScope)
              ),
           body: mainCol,
-          backgroundColor: Colors.grey[200],
+          backgroundColor: Colors.grey[300],
        )
     );
 }
