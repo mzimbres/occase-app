@@ -121,6 +121,8 @@ final List<List<String>> menuDepthNames = <List<String>>
 // The text in the post description field.
 final List<String> descList = <String>
 [ 'Anunciante'
+, 'Id do anunc.'
+, 'Id do post'
 , 'Data'
 , "Descricao"
 ];

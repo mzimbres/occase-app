@@ -795,7 +795,9 @@ List<Card> postTextAssembler(BuildContext context,
    String dateString = format.format(date);
 
    List<String> values = List<String>();
-   values.add(data.from);
+   values.add(data.nick);
+   values.add('${data.from}');
+   values.add('${data.id}');
    values.add(dateString);
    values.add(data.description);
 
