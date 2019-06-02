@@ -27,6 +27,11 @@ class MenuNode {
 
       return c;
    }
+
+   int getChildrenSize()
+   {
+      return children.length;
+   }
 }
 
 // Given a leaf code and the menu it corresponds to produces an array

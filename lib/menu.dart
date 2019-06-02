@@ -12,9 +12,9 @@ String makeLeafCounterString(int n)
    return null;
 }
 
-String makeFilterNonLeafSubStr(int n)
+String makeFilterNonLeafSubStr(int n, int size)
 {
-   return 'Filtros aplicados: ${n}';
+   return 'Filtros aplicados: $n/$size';
 }
 
 Text createMenuItemSubStrWidget(String str, FontWeight fw)
@@ -140,7 +140,8 @@ ListView createFilterListView(BuildContext context,
          // Works only if the next level in the tree is its filter
          // depth.
          final int c = child.getCounterOfFilterChildren();
-         final String subStr = makeFilterNonLeafSubStr(c);
+         final String subStr =
+            makeFilterNonLeafSubStr(c, child.getChildrenSize());
          final String abbrev = makeStrAbbrev(child.name);
 
          Color filterNodeParentColor = Theme.of(context).primaryColor;
