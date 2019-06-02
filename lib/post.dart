@@ -919,13 +919,13 @@ Card makePostWidget(BuildContext context,
    );
 }
 
-Card makeCard(Widget widget, )
+Card makeCard(Widget widget, Color color)
 {
    return Card(
          child:
             Padding(child: widget,
                     padding: EdgeInsets.all( cts.postElemTextPadding)),
-         color: cts.postLocHeaderColor,
+         color: color,
          margin: EdgeInsets.all(cts.postInnerMargin),
          elevation: 0.0,
    );

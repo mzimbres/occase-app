@@ -221,7 +221,8 @@ makeNewPostFinalScreenWidget( BuildContext ctx
             txtCtrl,
             null,
             InputDecoration.collapsed(
-               hintText: cts.newPostTextFieldHistStr))));
+               hintText: cts.newPostTextFieldHistStr)),
+         cts.postLocHeaderColor));
 
    Widget widget_tmp =
       makePostWidget( ctx
@@ -427,23 +428,21 @@ makeChatScreen(BuildContext ctx,
    Container cont = Container(
        child: ConstrainedBox(
            constraints: BoxConstraints(maxHeight: 100.0),
-           child: Scrollbar(
-               child: SingleChildScrollView(
-                   scrollDirection: Axis.vertical,
-                   reverse: true,
-                   child: makeCard(tf),
-               ),
-           ),
-       ),
+           child: Row(children: <Widget>
+              [ Expanded( child: Column(children: <Widget>
+                  [ Expanded(child: Scrollbar(
+                        child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            reverse: true,
+                            child: makeCard(tf, Colors.white))))
+                    
+                    ]))
+              , Column(children: <Widget>
+                    [ Spacer()
+                    , makeCard(sendButCol, Colors.grey[200])])
+              ])),
    );
 
-   Row row = Row(
-      children: <Widget>
-      [ Expanded(child: cont)
-      , makeCard(sendButCol)
-      ],
-   );
- 
    //_____________
 
    ListView list = ListView.builder(
@@ -490,7 +489,7 @@ makeChatScreen(BuildContext ctx,
    Column mainCol = Column(
          children: <Widget>[
             Expanded(child: list),
-            row
+            cont
          ],
    );
 
@@ -517,7 +516,7 @@ makeChatScreen(BuildContext ctx,
                                    , onPressed:onWillPopScope)
              ),
           body: mainCol,
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.grey[200],
        )
     );
 }
