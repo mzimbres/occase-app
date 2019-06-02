@@ -1157,7 +1157,7 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
-      print('sendPost: ${_outPostsQueue.first.filter}');
+      print(payload);
       channel.sink.add(payload);
    }
 
@@ -1216,9 +1216,9 @@ class MenuChatState extends State<MenuChat>
       _txtCtrl.text = '';
 
       _postInput.from = _appId;
+      _postInput.nick = _nick;
       sendPost(_postInput.clone());
       _postInput = PostData();
-      _postInput.nick = _nick;
       setState(() { });
    }
 

@@ -409,6 +409,7 @@ class PostData {
       ret.from = this.from;
       ret.id = this.id;
       ret.filter = this.filter;
+      ret.nick = this.nick;
       return ret;
    }
 
