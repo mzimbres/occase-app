@@ -18,6 +18,8 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
+// TODO: Consider making _posts, _favPosts and _ownPosts a queue.
+
 class IdxPair {
    int i = 0;
    int j = 0;
@@ -528,9 +530,8 @@ Widget makeTabWidget(int n, String title, double opacity)
    List<Widget> widgets = List<Widget>(2);
    widgets[0] = Text(title);
 
-   // TODO: The container should change from white to the color when
-   // it is not focused. 
    // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
+   // for opacity values.
    widgets[1] =
       Opacity( child: makeCircleUnreadMsgs(n, Colors.white,
                       cts.primaryColor)
@@ -997,8 +998,8 @@ class MenuChatState extends State<MenuChat>
 
    bool _onWillPopMenu()
    {
-      // TODO: Split this function in two: One for the filters and one
-      // for the new post screen.
+      // We may want to  split this function in two: One for the
+      // filters and one for the new post screen.
       if (_botBarIdx >= _menus.length) {
          --_botBarIdx;
          setState(() { });
@@ -1173,7 +1174,7 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   void handlePublishAck(final int id)
+   void handlePublishAck(final int id, final int timestamp)
    {
       assert(!_outPostsQueue.isEmpty);
 
@@ -1190,7 +1191,9 @@ class MenuChatState extends State<MenuChat>
       }
 
       post.id = id;
+      post.date = timestamp;
       _ownPosts.add(post);
+      rotateElements(_ownPosts, _ownPosts.length - 1);
       writeListToDisk( <PostData>[post], _ownPostsFileFullPath
                      , FileMode.append);
 
@@ -1593,9 +1596,9 @@ class MenuChatState extends State<MenuChat>
    {
       final String res = ack['result'];
       if (res == 'ok')
-         handlePublishAck(ack['id']);
+         handlePublishAck(ack['id'], ack['date']);
       else
-         handlePublishAck(-1);
+         handlePublishAck(-1, 0);
    }
 
    void onWSData(msg)

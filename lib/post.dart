@@ -372,6 +372,9 @@ class PostData {
    // The user nick name.
    String nick = cts.unknownNick;
 
+   // The date when the post was created.
+   int date = 0;
+
    List<ChatHistory> chats = List<ChatHistory>();
 
    PostData()
@@ -414,6 +417,7 @@ class PostData {
       ret.id = this.id;
       ret.filter = this.filter;
       ret.nick = this.nick;
+      ret.date = this.date;
       return ret;
    }
 
@@ -527,10 +531,9 @@ class PostData {
    int getMostRecentTimestamp()
    {
       if (chats.isEmpty)
-         return 0;
+         return date;
 
-      final ChatHistory hist =
-         chats.reduce(selectMostRecentChat);
+      final ChatHistory hist = chats.reduce(selectMostRecentChat);
 
       return hist.getMostRecentTimestamp();
    }
@@ -571,6 +574,7 @@ class PostData {
       description = pd.description;
       filter = pd.filter;
       nick = pd.nick;
+      date = pd.date;
 
       _loadChats();
    }
@@ -587,6 +591,7 @@ class PostData {
          'filter': filter,
          'msg': description,
          'nick': nick,
+         'date': date,
       };
    }
 
@@ -785,10 +790,7 @@ List<Card> postTextAssembler(BuildContext context,
                             Color color)
 {
    List<Card> list = makeMenuInfoCards(context, data, menus, color);
-
-   // TODO: Fix the date below. It is wrong. I will use id for the
-   // moment.
-   DateTime date = DateTime.fromMillisecondsSinceEpoch(data.id);
+   DateTime date = DateTime.fromMillisecondsSinceEpoch(data.date);
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
 
