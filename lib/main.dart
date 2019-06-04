@@ -1050,8 +1050,9 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
-   bool _onWillPopOwnChatScreen()
+   bool _onWillPopOwnPostChat(int idx)
    {
+      _ownPosts[_ownPostIdx].moveToReadHistory(idx);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
@@ -2056,7 +2057,7 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
                    ctx,
-                   _onWillPopOwnChatScreen,
+                   (){_onWillPopOwnPostChat(chatIdx);},
                    _ownPosts[_ownPostIdx].chats[chatIdx],
                    _txtCtrl,
                    (){_onOwnChatSendPressed(chatIdx);},

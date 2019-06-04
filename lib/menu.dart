@@ -12,11 +12,6 @@ String makeLeafCounterString(int n)
    return null;
 }
 
-String makeFilterNonLeafSubStr(int n, int size)
-{
-   return 'Filtros aplicados: $n/$size';
-}
-
 Text createMenuItemSubStrWidget(String str, FontWeight fw)
 {
    if (str == null)
@@ -107,59 +102,70 @@ ListView createFilterListView(BuildContext context,
 
          if (shift == 1) {
             MenuNode child = o.children[i - 1];
-            Widget icon = null;
-            Color color = Theme.of(context).primaryColor;
-            if (child.status) {
-               color = cts.selectedMenuColor;
-               icon = Icon(Icons.check_box, color: color);
-            } else {
-               icon = Icon(Icons.check_box_outline_blank,
-                     color: color);
-            }
+            Widget icon = Icon(Icons.check_box_outline_blank);
+            if (child.status)
+               icon = Icon(Icons.check_box);
 
             final String subStr = makeLeafCounterString(child.leafCounter);
+
+            Widget subtitle = null;
+            if (!child.isLeaf()) {
+               final int lc = child.leafCounter;
+               final String names = child.getChildrenNames();
+               subtitle =  Text(
+                   '($lc) $names',
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip);
+            }
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             final String abbrev = makeStrAbbrev(child.name);
-            return 
-               createListViewItem(
-                   context,
-                   child.name,
-                   createMenuItemSubStrWidget(
-                      subStr,
-                      FontWeight.normal),
-                   icon,
-                   makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
-                                   , color),
-                   () { onLeafPressed(i);},
-                   (){});
+            return ListTile(
+                leading: 
+                   makeCircleAvatar(
+                      Text(abbrev, style: cts.abbrevStl),
+                      Theme.of(context).primaryColor),
+                title: Text(child.name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: subtitle,
+                trailing: icon,
+                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                onTap: () { onLeafPressed(i);},
+                enabled: true,
+                selected: child.status,
+                isThreeLine: !child.isLeaf()
+                );
          }
 
-         MenuNode child = o.children[i];
          // Works only if the next level in the tree is its filter
          // depth.
-         final int c = child.getCounterOfFilterChildren();
-         final String subStr =
-            makeFilterNonLeafSubStr(c, child.getChildrenSize());
-         final String abbrev = makeStrAbbrev(child.name);
+         final int c = o.children[i].getCounterOfFilterChildren();
+         final int cs = o.children[i].getChildrenSize();
 
-         Color filterNodeParentColor = Theme.of(context).primaryColor;
-         if (c != 0)
-            filterNodeParentColor = cts.selectedMenuColor;
+         final String names = o.children[i].getChildrenNames();
+         final String subtitle = '($c/$cs) $names';
 
          return
-            createListViewItem(
-               context,
-               child.name,
-               createMenuItemSubStrWidget(
-                  subStr,
-                  FontWeight.normal),
-               null,
-               makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
-                               , filterNodeParentColor),
-               () { onNodePressed(i); },
-               (){});
+            ListTile(
+                leading: makeCircleAvatar(
+                   Text(makeStrAbbrev(
+                           o.children[i].name),
+                           style: cts.abbrevStl),
+                   Theme.of(context).primaryColor),
+                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: Text(
+                   subtitle,
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip),
+                trailing: Icon(Icons.keyboard_arrow_right),
+                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                onTap: () { onNodePressed(i); },
+                enabled: true,
+                selected: c != 0,
+                isThreeLine: true,
+                );
       },
    );
 }

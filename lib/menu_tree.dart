@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:menu_chat/constants.dart';
 
 class MenuNode {
@@ -10,6 +11,22 @@ class MenuNode {
    List<MenuNode> children = List<MenuNode>();
 
    MenuNode([this.name, this.status, this.code]);
+
+   String getChildrenNames()
+   {
+      if (children.isEmpty)
+         return '';
+
+      if (children.length == 1)
+         return children.first.name;
+
+      String ret = '';
+      for (int i = 0; i < min(20, children.length - 1); ++i)
+         ret += children[i].name + ', ';
+
+      ret += children.last.name + '.';
+      return ret;
+   }
 
    bool isLeaf()
    {
