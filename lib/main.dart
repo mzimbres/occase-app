@@ -1257,6 +1257,11 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onRemoveOwnPostButton()
+   {
+      print('Has no implementation yet.');
+   }
+
    void _onSendNewPostPressed(BuildContext ctx, final int add)
    {
       _onSendNewPostPressedImpl(add);
@@ -2131,19 +2136,21 @@ class MenuChatState extends State<MenuChat>
       if (_chatScreenIdx == 0) {
          // The own posts tab in the chat screen.
          bodies[2] = makePostChatTab(
-                        ctx,
-                        _ownPosts,
-                        _onOwnPostChatPressed,
-                        _onOwnPostChatLongPressed,
-                        _menus);
+            ctx,
+            _ownPosts,
+            _onOwnPostChatPressed,
+            _onOwnPostChatLongPressed,
+            _menus,
+            (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
       } else {
          // The favorite tab in the chat screen.
          bodies[2] = makePostChatTab(
-                        ctx,
-                        _favPosts,
-                        _onFavChatPressed,
-                        _onFavChatLongPressed,
-                        _menus);
+            ctx,
+            _favPosts,
+            _onFavChatPressed,
+            _onFavChatLongPressed,
+            _menus,
+            (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
       }
 
       fltButtons[2] = null;

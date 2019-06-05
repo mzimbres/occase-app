@@ -845,18 +845,19 @@ Text makeChatSubStrWidget(ChatHistory ch)
 Card createChatEntry(BuildContext context,
                      PostData post,
                      List<MenuItem> menus,
-                     Widget chats)
+                     Widget chats,
+                     Function onDelPost)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        Theme.of(context).primaryColor);
 
    ExpansionTile et =
       ExpansionTile(
-          //leading:
-          //      IconButton( icon: Icon(Icons.delete_forever
-          //                , color: cts.fireBrick)
-          //                , onPressed: (){print('===> jdjdjd');}),
-          //key: PageStorageKey<Entry>(root),
+          leading:
+             IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: onDelPost),
+          key: PageStorageKey<int>(post.id),
           title: Text( '${cts.postTimePrefix}: ${post.id}'
                      , style: cts.expTileStl),
           children: ListTile.divideTiles(
@@ -1166,7 +1167,8 @@ Widget makePostChatTab(
          List<PostData> data,
          Function onPressed,
          Function onLongPressed,
-         List<MenuItem> menus)
+         List<MenuItem> menus,
+         Function onDelPost)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
@@ -1182,7 +1184,8 @@ Widget makePostChatTab(
                             data[i].chats,
                             (j) {onPressed(i, j);},
                             (j) {onLongPressed(i, j);},
-                            data[i].id));
+                            data[i].id),
+                      onDelPost);
          },
    );
 }

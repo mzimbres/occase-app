@@ -218,6 +218,7 @@ final List<String> dialTitleStrs = <String>
 , 'Mover para chats?'
 , 'Alteracoes aplicadas'
 , 'Post enviado.'
+, 'Remover Post?'
 ];
 
 final List<String> dialBodyStrs = <String>
@@ -225,6 +226,7 @@ final List<String> dialBodyStrs = <String>
 , 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
 , 'Novos posts serao encaminhados automaticamente pra você.'
 , 'Seu post pode ser encontrado agora na tela \"Chats\" na aba \"Menus posts\".'
+, 'Seu post será removido definitivamente.'
 ];
 
 final String postTimePrefix = 'Detalhes do post';
