@@ -2081,6 +2081,7 @@ class MenuChatState extends State<MenuChat>
       List<Function> onWillPops =
             List<Function>(cts.tabNames.length);
 
+      String appBarTitle = cts.appName;
       if (_botBarIdx == 3) {
          bodies[0] =
             createSendScreen((){_onSendFilters(ctx);}, 'Enviar');
@@ -2091,6 +2092,9 @@ class MenuChatState extends State<MenuChat>
                                 , _filter
                                 , 0);
       } else {
+         if (_menus[_botBarIdx].root.length > 1)
+            appBarTitle = _menus[_botBarIdx].root.last.name;
+
          bodies[0] = createFilterListView(
                         ctx,
                         _menus[_botBarIdx].root.last,
@@ -2199,7 +2203,7 @@ class MenuChatState extends State<MenuChat>
                              headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
                                return <Widget>[
                                  SliverAppBar(
-                                   title: Text(cts.appName, style: TextStyle(color: Colors.white)),
+                                   title: Text(appBarTitle, style: TextStyle(color: Colors.white)),
                                    pinned: true,
                                    floating: true,
                                    forceElevated: innerBoxIsScrolled,
