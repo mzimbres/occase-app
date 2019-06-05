@@ -3,15 +3,6 @@ import 'package:menu_chat/menu_tree.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 
-String makeLeafCounterString(int n)
-{
-   if (n != 0) {
-      return 'Subitems: ${n}';
-   }
-
-   return null;
-}
-
 Text createMenuItemSubStrWidget(String str, FontWeight fw)
 {
    if (str == null)
@@ -25,26 +16,6 @@ Text createMenuItemSubStrWidget(String str, FontWeight fw)
 CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
 {
    return CircleAvatar(child: child, backgroundColor: bgcolor);
-}
-
-ListTile createListViewItem(BuildContext context,
-                            String name,
-                            Widget subItemWidget,
-                            Widget trailing,
-                            Widget leading,
-                            Function onTap,
-                            Function onLongPress)
-{
-   return ListTile(
-             leading: leading,
-             title: Text(name, style: cts.menuTitleStl),
-             dense: true,
-             subtitle: subItemWidget,
-             trailing: trailing,
-             contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-             onTap: onTap,
-             enabled: true,
-             onLongPress: onLongPress);
 }
 
 String makeStrAbbrev(final String str)
@@ -78,26 +49,22 @@ ListView createFilterListView(BuildContext context,
       shift = 1;
 
    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
+      //padding: const EdgeInsets.all(8.0),
       itemCount: o.children.length + shift,
       itemBuilder: (BuildContext context, int i)
       {
          if (shift == 1 && i == 0) {
-            // Handles the *Marcar todos* button.
-            final String title = cts.menuSelectAllStr;
-            final TextStyle fls =
-                  TextStyle(color: Theme.of(context).accentColor);
-            return
-               createListViewItem(
-                   context,
-                   title,
-                   null,
-                   null,
-                   Icon( Icons.select_all
-                       , size: 35.0
-                       , color: Theme.of(context).primaryColor),
-                   () { onLeafPressed(0); },
-                   (){});
+            // Handles the *select all* button.
+            return ListTile(
+                leading: Icon(
+                   Icons.select_all,
+                   size: 35.0,
+                   color: Theme.of(context).primaryColor),
+                title: Text(cts.menuSelectAllStr,
+                          style: cts.menuTitleStl),
+                dense: true,
+                onTap: () { onLeafPressed(0); },
+                enabled: true,);
          }
 
          if (shift == 1) {
@@ -105,8 +72,6 @@ ListView createFilterListView(BuildContext context,
             Widget icon = Icon(Icons.check_box_outline_blank);
             if (child.status)
                icon = Icon(Icons.check_box);
-
-            final String subStr = makeLeafCounterString(child.leafCounter);
 
             Widget subtitle = null;
             if (!child.isLeaf()) {
@@ -138,8 +103,6 @@ ListView createFilterListView(BuildContext context,
                 );
          }
 
-         // Works only if the next level in the tree is its filter
-         // depth.
          final int c = o.children[i].getCounterOfFilterChildren();
          final int cs = o.children[i].getChildrenSize();
 
@@ -149,9 +112,10 @@ ListView createFilterListView(BuildContext context,
          return
             ListTile(
                 leading: makeCircleAvatar(
-                   Text(makeStrAbbrev(
-                           o.children[i].name),
-                           style: cts.abbrevStl),
+                   Text(
+                      makeStrAbbrev(
+                         o.children[i].name),
+                         style: cts.abbrevStl),
                    Theme.of(context).primaryColor),
                 title: Text(o.children[i].name, style: cts.menuTitleStl),
                 dense: true,

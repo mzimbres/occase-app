@@ -1008,41 +1008,47 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {
    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
       itemCount: o.children.length,
       itemBuilder: (BuildContext context, int i)
       {
+         final int c = o.children[i].getCounterOfFilterChildren();
+         final int cs = o.children[i].getChildrenSize();
+
+         final String names = o.children[i].getChildrenNames();
+         final String subtitle = '($c/$cs) $names';
+
          MenuNode child = o.children[i];
-         final String abbrev = makeStrAbbrev(child.name);
-         final String subStr = makeLeafCounterString(child.leafCounter);
          if (child.isLeaf()) {
-            return 
-               createListViewItem(
-                   context,
-                   child.name,
-                   createMenuItemSubStrWidget(
-                         subStr,
-                         FontWeight.normal),
-                   null,
-                   makeCircleAvatar(
-                      Text(abbrev, style: cts.abbrevStl),
-                      Theme.of(context).primaryColor),
-                   () { onLeafPressed(i);},
-                   (){});
+            return ListTile(
+                leading: makeCircleAvatar(
+                   Text(makeStrAbbrev(child.name), style: cts.abbrevStl),
+                Theme.of(context).primaryColor),
+                title: Text(child.name, style: cts.menuTitleStl),
+                dense: true,
+                onTap: () { onLeafPressed(i);},
+                enabled: true,
+                onLongPress: (){});
          }
          
-         return 
-            createListViewItem(
-                context,
-                child.name,
-                createMenuItemSubStrWidget(
-                   subStr,
-                   FontWeight.normal),
-                null,
-                makeCircleAvatar( Text(abbrev, style: cts.abbrevStl)
-                                , Theme.of(context).primaryColor),
-                () { onNodePressed(i); },
-                (){});
+         return
+            ListTile(
+                leading: makeCircleAvatar(
+                   Text(
+                      makeStrAbbrev(
+                         o.children[i].name),
+                         style: cts.abbrevStl),
+                   Theme.of(context).primaryColor),
+                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: Text(
+                   subtitle,
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip),
+                trailing: Icon(Icons.keyboard_arrow_right),
+                onTap: () { onNodePressed(i); },
+                enabled: true,
+                selected: c != 0,
+                isThreeLine: true);
       },
    );
 }
