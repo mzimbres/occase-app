@@ -181,9 +181,10 @@ makeNickRegisterScreen( TextEditingController txtCtrl
       RaisedButton(
          child: Text( 'Continuar'
                     , style: TextStyle(
+                         color: Colors.white,
                          fontWeight: FontWeight.bold,
-                         fontSize: 20.0)),
-         color: cts.postFrameColor,
+                         fontSize: 18.0)),
+         color: Colors.blue,
          onPressed: onNickPressed
          );
 
@@ -401,7 +402,8 @@ makeChatScreen(BuildContext ctx,
                ChatHistory ch,
                TextEditingController ctrl,
                Function onChatSendPressed,
-               ScrollController scrollCtrl)
+               ScrollController scrollCtrl,
+               Function onChatMsgLongPressed)
 {
    IconButton sendButCol =
       IconButton(
@@ -462,8 +464,11 @@ makeChatScreen(BuildContext ctx,
             if (i == nMsgs) {
                return Card(
                   color: cts.postFrameColor,
-                  //margin: const EdgeInsets.all(6.0),
-                  child: Center(child: Text('$nUnreadMsgs nao lidas.')));
+                  margin: const EdgeInsets.all(12.0),
+                  child: Center(
+                      child: Text(
+                         '$nUnreadMsgs nao lidas.',
+                         style: TextStyle(fontSize: 17.0))));
             }
 
             if (i > nMsgs) {
@@ -493,16 +498,26 @@ makeChatScreen(BuildContext ctx,
             msgAndStatus = Text(items[i].msg);
          }
 
-         return Align( alignment: align,
-               child:FractionallySizedBox( child: Card(
-                 child: Padding( padding: EdgeInsets.all(4.0),
-                                 child: msgAndStatus),
+         print('${items[i].isLongPressed}');
+         if (items[i].isLongPressed)
+            color = cts.fireBrick;
+
+         return
+            Align(alignment: align,
+                  child: GestureDetector(
+                        onLongPress: (){onChatMsgLongPressed(i);},
+                        onPanStart: (DragStartDetails d){print('Cool');},
+                        child:FractionallySizedBox(
+                     child: Card(
+                        child: Padding(
+                           padding: EdgeInsets.all(4.0),
+                           child: msgAndStatus),
                  color: color,
                  margin: EdgeInsets.all(6.0),
-                 elevation: 6.0,
+                 elevation: 0.0,
                ),
                widthFactor: 0.8
-         ));
+         )));
       },
    );
 
@@ -792,6 +807,9 @@ class MenuChatState extends State<MenuChat>
 
    // The *new post* text controler
    TextEditingController _txtCtrl = TextEditingController();
+
+   // A temporary variable used to store forwarded chat messages.
+   List<IdxPair> _longPressedChatMsgs = List<IdxPair>();
 
    IOWebSocketChannel channel;
 
@@ -1370,6 +1388,19 @@ class MenuChatState extends State<MenuChat>
       if (!_outChatMsgsQueue.isEmpty) {
          //print('====> OfflineChatMsgs: ${_outChatMsgsQueue.first.payload}');
          channel.sink.add(_outChatMsgsQueue.first.payload);
+      }
+   }
+
+   void _onChatMsgLongPressed(int i, int j, bool isFav)
+   {
+      if (!isFav) {
+         if (j < _ownPosts[_ownPostIdx].chats[i].msgs.length) {
+            final bool old =
+               _ownPosts[_ownPostIdx].chats[i].msgs[j].isLongPressed;
+            _ownPosts[_ownPostIdx].chats[i].msgs[j].isLongPressed = !old;
+            _longPressedChatMsgs.add(IdxPair(i, j));
+            setState((){});
+         }
       }
    }
 
@@ -2049,7 +2080,8 @@ class MenuChatState extends State<MenuChat>
                 _favPosts[_favPostIdx].chats[chatIdx],
                 _txtCtrl,
                 (){_onFavChatSendPressed(chatIdx);},
-                _chatScrollCtrl);
+                _chatScrollCtrl,
+                (int idx){_onChatMsgLongPressed(chatIdx, idx, true);});
       }
 
       if (_tabCtrl.index == 2 &&
@@ -2061,12 +2093,13 @@ class MenuChatState extends State<MenuChat>
          assert(chatIdx != -1);
 
          return makeChatScreen(
-                   ctx,
-                   (){_onWillPopOwnPostChat(chatIdx);},
-                   _ownPosts[_ownPostIdx].chats[chatIdx],
-                   _txtCtrl,
-                   (){_onOwnChatSendPressed(chatIdx);},
-                   _chatScrollCtrl);
+             ctx,
+             (){_onWillPopOwnPostChat(chatIdx);},
+             _ownPosts[_ownPostIdx].chats[chatIdx],
+             _txtCtrl,
+             (){_onOwnChatSendPressed(chatIdx);},
+             _chatScrollCtrl,
+             (int idx){_onChatMsgLongPressed(chatIdx, idx, false);});
       }
 
       List<Widget> bodies =

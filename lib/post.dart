@@ -69,6 +69,7 @@ class ChatItem {
    String msg = '';
    int status = 0;
    int date = 0;
+   bool isLongPressed = false;
 
    ChatItem(this.thisApp, this.msg, this.status, this.date);
 
@@ -857,7 +858,7 @@ Card createChatEntry(BuildContext context,
              IconButton(
                 icon: Icon(Icons.clear),
                 onPressed: onDelPost),
-          key: PageStorageKey<int>(post.id),
+          key: PageStorageKey<int>(2 * post.id),
           title: Text( '${cts.postTimePrefix}: ${post.id}'
                      , style: cts.expTileStl),
           children: ListTile.divideTiles(
@@ -1138,12 +1139,6 @@ Widget makePostChatCol(BuildContext context,
                   child: lt);
    }
 
-   if (list.length <= 10)
-      return Column(children: ListTile.divideTiles(
-                       context: context,
-                       tiles: list,
-                       color: Colors.grey).toList());
-
    final TextStyle stl =
              TextStyle(fontSize: 15.0,
                        fontWeight: FontWeight.normal,
@@ -1152,9 +1147,12 @@ Widget makePostChatCol(BuildContext context,
    String str = '${ch.length} conversas';
    if (nUnredChats != 0)
       str = '${ch.length} conversas / $nUnredChats nao lidas';
+
+   final bool expState = ch.length <= 5 || nUnredChats != 0;
    return ExpansionTile(
+             initiallyExpanded: expState,
              leading: Icon(Icons.chat, color: Colors.white),
-             key: PageStorageKey<int>(postId),
+             key: PageStorageKey<int>(2 * postId + 1),
              title: Text(str, style: cts.expTileStl),
              children: ListTile.divideTiles(
                         context: context,
