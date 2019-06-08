@@ -846,9 +846,13 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _load(final String docDir)
+   Future<void> _load(final String docDir) async
    {
-      _nick = safeReadFileStr(_nickFullPath);
+      try {
+         _nick = await File(_nickFullPath).readAsString();
+      } catch (e) {
+      }
+
       _menus = _readMenuFromFile();
       _lastPostId = _readLastPostIdFromFile(docDir);
       _posts = safeReadPostsFromFile(_postsFileFullPath);

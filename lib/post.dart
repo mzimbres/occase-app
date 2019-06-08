@@ -170,7 +170,7 @@ class ChatHistory {
       if (nick.isEmpty)
          return '$peer';
 
-      return '$nick/$peer';
+      return '$nick ($peer)';
    }
 
    String getChatAbbrevStr()
@@ -1138,6 +1138,12 @@ Widget makePostChatCol(BuildContext context,
       list[i] = Container(decoration: BoxDecoration(color: bgColor),
                   child: lt);
    }
+
+  if (list.length == 1)
+     return Column(children: ListTile.divideTiles(
+                      context: context,
+                      tiles: list,
+                      color: Colors.grey).toList());
 
    final TextStyle stl =
              TextStyle(fontSize: 15.0,
