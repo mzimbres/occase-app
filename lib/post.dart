@@ -237,7 +237,7 @@ class ChatHistory {
 
    // Returns the number of unread messages that have been moved to
    // the read history.
-   int moveToReadHistory(final int postId)
+   Future<int> moveToReadHistory(final int postId) async
    {
       if (unreadMsgs.isEmpty)
          return 0;
@@ -246,15 +246,14 @@ class ChatHistory {
 
       msgs.addAll(unreadMsgs);
 
-      writeListToDisk( unreadMsgs
-                     , makeFullPath(cts.chatHistReadPrefix, postId)
-                     , FileMode.append);
+      final String content = serializeList(unreadMsgs);
+      await File(makeFullPath(cts.chatHistReadPrefix, postId))
+         .writeAsStringSync(content, mode: FileMode.append);
 
       unreadMsgs.clear();
 
-      writeToFile( ''
-                 , makeFullPath(cts.chatHistUnreadPrefix, postId)
-                 , FileMode.write);
+      File(makeFullPath(cts.chatHistUnreadPrefix, postId))
+         .writeAsStringSync('', mode: FileMode.write);
 
       return n;
    }
@@ -290,29 +289,35 @@ class ChatHistory {
       return msgs.last.msg;
    }
 
-   void addMsg(final String msg, final bool thisApp, final int postId)
+   Future<void>
+   addMsg(final String msg, final bool thisApp,
+          final int postId) async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       ChatItem item = ChatItem(thisApp, msg, 0, now);
       msgs.add(item);
 
-      writeListToDisk( <ChatItem>[item]
-                     , makeFullPath(cts.chatHistReadPrefix, postId)
-                     , FileMode.append);
+      final String content = serializeList(<ChatItem>[item]);
+      await File(makeFullPath(cts.chatHistReadPrefix, postId))
+         .writeAsString(content, mode: FileMode.append);
    }
 
-   void addUnreadMsg(final String msg, final bool thisApp, final int postId)
+   Future<void>
+   addUnreadMsg(final String msg,
+                final bool thisApp, final int postId) async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       ChatItem item = ChatItem(thisApp, msg, 0, now);
       unreadMsgs.add(item);
 
-      writeListToDisk( <ChatItem>[item]
-                     , makeFullPath(cts.chatHistUnreadPrefix, postId)
-                     , FileMode.append);
+      final String content = serializeList(<ChatItem>[item]);
+      await File(makeFullPath(cts.chatHistUnreadPrefix, postId))
+         .writeAsString(content, mode: FileMode.append);
+
    }
 
-   void markAppChatAck(final int postId, final int status)
+   Future<void>
+   markAppChatAck(final int postId, final int status) async
    {
       //assert(!msgs.isEmpty); 
       if (msgs.isEmpty)
@@ -332,9 +337,8 @@ class ChatHistory {
 
       ChatItem item = ChatItem(true, '', status, 0);
       final String str = jsonEncode(item);
-      writeToFile( '${str}\n'
-                 , makeFullPath(cts.chatHistReadPrefix, postId)
-                 , FileMode.append);
+      await File(makeFullPath(cts.chatHistReadPrefix, postId))
+         .writeAsStringSync('${str}\n', mode: FileMode.append);
    }
 }
 
@@ -442,7 +446,7 @@ class PostData {
       return ret;
    }
 
-   void setNick(final String peer, final String nick)
+   Future<void> setNick(final String peer, final String nick) async
    {
       final int j = getChatHistIdx(peer);
       if (j == -1) {
@@ -454,10 +458,10 @@ class PostData {
       }
 
       chats[j].nick = nick;
-      _persistPeers();
+      await _persistPeers();
    }
 
-   void _persistPeers()
+   Future<void> _persistPeers() async
    {
       // Overwrites the previous content.
       String data = '';
@@ -466,16 +470,18 @@ class PostData {
 
       print('Persisting peers: \n$data');
 
-      writeToFile(data, makePathToPeersFile(), FileMode.write);
+      await File(makePathToPeersFile())
+         .writeAsStringSync(data, mode: FileMode.write);
    }
 
-   void createChatEntryForPeer(String peer, final String nick)
+   Future<void>
+   createChatEntryForPeer(String peer, final String nick) async
    {
       print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
       ChatHistory history = ChatHistory(peer, nick, now, id);
       chats.add(history);
-      _persistPeers();
+      await _persistPeers();
    }
 
    int getChatHistIdx(final String peer)
@@ -483,40 +489,44 @@ class PostData {
       return chats.indexWhere((e) {return e.peer == peer;});
    }
 
-   int getChatHistIdxOrCreate(final String peer, final String nick)
+   Future<int>
+   getChatHistIdxOrCreate(final String peer, final String nick) async
    {
       final int i = getChatHistIdx(peer);
       if (i == -1) {
          // This is the first message with this user (peer).
          final int l = chats.length;
-         createChatEntryForPeer(peer, nick);
+         await createChatEntryForPeer(peer, nick);
          return l;
       }
 
       return i;
    }
 
-   void addMsg(final int j, final String msg, final bool thisApp)
+   Future<void>
+   addMsg(final int j, final String msg, final bool thisApp) async
    {
-      chats[j].addMsg(msg, thisApp, id);
+      await chats[j].addMsg(msg, thisApp, id);
    }
 
-   void moveToFront(final int j)
+   Future<void> moveToFront(final int j) async
    {
       rotateElements(chats, j);
-      _persistPeers();
+      await _persistPeers();
    }
 
-   void addUnreadMsg(final int j, final String msg, final bool thisApp)
+   Future<void>
+   addUnreadMsg(final int j, final String msg, final bool thisApp) async
    {
       print('PostData::addUnreadMsg: ${chats.length}');
       ChatHistory history = chats[j];
-      history.addUnreadMsg(msg, thisApp, id);
+      await history.addUnreadMsg(msg, thisApp, id);
       rotateElements(chats, j);
-      _persistPeers();
+      await _persistPeers();
    }
 
-   void markChatAppAck(final String peer, final int status)
+   Future<void>
+   markChatAppAck(final String peer, final int status) async
    {
       final int i = getChatHistIdx(peer);
       if (i == -1) {
@@ -524,7 +534,7 @@ class PostData {
          return;
       }
 
-      chats[i].markAppChatAck(id, status);
+      await chats[i].markAppChatAck(id, status);
    }
 
    int getNumberOfUnreadChats()
@@ -559,7 +569,7 @@ class PostData {
       return hist.getMostRecentTimestamp();
    }
 
-   void removeLongPressedChats(int idx)
+   Future<void> removeLongPressedChats(int idx) async
    {
       print('removeLPC($idx), length = ${chats.length}, id = $id');
 
@@ -572,7 +582,7 @@ class PostData {
       }
 
       chats.removeAt(idx);
-      _persistPeers();
+      await _persistPeers();
    }
 
    void unmarkLongPressedChats(int idx)
@@ -616,9 +626,9 @@ class PostData {
       };
    }
 
-   int moveToReadHistory(int i)
+   Future<int> moveToReadHistory(int i) async
    {
-      return chats[i].moveToReadHistory(id);
+      return await chats[i].moveToReadHistory(id);
    }
 }
 
@@ -632,29 +642,29 @@ int CompPostData(final PostData lhs, final PostData rhs)
 // Returns the old index in posts that has postId. Will rotate
 // elements so that it becomes the first in the list. The nick is used
 // only if creation is necessary.
-IdxPair
+Future<IdxPair>
 findInsertAndRotateMsg(List<PostData> posts,
                        final int postId,
                        final String from,
                        final String msg,
                        final bool thisApp,
-                       final String nick)
+                       final String nick) async
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
    if (i == -1)
       return IdxPair(-1, -1);
 
-   final int j = posts[i].getChatHistIdxOrCreate(from, nick);
-   posts[i].addUnreadMsg(j, msg, thisApp);
+   final int j = await posts[i].getChatHistIdxOrCreate(from, nick);
+   await posts[i].addUnreadMsg(j, msg, thisApp);
    rotateElements(posts, i);
    return IdxPair(i, j);
 }
 
-void
+Future<void>
 findAndMarkChatApp( final List<PostData> posts
                   , final String from
                   , final int postId
-                  , final int status)
+                  , final int status) async
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
 
@@ -663,9 +673,7 @@ findAndMarkChatApp( final List<PostData> posts
       return;
    }
 
-   //print('====> IndexWhere: $i');
-
-   posts[i].markChatAppAck(from, status);
+   await posts[i].markChatAppAck(from, status);
 }
 
 // Study how to convert this into an elipsis like whatsapp.

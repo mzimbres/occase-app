@@ -601,9 +601,9 @@ class DialogWithOpState extends State<DialogWithOp> {
                Text('Ok'
                    , style: TextStyle( color: Colors.blue
                                      , fontSize: 16.0)),
-            onPressed: ()
+            onPressed: () async
             {
-               _onPostSelection();
+               await _onPostSelection();
                Navigator.of(ctx).pop();
             });
 
@@ -970,11 +970,12 @@ class MenuChatState extends State<MenuChat>
       writeToFile(data, _dialogPrefsFullPath, FileMode.write);
    }
 
-   void _alertUserOnselectPost( BuildContext ctx
-                              , PostData data, int fav)
+   Future<void>
+   _alertUserOnselectPost(BuildContext ctx,
+                          PostData data, int fav) async
    {
       if (!_dialogPrefs[fav]) {
-         _onPostSelection(data, fav);
+         await _onPostSelection(data, fav);
          return;
       }
 
@@ -986,7 +987,7 @@ class MenuChatState extends State<MenuChat>
                DialogWithOp( fav
                            , () {return _dialogPrefs[fav];}
                            , (bool v) {_setDialogPref(fav, v);}
-                           , (){_onPostSelection(data, fav);}
+                           , () async {_onPostSelection(data, fav);}
                            , cts.dialTitleStrs[fav]
                            , cts.dialBodyStrs[fav]);
             
@@ -994,7 +995,7 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _onPostSelection(PostData data, int fav)
+   Future<void> _onPostSelection(PostData data, int fav) async
    {
       if (fav == 1) {
          // Had I use a queue, there would be no need of rotating the
@@ -1002,8 +1003,10 @@ class MenuChatState extends State<MenuChat>
          _favPosts.add(data);
          rotateElements(_favPosts, _favPosts.length - 1);
          assert(_favPostIdx == -1);
-         writeListToDisk( <PostData>[data], _favPostsFileFullPath
-                        , FileMode.append);
+
+         final String content = serializeList(<PostData>[data]);
+         await File(_favPostsFileFullPath).
+            writeAsStringSync(content, mode: FileMode.append);
       }
 
       _posts.remove(data);
@@ -1012,7 +1015,9 @@ class MenuChatState extends State<MenuChat>
       // from the posts persisted on file without rewriting it
       // completely. We can use the oportunity to write only the
       // newest.
-      writeListToDisk(_posts, _postsFileFullPath, FileMode.write);
+      final String content = serializeList(_posts);
+      await File(_postsFileFullPath).
+         writeAsStringSync(content, mode: FileMode.write);
 
       setState(() { });
    }
@@ -1052,17 +1057,19 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
-   bool _onWillPopFavChatScreen(final int chatIdx)
+   Future<bool> _onWillPopFavChatScreen(final int chatIdx) async
    {
-      _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
+      final int i =
+         await _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
       _favPostIdx = -1;
       setState(() { });
       return false;
    }
 
-   bool _onWillPopOwnPostChat(int idx)
+   Future<bool> _onWillPopOwnPostChat(int idx) async
    {
-      _ownPosts[_ownPostIdx].moveToReadHistory(idx);
+      final int i =
+         await _ownPosts[_ownPostIdx].moveToReadHistory(idx);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
@@ -1174,7 +1181,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void sendPost(PostData post)
+   Future<void> sendPost(PostData post) async
    {
       final bool isEmpty = _outPostsQueue.isEmpty;
 
@@ -1184,8 +1191,10 @@ class MenuChatState extends State<MenuChat>
       // list should not contain our own posts.
       _outPostsQueue.add(post);
 
-      writeListToDisk( <PostData>[post], _outPostsFileFullPath
-                     , FileMode.append);
+      final String content = serializeList(<PostData>[post]);
+      await File(_outPostsFileFullPath).
+         writeAsStringSync(content, mode: FileMode.append);
+
       if (!isEmpty)
          return;
 
@@ -1253,7 +1262,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onSendNewPostPressedImpl(final int i)
+   Future<void> _onSendNewPostPressedImpl(final int i) async
    {
       _newPostPressed = false;
 
@@ -1271,7 +1280,7 @@ class MenuChatState extends State<MenuChat>
 
       _postInput.from = _appId;
       _postInput.nick = _nick;
-      sendPost(_postInput.clone());
+      await sendPost(_postInput.clone());
       _postInput = PostData();
       setState(() { });
    }
@@ -1281,9 +1290,10 @@ class MenuChatState extends State<MenuChat>
       print('Has no implementation yet.');
    }
 
-   void _onSendNewPostPressed(BuildContext ctx, final int add)
+   Future<void>
+   _onSendNewPostPressed(BuildContext ctx, final int add) async
    {
-      _onSendNewPostPressedImpl(add);
+      await _onSendNewPostPressedImpl(add);
 
       // If the user cancels the operation we do not show the dialog.
       if (add == 1)
@@ -1291,7 +1301,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    // This function is called with the index in _favPosts.
-   void _onFavChatPressed(int i, int j)
+   Future<void> _onFavChatPressed(int i, int j) async
    {
       assert(j == 0);
       if (!_postsWithLongPressed.isEmpty) {
@@ -1308,7 +1318,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
+            await sendChatMsg(payload, 0);
          }
 
          _favPostIdx = i;
@@ -1333,7 +1343,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    // TODO: Collapse this and the _fav version in a single function.
-   void _onOwnPostChatPressed(int i, int j)
+   Future<void> _onOwnPostChatPressed(int i, int j) async
    {
       if (!_postsWithLongPressed.isEmpty) {
          _onOwnPostChatLongPressed(i, j);
@@ -1349,7 +1359,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
+            await sendChatMsg(payload, 0);
          }
 
          _ownPostIdx = i;
@@ -1370,18 +1380,16 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void sendChatMsg(final String payload, int isChat)
+   Future<void> sendChatMsg(final String payload, int isChat) async
    {
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
       _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, payload));
-      writeToFile( '${isChat} ${payload}\n'
-                 , _outChatMsgsFileFullPath
-                 , FileMode.append);
 
-      if (isEmpty) {
-         //print('=====> sendChatMsg: ${_outChatMsgsQueue.first.payload}');
+      await File(_outChatMsgsFileFullPath)
+         .writeAsString('${isChat} ${payload}\n', mode: FileMode.append);
+
+      if (isEmpty)
          channel.sink.add(_outChatMsgsQueue.first.payload);
-      }
    }
 
    void sendOfflineChatMsgs()
@@ -1405,7 +1413,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onFavChatSendPressed(final int chatIdx)
+   Future<void> _onFavChatSendPressed(final int chatIdx) async
    {
       if (_txtCtrl.text.isEmpty)
          return;
@@ -1427,10 +1435,11 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      sendChatMsg(payload, 1);
-      _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
-      _favPosts[_favPostIdx].addMsg(chatIdx, msg, true);
-      _favPosts[_favPostIdx].moveToFront(chatIdx);
+      await sendChatMsg(payload, 1);
+      final int ignore =
+         await _favPosts[_favPostIdx].moveToReadHistory(chatIdx);
+      await _favPosts[_favPostIdx].addMsg(chatIdx, msg, true);
+      await _favPosts[_favPostIdx].moveToFront(chatIdx);
       rotateElements(_favPosts, _favPostIdx);
       _favPostIdx = 0;
 
@@ -1448,7 +1457,7 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _onOwnChatSendPressed(final int chatIdx)
+   Future<void> _onOwnChatSendPressed(final int chatIdx) async
    {
       if (_txtCtrl.text.isEmpty)
          return;
@@ -1469,10 +1478,11 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(msgMap);
-      sendChatMsg(payload, 1);
-      _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
-      _ownPosts[_ownPostIdx].addMsg(chatIdx, msg, true);
-      _ownPosts[_ownPostIdx].moveToFront(chatIdx);
+      await sendChatMsg(payload, 1);
+      final int ignore =
+         await _ownPosts[_ownPostIdx].moveToReadHistory(chatIdx);
+      await _ownPosts[_ownPostIdx].addMsg(chatIdx, msg, true);
+      await _ownPosts[_ownPostIdx].moveToFront(chatIdx);
       rotateElements(_ownPosts, _ownPostIdx);
       _ownPostIdx = 0;
 
@@ -1490,18 +1500,23 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _chatServerAckHandler(Map<String, dynamic> ack)
+   Future<void> _chatServerAckHandler(Map<String, dynamic> ack) async
    {
-      assert(!_outChatMsgsQueue.isEmpty);
+      try {
+         assert(!_outChatMsgsQueue.isEmpty);
 
-      _outChatMsgsQueue.removeFirst();
-      final String accStr = accumulateChatMsgs(_outChatMsgsQueue);
-      writeToFile(accStr, _outChatMsgsFileFullPath, FileMode.write);
-      if (!_outChatMsgsQueue.isEmpty)
-         channel.sink.add(_outChatMsgsQueue.first.payload);
+         _outChatMsgsQueue.removeFirst();
+         final String accStr = accumulateChatMsgs(_outChatMsgsQueue);
+         await File(_outChatMsgsFileFullPath)
+            .writeAsStringSync(accStr, mode: FileMode.write);
+
+         if (!_outChatMsgsQueue.isEmpty)
+            channel.sink.add(_outChatMsgsQueue.first.payload);
+      } catch (e) {
+      }
    }
 
-   void _chatMsgHandler(Map<String, dynamic> ack)
+   Future<void> _chatMsgHandler(Map<String, dynamic> ack) async
    {
       final String to = ack['to'];
       if (to != _appId) {
@@ -1523,7 +1538,7 @@ class MenuChatState extends State<MenuChat>
          foo = _favPosts;
 
       final IdxPair pair =
-         findInsertAndRotateMsg(foo, postId, from, msg, false, '');
+         await findInsertAndRotateMsg(foo, postId, from, msg, false, '');
 
       if (pair.i == -1) {
          print('===> Error: Ignoring chat msg.');
@@ -1557,7 +1572,8 @@ class MenuChatState extends State<MenuChat>
       if (_tabCtrl.index == 2 && _favPostIdx != -1) {
          // Yes, we are chatting with an user from the fav list.
          if (_favPostIdx == 0) {
-            foo.first.chats.first.moveToReadHistory(postId);
+            final int ignore =
+               await foo.first.chats.first.moveToReadHistory(postId);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -1568,7 +1584,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
+            await sendChatMsg(payload, 0);
             return;
          }
       } else if (_tabCtrl.index == 2 && _ownPostIdx != -1 && !_ownPostChatPeer.isEmpty) {
@@ -1577,7 +1593,8 @@ class MenuChatState extends State<MenuChat>
          if (_ownPostIdx == 0) {
             final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
             assert(bar != -1);
-            foo.first.moveToReadHistory(bar);
+            final int ignore =
+               await foo.first.moveToReadHistory(bar);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -1588,7 +1605,7 @@ class MenuChatState extends State<MenuChat>
             };
 
             final String payload = jsonEncode(msgMap);
-            sendChatMsg(payload, 0);
+            await sendChatMsg(payload, 0);
             return;
          }
       }
@@ -1603,39 +1620,42 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(map);
-      sendChatMsg(payload, 0);
+      await sendChatMsg(payload, 0);
    }
 
-   void _chatAppAckHandler(Map<String, dynamic> ack, final int status)
+   Future<void>
+   _chatAppAckHandler(Map<String, dynamic> ack,
+                      final int status) async
    {
+      print('Receiving ack read.');
       final String from = ack['from'];
       final int postId = ack['post_id'];
 
       final bool isSenderPost = ack['is_sender_post'];
       if (isSenderPost) {
-         findAndMarkChatApp(_favPosts, from, postId, status);
+         await findAndMarkChatApp(_favPosts, from, postId, status);
       } else {
-         findAndMarkChatApp(_ownPosts, from, postId, status);
+         await findAndMarkChatApp(_ownPosts, from, postId, status);
       }
    }
 
-   void _onMessage(Map<String, dynamic> ack)
+   Future<void> _onMessage(Map<String, dynamic> ack) async
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
          final String res = ack['result'];
          if (res == 'ok') {
             final int isChat = _outChatMsgsQueue.first.isChat;
-            _chatServerAckHandler(ack);
+            await _chatServerAckHandler(ack);
             if (isChat == 1)
-               _chatAppAckHandler(ack, 1);
+               await _chatAppAckHandler(ack, 1);
          }
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
-         _chatAppAckHandler(ack, 2);
+         await _chatAppAckHandler(ack, 2);
       } else if (type == 'app_ack_read') {
-         _chatAppAckHandler(ack, 3);
+         await _chatAppAckHandler(ack, 3);
       }
 
       setState((){});
@@ -1731,7 +1751,7 @@ class MenuChatState extends State<MenuChat>
          // entry in it. It is important to let the nick empty, this
          // is how we will detect that the nick must be requested from
          // the user.
-         post.createChatEntryForPeer(post.from, post.nick);
+         await post.createChatEntryForPeer(post.from, post.nick);
          _unreadPosts.add(post);
 
          // It is not guaranteed that the array of posts sent by
@@ -1935,7 +1955,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _removeLongPressedChatEntries()
+   Future<void> _removeLongPressedChatEntries() async
    {
       assert(_tabCtrl.index == 2);
 
@@ -1965,7 +1985,10 @@ class MenuChatState extends State<MenuChat>
             _favPosts[e.i].removeLongPressedChats(e.j);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
-         writeListToDisk(_favPosts, _favPostsFileFullPath, FileMode.write);
+
+         final String content = serializeList(_favPosts);
+         await File(_favPostsFileFullPath).
+            writeAsStringSync(content, mode: FileMode.write);
       }
 
       _postsWithLongPressed = List<IdxPair>();
@@ -1980,9 +2003,9 @@ class MenuChatState extends State<MenuChat>
          {
             final FlatButton ok = FlatButton(
                      child: cts.deleteChatOkText,
-                     onPressed: ()
+                     onPressed: () async
                      {
-                        _removeLongPressedChatEntries();
+                        await _removeLongPressedChatEntries();
                         Navigator.of(ctx).pop();
                      });
 
@@ -2085,10 +2108,10 @@ class MenuChatState extends State<MenuChat>
          return
             makeChatScreen(
                 ctx,
-                (){_onWillPopFavChatScreen(chatIdx);},
+                () async {await _onWillPopFavChatScreen(chatIdx);},
                 _favPosts[_favPostIdx].chats[chatIdx],
                 _txtCtrl,
-                (){_onFavChatSendPressed(chatIdx);},
+                () async {await _onFavChatSendPressed(chatIdx);},
                 _chatScrollCtrl,
                 (int idx){_onChatMsgLongPressed(chatIdx, idx, true);});
       }
@@ -2103,10 +2126,10 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
              ctx,
-             (){_onWillPopOwnPostChat(chatIdx);},
+             () async {await _onWillPopOwnPostChat(chatIdx);},
              _ownPosts[_ownPostIdx].chats[chatIdx],
              _txtCtrl,
-             (){_onOwnChatSendPressed(chatIdx);},
+             () async { await _onOwnChatSendPressed(chatIdx);},
              _chatScrollCtrl,
              (int idx){_onChatMsgLongPressed(chatIdx, idx, false);});
       }
@@ -2170,8 +2193,8 @@ class MenuChatState extends State<MenuChat>
       bodies[1] =
          makePostTabListView( ctx
                             , _posts
-                            , (PostData data, int fav)
-                              {_alertUserOnselectPost(ctx, data, fav);}
+                            , (PostData data, int fav) async
+                              {await _alertUserOnselectPost(ctx, data, fav);}
                             , _menus
                             , newPostsLength);
 
