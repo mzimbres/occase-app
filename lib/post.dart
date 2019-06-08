@@ -320,12 +320,16 @@ class ChatHistory {
    markAppChatAck(final int postId, final int status) async
    {
       //assert(!msgs.isEmpty); 
-      if (msgs.isEmpty)
+      if (msgs.isEmpty) {
+         print('markAppChatAck ignoring1');
          return;
+      }
 
       int idx = findIdxToAck(msgs, status);
-      if (idx == -1)
+      if (idx == -1) {
+         print('markAppChatAck ignoring2');
          return;
+      }
 
       while (msgs[idx].status < status) {
          msgs[idx].status = status;
@@ -534,6 +538,7 @@ class PostData {
          return;
       }
 
+      print('Calling mark msg2.');
       await chats[i].markAppChatAck(id, status);
    }
 
@@ -673,6 +678,7 @@ findAndMarkChatApp( final List<PostData> posts
       return;
    }
 
+   print('Calling mark msg1.');
    await posts[i].markChatAppAck(from, status);
 }
 
@@ -1181,13 +1187,13 @@ Widget makePostChatCol(BuildContext context,
                         color: Colors.grey).toList());
 }
 
-Widget makePostChatTab(
-         BuildContext context,
-         List<PostData> data,
-         Function onPressed,
-         Function onLongPressed,
-         List<MenuItem> menus,
-         Function onDelPost)
+Widget makeChatTab(
+   BuildContext context,
+   List<PostData> data,
+   Function onPressed,
+   Function onLongPressed,
+   List<MenuItem> menus,
+   Function onDelPost)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
