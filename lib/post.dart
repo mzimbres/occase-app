@@ -590,13 +590,27 @@ class PostData {
       await _persistPeers();
    }
 
-   void unmarkLongPressedChats(int idx)
+   bool togleLongPressedChats(int i)
    {
-      print('removeLPC($idx), length = ${chats.length}, id = $id');
-
       assert(!chats.isEmpty);
-      assert(idx < chats.length);
-      chats[idx].isLongPressed = false;
+      assert(i < chats.length);
+      final bool old = chats[i].isLongPressed;
+      chats[i].isLongPressed = !old;
+      return old;
+   }
+
+   bool togleLongPressedChatMsg(int i, int j)
+   {
+      final int l = chats[i].msgs.length;
+      if (j < l) {
+         final bool old = chats[i].msgs[j].isLongPressed;
+         chats[i].msgs[j].isLongPressed = !old;
+         return old;
+      }
+
+      final bool old = chats[i].unreadMsgs[j].isLongPressed;
+      chats[i].unreadMsgs[j].isLongPressed = !old;
+      return old;
    }
 
    PostData.fromJson(Map<String, dynamic> map)
@@ -1079,17 +1093,19 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
 // Returns an icon based on the message status.
 Icon chooseIcon(final int status)
 {
+   final double s = 17.0;
+
    if (status == 0)
-      return Icon(Icons.clear, color: Colors.red, size: 17.0);
+      return Icon(Icons.clear, color: Colors.grey, size: s);
 
    if (status == 1)
-      return Icon(Icons.check, color: Colors.red, size: 17.0);
+      return Icon(Icons.check, color: Colors.grey, size: s);
 
    if (status == 2)
-      return Icon(Icons.check_circle_outline, color: Colors.red, size: 17.0);
+      return Icon(Icons.done_all, color: Colors.grey, size: s);
 
    if (status == 3)
-      return Icon(Icons.check_circle, color: Colors.red, size: 17.0);
+      return Icon(Icons.done_all, color: Colors.green, size: s);
 
    assert(false);
 }

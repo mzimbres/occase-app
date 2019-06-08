@@ -20,18 +20,11 @@ import 'package:menu_chat/globals.dart' as glob;
 
 // TODO: Consider making _posts, _favPosts and _ownPosts a queue.
 
-void
-handleLongPressedChat( List<IdxPair> pairs
-                     , final List<PostData> posts
-                     , int i, int j)
+void handleLongPressed(List<IdxPair> pairs, int i, int j, bool old)
 {
-   ChatHistory history = posts[i].chats[j];
-   final bool old = history.isLongPressed;
    if (old) {
-      history.isLongPressed = false;
       pairs.removeWhere((IdxPair e) { return e.i == i && e.j == j; });
    } else {
-      history.isLongPressed = true;
       pairs.add(IdxPair(i, j));
    }
 }
@@ -379,7 +372,8 @@ makeChatScreen(BuildContext ctx,
                TextEditingController ctrl,
                Function onChatSendPressed,
                ScrollController scrollCtrl,
-               Function onChatMsgLongPressed)
+               Function onChatMsgLongPressed,
+               int nLongPressed)
 {
    IconButton sendButCol =
       IconButton(
@@ -436,6 +430,7 @@ makeChatScreen(BuildContext ctx,
       itemBuilder: (BuildContext ctx, int i)
       {
          List<ChatItem> items = ch.msgs;
+         int isUnreadIdx = i;
          if (shift == 1) {
             if (i == nMsgs) {
                return Card(
@@ -451,6 +446,7 @@ makeChatScreen(BuildContext ctx,
                items = ch.unreadMsgs;
                i -= nMsgs; // For the read msgs
                i -= 1;     // For the shift
+               isUnreadIdx -= 1;
             }
          }
 
@@ -467,9 +463,10 @@ makeChatScreen(BuildContext ctx,
             Align foo =
                Align(alignment: Alignment.bottomRight,
                      child: chooseIcon(st));
-            msgAndStatus = Row(children:
-               <Widget>[Expanded(child: Text(items[i].msg)),
-                        Expanded(child: foo)]);
+
+            msgAndStatus = Row(children: <Widget>
+            [ Expanded(child: Text(items[i].msg))
+            , Expanded(child: foo)]);
          } else {
             msgAndStatus = Text(items[i].msg);
          }
@@ -480,20 +477,21 @@ makeChatScreen(BuildContext ctx,
 
          return
             Align(alignment: align,
-                  child: GestureDetector(
-                        onLongPress: (){onChatMsgLongPressed(i);},
-                        onPanStart: (DragStartDetails d){print('Cool');},
-                        child:FractionallySizedBox(
+               child: GestureDetector(
+                  onLongPress: () {onChatMsgLongPressed(isUnreadIdx);},
+                  onPanStart: (DragStartDetails d){print('Cool');},
+                  child:FractionallySizedBox(
                      child: Card(
                         child: Padding(
                            padding: EdgeInsets.all(4.0),
                            child: msgAndStatus),
-                 color: color,
-                 margin: EdgeInsets.all(6.0),
-                 elevation: 0.0,
-               ),
-               widthFactor: 0.8
-         )));
+                        color: color,
+                        margin: EdgeInsets.all(6.0),
+                        elevation: 0.0,
+                  ),
+                  widthFactor: 0.8)
+            )
+         );
       },
    );
 
@@ -504,27 +502,50 @@ makeChatScreen(BuildContext ctx,
          ],
    );
 
+   List<Widget> actions = List<Widget>();
+   Widget title = null;
+   TextStyle ts = TextStyle(
+       fontWeight: FontWeight.bold,
+       fontSize: cts.mainFontSize,
+       color: Color(0xFFFFFFFF));
+
+   if (nLongPressed != 0) {
+      IconButton reply = IconButton(
+         icon: Icon(Icons.reply, color: Colors.white),
+         onPressed: (){print('------');});
+
+      actions.add(reply);
+
+      IconButton forward = IconButton(
+         icon: Icon(Icons.forward, color: Colors.white),
+         onPressed:  (){print('=====');});
+
+      actions.add(forward);
+
+      title = Text('$nLongPressed', style: ts);
+   } else {
+      title = ListTile(
+          leading: CircleAvatar(
+              child: Icon(Icons.person, color: Colors.white,
+                          size: 30.0),
+              backgroundColor: Colors.grey),
+          title: Text(ch.getChatDisplayName(), style: ts),
+          dense: true,
+          //subtitle: subtitle
+       );
+   }
+
    return WillPopScope(
           onWillPop: () async { return onWillPopScope();},
           child: Scaffold(
              appBar : AppBar(
-                title: ListTile(
-                   //leading: CircleAvatar(child: Icon(Icons.person)),
-                   //leading: Icon(Icons.person, color: Colors.white),
-                   title: Text(ch.getChatDisplayName(),
-                      style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: cts.mainFontSize,
-                            color: Color(0xFFFFFFFF)
-                      )
-                   ),
-                   dense: true,
-                   //subtitle: subtitle
-                ),
+                actions: actions,
+                title: title,
                 backgroundColor: Theme.of(ctx).primaryColor,
-                leading: IconButton( icon: Icon( Icons.arrow_back
-                                               , color: Colors.white)
-                                   , onPressed:onWillPopScope)
+                leading: IconButton(
+                   icon: Icon(Icons.arrow_back,
+                              color: Colors.white),
+                 onPressed:onWillPopScope)
              ),
           body: mainCol,
           backgroundColor: Colors.grey[300],
@@ -1124,7 +1145,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatBotBarTapped(int i)
    {
-      _unmarkLongPressedChatEntries();
+      _unmarkLongPressedChats();
       setState(() { _chatScreenIdx = i; });
    }
 
@@ -1347,7 +1368,9 @@ class MenuChatState extends State<MenuChat>
    void _onFavChatLongPressed(int i, int j)
    {
       assert(j == 0);
-      handleLongPressedChat(_postsWithLongPressed, _favPosts, i, j);
+
+      final bool old = _favPosts[i].togleLongPressedChats(j);
+      handleLongPressed(_postsWithLongPressed, i, j, old);
       setState(() { });
    }
 
@@ -1385,7 +1408,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatLongPressed(int i, int j)
    {
-      handleLongPressedChat(_postsWithLongPressed, _ownPosts, i, j);
+      final bool old = _ownPosts[i].togleLongPressedChats(j);
+      handleLongPressed(_postsWithLongPressed, i, j, old);
       setState(() { });
    }
 
@@ -1411,15 +1435,15 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatMsgLongPressed(int i, int j, bool isFav)
    {
-      if (!isFav) {
-         if (j < _ownPosts[_ownIdx].chats[i].msgs.length) {
-            final bool old =
-               _ownPosts[_ownIdx].chats[i].msgs[j].isLongPressed;
-            _ownPosts[_ownIdx].chats[i].msgs[j].isLongPressed = !old;
-            _longPressedChatMsgs.add(IdxPair(i, j));
-            setState((){});
-         }
+      if (isFav) {
+         final bool old = _favPosts[_favIdx].togleLongPressedChatMsg(i, j);
+         handleLongPressed(_longPressedChatMsgs, i, j, old);
+      } else {
+         final bool old = _ownPosts[_ownIdx].togleLongPressedChatMsg(i, j);
+         handleLongPressed(_longPressedChatMsgs, i, j, old);
       }
+
+      setState((){});
    }
 
    Future<void> _onFavChatSendPressed(final int chatIdx) async
@@ -1927,9 +1951,9 @@ class MenuChatState extends State<MenuChat>
       return i;
    }
 
-   bool _onOwnPostsBackPressed()
+   bool _onChatsBackPressed()
    {
-      _unmarkLongPressedChatEntries();
+      _unmarkLongPressedChats();
 
       if (_chatScreenIdx == 0 && _ownIdx != -1) {
          _ownIdx = -1;
@@ -1945,18 +1969,17 @@ class MenuChatState extends State<MenuChat>
       return !_postsWithLongPressed.isEmpty;
    }
 
-   void _unmarkLongPressedChatEntries()
+   void _unmarkLongPressedChats()
    {
-      // Optimization to avoid writing files.
       if (_postsWithLongPressed.isEmpty)
          return;
 
       if (_chatScreenIdx == 0) {
          for (IdxPair e in _postsWithLongPressed)
-            _ownPosts[e.i].unmarkLongPressedChats(e.j);
+            _ownPosts[e.i].togleLongPressedChats(e.j);
       } else {
          for (IdxPair e in _postsWithLongPressed)
-            _favPosts[e.i].unmarkLongPressedChats(e.j);
+            _favPosts[e.i].togleLongPressedChats(e.j);
       }
 
       _postsWithLongPressed = List<IdxPair>();
@@ -2089,7 +2112,7 @@ class MenuChatState extends State<MenuChat>
          return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
       if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2))
-         _unmarkLongPressedChatEntries();
+         _unmarkLongPressedChats();
 
       if (_newPostPressed)
          return makeNewPostScreens(
@@ -2121,7 +2144,8 @@ class MenuChatState extends State<MenuChat>
                _txtCtrl,
                () async {await _onFavChatSendPressed(chatIdx);},
                _chatScrollCtrl,
-               (int idx){_onChatMsgLongPressed(chatIdx, idx, true);});
+               (int idx) {_onChatMsgLongPressed(chatIdx, idx, true);},
+               _longPressedChatMsgs.length);
       }
 
       if (isOnOwnChat()) {
@@ -2129,6 +2153,7 @@ class MenuChatState extends State<MenuChat>
          // specific post.
          final int chatIdx =
                _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
+
          assert(chatIdx != -1);
 
          return makeChatScreen(
@@ -2138,7 +2163,8 @@ class MenuChatState extends State<MenuChat>
              _txtCtrl,
              () async { await _onOwnChatSendPressed(chatIdx);},
              _chatScrollCtrl,
-             (int idx){_onChatMsgLongPressed(chatIdx, idx, false);});
+             (int idx) {_onChatMsgLongPressed(chatIdx, idx, false);},
+             _longPressedChatMsgs.length);
       }
 
       List<Widget> bodies =
@@ -2237,7 +2263,7 @@ class MenuChatState extends State<MenuChat>
                           _onChatBotBarTapped,
                           _chatScreenIdx);
 
-      onWillPops[2] = _onOwnPostsBackPressed;
+      onWillPops[2] = _onChatsBackPressed;
 
       final int newChats = _getNumberOfUnreadChats();
 
@@ -2268,33 +2294,33 @@ class MenuChatState extends State<MenuChat>
          _tabCtrl.index == 2 ? 1.0 : 0.70;
 
       return WillPopScope(
-                onWillPop: () async { return onWillPops[_tabCtrl.index]();},
-                child: Scaffold(
-                    body: NestedScrollView(
-                             controller: _scrollCtrl,
-                             headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
-                               return <Widget>[
-                                 SliverAppBar(
-                                   title: Text(appBarTitle, style: TextStyle(color: Colors.white)),
-                                   pinned: true,
-                                   floating: true,
-                                   forceElevated: innerBoxIsScrolled,
-                                   bottom: makeTabBar( newMsgsCounters
-                                                     , _tabCtrl
-                                                     , newMsgCircleOpacity),
-                                   actions: actions,
-                                   leading: leading
-                                 ),
-                               ];
-                             },
-                             body: TabBarView(controller: _tabCtrl,
-                                         children: bodies),
-                      ),
-                      backgroundColor: Colors.white,
-                      floatingActionButton: fltButtons[_tabCtrl.index],
-                      bottomNavigationBar: bottNavBars[_tabCtrl.index],
-                    )
-              );
+          onWillPop: () async { return onWillPops[_tabCtrl.index]();},
+          child: Scaffold(
+              body: NestedScrollView(
+                 controller: _scrollCtrl,
+                 headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
+                   return <Widget>[
+                     SliverAppBar(
+                       title: Text(appBarTitle, style: TextStyle(color: Colors.white)),
+                       pinned: true,
+                       floating: true,
+                       forceElevated: innerBoxIsScrolled,
+                       bottom: makeTabBar( newMsgsCounters
+                                         , _tabCtrl
+                                         , newMsgCircleOpacity),
+                       actions: actions,
+                       leading: leading
+                     ),
+                   ];
+                 },
+                 body: TabBarView(controller: _tabCtrl,
+                             children: bodies),
+                ),
+                backgroundColor: Colors.white,
+                floatingActionButton: fltButtons[_tabCtrl.index],
+                bottomNavigationBar: bottNavBars[_tabCtrl.index],
+              )
+        );
    }
 
    void _connectToServer()
