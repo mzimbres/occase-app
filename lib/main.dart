@@ -1206,42 +1206,51 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   void handlePublishAck(final int id, final int timestamp)
+   Future<void> handlePublishAck(final int id, final int timestamp) async
    {
-      assert(!_outPostsQueue.isEmpty);
+      try {
+         assert(!_outPostsQueue.isEmpty);
 
-      final PostData post = _outPostsQueue.removeFirst();
-      writeListToDisk(List<PostData>.from(_outPostsQueue),
-                      _outPostsFileFullPath , FileMode.write);
+         final PostData post = _outPostsQueue.removeFirst();
 
-      if (id == -1) {
-         // What should we do with the other elements in the queue?
-         // Should they all be discarded? This will be a very rare
-         // situation.
-         print("Publish failed. The post will be discarded.");
-         return;
+         final String content1 =
+            serializeList(List<PostData>.from(_outPostsQueue));
+
+         await File(_outPostsFileFullPath)
+            .writeAsString(content1, mode: FileMode.write);
+
+         if (id == -1) {
+            // What should we do with the other elements in the queue?
+            // Should they all be discarded? This will be a very rare
+            // situation.
+            print("Publish failed. The post will be discarded.");
+            return;
+         }
+
+         post.id = id;
+         post.date = timestamp;
+         _ownPosts.add(post);
+         rotateElements(_ownPosts, _ownPosts.length - 1);
+         // We have to keep _ownPostIdx pointing to its post. Since
+         // elements are rorated by only one element and we know the post
+         // of _ownPostIdx has rotated for sure we can only increase its
+         // index.
+         if (_ownPostIdx != -1)
+            ++_ownPostIdx;
+
+         final String content2 = serializeList(<PostData>[post]);
+
+         await File(_outPostsFileFullPath)
+            .writeAsString(content2, mode: FileMode.append);
+
+         if (_outPostsQueue.isEmpty)
+            return;
+
+         // If the queue is not empty we can send the next.
+         final String payload = makePostPayload(_outPostsQueue.first);
+         channel.sink.add(payload);
+      } catch (e) {
       }
-
-      post.id = id;
-      post.date = timestamp;
-      _ownPosts.add(post);
-      rotateElements(_ownPosts, _ownPosts.length - 1);
-      // We have to keep _ownPostIdx pointing to its post. Since
-      // elements are torated by only one element and we know the post
-      // of _ownPostIdx has rotated for sure we can only increase its
-      // index.
-      if (_ownPostIdx != -1)
-         ++_ownPostIdx;
-
-      writeListToDisk( <PostData>[post], _ownPostsFileFullPath
-                     , FileMode.append);
-
-      if (_outPostsQueue.isEmpty)
-         return;
-
-      // If the queue is not empty we can send the next.
-      final String payload = makePostPayload(_outPostsQueue.first);
-      channel.sink.add(payload);
    }
 
    void _onSendNewPostPressedImpl(final int i)
@@ -1748,13 +1757,13 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onPublishAck(Map<String, dynamic> ack)
+   Future<void> _onPublishAck(Map<String, dynamic> ack) async
    {
       final String res = ack['result'];
       if (res == 'ok')
-         handlePublishAck(ack['id'], ack['date']);
+         await handlePublishAck(ack['id'], ack['date']);
       else
-         handlePublishAck(-1, 0);
+         await handlePublishAck(-1, 0);
    }
 
    Future<void> onWSData(msg) async
@@ -1772,7 +1781,7 @@ class MenuChatState extends State<MenuChat>
       } else if (cmd == "post") {
          await _onPost(ack);
       } else if (cmd == "publish_ack") {
-         _onPublishAck(ack);
+         await _onPublishAck(ack);
       } else if (cmd == "message") {
          _onMessage(ack);
       } else {
