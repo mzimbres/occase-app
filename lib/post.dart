@@ -35,14 +35,21 @@ void writeToFile( final String data
    }
 }
 
-void writeListToDisk<T>( final List<T> data, final String fullPath
-                       , FileMode mode)
+String serializeList<T>(final List<T> data)
 {
    String content = '';
    for (T o in data) {
       final String postStr = jsonEncode(o);
       content += '$postStr\n';
    }
+
+   return content;
+}
+
+void writeListToDisk<T>( final List<T> data, final String fullPath
+                       , FileMode mode)
+{
+   final String content = serializeList(data);
 
    // TODO: Limit the size of this file to a given size. When
    // this happens it may be easier to always overwrite the file

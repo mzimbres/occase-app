@@ -1632,7 +1632,8 @@ class MenuChatState extends State<MenuChat>
       setState((){});
    }
 
-   void _onRegisterAck(Map<String, dynamic> ack, final String msg)
+   Future<void>
+      _onRegisterAck(Map<String, dynamic> ack, final String msg) async
    {
       final String res = ack["result"];
       if (res == 'fail') {
@@ -1656,10 +1657,11 @@ class MenuChatState extends State<MenuChat>
       assert(_menus != null);
 
       print('register_ack: Persisting the menu received.');
-      _persistMenu();
+      await _persistMenu();
    }
 
-   void _onLoginAck(Map<String, dynamic> ack, final String msg)
+   Future<void>
+      _onLoginAck(Map<String, dynamic> ack, final String msg) async
    {
       final String res = ack["result"];
 
@@ -1689,7 +1691,7 @@ class MenuChatState extends State<MenuChat>
          _menus = menuReader(ack);
          assert(_menus != null);
          print('login_ack: Persisting new menu received.');
-         _persistMenu();
+         await _persistMenu();
       }
    }
 
@@ -1702,7 +1704,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onPost(Map<String, dynamic> ack)
+   Future<void> _onPost(Map<String, dynamic> ack) async
    {
       // Remember the size of the list to append later the new items
       // to a file.
@@ -1729,13 +1731,17 @@ class MenuChatState extends State<MenuChat>
             _lastPostId = post.id;
       }
 
-      final String lastPostIdStr = '${_lastPostId}';
-      writeToFile(lastPostIdStr, _lastPostIdFileFullPath, FileMode.write);
+      try {
+         await File(_lastPostIdFileFullPath)
+            .writeAsString('${_lastPostId}', mode: FileMode.write);
 
-      // At the moment we do not impose a limit on how big this
-      // file can grow.
-      writeListToDisk( _unreadPosts, _unreadPostsFileFullPath
-                     , FileMode.append);
+         // At the moment we do not impose a limit on how big this
+         // file can grow.
+         final String content = serializeList(_unreadPosts);
+         await File(_unreadPostsFileFullPath)
+            .writeAsString(content, mode: FileMode.append);
+      } catch (e) {
+      }
 
       // Consider: Before triggering a redraw we should perhaps
       // check whether it is necessary given our current state.
@@ -1751,20 +1757,20 @@ class MenuChatState extends State<MenuChat>
          handlePublishAck(-1, 0);
    }
 
-   void onWSData(msg)
+   Future<void> onWSData(msg) async
    {
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
       // TODO: Put most used commands first to improve performance.
       if (cmd == "register_ack") {
-         _onRegisterAck(ack, msg);
+         await _onRegisterAck(ack, msg);
       } else if (cmd == "login_ack") {
-         _onLoginAck(ack, msg);
+         await _onLoginAck(ack, msg);
       } else if (cmd == "subscribe_ack") {
          _onSubscribeAck(ack);
       } else if (cmd == "post") {
-         _onPost(ack);
+         await _onPost(ack);
       } else if (cmd == "publish_ack") {
          _onPublishAck(ack);
       } else if (cmd == "message") {
@@ -1815,25 +1821,27 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _persistMenu()
+   Future<void> _persistMenu() async
    {
-      var foo = {'menus': _menus};
-      final String bar = jsonEncode(foo);
-      writeToFile(bar, _menuFileFullPath, FileMode.write);
+      try {
+         var foo = {'menus': _menus};
+         final String bar = jsonEncode(foo);
+         await File(_menuFileFullPath)
+               .writeAsString(bar, mode: FileMode.write);
+      } catch (e) {
+      }
    }
 
-   void _onSendFilters(BuildContext ctx)
+   Future<void> _onSendFilters(BuildContext ctx) async
    {
       // First send the hashes then show the dialog.
       _subscribeToChannels();
 
-      // We also have to persist the menu on file here since we may
-      // not receive a subscribe_ack if the app is offline. In this
-      // case if the user kills the app, the changes in the filter
-      // will be lost.
-      _persistMenu();
-
       _showSimpleDial(ctx, _onOkDialAfterSendFilters, 2);
+
+      // We also have to persist the menu on file here since we may
+      // not receive a subscribe_ack if the app is offline.
+      await _persistMenu();
    }
 
    void _subscribeToChannels()
