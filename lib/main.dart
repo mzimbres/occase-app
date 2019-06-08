@@ -56,46 +56,22 @@ String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
    return str;
 }
 
-List<PostData> safeReadPostsFromFile(final String fullPath)
+List<PostData> decodePostsStr(final List<String> lines)
 {
    List<PostData> foo = List<PostData>();
 
-   try {
-      final List<String> lines = File(fullPath).readAsLinesSync();
-      for (String o in lines) {
-         Map<String, dynamic> map = jsonDecode(o);
-         foo.add(PostData.fromJson(map));
-      }
-
-   } catch (e) {
+   for (String o in lines) {
+      Map<String, dynamic> map = jsonDecode(o);
+      foo.add(PostData.fromJson(map));
    }
 
    return foo;
 }
 
-List<String> safeReadFileAsLines(final String fullPath)
+List<bool> parseBoolsFromLines(final List<String> lines)
 {
-   try {
-      return File(fullPath).readAsLinesSync();
-   } catch (e) {
-      return List<String>();
-   }
-}
-
-String safeReadFileStr(final String fullPath)
-{
-   try {
-      return File(fullPath).readAsStringSync();
-   } catch (e) {
-      return '';
-   }
-}
-
-List<bool> readFileAsBoolStrs(final String path)
-{
-   final List<String> list = safeReadFileAsLines(path);
    List<bool> ret = List<bool>();
-   for (String s in list) {
+   for (String s in lines) {
       if (s == 'true')
          ret.add(true);
       else
@@ -853,44 +829,96 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
       }
 
-      _menus = _readMenuFromFile();
-      _lastPostId = _readLastPostIdFromFile(docDir);
-      _posts = safeReadPostsFromFile(_postsFileFullPath);
-      _unreadPosts = safeReadPostsFromFile(_unreadPostsFileFullPath);
-      _favPosts = safeReadPostsFromFile(_favPostsFileFullPath);
-      _favPosts.sort(CompPostData);
-      _ownPosts = safeReadPostsFromFile(_ownPostsFileFullPath);
-      _ownPosts.sort(CompPostData);
-
-      List<PostData> tmp =
-            safeReadPostsFromFile(_outPostsFileFullPath);
-
-      _outPostsQueue = Queue<PostData>.from(tmp);
-
-      final List<String> tmp2 =
-         safeReadFileAsLines(_outChatMsgsFileFullPath);
-
-      for (String s in tmp2) {
-         final List<String> foo = s.split(' ');
-         assert(foo.length == 2);
-         final int isChat = int.parse(foo.first);
-         _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
+      try {
+         final String path = '${glob.docDir}/${cts.menuFileName}';
+         final String menu = await File(path).readAsString();
+         print('The menu has been read from file.');
+         _menus = menuReader(jsonDecode(menu));
+      } catch (e) {
+         print('Using default menu.');
+         _menus = menuReader(jsonDecode(Consts.menus));
       }
 
-      final List<bool> dialogPrefs =
-         readFileAsBoolStrs(_dialogPrefsFullPath);
-      if (!dialogPrefs.isEmpty) {
-         _dialogPrefs = dialogPrefs;
-         assert(_dialogPrefs.length == 2);
-         // To avoid problems it may be a good idea to set the file
-         // empty and let the user choose the options again.
+      try {
+         final String path = '${docDir}/${cts.lastPostIdFileName}';
+         final String n = await File(path).readAsString();
+         _lastPostId = int.parse(n);
+      } catch (e) {
+         print('Unable to read last post id from file.');
+         _lastPostId = 0;
       }
 
-      //print('====> dialogPref: $_dialogPrefs');
+      List<String> lines = List<String>();
+
+      try {
+         lines = await File(_postsFileFullPath).readAsLines();
+         _posts = decodePostsStr(lines);
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_unreadPostsFileFullPath).readAsLines();
+         _unreadPosts = decodePostsStr(lines);
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_favPostsFileFullPath).readAsLines();
+         _favPosts = decodePostsStr(lines);
+         _favPosts.sort(CompPostData);
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_ownPostsFileFullPath).readAsLines();
+         _ownPosts = decodePostsStr(lines);
+         _ownPosts.sort(CompPostData);
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_outPostsFileFullPath).readAsLines();
+         List<PostData> tmp = decodePostsStr(lines);
+         _outPostsQueue = Queue<PostData>.from(tmp);
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_outChatMsgsFileFullPath).readAsLines();
+         for (String s in lines) {
+            final List<String> foo = s.split(' ');
+            assert(foo.length == 2);
+            final int isChat = int.parse(foo.first);
+            _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
+         }
+      } catch (e) {
+      }
+
+      try {
+         lines = await File(_dialogPrefsFullPath).readAsLines();
+         final List<bool> dialogPrefs = parseBoolsFromLines(lines);
+         if (!dialogPrefs.isEmpty) {
+            _dialogPrefs = dialogPrefs;
+            assert(_dialogPrefs.length == 2);
+            // To avoid problems it may be a good idea to set the file
+            // empty and let the user choose the options again.
+         }
+      } catch (e) {
+      }
 
       _connectToServer();
 
-      _loadLogin();
+      try {
+         lines = await File(_loginFileFullPath).readAsLines();
+         if (!lines.isEmpty) {
+            final List<String> fields = lines.first.split(":");
+            _appId = fields.first;
+            _appPwd = fields.last;
+         }
+      } catch (e) {
+      }
+
+
       final List<int> versions = _makeMenuVersions(_menus);
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
@@ -908,46 +936,6 @@ class MenuChatState extends State<MenuChat>
          versions.add(o.version);
 
       return versions;
-   }
-
-   List<MenuItem> _readMenuFromFile()
-   {
-      try {
-         final String filePath = '${glob.docDir}/${cts.menuFileName}';
-         final String menu = File(filePath).readAsStringSync();
-         Map<String, dynamic> rawMenuMap = jsonDecode(menu);
-         assert(rawMenuMap.containsKey('menus'));
-         print('The menu has been read from file.');
-         return menuReader(rawMenuMap);
-      } catch (e) {
-         Map<String, dynamic> rawMenuMap = jsonDecode(Consts.menus);
-         assert(rawMenuMap.containsKey('menus'));
-         return menuReader(rawMenuMap);
-      }
-   }
-
-   int _readLastPostIdFromFile(final String docDir)
-   {
-      try {
-         final String filePath = '${docDir}/${cts.lastPostIdFileName}';
-         final String n = File(filePath).readAsStringSync();
-         return int.parse(n);
-      } catch (e) {
-         print('Unable to read last post id from file.');
-         return 0;
-      }
-   }
-
-   void _loadLogin()
-   {
-      final List<String> login = safeReadFileAsLines(_loginFileFullPath);
-      if (login.isEmpty)
-         return;
-
-      final List<String> fields = login.first.split(":");
-
-      _appId = fields.first;
-      _appPwd = fields.last;
    }
 
    String _makeConnCmd(final List<int> versions)
