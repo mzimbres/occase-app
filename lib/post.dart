@@ -252,8 +252,8 @@ class ChatHistory {
 
       unreadMsgs.clear();
 
-      File(makeFullPath(cts.chatHistUnreadPrefix, postId))
-         .writeAsStringSync('', mode: FileMode.write);
+      await File(makeFullPath(cts.chatHistUnreadPrefix, postId))
+         .writeAsString('', mode: FileMode.write);
 
       return n;
    }
