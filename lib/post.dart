@@ -699,28 +699,26 @@ findAndMarkChatApp( final List<PostData> posts
 // Study how to convert this into an elipsis like whatsapp.
 Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
 {
-   // We still cannot deal with more than 100.
-   if (n >= 100)
-      n = 100;
-
    final Text txt = Text("${n}", style: TextStyle(color: textColor));
-
    final Radius rd = const Radius.circular(45.0);
    return Container(
-             margin: const EdgeInsets.all(2.0),
-             padding: const EdgeInsets.all(0.0),
-             height: 21.0,
-             width: 21.0,
-             decoration:
-                BoxDecoration(
-                   color: bgColor,
-                   borderRadius:
-                      BorderRadius.only(
-                         topLeft:  rd,
-                         topRight: rd,
-                         bottomLeft: rd,
-                         bottomRight: rd)),
-               child: Center(child: txt));
+       margin: const EdgeInsets.all(2.0),
+       padding: const EdgeInsets.all(2.0),
+       constraints: BoxConstraints(
+             minHeight: 21.0, minWidth: 21.0,
+             maxHeight: 21.0, maxWidth: 40.0),
+       //height: 21.0,
+       //width: 21.0,
+       decoration:
+          BoxDecoration(
+             color: bgColor,
+             borderRadius:
+                BorderRadius.only(
+                   topLeft:  rd,
+                   topRight: rd,
+                   bottomLeft: rd,
+                   bottomRight: rd)),
+         child: Center(widthFactor: 1.0, child: txt));
 }
 
 Card makePostElemSimple(Icon ic, List<Column> cols)
@@ -1151,9 +1149,10 @@ Widget makePostChatCol(BuildContext context,
          bgColor = Colors.white;
       }
 
-      Color cc = Theme.of(context).primaryColor;
-      if (n == 0)
-         cc = bgColor;
+      Widget trailing = null;
+      if (n != 0) {
+         trailing = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
+      }
 
       ListTile lt =
          ListTile(
@@ -1162,7 +1161,7 @@ Widget makePostChatCol(BuildContext context,
             leading: makeCircleAvatar(
                         widget,
                         Theme.of(context).primaryColor),
-            trailing: makeCircleUnreadMsgs(n, cc, Colors.white),
+            trailing: trailing,
             title: Text(ch[i].getChatDisplayName(),
                         maxLines: 1,
                         overflow: TextOverflow.clip,
