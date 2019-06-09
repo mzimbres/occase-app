@@ -195,10 +195,7 @@ class ChatHistory {
       return nick.substring(0, 2);
    }
 
-   ChatHistory(this.peer, this.nick, this.date, final int postId)
-   {
-      _init(postId);
-   }
+   ChatHistory(this.peer, this.nick, this.date, final int postId);
 
    String makeFullPath(final String prefix, final int postId)
    {
@@ -216,11 +213,11 @@ class ChatHistory {
       return date;
    }
 
-   void _init(final int postId)
+   Future<void> init(final int postId) async
    {
       try {
          File f = File(makeFullPath(cts.chatHistReadPrefix, postId));
-         final List<String> lines = f.readAsLinesSync();
+         final List<String> lines = await f.readAsLines();
          msgs = chatItemsFromStrs(lines);
       } catch (e) {
          //print(e);
@@ -228,7 +225,7 @@ class ChatHistory {
 
       try {
          File f = File(makeFullPath(cts.chatHistUnreadPrefix, postId));
-         final List<String> lines = f.readAsLinesSync();
+         final List<String> lines = await f.readAsLines();
          unreadMsgs  = chatItemsFromStrs(lines);
       } catch (e) {
          //print(e);
@@ -416,20 +413,22 @@ class PostData {
       return '${glob.docDir}/post_peers_${id}.txt';
    }
 
-   void _loadChats()
+   Future<void> loadChats() async
    {
       try {
          chats = List<ChatHistory>();
          File f = File(makePathToPeersFile());
-         final List<String> lines = f.readAsLinesSync();
+         final List<String> lines = await f.readAsLines();
          print('Peers: $lines');
          for (String line in lines) {
             final List<String> fields = line.split(';');
             // The assertion should be for == not >=.
             assert(fields.length >= 3);
-            chats.add(ChatHistory( fields[0]
-                                 , fields[1]
-                                 , int.parse(fields[2]), id));
+            ChatHistory hist =
+               ChatHistory(
+                  fields[0], fields[1], int.parse(fields[2]), id);
+            await hist.init(id);
+            chats.add(hist);
          }
       } catch (e) {
          //print(e);
@@ -625,8 +624,6 @@ class PostData {
       filter = pd.filter;
       nick = pd.nick;
       date = pd.date;
-
-      _loadChats();
    }
 
    Map<String, dynamic> toJson()

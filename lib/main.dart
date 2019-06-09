@@ -49,13 +49,15 @@ String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
    return str;
 }
 
-List<PostData> decodePostsStr(final List<String> lines)
+Future<List<PostData>> decodePostsStr(final List<String> lines) async
 {
    List<PostData> foo = List<PostData>();
 
    for (String o in lines) {
       Map<String, dynamic> map = jsonDecode(o);
-      foo.add(PostData.fromJson(map));
+      PostData tmp = PostData.fromJson(map);
+      await tmp.loadChats();
+      foo.add(tmp);
    }
 
    return foo;
@@ -925,33 +927,33 @@ class MenuChatState extends State<MenuChat>
 
       try {
          lines = await File(_postsFileFullPath).readAsLines();
-         _posts = decodePostsStr(lines);
+         _posts = await decodePostsStr(lines);
       } catch (e) {
       }
 
       try {
          lines = await File(_unreadPostsFileFullPath).readAsLines();
-         _unreadPosts = decodePostsStr(lines);
+         _unreadPosts = await decodePostsStr(lines);
       } catch (e) {
       }
 
       try {
          lines = await File(_favPostsFileFullPath).readAsLines();
-         _favPosts = decodePostsStr(lines);
+         _favPosts = await decodePostsStr(lines);
          _favPosts.sort(CompPostData);
       } catch (e) {
       }
 
       try {
          lines = await File(_ownPostsFileFullPath).readAsLines();
-         _ownPosts = decodePostsStr(lines);
+         _ownPosts = await decodePostsStr(lines);
          _ownPosts.sort(CompPostData);
       } catch (e) {
       }
 
       try {
          lines = await File(_outPostsFileFullPath).readAsLines();
-         List<PostData> tmp = decodePostsStr(lines);
+         List<PostData> tmp = await decodePostsStr(lines);
          _outPostsQueue = Queue<PostData>.from(tmp);
       } catch (e) {
       }
@@ -1031,7 +1033,7 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl.addListener(_tabCtrlChangeHandler);
    }
 
-   void _setDialogPref(final int idx, bool v)
+   Future<void> _setDialogPref(final int idx, bool v) async
    {
       _dialogPrefs[idx] = v;
 
@@ -1040,7 +1042,7 @@ class MenuChatState extends State<MenuChat>
       data += '${_dialogPrefs[0]}\n';
       data += '${_dialogPrefs[1]}\n';
 
-      writeToFile(data, _dialogPrefsFullPath, FileMode.write);
+      await File(_dialogPrefsFullPath).writeAsStringSync(data, mode: FileMode.write);
    }
 
    Future<void>
@@ -1056,13 +1058,13 @@ class MenuChatState extends State<MenuChat>
          context: ctx,
          builder: (BuildContext ctx)
          {
-            return
-               DialogWithOp( fav
-                           , () {return _dialogPrefs[fav];}
-                           , (bool v) {_setDialogPref(fav, v);}
-                           , () async {_onPostSelection(data, fav);}
-                           , cts.dialTitleStrs[fav]
-                           , cts.dialBodyStrs[fav]);
+            return DialogWithOp(
+               fav,
+               () {return _dialogPrefs[fav];},
+               (bool v) async {await _setDialogPref(fav, v);},
+               () async {await _onPostSelection(data, fav);},
+               cts.dialTitleStrs[fav],
+               cts.dialBodyStrs[fav]);
             
          },
       );
@@ -1798,7 +1800,7 @@ class MenuChatState extends State<MenuChat>
       // in the server and the menu, they should both be persisted
       // in a file.
       print('register_ack: Persisting login $login');
-      writeToFile(login, _loginFileFullPath, FileMode.write);
+      await File(_loginFileFullPath).writeAsStringSync(login, mode: FileMode.write);
 
       _menus = menuReader(ack);
       assert(_menus != null);
@@ -2156,10 +2158,12 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _onNickPressed()
+   Future<void> _onNickPressed() async
    {
       _nick = _txtCtrl.text;;
-      writeToFile(_nick, _nickFullPath, FileMode.write);
+
+      await File(_nickFullPath).writeAsStringSync(_nick, mode: FileMode.write);
+
       _txtCtrl.text = '';
       setState(() { });
    }
