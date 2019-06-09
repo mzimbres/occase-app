@@ -1089,23 +1089,24 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
 }
 
 // Returns an icon based on the message status.
-Icon chooseIcon(final int status)
+Widget chooseIcon(final int status)
 {
    final double s = 17.0;
 
-   if (status == 0)
-      return Icon(Icons.clear, color: Colors.grey, size: s);
+   Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
 
    if (status == 1)
-      return Icon(Icons.check, color: Colors.grey, size: s);
+      icon = Icon(Icons.check, color: Colors.grey, size: s);
 
    if (status == 2)
-      return Icon(Icons.done_all, color: Colors.grey, size: s);
+      icon = Icon(Icons.done_all, color: Colors.grey, size: s);
 
    if (status == 3)
-      return Icon(Icons.done_all, color: Colors.green, size: s);
+      icon = Icon(Icons.done_all, color: Colors.green, size: s);
 
-   assert(false);
+   return Padding(
+      child: icon,
+      padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
 Widget makeChatTileSubStr(final ChatHistory ch)

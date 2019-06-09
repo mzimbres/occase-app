@@ -462,6 +462,12 @@ makeChatScreen(BuildContext ctx,
             onSelectedMsgColor = Colors.teal[100];
          }
 
+         double width = 300.0;
+         if (items[i].msg.length < 10)
+            width = 150.0;
+         else if (items[i].msg.length < 20)
+            width = 200.0;
+
          Widget msgAndStatus;
          if (items[i].thisApp) {
             final int st =  items[i].status;
@@ -471,7 +477,7 @@ makeChatScreen(BuildContext ctx,
 
             msgAndStatus = Row(children: <Widget>
             [ Expanded(child: Text(items[i].msg))
-            , Expanded(child: foo)]);
+            , foo]);
          } else {
             msgAndStatus = Text(items[i].msg);
          }
@@ -479,12 +485,11 @@ makeChatScreen(BuildContext ctx,
          print('${items[i].isLongPressed}');
          //______________-
 
-
          final Radius rd = const Radius.circular(45.0);
          Container cont = Container(
              margin: const EdgeInsets.all(5.0),
              padding: const EdgeInsets.all(5.0),
-             constraints: BoxConstraints(maxWidth: 250.0),
+             constraints: BoxConstraints(maxWidth: width),
              decoration:
                 BoxDecoration(
                    color: onSelectedMsgColor,
