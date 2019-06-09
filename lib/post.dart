@@ -574,10 +574,13 @@ class PostData {
          assert(idx < chats.length);
 
          if (chats[idx].isLongPressed) {
-            await File(chats[idx].makeFullPath(cts.chatHistReadPrefix, id))
-                  .deleteSync();
-            await File(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id))
-                  .deleteSync();
+            try {
+               await File(chats[idx].makeFullPath(cts.chatHistReadPrefix, id))
+                     .deleteSync();
+               await File(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id))
+                     .deleteSync();
+            } catch (e) {
+            }
          }
 
          chats.removeAt(idx);
@@ -1025,11 +1028,11 @@ makePostTabListView(BuildContext context,
              });
 }
 
-FloatingActionButton makeNewPostButton(Function onNewPost)
+FloatingActionButton makeNewPostButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
              backgroundColor: cts.primaryColor,
-             child: Icon(cts.newPostIcon, color: Colors.white),
+             child: Icon(id, color: Colors.white),
              onPressed: onNewPost);
 }
 

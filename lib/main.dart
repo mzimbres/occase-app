@@ -266,6 +266,62 @@ makeNewPostScreens( BuildContext ctx
                              screen)));
 }
 
+WillPopScope
+makeNewFiltersScreens( BuildContext ctx
+                     , Function onSendFilters
+                     , Function onFilterDetail
+                     , Function onFilterNodePressed
+                     , Function onWillPopMenu
+                     , Function onBotBarTaped
+                     , Function onFilterLeafNodePressed
+                     , final List<MenuItem> menu
+                     , int filter
+                     , int screen)
+{
+   Widget wid;
+   String appBarTitle = cts.appName;
+   if (screen == 3) {
+      wid = createSendScreen((){onSendFilters(ctx);}, 'Enviar');
+   } else if (screen == 2) {
+      wid = makePostDetailScreen(
+               ctx,
+               onFilterDetail,
+               filter,
+               0);
+   } else {
+      if (menu[screen].root.length > 1)
+         appBarTitle = menu[screen].root.last.name;
+
+      wid = createFilterListView(
+               ctx,
+               menu[screen].root.last,
+               onFilterLeafNodePressed,
+               onFilterNodePressed,
+               menu[screen].isFilterLeaf());
+   }
+
+   AppBar appBar = AppBar(
+         title: Text(appBarTitle,
+                     style: TextStyle(color: Colors.white)),
+         elevation: 0.7,
+         toolbarOpacity : 1.0,
+         leading: IconButton( icon: Icon( Icons.arrow_back
+                                        , color: Colors.white)
+                            , onPressed: onWillPopMenu)
+   );
+
+   return WillPopScope(
+       onWillPop: () async { return onWillPopMenu();},
+       child: Scaffold(
+           appBar: appBar,
+           body: wid,
+           bottomNavigationBar: makeBottomBarItems(
+              cts.filterTabIcons,
+              cts.filterTabNames,
+              onBotBarTaped,
+              screen)));
+}
+
 ListView
 makePostDetailScreen( BuildContext ctx
                     , Function proceed
@@ -788,6 +844,9 @@ class MenuChatState extends State<MenuChat>
    // are left.
    bool _newPostPressed = false;
 
+   // Similar to _newPostPressed but for the filter screen.
+   bool _newFiltersPressed = false;
+
    // The index of the tab we are currently in in the *new
    // post* or *Filters* screen. For example 0 for the localization
    // menu, 1 for the models menu etc.
@@ -884,6 +943,7 @@ class MenuChatState extends State<MenuChat>
    MenuChatState()
    {
       _newPostPressed = false;
+      _newFiltersPressed = false;
       _botBarIdx = 0;
 
       _dialogPrefs[0] = true;
@@ -1106,6 +1166,15 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onNewFilters()
+   {
+      _newFiltersPressed = true;
+      _menus[0].restoreMenuStack();
+      _menus[1].restoreMenuStack();
+      _botBarIdx = 0;
+      setState(() { });
+   }
+
    bool _onWillPopMenu()
    {
       // We may want to  split this function in two: One for the
@@ -1119,6 +1188,7 @@ class MenuChatState extends State<MenuChat>
       if (_menus[_botBarIdx].root.length == 1) {
          if (_botBarIdx == 0){
             _newPostPressed = false;
+            _newFiltersPressed = false;
          } else {
             --_botBarIdx;
          }
@@ -1978,6 +2048,8 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendFilters(BuildContext ctx) async
    {
+      _newFiltersPressed = false;
+
       // First send the hashes then show the dialog.
       _subscribeToChannels();
 
@@ -2103,7 +2175,9 @@ class MenuChatState extends State<MenuChat>
          for (IdxPair e in _postsWithLongPressed)
             _favPosts[e.i].removeLongPressedChats(e.j);
 
+         print('---> ${_favPosts.length}');
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
+         print('---> ${_favPosts.length}');
 
          final String content = serializeList(_favPosts);
          await File(_favPostsFileFullPath).
@@ -2205,18 +2279,33 @@ class MenuChatState extends State<MenuChat>
          _unmarkLongPressedChats();
 
       if (_newPostPressed)
-         return makeNewPostScreens(
-             ctx,
-             _postInput,
-             _menus,
-             _txtCtrl,
-             _onSendNewPostPressed,
-             _botBarIdx,
-             _onNewPostDetail,
-             _onPostLeafPressed,
-             _onPostNodePressed,
-             _onWillPopMenu,
-             _onNewPostBotBarTapped);
+         return
+            makeNewPostScreens(
+               ctx,
+               _postInput,
+               _menus,
+               _txtCtrl,
+               _onSendNewPostPressed,
+               _botBarIdx,
+               _onNewPostDetail,
+               _onPostLeafPressed,
+               _onPostNodePressed,
+               _onWillPopMenu,
+               _onNewPostBotBarTapped);
+
+      if (_newFiltersPressed)
+         return
+            makeNewFiltersScreens(
+               ctx,
+               _onSendFilters,
+               _onFilterDetail,
+               _onFilterNodePressed,
+               _onWillPopMenu,
+               _onBotBarTapped,
+               _onFilterLeafNodePressed,
+               _menus,
+               _filter,
+               _botBarIdx);
 
       if (isOnFavChat()) {
          // The user has clicked in a chat and this leads us to the
@@ -2289,7 +2378,7 @@ class MenuChatState extends State<MenuChat>
                         _menus[_botBarIdx].isFilterLeaf());
       }
 
-      fltButtons[0] = null;
+      fltButtons[0] = makeNewPostButton(_onNewPost, cts.newPostIcon);
 
       bottNavBars[0] = makeBottomBarItems(
                           cts.filterTabIcons,
@@ -2319,7 +2408,8 @@ class MenuChatState extends State<MenuChat>
                             , _menus
                             , newPostsLength);
 
-      fltButtons[1] = makeNewPostButton(_onNewPost);
+      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter);
+
       bottNavBars[1] = null;
       onWillPops[1] = (){return false;};
 
