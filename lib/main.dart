@@ -1140,8 +1140,8 @@ class MenuChatState extends State<MenuChat>
             _favPosts[_favIdx].togleLongPressedChatMsg(o.i, o.j);
          }
 
-         _longPressedChatMsgs = List<IdxPair>();
-
+         _longPressedChatMsgs.clear();
+         setState(() { });
          return false;
       }
 
@@ -1160,7 +1160,6 @@ class MenuChatState extends State<MenuChat>
          }
 
          _longPressedChatMsgs = List<IdxPair>();
-
          setState(() { });
          return false;
       }
@@ -1315,11 +1314,8 @@ class MenuChatState extends State<MenuChat>
       try {
          assert(!_outPostsQueue.isEmpty);
 
-         final PostData post = _outPostsQueue.removeFirst();
-
-         final String content1 =
-            serializeList(List<PostData>.from(_outPostsQueue));
-
+         PostData post = _outPostsQueue.removeFirst();
+         final String content1 = serializeList(List<PostData>.from(_outPostsQueue));
          await File(_outPostsFileFullPath).writeAsString(content1, mode: FileMode.write);
 
          if (id == -1) {
@@ -1343,7 +1339,7 @@ class MenuChatState extends State<MenuChat>
 
          final String content2 = serializeList(<PostData>[post]);
 
-         await File(_outPostsFileFullPath).writeAsString(content2, mode: FileMode.append);
+         await File(_ownPostsFileFullPath).writeAsString(content2, mode: FileMode.append);
 
          if (_outPostsQueue.isEmpty)
             return;
@@ -1655,6 +1651,7 @@ class MenuChatState extends State<MenuChat>
       if (is_sender_post)
          foo = _favPosts;
 
+      print('===> $msg');
       final IdxPair pair =
          await findInsertAndRotateMsg(foo, postId, from, msg, false, '');
 
@@ -2222,9 +2219,8 @@ class MenuChatState extends State<MenuChat>
              _onNewPostBotBarTapped);
 
       if (isOnFavChat()) {
-         // We are in the favorite posts screen, where pressing the
-         // chat button in any of the posts leads us to the chat
-         // screen with the peer.
+         // The user has clicked in a chat and this leads us to the
+         // chat screen with the peer.
          final String peer = _favPosts[_favIdx].from;
          final int chatIdx = _favPosts[_favIdx].getChatHistIdx(peer);
          assert(chatIdx != -1);
@@ -2243,11 +2239,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (isOnOwnChat()) {
-         // We are in the chat screen with one interested user on a
-         // specific post.
-         final int chatIdx =
-               _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
-
+         // Same as above but for own posts.
+         final int chatIdx = _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
          assert(chatIdx != -1);
 
          return makeChatScreen(
