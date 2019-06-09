@@ -425,7 +425,7 @@ makeChatScreen(BuildContext ctx,
    ListView list = ListView.builder(
       controller: scrollCtrl,
       reverse: false,
-      padding: const EdgeInsets.all(6.0),
+      //padding: const EdgeInsets.all(6.0),
       itemCount: nMsgs + nUnreadMsgs + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -452,9 +452,14 @@ makeChatScreen(BuildContext ctx,
 
          Alignment align = Alignment.bottomLeft;
          Color color = Color(0xFFFFFFFF);
+         Color onSelectedMsgColor = Colors.grey[300];
          if (items[i].thisApp) {
             align = Alignment.bottomRight;
             color = Colors.lightGreenAccent[100];
+         }
+
+         if (items[i].isLongPressed) {
+            onSelectedMsgColor = Colors.teal[100];
          }
 
          Widget msgAndStatus;
@@ -472,27 +477,57 @@ makeChatScreen(BuildContext ctx,
          }
 
          print('${items[i].isLongPressed}');
-         if (items[i].isLongPressed)
-            color = cts.fireBrick;
+         //______________-
 
-         return
-            Align(alignment: align,
-               child: GestureDetector(
-                  onLongPress: () {onChatMsgLongPressed(isUnreadIdx, false);},
-                  onTap: () {onChatMsgLongPressed(isUnreadIdx, true);},
-                  onPanStart: (DragStartDetails d){print('Cool');},
-                  child:FractionallySizedBox(
-                     child: Card(
-                        child: Padding(
-                           padding: EdgeInsets.all(4.0),
-                           child: msgAndStatus),
-                        color: color,
-                        margin: EdgeInsets.all(6.0),
+
+         final Radius rd = const Radius.circular(45.0);
+         Container cont = Container(
+             margin: const EdgeInsets.all(5.0),
+             padding: const EdgeInsets.all(5.0),
+             constraints: BoxConstraints(maxWidth: 250.0),
+             decoration:
+                BoxDecoration(
+                   color: onSelectedMsgColor,
+                   borderRadius:
+                      BorderRadius.only(
+                         topLeft:  rd,
+                         topRight: rd,
+                         bottomLeft: rd,
+                         bottomRight: rd)),
+               child: Card(
+                  child: Padding(
+                     padding: const EdgeInsets.all(2.0),
+                        child: Center(widthFactor: 1.0, child: msgAndStatus)),
                         elevation: 0.0,
-                  ),
-                  widthFactor: 0.8)
-            )
-         );
+                        color: color,
+                     ));
+
+         Row r = null;
+         if (items[i].thisApp) {
+            r = Row(children: <Widget>
+            [ Spacer()
+            , cont
+            ]);
+         } else {
+            r = Row(children: <Widget>
+            [ cont
+            , Spacer()
+            ]);
+         }
+
+         return GestureDetector(
+            onLongPress: () {onChatMsgLongPressed(isUnreadIdx, false);},
+            onTap: () {onChatMsgLongPressed(isUnreadIdx, true);},
+            onPanStart: (DragStartDetails d){print('Cool');},
+            child: Card(child: r, color: onSelectedMsgColor,
+                        elevation: 0.0,
+                        margin: const EdgeInsets.all(0.0),
+                        shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.all(Radius.circular(0.0)))
+                        )
+            );
+
+         //______________-
       },
    );
 
