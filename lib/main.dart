@@ -1042,7 +1042,7 @@ class MenuChatState extends State<MenuChat>
       data += '${_dialogPrefs[0]}\n';
       data += '${_dialogPrefs[1]}\n';
 
-      await File(_dialogPrefsFullPath).writeAsStringSync(data, mode: FileMode.write);
+      await File(_dialogPrefsFullPath).writeAsString(data, mode: FileMode.write);
    }
 
    Future<void>
@@ -1081,7 +1081,7 @@ class MenuChatState extends State<MenuChat>
 
          final String content = serializeList(<PostData>[data]);
          await File(_favPostsFileFullPath).
-            writeAsStringSync(content, mode: FileMode.append);
+            writeAsString(content, mode: FileMode.append);
       }
 
       _posts.remove(data);
@@ -1092,7 +1092,7 @@ class MenuChatState extends State<MenuChat>
       // newest.
       final String content = serializeList(_posts);
       await File(_postsFileFullPath).
-         writeAsStringSync(content, mode: FileMode.write);
+         writeAsString(content, mode: FileMode.write);
 
       setState(() { });
    }
@@ -1288,8 +1288,7 @@ class MenuChatState extends State<MenuChat>
       _outPostsQueue.add(post);
 
       final String content = serializeList(<PostData>[post]);
-      await File(_outPostsFileFullPath).
-         writeAsStringSync(content, mode: FileMode.append);
+      await File(_outPostsFileFullPath).writeAsString(content, mode: FileMode.append);
 
       if (!isEmpty)
          return;
@@ -1321,8 +1320,7 @@ class MenuChatState extends State<MenuChat>
          final String content1 =
             serializeList(List<PostData>.from(_outPostsQueue));
 
-         await File(_outPostsFileFullPath)
-            .writeAsString(content1, mode: FileMode.write);
+         await File(_outPostsFileFullPath).writeAsString(content1, mode: FileMode.write);
 
          if (id == -1) {
             // What should we do with the other elements in the queue?
@@ -1345,8 +1343,7 @@ class MenuChatState extends State<MenuChat>
 
          final String content2 = serializeList(<PostData>[post]);
 
-         await File(_outPostsFileFullPath)
-            .writeAsString(content2, mode: FileMode.append);
+         await File(_outPostsFileFullPath).writeAsString(content2, mode: FileMode.append);
 
          if (_outPostsQueue.isEmpty)
             return;
@@ -1629,7 +1626,7 @@ class MenuChatState extends State<MenuChat>
          _outChatMsgsQueue.removeFirst();
          final String accStr = accumulateChatMsgs(_outChatMsgsQueue);
          await File(_outChatMsgsFileFullPath)
-            .writeAsStringSync(accStr, mode: FileMode.write);
+            .writeAsString(accStr, mode: FileMode.write);
 
          if (!_outChatMsgsQueue.isEmpty)
             channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -1800,7 +1797,7 @@ class MenuChatState extends State<MenuChat>
       // in the server and the menu, they should both be persisted
       // in a file.
       print('register_ack: Persisting login $login');
-      await File(_loginFileFullPath).writeAsStringSync(login, mode: FileMode.write);
+      await File(_loginFileFullPath).writeAsString(login, mode: FileMode.write);
 
       _menus = menuReader(ack);
       assert(_menus != null);
@@ -2113,7 +2110,7 @@ class MenuChatState extends State<MenuChat>
 
          final String content = serializeList(_favPosts);
          await File(_favPostsFileFullPath).
-            writeAsStringSync(content, mode: FileMode.write);
+            writeAsString(content, mode: FileMode.write);
       }
 
       _postsWithLongPressed = List<IdxPair>();
@@ -2162,7 +2159,7 @@ class MenuChatState extends State<MenuChat>
    {
       _nick = _txtCtrl.text;;
 
-      await File(_nickFullPath).writeAsStringSync(_nick, mode: FileMode.write);
+      await File(_nickFullPath).writeAsString(_nick, mode: FileMode.write);
 
       _txtCtrl.text = '';
       setState(() { });

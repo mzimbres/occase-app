@@ -16,15 +16,6 @@ class IdxPair {
    IdxPair(this.i, this.j);
 }
 
-void safeDeleteFile(final String path)
-{
-   try {
-      File(path).deleteSync();
-   } catch (e) {
-      print(e);
-   }
-}
-
 void writeToFile( final String data
                 , final String fullPath
                 , final FileMode mode)
@@ -245,10 +236,11 @@ class ChatHistory {
 
       final String content = serializeList(unreadMsgs);
       await File(makeFullPath(cts.chatHistReadPrefix, postId))
-         .writeAsStringSync(content, mode: FileMode.append);
+         .writeAsString(content, mode: FileMode.append);
 
       unreadMsgs.clear();
 
+      print('moveToReadHistory: Wiping file.');
       await File(makeFullPath(cts.chatHistUnreadPrefix, postId))
          .writeAsString('', mode: FileMode.write);
 
@@ -339,7 +331,7 @@ class ChatHistory {
       ChatItem item = ChatItem(true, '', status, 0);
       final String str = jsonEncode(item);
       await File(makeFullPath(cts.chatHistReadPrefix, postId))
-         .writeAsStringSync('${str}\n', mode: FileMode.append);
+         .writeAsString('${str}\n', mode: FileMode.append);
    }
 }
 
@@ -474,7 +466,7 @@ class PostData {
       print('Persisting peers: \n$data');
 
       await File(makePathToPeersFile())
-         .writeAsStringSync(data, mode: FileMode.write);
+         .writeAsString(data, mode: FileMode.write);
    }
 
    Future<void>
@@ -575,18 +567,23 @@ class PostData {
 
    Future<void> removeLongPressedChats(int idx) async
    {
-      print('removeLPC($idx), length = ${chats.length}, id = $id');
+      try {
+         print('removeLPC($idx), length = ${chats.length}, id = $id');
 
-      assert(!chats.isEmpty);
-      assert(idx < chats.length);
+         assert(!chats.isEmpty);
+         assert(idx < chats.length);
 
-      if (chats[idx].isLongPressed) {
-         safeDeleteFile(chats[idx].makeFullPath(cts.chatHistReadPrefix, id));
-         safeDeleteFile(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id));
+         if (chats[idx].isLongPressed) {
+            await File(chats[idx].makeFullPath(cts.chatHistReadPrefix, id))
+                  .deleteSync();
+            await File(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id))
+                  .deleteSync();
+         }
+
+         chats.removeAt(idx);
+         await _persistPeers();
+      } catch (e) {
       }
-
-      chats.removeAt(idx);
-      await _persistPeers();
    }
 
    bool togleLongPressedChats(int i)
