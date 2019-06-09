@@ -852,12 +852,6 @@ class MenuChatState extends State<MenuChat>
    // menu, 1 for the models menu etc.
    int _botBarIdx = 0;
 
-   // Stores the last tapped botton bar of the *chats* screen. See
-   // that without this variable we cannot know which of the two chat
-   // screens we are currently in. It should be only used when both
-   // _favIdx and _favIdx are -1.
-   int _chatScreenIdx = 1;
-
    // Stores the current chat index in the array _favPosts, -1
    // means we are not in this screen.
    int _favIdx = -1;
@@ -914,15 +908,29 @@ class MenuChatState extends State<MenuChat>
 
    static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
 
+   bool isOnPosts()
+   {
+      return _tabCtrl.index == 1;
+   }
+
+   bool isOnFav()
+   {
+      return _tabCtrl.index == 2;
+   }
+
    bool isOnFavChat()
    {
       return _tabCtrl.index == 2 && _favIdx != -1;
    }
 
+   bool isOnOwn()
+   {
+      return _tabCtrl.index == 0;
+   }
+
    bool isOnOwnChat()
    {
-      return _tabCtrl.index == 2 && _ownIdx != -1
-          && !_ownPostChatPeer.isEmpty;
+      return _tabCtrl.index == 0 && _ownIdx != -1 && !_ownPostChatPeer.isEmpty;
    }
 
    void _initPaths()
@@ -1276,12 +1284,6 @@ class MenuChatState extends State<MenuChat>
       } while (_botBarIdx != i);
 
       setState(() { });
-   }
-
-   void _onChatBotBarTapped(int i)
-   {
-      _unmarkLongPressedChats();
-      setState(() { _chatScreenIdx = i; });
    }
 
    void _onPostLeafPressed(int i)
@@ -2095,11 +2097,18 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   int _getNumberOfUnreadChats()
+   int _getNUnreadFavChats()
    {
       int i = 0;
       for (PostData post in _favPosts)
          i += post.getNumberOfUnreadChats();
+
+      return i;
+   }
+
+   int _getNUnreadOwnChats()
+   {
+      int i = 0;
       for (PostData post in _ownPosts)
          i += post.getNumberOfUnreadChats();
 
@@ -2110,8 +2119,14 @@ class MenuChatState extends State<MenuChat>
    {
       _unmarkLongPressedChats();
 
-      if (_chatScreenIdx == 0 && _ownIdx != -1) {
+      if (_ownIdx != -1) {
          _ownIdx = -1;
+         setState(() { });
+         return false;
+      }
+
+      if (_favIdx != -1) {
+         _favIdx = -1;
          setState(() { });
          return false;
       }
@@ -2134,7 +2149,7 @@ class MenuChatState extends State<MenuChat>
       if (_postsWithLongPressed.isEmpty)
          return;
 
-      if (_chatScreenIdx == 0) {
+      if (isOnOwn()) {
          for (IdxPair e in _postsWithLongPressed)
             _ownPosts[e.i].togleLongPressedChats(e.j);
       } else {
@@ -2148,7 +2163,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _removeLongPressedChatEntries() async
    {
-      assert(_tabCtrl.index == 2);
+      assert(isOnFav() || isOnOwn());
 
       // Optimization to avoid writing files.
       if (_postsWithLongPressed.isEmpty)
@@ -2164,7 +2179,7 @@ class MenuChatState extends State<MenuChat>
          return a.j < b.j ? 1 : -1;
       });
 
-      if (_chatScreenIdx == 0) {
+      if (isOnOwn()) {
          for (IdxPair e in _postsWithLongPressed)
             _ownPosts[e.i].removeLongPressedChats(e.j);
 
@@ -2175,9 +2190,7 @@ class MenuChatState extends State<MenuChat>
          for (IdxPair e in _postsWithLongPressed)
             _favPosts[e.i].removeLongPressedChats(e.j);
 
-         print('---> ${_favPosts.length}');
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
-         print('---> ${_favPosts.length}');
 
          final String content = serializeList(_favPosts);
          await File(_favPostsFileFullPath).
@@ -2214,7 +2227,7 @@ class MenuChatState extends State<MenuChat>
             actions[1] = ok;
 
             Text txt = cts.delOwnChatTitleText;
-            if (_chatScreenIdx == 1) {
+            if (isOnFav()) {
                txt = cts.delFavChatTitleText;
             }
 
@@ -2275,7 +2288,7 @@ class MenuChatState extends State<MenuChat>
       if (_nick.isEmpty)
          return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
-      if ((_tabCtrl.index != 2) && (_tabCtrl.previousIndex == 2))
+      if (isOnPosts() && (_tabCtrl.previousIndex == 0) || (_tabCtrl.previousIndex == 2))
          _unmarkLongPressedChats();
 
       if (_newPostPressed)
@@ -2344,49 +2357,18 @@ class MenuChatState extends State<MenuChat>
              _longPressedChatMsgs.length);
       }
 
-      List<Widget> bodies =
-            List<Widget>(cts.tabNames.length);
+      List<Function> onWillPops = List<Function>(cts.tabNames.length);
+      onWillPops[0] = _onChatsBackPressed;
+      onWillPops[1] = (){return false;};
+      onWillPops[2] = _onChatsBackPressed;
+
+      String appBarTitle = cts.appName;
 
       List<FloatingActionButton> fltButtons =
             List<FloatingActionButton>(cts.tabNames.length);
-
-      List<BottomNavigationBar> bottNavBars =
-            List<BottomNavigationBar>(cts.tabNames.length);
-
-      List<Function> onWillPops =
-            List<Function>(cts.tabNames.length);
-
-      String appBarTitle = cts.appName;
-      if (_botBarIdx == 3) {
-         bodies[0] =
-            createSendScreen((){_onSendFilters(ctx);}, 'Enviar');
-      } else if (_botBarIdx == 2) {
-         bodies[0] =
-            makePostDetailScreen( ctx
-                                , _onFilterDetail
-                                , _filter
-                                , 0);
-      } else {
-         if (_menus[_botBarIdx].root.length > 1)
-            appBarTitle = _menus[_botBarIdx].root.last.name;
-
-         bodies[0] = createFilterListView(
-                        ctx,
-                        _menus[_botBarIdx].root.last,
-                        _onFilterLeafNodePressed,
-                        _onFilterNodePressed,
-                        _menus[_botBarIdx].isFilterLeaf());
-      }
-
       fltButtons[0] = makeNewPostButton(_onNewPost, cts.newPostIcon);
-
-      bottNavBars[0] = makeBottomBarItems(
-                          cts.filterTabIcons,
-                          cts.filterTabNames,
-                          _onBotBarTapped,
-                          _botBarIdx);
-
-      onWillPops[0] = _onWillPopMenu;
+      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter);
+      fltButtons[2] = null;
 
       final int newPostsLength = _unreadPosts.length;
       if (_tabCtrl.index == 1) {
@@ -2400,6 +2382,15 @@ class MenuChatState extends State<MenuChat>
          }
       }
 
+      List<Widget> bodies = List<Widget>(cts.tabNames.length);
+      bodies[0] = makeChatTab(
+         ctx,
+         _ownPosts,
+         _onOwnPostChatPressed,
+         _onOwnPostChatLongPressed,
+         _menus,
+         (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
+
       bodies[1] =
          makePostTabListView( ctx
                             , _posts
@@ -2408,82 +2399,37 @@ class MenuChatState extends State<MenuChat>
                             , _menus
                             , newPostsLength);
 
-      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter);
-
-      bottNavBars[1] = null;
-      onWillPops[1] = (){return false;};
+      bodies[2] = makeChatTab(
+         ctx,
+         _favPosts,
+         _onFavChatPressed,
+         _onFavChatLongPressed,
+         _menus,
+         (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
       Widget appBarLeading = null;
-      if (_chatScreenIdx == 0) {
+      if (isOnFav() || isOnOwn()) {
          if (hasLongPressedChatMsg()) {
             appBarTitle = 'Redirecionando ...';
             appBarLeading = IconButton(
                icon: Icon(Icons.arrow_back , color: Colors.white),
                   onPressed: (){print('Retornar a tela anterior.');});
          }
-
-         // The own posts tab in the chat screen.
-         bodies[2] = makeChatTab(
-            ctx,
-            _ownPosts,
-            _onOwnPostChatPressed,
-            _onOwnPostChatLongPressed,
-            _menus,
-            (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
-      } else {
-         if (hasLongPressedChatMsg()) {
-            appBarTitle = 'Redirecionando ...';
-            appBarLeading = IconButton(
-               icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: (){print('Retornar a tela anterior.');});
-         }
-
-         // The favorite tab in the chat screen.
-         bodies[2] = makeChatTab(
-            ctx,
-            _favPosts,
-            _onFavChatPressed,
-            _onFavChatLongPressed,
-            _menus,
-            (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
       }
 
-      fltButtons[2] = null;
-
-      bottNavBars[2] = makeBottomBarItems(
-                          cts.chatIcons,
-                          cts.chatIconTexts,
-                          _onChatBotBarTapped,
-                          _chatScreenIdx);
-
-      onWillPops[2] = _onChatsBackPressed;
-
-      final int newChats = _getNumberOfUnreadChats();
-
       List<Widget> actions = List<Widget>();
-      if (_tabCtrl.index == 2 && hasLongPressedChat()) {
+      if ((isOnFav() || isOnOwn()) && hasLongPressedChat()) {
          actions = makeOnLongPressedActions(ctx, _deleteChatEntryDialog);
       }
       
-      if (_tabCtrl.index == 0) {
-         if (_botBarIdx == 0 && _menus[_botBarIdx].root.length == 1) {
-         } else {
-            appBarLeading =
-               IconButton( icon: Icon( Icons.arrow_back
-                                     , color: Colors.white)
-                         , onPressed: _onWillPopMenu);
-         }
-      }
-
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
-      newMsgsCounters[0] = 0;
+      newMsgsCounters[0] = _getNUnreadOwnChats();
       newMsgsCounters[1] = newPostsLength;
-      newMsgsCounters[2] = newChats;
+      newMsgsCounters[2] = _getNUnreadFavChats();
 
-      final double newMsgCircleOpacity =
-         _tabCtrl.index == 2 ? 1.0 : 0.70;
+      final double newMsgCircleOpacity = (isOnFav() || isOnOwn()) ? 1.0 : 0.70;
 
       return WillPopScope(
           onWillPop: () async { return onWillPops[_tabCtrl.index]();},
@@ -2510,7 +2456,6 @@ class MenuChatState extends State<MenuChat>
                 ),
                 backgroundColor: Colors.white,
                 floatingActionButton: fltButtons[_tabCtrl.index],
-                bottomNavigationBar: bottNavBars[_tabCtrl.index],
               )
         );
    }

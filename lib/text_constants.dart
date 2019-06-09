@@ -32,9 +32,9 @@ final String appName = "CarMenu";
 
 // Text used for the main tabs.
 final List<String> tabNames = <String>
-[ "FILTROS"
-, "POSTS"
-, "CHATS"
+[ "ENVIADOS"
+, "NOVOS"
+, "FAVORITOS"
 ];
 
 //______________
