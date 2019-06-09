@@ -105,8 +105,8 @@ String makeRegisterCmd()
 }
 
 List<Widget>
-makeChatScreenActionsList( BuildContext ctx
-                         , Function deleteChatEntryDialog)
+makeOnLongPressedActions( BuildContext ctx
+                        , Function deleteChatEntryDialog)
 {
    List<Widget> actions = List<Widget>();
 
@@ -119,12 +119,12 @@ makeChatScreenActionsList( BuildContext ctx
    actions.add(delChatBut);
 
    // Block user button.
-   IconButton blockUserBut = IconButton(
-      icon: Icon(Icons.block, color: Colors.white),
-      tooltip: cts.blockUserChatStr,
-      onPressed: () { print('Kabuff'); });
+   //IconButton blockUserBut = IconButton(
+   //   icon: Icon(Icons.block, color: Colors.white),
+   //   tooltip: cts.blockUserChatStr,
+   //   onPressed: () { print('Kabuff'); });
 
-   actions.add(blockUserBut);
+   //actions.add(blockUserBut);
 
    return actions;
 }
@@ -478,7 +478,8 @@ makeChatScreen(BuildContext ctx,
          return
             Align(alignment: align,
                child: GestureDetector(
-                  onLongPress: () {onChatMsgLongPressed(isUnreadIdx);},
+                  onLongPress: () {onChatMsgLongPressed(isUnreadIdx, false);},
+                  onTap: () {onChatMsgLongPressed(isUnreadIdx, true);},
                   onPanStart: (DragStartDetails d){print('Cool');},
                   child:FractionallySizedBox(
                      child: Card(
@@ -545,7 +546,7 @@ makeChatScreen(BuildContext ctx,
                 leading: IconButton(
                    icon: Icon(Icons.arrow_back,
                               color: Colors.white),
-                 onPressed:onWillPopScope)
+                 onPressed: onWillPopScope)
              ),
           body: mainCol,
           backgroundColor: Colors.grey[300],
@@ -1089,17 +1090,40 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
-   Future<bool> _onWillPopFavChatScreen(final int chatIdx) async
+   Future<bool> _onWillPopFavChatScreen(int j) async
    {
-      final int i = await _favPosts[_favIdx].moveToReadHistory(chatIdx);
+      if (!_longPressedChatMsgs.isEmpty) {
+         for (IdxPair o in _longPressedChatMsgs) {
+            assert(o.i == j);
+            _favPosts[_favIdx].togleLongPressedChatMsg(o.i, o.j);
+         }
+
+         _longPressedChatMsgs = List<IdxPair>();
+
+         return false;
+      }
+
+      final int i = await _favPosts[_favIdx].moveToReadHistory(j);
       _favIdx = -1;
       setState(() { });
       return false;
    }
 
-   Future<bool> _onWillPopOwnPostChat(int idx) async
+   Future<bool> _onWillPopOwnPostChat(int j) async
    {
-      final int i = await _ownPosts[_ownIdx].moveToReadHistory(idx);
+      if (!_longPressedChatMsgs.isEmpty) {
+         for (IdxPair o in _longPressedChatMsgs) {
+            assert(o.i == j);
+            _ownPosts[_ownIdx].togleLongPressedChatMsg(o.i, o.j);
+         }
+
+         _longPressedChatMsgs = List<IdxPair>();
+
+         setState(() { });
+         return false;
+      }
+
+      final int i = await _ownPosts[_ownIdx].moveToReadHistory(j);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
@@ -1334,6 +1358,8 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onFavChatPressed(int i, int j) async
    {
       assert(j == 0);
+
+      assert(_longPressedChatMsgs.isEmpty);
       if (!_postsWithLongPressed.isEmpty) {
          _onFavChatLongPressed(i, j);
       } else {
@@ -1369,6 +1395,16 @@ class MenuChatState extends State<MenuChat>
    {
       assert(j == 0);
 
+      // If a chat is long pressed and we have chat messages to
+      // forward, we do not mark it long pressed, but only forward the
+      // long pressed messages.
+      if (!_longPressedChatMsgs.isEmpty) {
+         // Make sure we do not forward to the same chat the messages
+         // were long pressed.
+         setState(() { });
+         return;
+      }
+
       final bool old = _favPosts[i].togleLongPressedChats(j);
       handleLongPressed(_postsWithLongPressed, i, j, old);
       setState(() { });
@@ -1377,6 +1413,7 @@ class MenuChatState extends State<MenuChat>
    // TODO: Collapse this and the _fav version in a single function.
    Future<void> _onOwnPostChatPressed(int i, int j) async
    {
+      assert(_longPressedChatMsgs.isEmpty);
       if (!_postsWithLongPressed.isEmpty) {
          _onOwnPostChatLongPressed(i, j);
       } else {
@@ -1408,6 +1445,13 @@ class MenuChatState extends State<MenuChat>
 
    void _onOwnPostChatLongPressed(int i, int j)
    {
+      if (!_longPressedChatMsgs.isEmpty) {
+         // Make sure we do not forward to the same chat the messages
+         // were long pressed.
+         setState(() { });
+         return;
+      }
+
       final bool old = _ownPosts[i].togleLongPressedChats(j);
       handleLongPressed(_postsWithLongPressed, i, j, old);
       setState(() { });
@@ -1433,8 +1477,11 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onChatMsgLongPressed(int i, int j, bool isFav)
+   void toggleLongPressedChatMsg(int i, int j, bool isTap, bool isFav)
    {
+      if (isTap && _longPressedChatMsgs.isEmpty)
+         return;
+
       if (isFav) {
          final bool old = _favPosts[_favIdx].togleLongPressedChatMsg(i, j);
          handleLongPressed(_longPressedChatMsgs, i, j, old);
@@ -1969,6 +2016,11 @@ class MenuChatState extends State<MenuChat>
       return !_postsWithLongPressed.isEmpty;
    }
 
+   bool hasLongPressedChatMsg()
+   {
+      return !_longPressedChatMsgs.isEmpty;
+   }
+
    void _unmarkLongPressedChats()
    {
       if (_postsWithLongPressed.isEmpty)
@@ -2116,17 +2168,17 @@ class MenuChatState extends State<MenuChat>
 
       if (_newPostPressed)
          return makeNewPostScreens(
-                   ctx,
-                   _postInput,
-                   _menus,
-                   _txtCtrl,
-                   _onSendNewPostPressed,
-                   _botBarIdx,
-                   _onNewPostDetail,
-                   _onPostLeafPressed,
-                   _onPostNodePressed,
-                   _onWillPopMenu,
-                   _onNewPostBotBarTapped);
+             ctx,
+             _postInput,
+             _menus,
+             _txtCtrl,
+             _onSendNewPostPressed,
+             _botBarIdx,
+             _onNewPostDetail,
+             _onPostLeafPressed,
+             _onPostNodePressed,
+             _onWillPopMenu,
+             _onNewPostBotBarTapped);
 
       if (isOnFavChat()) {
          // We are in the favorite posts screen, where pressing the
@@ -2144,7 +2196,8 @@ class MenuChatState extends State<MenuChat>
                _txtCtrl,
                () async {await _onFavChatSendPressed(chatIdx);},
                _chatScrollCtrl,
-               (int idx) {_onChatMsgLongPressed(chatIdx, idx, true);},
+               (int idx, bool isTap)
+                  {toggleLongPressedChatMsg(chatIdx, idx, isTap, true);},
                _longPressedChatMsgs.length);
       }
 
@@ -2163,7 +2216,8 @@ class MenuChatState extends State<MenuChat>
              _txtCtrl,
              () async { await _onOwnChatSendPressed(chatIdx);},
              _chatScrollCtrl,
-             (int idx) {_onChatMsgLongPressed(chatIdx, idx, false);},
+             (int idx, bool isTap)
+                {toggleLongPressedChatMsg(chatIdx, idx, isTap, false);},
              _longPressedChatMsgs.length);
       }
 
@@ -2235,7 +2289,15 @@ class MenuChatState extends State<MenuChat>
       bottNavBars[1] = null;
       onWillPops[1] = (){return false;};
 
+      Widget appBarLeading = null;
       if (_chatScreenIdx == 0) {
+         if (hasLongPressedChatMsg()) {
+            appBarTitle = 'Redirecionando ...';
+            appBarLeading = IconButton(
+               icon: Icon(Icons.arrow_back , color: Colors.white),
+                  onPressed: (){print('Retornar a tela anterior.');});
+         }
+
          // The own posts tab in the chat screen.
          bodies[2] = makeChatTab(
             ctx,
@@ -2245,6 +2307,13 @@ class MenuChatState extends State<MenuChat>
             _menus,
             (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
       } else {
+         if (hasLongPressedChatMsg()) {
+            appBarTitle = 'Redirecionando ...';
+            appBarLeading = IconButton(
+               icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: (){print('Retornar a tela anterior.');});
+         }
+
          // The favorite tab in the chat screen.
          bodies[2] = makeChatTab(
             ctx,
@@ -2269,14 +2338,13 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> actions = List<Widget>();
       if (_tabCtrl.index == 2 && hasLongPressedChat()) {
-         actions = makeChatScreenActionsList(ctx, _deleteChatEntryDialog);
+         actions = makeOnLongPressedActions(ctx, _deleteChatEntryDialog);
       }
       
-      Widget leading = null;
       if (_tabCtrl.index == 0) {
          if (_botBarIdx == 0 && _menus[_botBarIdx].root.length == 1) {
          } else {
-            leading =
+            appBarLeading =
                IconButton( icon: Icon( Icons.arrow_back
                                      , color: Colors.white)
                          , onPressed: _onWillPopMenu);
@@ -2309,7 +2377,7 @@ class MenuChatState extends State<MenuChat>
                                          , _tabCtrl
                                          , newMsgCircleOpacity),
                        actions: actions,
-                       leading: leading
+                       leading: appBarLeading
                      ),
                    ];
                  },
