@@ -513,7 +513,7 @@ makeChatScreen(BuildContext ctx,
          }
 
          if (items[i].isLongPressed) {
-            onSelectedMsgColor = Colors.teal[100];
+            onSelectedMsgColor = Colors.blue[100];
          }
 
          double width = 300.0;
@@ -1634,46 +1634,49 @@ class MenuChatState extends State<MenuChat>
       setState((){});
    }
 
-   Future<void> _onFavChatSendPressed(final int chatIdx) async
+   Future<void> _onFavChatSendPressed(final int j) async
    {
-      if (_txtCtrl.text.isEmpty)
-         return;
+      try {
+         if (_txtCtrl.text.isEmpty)
+            return;
 
-      final String msg = _txtCtrl.text;
-      _txtCtrl.text = "";
+         // We have to make sure every unread msg is marked as read
+         // before we receive any reply.
+         final int postId = _favPosts[_favIdx].id;
+         await _favPosts[_favIdx].chats[j].setPeerMsgStatus(3, postId);
+         await _favPosts[_favIdx].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
+         rotateElements(_favPosts[_favIdx].chats, j);
+         await _favPosts[_favIdx].persistPeers();
+         rotateElements(_favPosts, _favIdx);
+         _favIdx = 0;
 
-      final String to = _favPosts[_favIdx].from;
-      final int id = _favPosts[_favIdx].id;
+         var msgMap = {
+            'cmd': 'message',
+            'type': 'chat',
+            'to': _favPosts[_favIdx].from,
+            'msg': _txtCtrl.text,
+            'post_id': postId,
+            'is_sender_post': false,
+            'nick': _nick
+         };
 
-      var msgMap = {
-         'cmd': 'message',
-         'type': 'chat',
-         'to': to,
-         'msg': msg,
-         'post_id': id,
-         'is_sender_post': false,
-         'nick': _nick
-      };
+         _txtCtrl.text = "";
+         await sendChatMsg(jsonEncode(msgMap), 1);
 
-      final String payload = jsonEncode(msgMap);
-      await sendChatMsg(payload, 1);
-      await _favPosts[_favIdx].addMsg(chatIdx, msg, true, 0);
-      await _favPosts[_favIdx].moveToFront(chatIdx);
-      rotateElements(_favPosts, _favIdx);
-      _favIdx = 0;
-
-      setState(()
-      {
-         // Needed to automatically scroll the chat to the last
-         // message on the list.
-         SchedulerBinding.instance.addPostFrameCallback((_)
+         setState(()
          {
-            _chatScrollCtrl.animateTo(
-               _chatScrollCtrl.position.maxScrollExtent,
-               duration: const Duration(milliseconds: 300),
-               curve: Curves.easeOut);
+            // Needed to automatically scroll the chat to the last
+            // message on the list.
+            SchedulerBinding.instance.addPostFrameCallback((_)
+            {
+               _chatScrollCtrl.animateTo(
+                  _chatScrollCtrl.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut);
+            });
          });
-      });
+      } catch(e) {
+      }
    }
 
    Future<void> _onOwnChatSendPressed(int j) async
@@ -1682,7 +1685,10 @@ class MenuChatState extends State<MenuChat>
          if (_txtCtrl.text.isEmpty)
             return;
 
-         int postId = _ownPosts[_ownIdx].id;
+         // We have to make sure every unread msg is marked as read
+         // before we receive any reply.
+         final int postId = _ownPosts[_ownIdx].id;
+         await _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3, postId);
          await _ownPosts[_ownIdx].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
          rotateElements(_ownPosts[_ownIdx].chats, j);
          await _ownPosts[_ownIdx].persistPeers();
@@ -1700,9 +1706,7 @@ class MenuChatState extends State<MenuChat>
          };
 
          _txtCtrl.text = '';
-         String payload = jsonEncode(msgMap);
-         await sendChatMsg(payload, 1);
-         print('===> Finish sending: $payload');
+         await sendChatMsg(jsonEncode(msgMap), 1);
 
          setState(()
          {
@@ -1790,9 +1794,9 @@ class MenuChatState extends State<MenuChat>
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
       if (isOnFavChat()) {
-         foo.first.chats.first.msgs.first.status = 3;
          // Yes, we are chatting with an user from the fav list.
          if (_favIdx == 0) {
+            foo.first.chats.first.setPeerMsgStatus(3, postId);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -1810,7 +1814,8 @@ class MenuChatState extends State<MenuChat>
          // Performs the same steps as above, but with the difference
          // that we have to search the chat entry.
          if (_ownIdx == 0) {
-            foo.first.chats.first.msgs.first.status = 3;
+            print('Sending ack read and seting status to 3');
+            foo.first.chats.first.setPeerMsgStatus(3, postId);
             final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
             assert(bar != -1);
             var msgMap = {
