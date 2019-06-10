@@ -375,14 +375,14 @@ class MyApp extends StatelessWidget {
 
 TabBar makeTabBar( List<int> counters
                  , TabController tabCtrl
-                 , double opacity)
+                 , List<double> opacity)
 {
    List<Widget> tabs = List<Widget>(cts.tabNames.length);
 
    for (int i = 0; i < tabs.length; ++i) {
-      tabs[i] =
-         Tab(child: makeTabWidget( counters[i], cts.tabNames[i]
-                                 , opacity));
+      tabs[i] = Tab(
+         child: makeTabWidget(
+            counters[i], cts.tabNames[i], opacity[i]));
    }
 
    return TabBar(controller: tabCtrl,
@@ -933,6 +933,38 @@ class MenuChatState extends State<MenuChat>
       return _tabCtrl.index == 0 && _ownIdx != -1 && !_ownPostChatPeer.isEmpty;
    }
 
+   bool previousWasFav()
+   {
+      return _tabCtrl.previousIndex == 2;
+   }
+
+   bool previousWasOwn()
+   {
+      return _tabCtrl.previousIndex == 2;
+   }
+
+   List<double> getNewMsgsOpacities()
+   {
+      List<double> opacities = List<double>(3);
+
+      double onFocusOp = 1.0;
+      double notOnFocusOp = 0.7;
+
+      opacities[0] = notOnFocusOp;
+      if (isOnOwn())
+         opacities[0] = onFocusOp;
+
+      opacities[1] = notOnFocusOp;
+      if (isOnPosts())
+         opacities[1] = onFocusOp;
+
+      opacities[2] = notOnFocusOp;
+      if (isOnFav())
+         opacities[2] = onFocusOp;
+
+      return opacities;
+   }
+
    void _initPaths()
    {
       _nickFullPath            = '${glob.docDir}/${cts.nickFullPath}';
@@ -1049,7 +1081,8 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
       }
 
-      _connectToServer();
+      channel = IOWebSocketChannel.connect(cts.host);
+      channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
       try {
          lines = await File(_loginFileFullPath).readAsLines();
@@ -2157,7 +2190,7 @@ class MenuChatState extends State<MenuChat>
             _favPosts[e.i].togleLongPressedChats(e.j);
       }
 
-      _postsWithLongPressed = List<IdxPair>();
+      _postsWithLongPressed.clear();
       setState(() { });
    }
 
@@ -2281,14 +2314,14 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext ctx)
    {
-      // Just for safety we did not load the menu fast enough.
+      // Just for safety if we did not load the menu fast enough.
       if (_menus.isEmpty)
          return Scaffold();
 
       if (_nick.isEmpty)
          return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
-      if (isOnPosts() && (_tabCtrl.previousIndex == 0) || (_tabCtrl.previousIndex == 2))
+      if (isOnPosts() && (previousWasFav() || previousWasOwn()))
          _unmarkLongPressedChats();
 
       if (_newPostPressed)
@@ -2429,7 +2462,7 @@ class MenuChatState extends State<MenuChat>
       newMsgsCounters[1] = newPostsLength;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
-      final double newMsgCircleOpacity = (isOnFav() || isOnOwn()) ? 1.0 : 0.70;
+      List<double> opacities = getNewMsgsOpacities();
 
       return WillPopScope(
           onWillPop: () async { return onWillPops[_tabCtrl.index]();},
@@ -2445,7 +2478,7 @@ class MenuChatState extends State<MenuChat>
                        forceElevated: innerBoxIsScrolled,
                        bottom: makeTabBar( newMsgsCounters
                                          , _tabCtrl
-                                         , newMsgCircleOpacity),
+                                         , opacities),
                        actions: actions,
                        leading: appBarLeading
                      ),
@@ -2458,17 +2491,6 @@ class MenuChatState extends State<MenuChat>
                 floatingActionButton: fltButtons[_tabCtrl.index],
               )
         );
-   }
-
-   void _connectToServer()
-   {
-      // WARNING: localhost or 127.0.0.1 is the emulator or the phone
-      // address. The host address is 10.0.2.2.
-      //channel = IOWebSocketChannel.connect('ws://10.0.2.2:80');
-      //channel = IOWebSocketChannel.connect('ws://192.168.2.102:80');
-      channel = IOWebSocketChannel.connect('ws://37.24.165.216:80');
-      //channel = IOWebSocketChannel.connect('ws://192.168.0.27:80');
-      channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
    }
 }
 
