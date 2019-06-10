@@ -392,10 +392,10 @@ class PostData {
       }
 
       chats[j].nick = nick;
-      await _persistPeers();
+      await persistPeers();
    }
 
-   Future<void> _persistPeers() async
+   Future<void> persistPeers() async
    {
       // Overwrites the previous content.
       String data = '';
@@ -415,7 +415,7 @@ class PostData {
       final int now = DateTime.now().millisecondsSinceEpoch;
       ChatHistory history = ChatHistory(peer, nick, now, id);
       chats.add(history);
-      await _persistPeers();
+      await persistPeers();
    }
 
    int getChatHistIdx(final String peer)
@@ -447,7 +447,7 @@ class PostData {
    Future<void> moveToFront(final int j) async
    {
       rotateElements(chats, j);
-      await _persistPeers();
+      await persistPeers();
    }
 
    Future<void>
@@ -512,7 +512,7 @@ class PostData {
          }
 
          chats.removeAt(idx);
-         await _persistPeers();
+         await persistPeers();
       } catch (e) {
       }
    }

@@ -1414,33 +1414,39 @@ class MenuChatState extends State<MenuChat>
       try {
          assert(!_outPostsQueue.isEmpty);
 
+         // When working with the simulator I found out that is
+         // replies on my machine before we could move the post from
+         // the output queue to the _ownPosts. In normal cases users
+         // won't be so fast. But since this is my test condition, I
+         // will cope with that by inserting the post in _ownPosts and
+         // only after removing from the queue.
          PostData post = _outPostsQueue.removeFirst();
+         if (id != -1) {
+            post.id = id;
+            post.date = timestamp;
+            _ownPosts.add(post);
+            print('Insertion ready');
+            rotateElements(_ownPosts, _ownPosts.length - 1);
+            // We have to keep _ownIdx pointing to its post. Since
+            // elements are rorated by only one element and we know the post
+            // of _ownIdx has rotated for sure we can only increase its
+            // index.
+            if (_ownIdx != -1)
+               ++_ownIdx;
+         }
+
          final String content1 = serializeList(List<PostData>.from(_outPostsQueue));
          await File(_outPostsFileFullPath).writeAsString(content1, mode: FileMode.write);
 
          if (id == -1) {
-            // What should we do with the other elements in the queue?
-            // Should they all be discarded? This will be a very rare
-            // situation.
             print("Publish failed. The post will be discarded.");
+            // Wipe out all queue elements.
+            await File(_outPostsFileFullPath).writeAsString('', mode: FileMode.write);
             return;
          }
 
-         post.id = id;
-         post.date = timestamp;
-         _ownPosts.add(post);
-         rotateElements(_ownPosts, _ownPosts.length - 1);
-         // We have to keep _ownIdx pointing to its post. Since
-         // elements are rorated by only one element and we know the post
-         // of _ownIdx has rotated for sure we can only increase its
-         // index.
-         if (_ownIdx != -1)
-            ++_ownIdx;
-
          final String content2 = serializeList(<PostData>[post]);
-
          await File(_ownPostsFileFullPath).writeAsString(content2, mode: FileMode.append);
-
          if (_outPostsQueue.isEmpty)
             return;
 
@@ -1670,45 +1676,48 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   Future<void> _onOwnChatSendPressed(final int chatIdx) async
+   Future<void> _onOwnChatSendPressed(int j) async
    {
-      if (_txtCtrl.text.isEmpty)
-         return;
+      try {
+         if (_txtCtrl.text.isEmpty)
+            return;
 
-      final String msg = _txtCtrl.text;
-      final int id =_ownPosts[_ownIdx].id;
+         int postId = _ownPosts[_ownIdx].id;
+         await _ownPosts[_ownIdx].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
+         rotateElements(_ownPosts[_ownIdx].chats, j);
+         await _ownPosts[_ownIdx].persistPeers();
+         rotateElements(_ownPosts, _ownIdx);
+         _ownIdx = 0;
 
-      _txtCtrl.text = "";
+         var msgMap = {
+            'cmd': 'message',
+            'type': 'chat',
+            'to': _ownPostChatPeer,
+            'msg': _txtCtrl.text,
+            'post_id': postId,
+            'is_sender_post': true,
+            'nick': _nick
+         };
 
-      var msgMap = {
-         'cmd': 'message',
-         'type': 'chat',
-         'to': _ownPostChatPeer,
-         'msg': msg,
-         'post_id': id,
-         'is_sender_post': true,
-         'nick': _nick
-      };
+         _txtCtrl.text = '';
+         String payload = jsonEncode(msgMap);
+         await sendChatMsg(payload, 1);
+         print('===> Finish sending: $payload');
 
-      final String payload = jsonEncode(msgMap);
-      await sendChatMsg(payload, 1);
-      await _ownPosts[_ownIdx].addMsg(chatIdx, msg, true, 0);
-      await _ownPosts[_ownIdx].moveToFront(chatIdx);
-      rotateElements(_ownPosts, _ownIdx);
-      _ownIdx = 0;
-
-      setState(()
-      {
-         // Needed to automatically scroll the chat to the last
-         // message on the list.
-         SchedulerBinding.instance.addPostFrameCallback((_)
+         setState(()
          {
-            _chatScrollCtrl.animateTo(
-               _chatScrollCtrl.position.maxScrollExtent,
-               duration: const Duration(milliseconds: 300),
-               curve: Curves.easeOut);
+            // Needed to automatically scroll the chat to the last
+            // message on the list.
+            SchedulerBinding.instance.addPostFrameCallback((_)
+            {
+               _chatScrollCtrl.animateTo(
+                  _chatScrollCtrl.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut);
+            });
          });
-      });
+      } catch (e) {
+      }
    }
 
    Future<void> _chatServerAckHandler(Map<String, dynamic> ack) async
@@ -1949,17 +1958,18 @@ class MenuChatState extends State<MenuChat>
       final int size = _unreadPosts.length;
       var items = ack['items'];
       for (var item in items) {
-         final String from = item['from'];
-         if (from == _appId) {
-            // Our own post being sent back to us.
+         PostData post = readPostData(item);
+         if (post.from == _appId) {
+            // Our own post being sent back to us. We have to drop it
+            // but update our last post id.
+            if (post.id > _lastPostId)
+               _lastPostId = post.id;
+
             continue;
          }
 
-         PostData post = readPostData(item);
          // Since this post is not from this app we have to add a chat
-         // entry in it. It is important to let the nick empty, this
-         // is how we will detect that the nick must be requested from
-         // the user.
+         // entry in it.
          await post.createChatEntryForPeer(post.from, post.nick);
          _unreadPosts.add(post);
 
@@ -1997,6 +2007,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> onWSData(msg) async
    {
+      print(msg);
       Map<String, dynamic> ack = jsonDecode(msg);
       final String cmd = ack["cmd"];
 
