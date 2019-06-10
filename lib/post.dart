@@ -119,47 +119,10 @@ List<ChatItem> chatItemsFromStrs(final List<String> lines)
    return foo;
 }
 
-int findIdxToAck(final List<ChatItem> msgs, final int status)
-{
-   // Since we do not have ids to know which message exactly has
-   // been acked. We should try to find the oldest msg that has not
-   // been acked. But the algorithm is complicated since we have to
-   // skip the chat items from the peer. For now, I will ack in the
-   // reverse order. This should not be perceptible to the user.
-   //
-   // Here we could use for example indexWhere to search for the
-   // index but to avoid performance later when the chat history
-   // becomes too long I will begin the search from the back.
-   int i = 0;
-   for (; i < msgs.length; ++i) {
-      final int j = msgs.length - i - 1; // Idx of the last element.
-      if (!msgs[j].thisApp)
-         continue; // Not a message from this app.
-
-      final int st = msgs[j].status;
-      if (st < status) // Should be >=
-         break;
-   }
-
-   if (i == msgs.length) {
-      // Most likely an out of order problem. Catching this here may
-      // hide the source of problem, that maybe for example be on the
-      // server. For debuging one may think of replacing it with an
-      // assert.
-      return -1;
-   }
-
-   final int idx = msgs.length - i - 1;
-   assert(msgs[idx].thisApp);
-   return idx;
-}
-
-// TODO: Write the json serialize functions.
 class ChatHistory {
    String peer = '';
    String nick = '';
    List<ChatItem> msgs = List<ChatItem>();
-   List<ChatItem> unreadMsgs = List<ChatItem>();
    bool isLongPressed = false;
    int date = 0;
 
@@ -198,61 +161,17 @@ class ChatHistory {
       if (!msgs.isEmpty)
          return msgs.last.date;
 
-      if (!unreadMsgs.isEmpty)
-         return unreadMsgs.last.date;
-
       return date;
    }
 
-   Future<void> init(final int postId) async
+   Future<void> loadMsgs(final int postId) async
    {
       try {
-         File f = File(makeFullPath(cts.chatHistReadPrefix, postId));
+         File f = File(makeFullPath(cts.chatFilePrefix, postId));
          final List<String> lines = await f.readAsLines();
          msgs = chatItemsFromStrs(lines);
       } catch (e) {
-         //print(e);
       }
-
-      try {
-         File f = File(makeFullPath(cts.chatHistUnreadPrefix, postId));
-         final List<String> lines = await f.readAsLines();
-         unreadMsgs  = chatItemsFromStrs(lines);
-      } catch (e) {
-         //print(e);
-      }
-   }
-
-   // Returns the number of unread messages that have been moved to
-   // the read history.
-   Future<int> moveToReadHistory(final int postId) async
-   {
-      if (unreadMsgs.isEmpty)
-         return 0;
-
-      final int n = unreadMsgs.length;
-
-      msgs.addAll(unreadMsgs);
-
-      final String content = serializeList(unreadMsgs);
-      await File(makeFullPath(cts.chatHistReadPrefix, postId))
-         .writeAsString(content, mode: FileMode.append);
-
-      unreadMsgs.clear();
-
-      print('moveToReadHistory: Wiping file.');
-      await File(makeFullPath(cts.chatHistUnreadPrefix, postId))
-         .writeAsString('', mode: FileMode.write);
-
-      return n;
-   }
-
-   String getLastUnreadMsg()
-   {
-      if (unreadMsgs.isEmpty)
-         return '';
-
-      return unreadMsgs.last.msg;
    }
 
    int getNumberOfMsgs()
@@ -260,17 +179,48 @@ class ChatHistory {
       return msgs.length;
    }
 
+   void setPeerMsgStatus(int status)
+   {
+      for (int i = 0; i < msgs.length; ++i) {
+         final int j = msgs.length - i - 1;
+         if (msgs[j].thisApp)
+            continue;
+
+         if (msgs[j].status >= status)
+            break;
+
+         print('===> setting status ${msgs[j].msg} $status');
+         msgs[j].status = status;
+      }
+   }
+
    int getNumberOfUnreadMsgs()
    {
-      return unreadMsgs.length;
+      int n = 0;
+      for (int i = 0; i < msgs.length; ++i) {
+         final int j = msgs.length - i - 1;
+         if (msgs[j].thisApp)
+            continue;
+
+         if (msgs[j].status >= 3)
+            break;
+
+         print('===> counting status ${msgs[j].msg} ${msgs[j].status}');
+         ++n;
+      }
+
+      return n;
    }
 
    bool hasUnreadMsgs()
    {
-      return !unreadMsgs.isEmpty;
+      if (msgs.isEmpty)
+         return false;
+
+      return msgs.last.status == 3;
    }
 
-   String getLastReadMsg()
+   String getLastMsg()
    {
       if (msgs.isEmpty)
          return '';
@@ -280,29 +230,15 @@ class ChatHistory {
 
    Future<void>
    addMsg(final String msg, final bool thisApp,
-          final int postId) async
+          final int postId, int status) async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
-      ChatItem item = ChatItem(thisApp, msg, 0, now);
+      ChatItem item = ChatItem(thisApp, msg, status, now);
       msgs.add(item);
 
       final String content = serializeList(<ChatItem>[item]);
-      await File(makeFullPath(cts.chatHistReadPrefix, postId))
+      await File(makeFullPath(cts.chatFilePrefix, postId))
          .writeAsString(content, mode: FileMode.append);
-   }
-
-   Future<void>
-   addUnreadMsg(final String msg,
-                final bool thisApp, final int postId) async
-   {
-      final int now = DateTime.now().millisecondsSinceEpoch;
-      ChatItem item = ChatItem(thisApp, msg, 0, now);
-      unreadMsgs.add(item);
-
-      final String content = serializeList(<ChatItem>[item]);
-      await File(makeFullPath(cts.chatHistUnreadPrefix, postId))
-         .writeAsString(content, mode: FileMode.append);
-
    }
 
    Future<void>
@@ -314,23 +250,20 @@ class ChatHistory {
          return;
       }
 
-      int idx = findIdxToAck(msgs, status);
-      if (idx == -1) {
-         print('markAppChatAck ignoring2');
-         return;
-      }
+      for (int i = 0; i < msgs.length; ++i) {
+         final int j = msgs.length - i - 1; // Idx of the last element.
+         if (!msgs[j].thisApp)
+            continue; // Not a message from this app.
 
-      while (msgs[idx].status < status) {
-         msgs[idx].status = status;
-         if (idx == 0)
+         if (msgs[j].status >= status) // Should be >=
             break;
 
-         --idx;
+         msgs[j].status = status;
       }
 
       ChatItem item = ChatItem(true, '', status, 0);
       final String str = jsonEncode(item);
-      await File(makeFullPath(cts.chatHistReadPrefix, postId))
+      await File(makeFullPath(cts.chatFilePrefix, postId))
          .writeAsString('${str}\n', mode: FileMode.append);
    }
 }
@@ -419,7 +352,7 @@ class PostData {
             ChatHistory hist =
                ChatHistory(
                   fields[0], fields[1], int.parse(fields[2]), id);
-            await hist.init(id);
+            await hist.loadMsgs(id);
             chats.add(hist);
          }
       } catch (e) {
@@ -499,23 +432,14 @@ class PostData {
    }
 
    Future<void>
-   addMsg(final int j, final String msg, final bool thisApp) async
+   addMsg(final int j, final String msg,
+          final bool thisApp, int status) async
    {
-      await chats[j].addMsg(msg, thisApp, id);
+      await chats[j].addMsg(msg, thisApp, id, status);
    }
 
    Future<void> moveToFront(final int j) async
    {
-      rotateElements(chats, j);
-      await _persistPeers();
-   }
-
-   Future<void>
-   addUnreadMsg(final int j, final String msg, final bool thisApp) async
-   {
-      print('PostData::addUnreadMsg: ${chats.length}');
-      ChatHistory history = chats[j];
-      await history.addUnreadMsg(msg, thisApp, id);
       rotateElements(chats, j);
       await _persistPeers();
    }
@@ -575,10 +499,8 @@ class PostData {
 
          if (chats[idx].isLongPressed) {
             try {
-               await File(chats[idx].makeFullPath(cts.chatHistReadPrefix, id))
-                     .deleteSync();
-               await File(chats[idx].makeFullPath(cts.chatHistUnreadPrefix, id))
-                     .deleteSync();
+               await File(chats[idx].makeFullPath(cts.chatFilePrefix, id))
+                  .deleteSync();
             } catch (e) {
             }
          }
@@ -600,15 +522,8 @@ class PostData {
 
    bool togleLongPressedChatMsg(int i, int j)
    {
-      final int l = chats[i].msgs.length;
-      if (j < l) {
-         final bool old = chats[i].msgs[j].isLongPressed;
-         chats[i].msgs[j].isLongPressed = !old;
-         return old;
-      }
-
-      final bool old = chats[i].unreadMsgs[j].isLongPressed;
-      chats[i].unreadMsgs[j].isLongPressed = !old;
+      final bool old = chats[i].msgs[j].isLongPressed;
+      chats[i].msgs[j].isLongPressed = !old;
       return old;
    }
 
@@ -641,11 +556,6 @@ class PostData {
          'date': date,
       };
    }
-
-   Future<int> moveToReadHistory(int i) async
-   {
-      return await chats[i].moveToReadHistory(id);
-   }
 }
 
 int CompPostData(final PostData lhs, final PostData rhs)
@@ -664,14 +574,15 @@ findInsertAndRotateMsg(List<PostData> posts,
                        final String from,
                        final String msg,
                        final bool thisApp,
-                       final String nick) async
+                       final String nick,
+                       final int status) async
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
    if (i == -1)
       return IdxPair(-1, -1);
 
    final int j = await posts[i].getChatHistIdxOrCreate(from, nick);
-   await posts[i].addUnreadMsg(j, msg, thisApp);
+   await posts[i].addMsg(j, msg, thisApp, status);
    rotateElements(posts, i);
    return IdxPair(i, j);
 }
@@ -864,13 +775,11 @@ Card makeTextSeparator(BuildContext context)
 
 Text makeChatSubStrWidget(ChatHistory ch)
 {
-   final String subTitle = ch.getLastUnreadMsg();
+   FontWeight fw = FontWeight.normal;
+   if (ch.hasUnreadMsgs())
+      fw = FontWeight.bold;
 
-   if (subTitle.isEmpty) // There is no unread message.
-      return createMenuItemSubStrWidget(ch.getLastReadMsg(),
-                FontWeight.normal);
-
-   return createMenuItemSubStrWidget(subTitle, FontWeight.bold);
+   return createMenuItemSubStrWidget(ch.getLastMsg(), FontWeight.bold);
 }
 
 Card createChatEntry(BuildContext context,
@@ -1218,11 +1127,11 @@ Widget makeChatTab(
                       data[i],
                       menus,
                       makePostChatCol(
-                            context,
-                            data[i].chats,
-                            (j) {onPressed(i, j);},
-                            (j) {onLongPressed(i, j);},
-                            data[i].id),
+                         context,
+                         data[i].chats,
+                         (j) {onPressed(i, j);},
+                         (j) {onLongPressed(i, j);},
+                         data[i].id),
                       onDelPost);
          },
    );

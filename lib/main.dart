@@ -477,20 +477,19 @@ makeChatScreen(BuildContext ctx,
    //_____________
 
    final int nMsgs = ch.msgs.length;
-   final int nUnreadMsgs = ch.unreadMsgs.length;
+   final int nUnreadMsgs = ch.getNumberOfUnreadMsgs();
    final int shift = nUnreadMsgs == 0 ? 0 : 1;
 
    ListView list = ListView.builder(
       controller: scrollCtrl,
       reverse: false,
       //padding: const EdgeInsets.all(6.0),
-      itemCount: nMsgs + nUnreadMsgs + shift,
+      itemCount: nMsgs + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
          List<ChatItem> items = ch.msgs;
-         int isUnreadIdx = i;
          if (shift == 1) {
-            if (i == nMsgs) {
+            if (i == nMsgs - nUnreadMsgs) {
                return Card(
                   color: cts.postFrameColor,
                   margin: const EdgeInsets.all(12.0),
@@ -500,11 +499,8 @@ makeChatScreen(BuildContext ctx,
                          style: TextStyle(fontSize: 17.0))));
             }
 
-            if (i > nMsgs) {
-               items = ch.unreadMsgs;
-               i -= nMsgs; // For the read msgs
-               i -= 1;     // For the shift
-               isUnreadIdx -= 1;
+            if (i > (nMsgs - nUnreadMsgs)) {
+               i -= 1; // For the shift
             }
          }
 
@@ -579,18 +575,15 @@ makeChatScreen(BuildContext ctx,
          }
 
          return GestureDetector(
-            onLongPress: () {onChatMsgLongPressed(isUnreadIdx, false);},
-            onTap: () {onChatMsgLongPressed(isUnreadIdx, true);},
+            onLongPress: () {onChatMsgLongPressed(i, false);},
+            onTap: () {onChatMsgLongPressed(i, true);},
             onPanStart: (DragStartDetails d){print('Cool');},
             child: Card(child: r, color: onSelectedMsgColor,
-                        elevation: 0.0,
-                        margin: const EdgeInsets.all(0.0),
-                        shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.all(Radius.circular(0.0)))
-                        )
+               elevation: 0.0,
+               margin: const EdgeInsets.all(0.0),
+               shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(0.0))))
             );
-
-         //______________-
       },
    );
 
@@ -1256,7 +1249,7 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      final int i = await _favPosts[_favIdx].moveToReadHistory(j);
+      _favPosts[_favIdx].chats[j].setPeerMsgStatus(3);
       _favIdx = -1;
       setState(() { });
       return false;
@@ -1275,7 +1268,7 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      final int i = await _ownPosts[_ownIdx].moveToReadHistory(j);
+      _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
@@ -1656,8 +1649,7 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       await sendChatMsg(payload, 1);
-      final int ignore = await _favPosts[_favIdx].moveToReadHistory(chatIdx);
-      await _favPosts[_favIdx].addMsg(chatIdx, msg, true);
+      await _favPosts[_favIdx].addMsg(chatIdx, msg, true, 0);
       await _favPosts[_favIdx].moveToFront(chatIdx);
       rotateElements(_favPosts, _favIdx);
       _favIdx = 0;
@@ -1698,9 +1690,7 @@ class MenuChatState extends State<MenuChat>
 
       final String payload = jsonEncode(msgMap);
       await sendChatMsg(payload, 1);
-      final int ignore =
-         await _ownPosts[_ownIdx].moveToReadHistory(chatIdx);
-      await _ownPosts[_ownIdx].addMsg(chatIdx, msg, true);
+      await _ownPosts[_ownIdx].addMsg(chatIdx, msg, true, 0);
       await _ownPosts[_ownIdx].moveToFront(chatIdx);
       rotateElements(_ownPosts, _ownIdx);
       _ownIdx = 0;
@@ -1756,9 +1746,9 @@ class MenuChatState extends State<MenuChat>
       if (is_sender_post)
          foo = _favPosts;
 
-      print('===> $msg');
       final IdxPair pair =
-         await findInsertAndRotateMsg(foo, postId, from, msg, false, '');
+         await findInsertAndRotateMsg(
+            foo, postId, from, msg, false, '', 0);
 
       if (pair.i == -1) {
          print('===> Error: Ignoring chat msg.');
@@ -1787,13 +1777,11 @@ class MenuChatState extends State<MenuChat>
       }
 
       // If we are in the screen having chat with the user we can ack
-      // it with app_ack_read and skip app_ack_received. Additionaly
-      // we have to move the unread msgs into the read msgs.
+      // it with app_ack_read and skip app_ack_received.
       if (isOnFavChat()) {
+         foo.first.chats.first.msgs.first.status = 3;
          // Yes, we are chatting with an user from the fav list.
          if (_favIdx == 0) {
-            final int ignore =
-               await foo.first.chats.first.moveToReadHistory(postId);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -1811,9 +1799,9 @@ class MenuChatState extends State<MenuChat>
          // Performs the same steps as above, but with the difference
          // that we have to search the chat entry.
          if (_ownIdx == 0) {
+            foo.first.chats.first.msgs.first.status = 3;
             final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
             assert(bar != -1);
-            final int ignore = await foo.first.moveToReadHistory(bar);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -2360,22 +2348,22 @@ class MenuChatState extends State<MenuChat>
          final int chatIdx = _favPosts[_favIdx].getChatHistIdx(peer);
          assert(chatIdx != -1);
 
-         return
-            makeChatScreen(
-               ctx,
-               () async {await _onWillPopFavChatScreen(chatIdx);},
-               _favPosts[_favIdx].chats[chatIdx],
-               _txtCtrl,
-               () async {await _onFavChatSendPressed(chatIdx);},
-               _chatScrollCtrl,
-               (int idx, bool isTap)
-                  {toggleLongPressedChatMsg(chatIdx, idx, isTap, true);},
-               _longPressedChatMsgs.length);
+         return makeChatScreen(
+            ctx,
+            () async {await _onWillPopFavChatScreen(chatIdx);},
+            _favPosts[_favIdx].chats[chatIdx],
+            _txtCtrl,
+            () async {await _onFavChatSendPressed(chatIdx);},
+            _chatScrollCtrl,
+            (int idx, bool isTap)
+               {toggleLongPressedChatMsg(chatIdx, idx, isTap, true);},
+            _longPressedChatMsgs.length);
       }
 
       if (isOnOwnChat()) {
          // Same as above but for own posts.
-         final int chatIdx = _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
+         final int chatIdx =
+            _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
          assert(chatIdx != -1);
 
          return makeChatScreen(
@@ -2404,7 +2392,7 @@ class MenuChatState extends State<MenuChat>
       fltButtons[2] = null;
 
       final int newPostsLength = _unreadPosts.length;
-      if (_tabCtrl.index == 1) {
+      if (isOnPosts()) {
          if (!_unreadPosts.isEmpty) {
             _posts.addAll(_unreadPosts);
             writeListToDisk( _unreadPosts, _postsFileFullPath
@@ -2424,13 +2412,13 @@ class MenuChatState extends State<MenuChat>
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
-      bodies[1] =
-         makePostTabListView( ctx
-                            , _posts
-                            , (PostData data, int fav) async
-                              {await _alertUserOnselectPost(ctx, data, fav);}
-                            , _menus
-                            , newPostsLength);
+      bodies[1] = makePostTabListView(
+         ctx,
+         _posts,
+         (PostData data, int fav) async
+            {await _alertUserOnselectPost(ctx, data, fav);},
+         _menus,
+         newPostsLength);
 
       bodies[2] = makeChatTab(
          ctx,

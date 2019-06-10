@@ -207,8 +207,7 @@ final String favPostsFileName = 'favorite_posts.txt';
 final String ownPostsFileName = 'own_posts.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
-final String chatHistReadPrefix = 'chat_read';
-final String chatHistUnreadPrefix = 'chat_unread';
+final String chatFilePrefix = 'chat';
 final String dialogPrefsFullPath = 'dialog_prefs.txt';
 final String nickFullPath = 'nick.txt';
 
