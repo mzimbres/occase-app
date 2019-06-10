@@ -179,7 +179,7 @@ class ChatHistory {
       return msgs.length;
    }
 
-   void setPeerMsgStatus(int status)
+   Future<void> setPeerMsgStatus(int status, int postId) async
    {
       for (int i = 0; i < msgs.length; ++i) {
          final int j = msgs.length - i - 1;
@@ -191,6 +191,7 @@ class ChatHistory {
 
          print('===> setting status ${msgs[j].msg} $status');
          msgs[j].status = status;
+         await persistStatus(postId, status, false);
       }
    }
 
@@ -205,7 +206,6 @@ class ChatHistory {
          if (msgs[j].status >= 3)
             break;
 
-         print('===> counting status ${msgs[j].msg} ${msgs[j].status}');
          ++n;
       }
 
@@ -217,7 +217,7 @@ class ChatHistory {
       if (msgs.isEmpty)
          return false;
 
-      return msgs.last.status == 3;
+      return !msgs.last.thisApp && msgs.last.status < 3;
    }
 
    String getLastMsg()
@@ -261,7 +261,13 @@ class ChatHistory {
          msgs[j].status = status;
       }
 
-      ChatItem item = ChatItem(true, '', status, 0);
+      await persistStatus(postId, status, true);
+   }
+
+   Future<void>
+   persistStatus(int postId, int status, bool thisApp) async
+   {
+      ChatItem item = ChatItem(thisApp, '', status, 0);
       final String str = jsonEncode(item);
       await File(makeFullPath(cts.chatFilePrefix, postId))
          .writeAsString('${str}\n', mode: FileMode.append);

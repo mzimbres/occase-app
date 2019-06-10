@@ -1249,7 +1249,8 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      _favPosts[_favIdx].chats[j].setPeerMsgStatus(3);
+      final int postId = _favPosts[_favIdx].id;
+      await _favPosts[_favIdx].chats[j].setPeerMsgStatus(3, postId);
       _favIdx = -1;
       setState(() { });
       return false;
@@ -1268,7 +1269,8 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3);
+      final int postId = _ownPosts[_ownIdx].id;
+      await _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3, postId);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
