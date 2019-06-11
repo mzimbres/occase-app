@@ -851,7 +851,7 @@ class MenuChatState extends State<MenuChat>
 
    // Similar to _favId but corresponds to the *my own posts*
    // screen.
-   int _ownIdx = -1;
+   int _ownId = -1;
 
    // This string will be set to the name of user interested on our
    // post.
@@ -923,7 +923,7 @@ class MenuChatState extends State<MenuChat>
 
    bool isOnOwnChat()
    {
-      return _tabCtrl.index == 0 && _ownIdx != -1 && !_ownPostChatPeer.isEmpty;
+      return _ownId != -1 && !_ownPostChatPeer.isEmpty;
    }
 
    bool previousWasFav()
@@ -1260,10 +1260,12 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onWillPopOwnPostChat(int j) async
    {
+      final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+
       if (!_longPressedChatMsgs.isEmpty) {
          for (IdxPair o in _longPressedChatMsgs) {
             assert(o.i == j);
-            _ownPosts[_ownIdx].togleLongPressedChatMsg(o.i, o.j);
+            _ownPosts[i].togleLongPressedChatMsg(o.i, o.j);
          }
 
          _longPressedChatMsgs = List<IdxPair>();
@@ -1271,8 +1273,8 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      final int postId = _ownPosts[_ownIdx].id;
-      await _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3, postId);
+      final int postId = _ownPosts[i].id;
+      await _ownPosts[i].chats[j].setPeerMsgStatus(3, postId);
       _ownPostChatPeer = '';
       setState(() { });
       return false;
@@ -1429,12 +1431,6 @@ class MenuChatState extends State<MenuChat>
             _ownPosts.add(post);
             print('Insertion ready');
             rotateElements(_ownPosts, _ownPosts.length - 1);
-            // We have to keep _ownIdx pointing to its post. Since
-            // elements are rorated by only one element and we know the post
-            // of _ownIdx has rotated for sure we can only increase its
-            // index.
-            if (_ownIdx != -1)
-               ++_ownIdx;
          }
 
          final String content1 = serializeList(List<PostData>.from(_outPostsQueue));
@@ -1497,7 +1493,6 @@ class MenuChatState extends State<MenuChat>
          _showSimpleDial(ctx, (){}, 3);
    }
 
-   // This function is called with the index in _favPosts.
    Future<void> _onFavChatPressed(int i, int j) async
    {
       assert(j == 0);
@@ -1574,7 +1569,7 @@ class MenuChatState extends State<MenuChat>
             await sendChatMsg(payload, 0);
          }
 
-         _ownIdx = i;
+         _ownId = _ownPosts[i].id;
          _ownPostChatPeer = _ownPosts[i].chats[j].peer;
          setState(() {
             SchedulerBinding.instance.addPostFrameCallback((_)
@@ -1625,13 +1620,13 @@ class MenuChatState extends State<MenuChat>
       if (isTap && _longPressedChatMsgs.isEmpty)
          return;
 
-      final int k = _favPosts.indexWhere((e) { return e.id == _favId;});
-
       if (isFav) {
+         final int k = _favPosts.indexWhere((e) { return e.id == _favId;});
          final bool old = _favPosts[k].togleLongPressedChatMsg(i, j);
          handleLongPressed(_longPressedChatMsgs, i, j, old);
       } else {
-         final bool old = _ownPosts[_ownIdx].togleLongPressedChatMsg(i, j);
+         final int k = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+         final bool old = _ownPosts[k].togleLongPressedChatMsg(i, j);
          handleLongPressed(_longPressedChatMsgs, i, j, old);
       }
 
@@ -1690,20 +1685,19 @@ class MenuChatState extends State<MenuChat>
 
          // We have to make sure every unread msg is marked as read
          // before we receive any reply.
-         final int postId = _ownPosts[_ownIdx].id;
-         await _ownPosts[_ownIdx].chats[j].setPeerMsgStatus(3, postId);
-         await _ownPosts[_ownIdx].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
-         rotateElements(_ownPosts[_ownIdx].chats, j);
-         await _ownPosts[_ownIdx].persistPeers();
-         rotateElements(_ownPosts, _ownIdx);
-         _ownIdx = 0;
+         final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+         await _ownPosts[i].chats[j].setPeerMsgStatus(3, _ownId);
+         await _ownPosts[i].chats[j].addMsg(_txtCtrl.text, true, _ownId, 0);
+         rotateElements(_ownPosts[i].chats, j);
+         await _ownPosts[i].persistPeers();
+         rotateElements(_ownPosts, i);
 
          var msgMap = {
             'cmd': 'message',
             'type': 'chat',
             'to': _ownPostChatPeer,
             'msg': _txtCtrl.text,
-            'post_id': postId,
+            'post_id': _ownId,
             'is_sender_post': true,
             'nick': _nick
          };
@@ -1777,16 +1771,6 @@ class MenuChatState extends State<MenuChat>
       // to is moved to the front in that history.
       foo.first.chats.first.nick = nick;
 
-      // At this point we know a rotation of the posts has taken place
-      // and we have to compensate any indexes ponting to them. Since
-      // they may be in use.
-      if (_ownIdx != -1) {
-         if (_ownIdx == pair.i)
-            _ownIdx = 0;
-         else if (pair.i > _ownIdx)
-            ++_ownIdx; // Rotations are by ony element.
-      }
-
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
       if (isOnFavChat()) {
@@ -1809,8 +1793,7 @@ class MenuChatState extends State<MenuChat>
       } else if (isOnOwnChat()) {
          // Performs the same steps as above, but with the difference
          // that we have to search the chat entry.
-         if (_ownIdx == 0) {
-            print('Sending ack read and seting status to 3');
+         if (_ownPosts.first.id == _ownId) {
             foo.first.chats.first.setPeerMsgStatus(3, postId);
             final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
             assert(bar != -1);
@@ -2154,8 +2137,8 @@ class MenuChatState extends State<MenuChat>
    {
       _unmarkLongPressedChats();
 
-      if (_ownIdx != -1) {
-         _ownIdx = -1;
+      if (_ownId != -1) {
+         _ownId = -1;
          setState(() { });
          return false;
       }
@@ -2375,20 +2358,20 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (isOnOwnChat()) {
+         final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+
          // Same as above but for own posts.
-         final int chatIdx =
-            _ownPosts[_ownIdx].getChatHistIdx(_ownPostChatPeer);
-         assert(chatIdx != -1);
+         final int j = _ownPosts[i].getChatHistIdx(_ownPostChatPeer);
+         assert(j != -1);
 
          return makeChatScreen(
              ctx,
-             () async {await _onWillPopOwnPostChat(chatIdx);},
-             _ownPosts[_ownIdx].chats[chatIdx],
+             () async {await _onWillPopOwnPostChat(j);},
+             _ownPosts[i].chats[j],
              _txtCtrl,
-             () async { await _onOwnChatSendPressed(chatIdx);},
+             () async { await _onOwnChatSendPressed(j);},
              _chatScrollCtrl,
-             (int idx, bool isTap)
-                {toggleLongPressedChatMsg(chatIdx, idx, isTap, false);},
+             (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, false);},
              _longPressedChatMsgs.length);
       }
 
