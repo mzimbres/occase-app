@@ -855,7 +855,7 @@ class MenuChatState extends State<MenuChat>
 
    // This string will be set to the name of user interested on our
    // post.
-   String _ownPostChatPeer = '';
+   String _ownPeer = '';
 
    // The last post id we have received. It will be persisted on every
    // post received and will be read when the app starts. It used by
@@ -923,7 +923,7 @@ class MenuChatState extends State<MenuChat>
 
    bool isOnOwnChat()
    {
-      return _ownId != -1 && !_ownPostChatPeer.isEmpty;
+      return _ownId != -1 && !_ownPeer.isEmpty;
    }
 
    bool previousWasFav()
@@ -1275,7 +1275,7 @@ class MenuChatState extends State<MenuChat>
 
       final int postId = _ownPosts[i].id;
       await _ownPosts[i].chats[j].setPeerMsgStatus(3, postId);
-      _ownPostChatPeer = '';
+      _ownPeer = '';
       setState(() { });
       return false;
    }
@@ -1570,7 +1570,7 @@ class MenuChatState extends State<MenuChat>
          }
 
          _ownId = _ownPosts[i].id;
-         _ownPostChatPeer = _ownPosts[i].chats[j].peer;
+         _ownPeer = _ownPosts[i].chats[j].peer;
          setState(() {
             SchedulerBinding.instance.addPostFrameCallback((_)
             {
@@ -1633,7 +1633,9 @@ class MenuChatState extends State<MenuChat>
       setState((){});
    }
 
-   Future<void> _onFavChatSendPressed(final int j) async
+   Future<void>
+   _onSendChatMsg(List<PostData> posts, int postId, String peer,
+                  bool isSenderPost) async
    {
       try {
          if (_txtCtrl.text.isEmpty)
@@ -1641,20 +1643,22 @@ class MenuChatState extends State<MenuChat>
 
          // We have to make sure every unread msg is marked as read
          // before we receive any reply.
-         final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
-         await _favPosts[i].chats[j].setPeerMsgStatus(3, _favId);
-         await _favPosts[i].chats[j].addMsg(_txtCtrl.text, true, _favId, 0);
-         rotateElements(_favPosts[i].chats, j);
-         await _favPosts[i].persistPeers();
-         rotateElements(_favPosts, i);
+         final int i = posts.indexWhere((e) { return e.id == postId;});
+         final int j = posts[i].getChatHistIdx(peer);
+
+         await posts[i].chats[j].setPeerMsgStatus(3, postId);
+         await posts[i].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
+         rotateElements(posts[i].chats, j);
+         await posts[i].persistPeers();
+         rotateElements(posts, i);
 
          var msgMap = {
             'cmd': 'message',
             'type': 'chat',
-            'to': _favPosts[i].from,
+            'to': peer,
             'msg': _txtCtrl.text,
-            'post_id': _favId,
-            'is_sender_post': false,
+            'post_id': postId,
+            'is_sender_post': isSenderPost,
             'nick': _nick
          };
 
@@ -1674,50 +1678,6 @@ class MenuChatState extends State<MenuChat>
             });
          });
       } catch(e) {
-      }
-   }
-
-   Future<void> _onOwnChatSendPressed(int j) async
-   {
-      try {
-         if (_txtCtrl.text.isEmpty)
-            return;
-
-         // We have to make sure every unread msg is marked as read
-         // before we receive any reply.
-         final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
-         await _ownPosts[i].chats[j].setPeerMsgStatus(3, _ownId);
-         await _ownPosts[i].chats[j].addMsg(_txtCtrl.text, true, _ownId, 0);
-         rotateElements(_ownPosts[i].chats, j);
-         await _ownPosts[i].persistPeers();
-         rotateElements(_ownPosts, i);
-
-         var msgMap = {
-            'cmd': 'message',
-            'type': 'chat',
-            'to': _ownPostChatPeer,
-            'msg': _txtCtrl.text,
-            'post_id': _ownId,
-            'is_sender_post': true,
-            'nick': _nick
-         };
-
-         _txtCtrl.text = '';
-         await sendChatMsg(jsonEncode(msgMap), 1);
-
-         setState(()
-         {
-            // Needed to automatically scroll the chat to the last
-            // message on the list.
-            SchedulerBinding.instance.addPostFrameCallback((_)
-            {
-               _chatScrollCtrl.animateTo(
-                  _chatScrollCtrl.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut);
-            });
-         });
-      } catch (e) {
       }
    }
 
@@ -1795,7 +1755,7 @@ class MenuChatState extends State<MenuChat>
          // that we have to search the chat entry.
          if (_ownPosts.first.id == _ownId) {
             foo.first.chats.first.setPeerMsgStatus(3, postId);
-            final int bar = foo.first.getChatHistIdx(_ownPostChatPeer);
+            final int bar = foo.first.getChatHistIdx(_ownPeer);
             assert(bar != -1);
             var msgMap = {
                'cmd': 'message',
@@ -2339,9 +2299,9 @@ class MenuChatState extends State<MenuChat>
                _botBarIdx);
 
       if (isOnFavChat()) {
-         final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
          // The user has clicked in a chat and this leads us to the
          // chat screen with the peer.
+         final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
          final String peer = _favPosts[i].from;
          final int j = _favPosts[i].getChatHistIdx(peer);
          assert(j != -1);
@@ -2351,7 +2311,7 @@ class MenuChatState extends State<MenuChat>
             () async {await _onWillPopFavChatScreen(j);},
             _favPosts[i].chats[j],
             _txtCtrl,
-            () async {await _onFavChatSendPressed(j);},
+            () async {await _onSendChatMsg(_favPosts, _favId, peer, false);},
             _chatScrollCtrl,
             (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, true);},
             _longPressedChatMsgs.length);
@@ -2361,7 +2321,7 @@ class MenuChatState extends State<MenuChat>
          final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
 
          // Same as above but for own posts.
-         final int j = _ownPosts[i].getChatHistIdx(_ownPostChatPeer);
+         final int j = _ownPosts[i].getChatHistIdx(_ownPeer);
          assert(j != -1);
 
          return makeChatScreen(
@@ -2369,7 +2329,7 @@ class MenuChatState extends State<MenuChat>
              () async {await _onWillPopOwnPostChat(j);},
              _ownPosts[i].chats[j],
              _txtCtrl,
-             () async { await _onOwnChatSendPressed(j);},
+             () async {await _onSendChatMsg(_ownPosts, _ownId, _ownPeer, true);},
              _chatScrollCtrl,
              (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, false);},
              _longPressedChatMsgs.length);
