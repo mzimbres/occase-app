@@ -1236,45 +1236,38 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
-   Future<bool> _onWillPopFavChatScreen(int j) async
+   Future<bool>
+   _onPopChat(List<PostData> posts, int postId, String peer) async
    {
-      final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
+      final int i = posts.indexWhere((e) { return e.id == postId;});
+      final int j = posts[i].getChatHistIdx(peer);
 
       if (!_longPressedChatMsgs.isEmpty) {
          for (IdxPair o in _longPressedChatMsgs) {
             assert(o.i == j);
-            _favPosts[i].togleLongPressedChatMsg(o.i, o.j);
+            posts[i].togleLongPressedChatMsg(o.i, o.j);
          }
 
          _longPressedChatMsgs.clear();
          setState(() { });
-         return false;
       }
 
-      final int postId = _favPosts[i].id;
-      await _favPosts[i].chats[j].setPeerMsgStatus(3, postId);
+      await posts[i].chats[j].setPeerMsgStatus(3, postId);
+   }
+
+   Future<bool> _onPopFavChat() async
+   {
+      assert(_favPosts.length == 1);
+      await _onPopChat(_favPosts, _favId, _favPosts.first.from);
       _favId = -1;
       setState(() { });
       return false;
    }
 
-   Future<bool> _onWillPopOwnPostChat(int j) async
+   Future<bool> _onPopOwnChat() async
    {
-      final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
-
-      if (!_longPressedChatMsgs.isEmpty) {
-         for (IdxPair o in _longPressedChatMsgs) {
-            assert(o.i == j);
-            _ownPosts[i].togleLongPressedChatMsg(o.i, o.j);
-         }
-
-         _longPressedChatMsgs = List<IdxPair>();
-         setState(() { });
-         return false;
-      }
-
-      final int postId = _ownPosts[i].id;
-      await _ownPosts[i].chats[j].setPeerMsgStatus(3, postId);
+      await _onPopChat(_ownPosts, _ownId, _ownPeer);
+      _ownId = -1;
       _ownPeer = '';
       setState(() { });
       return false;
@@ -2308,7 +2301,7 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
             ctx,
-            () async {await _onWillPopFavChatScreen(j);},
+            _onPopFavChat,
             _favPosts[i].chats[j],
             _txtCtrl,
             () async {await _onSendChatMsg(_favPosts, _favId, peer, false);},
@@ -2326,7 +2319,7 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
              ctx,
-             () async {await _onWillPopOwnPostChat(j);},
+             _onPopOwnChat,
              _ownPosts[i].chats[j],
              _txtCtrl,
              () async {await _onSendChatMsg(_ownPosts, _ownId, _ownPeer, true);},
