@@ -1702,18 +1702,17 @@ class MenuChatState extends State<MenuChat>
       final String msg = ack['msg'];
       final String from = ack['from'];
       final String nick = ack['nick'];
-      final bool is_sender_post = ack['is_sender_post'];
+      final bool isSenderPost = ack['is_sender_post'];
 
       // A user message can be either directed to one of the posts
       // published by this app or one that the app is interested
       // in. We distinguish this with the field 'is_sender_post'
-      List<PostData> foo = _ownPosts;
-      if (is_sender_post)
-         foo = _favPosts;
+      List<PostData> posts = _ownPosts;
+      if (isSenderPost)
+         posts = _favPosts;
 
-      final IdxPair pair =
-         await findInsertAndRotateMsg(
-            foo, postId, from, msg, false, '', 0);
+      final IdxPair pair = await findInsertAndRotateMsg(
+            posts, postId, from, msg, false, '', 0);
 
       if (pair.i == -1) {
          print('===> Error: Ignoring chat msg.');
@@ -1722,41 +1721,21 @@ class MenuChatState extends State<MenuChat>
 
       // When we insert the message above the chat history it belongs
       // to is moved to the front in that history.
-      foo.first.chats.first.nick = nick;
+      posts.first.chats.first.nick = nick;
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
-      if (isOnFavChat()) {
-         // Yes, we are chatting with an user from the fav list.
-         if (_favPosts.first.id == _favId) {
-            foo.first.chats.first.setPeerMsgStatus(3, postId);
+      if (isOnFavChat() || isOnOwnChat()) {
+         // Yes, we are chatting with an user.
+         if (posts.first.id == _favId || posts.first.id == _ownId) {
+            posts.first.chats.first.setPeerMsgStatus(3, postId);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
                'from': _appId,
                'to': from,
                'post_id': postId,
-               'is_sender_post': false,
-            };
-
-            final String payload = jsonEncode(msgMap);
-            await sendChatMsg(payload, 0);
-            return;
-         }
-      } else if (isOnOwnChat()) {
-         // Performs the same steps as above, but with the difference
-         // that we have to search the chat entry.
-         if (_ownPosts.first.id == _ownId) {
-            foo.first.chats.first.setPeerMsgStatus(3, postId);
-            final int bar = foo.first.getChatHistIdx(_ownPeer);
-            assert(bar != -1);
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'from': _appId,
-               'to': from,
-               'post_id': postId,
-               'is_sender_post': true,
+               'is_sender_post': !isSenderPost,
             };
 
             final String payload = jsonEncode(msgMap);
@@ -1771,7 +1750,7 @@ class MenuChatState extends State<MenuChat>
          'type': 'app_ack_received',
          'to': from,
          'post_id': postId,
-         'is_sender_post': !is_sender_post,
+         'is_sender_post': !isSenderPost,
       };
 
       final String payload = jsonEncode(map);
