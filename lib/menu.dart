@@ -83,6 +83,10 @@ ListView createFilterListView(BuildContext context,
                                     overflow: TextOverflow.clip);
             }
 
+            Color cc = Colors.grey;
+            if (child.status)
+               cc = Theme.of(context).primaryColor;
+
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             final String abbrev = makeStrAbbrev(child.name);
@@ -90,7 +94,7 @@ ListView createFilterListView(BuildContext context,
                 leading: 
                    makeCircleAvatar(
                       Text(abbrev, style: cts.abbrevStl),
-                      Theme.of(context).primaryColor),
+                      cc),
                 title: Text(child.name, style: cts.menuTitleStl),
                 dense: true,
                 subtitle: subtitle,
@@ -108,15 +112,14 @@ ListView createFilterListView(BuildContext context,
 
          final String names = o.children[i].getChildrenNames();
          final String subtitle = '($c/$cs) $names';
+         Color cc = Colors.grey;
+         if (c != 0)
+            cc = Theme.of(context).primaryColor;
 
          return
             ListTile(
                 leading: makeCircleAvatar(
-                   Text(
-                      makeStrAbbrev(
-                         o.children[i].name),
-                         style: cts.abbrevStl),
-                   Theme.of(context).primaryColor),
+                   Text(makeStrAbbrev(o.children[i].name), style: cts.abbrevStl), cc),
                 title: Text(o.children[i].name, style: cts.menuTitleStl),
                 dense: true,
                 subtitle: Text(

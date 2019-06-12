@@ -2274,18 +2274,15 @@ class MenuChatState extends State<MenuChat>
          // The user has clicked in a chat and this leads us to the
          // chat screen with the peer.
          final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
-         final String peer = _favPosts[i].from;
-         final int j = _favPosts[i].getChatHistIdx(peer);
-         assert(j != -1);
-
          return makeChatScreen(
             ctx,
             _onPopFavChat,
-            _favPosts[i].chats[j],
+            _favPosts[i].chats.first,
             _txtCtrl,
-            () async {await _onSendChatMsg(_favPosts, _favId, peer, false);},
+            () async {await _onSendChatMsg(_favPosts, _favId,
+                                           _favPosts.first.from, false);},
             _chatScrollCtrl,
-            (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, true);},
+            (int idx, bool isTap) {toggleLongPressedChatMsg(0, idx, isTap, true);},
             _longPressedChatMsgs.length);
       }
 

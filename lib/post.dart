@@ -772,13 +772,6 @@ List<Card> postTextAssembler(BuildContext context,
    return list;
 }
 
-Card makeTextSeparator(BuildContext context)
-{
-   return Card(child: Icon(Icons.message, color: Colors.white),
-               color: Theme.of(context).primaryColor,
-               elevation: 0.0);
-}
-
 Text makeChatSubStrWidget(ChatHistory ch)
 {
    FontWeight fw = FontWeight.normal;
@@ -795,7 +788,7 @@ Card createChatEntry(BuildContext context,
                      Function onDelPost)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
-                                       Theme.of(context).primaryColor);
+                                       cts.postFrameColor);
 
    ExpansionTile et =
       ExpansionTile(
@@ -816,8 +809,6 @@ Card createChatEntry(BuildContext context,
                   color: cts.postFrameColor,
                   margin: EdgeInsets.all(0.0),
                   elevation: 0.0));
-
-   //cards.add(makeTextSeparator(context));
 
    Card chatCard = Card(child: chats,
                         color: cts.postFrameColor,
@@ -924,7 +915,7 @@ makePostTabListView(BuildContext context,
                 final int idx = postsLength - i - 1;
 
                 // New posts are shown with a different color.
-                Color color = cts.primaryColor;
+                Color color = cts.postFrameColor;
                 if (i < numberOfNewPosts)
                    color = cts.newReceivedPostColor; 
 
@@ -946,7 +937,7 @@ makePostTabListView(BuildContext context,
 FloatingActionButton makeNewPostButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
-             backgroundColor: cts.primaryColor,
+             backgroundColor: cts.postFrameColor,
              child: Icon(id, color: Colors.white),
              onPressed: onNewPost);
 }
@@ -968,8 +959,9 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
          if (child.isLeaf()) {
             return ListTile(
                 leading: makeCircleAvatar(
-                   Text(makeStrAbbrev(child.name), style: cts.abbrevStl),
-                Theme.of(context).primaryColor),
+                   Text(makeStrAbbrev(child.name),
+                        style: cts.abbrevStl),
+                   Colors.grey),
                 title: Text(child.name, style: cts.menuTitleStl),
                 dense: true,
                 onTap: () { onLeafPressed(i);},
@@ -984,7 +976,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                       makeStrAbbrev(
                          o.children[i].name),
                          style: cts.abbrevStl),
-                   Theme.of(context).primaryColor),
+                   Colors.grey),
                 title: Text(o.children[i].name, style: cts.menuTitleStl),
                 dense: true,
                 subtitle: Text(
@@ -1071,9 +1063,7 @@ Widget makePostChatCol(BuildContext context,
          ListTile(
             dense: true,
             enabled: true,
-            leading: makeCircleAvatar(
-                        widget,
-                        Theme.of(context).primaryColor),
+            leading: makeCircleAvatar(widget, Colors.grey),
             trailing: trailing,
             title: Text(ch[i].getChatDisplayName(),
                         maxLines: 1,
