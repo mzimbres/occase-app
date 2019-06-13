@@ -189,7 +189,6 @@ class ChatHistory {
          if (msgs[j].status >= status)
             break;
 
-         print('===> setting status ${msgs[j].msg} $status');
          msgs[j].status = status;
          await persistStatus(postId, status, false);
       }
@@ -428,6 +427,7 @@ class PostData {
    {
       final int i = getChatHistIdx(peer);
       if (i == -1) {
+         print('creating $peer $id');
          // This is the first message with this user (peer).
          final int l = chats.length;
          await createChatEntryForPeer(peer, nick);
@@ -459,7 +459,6 @@ class PostData {
          return;
       }
 
-      print('Calling mark msg2.');
       await chats[i].markAppChatAck(id, status);
    }
 
@@ -606,7 +605,6 @@ findAndMarkChatApp( final List<PostData> posts
       return;
    }
 
-   print('Calling mark msg1.');
    await posts[i].markChatAppAck(from, status);
 }
 

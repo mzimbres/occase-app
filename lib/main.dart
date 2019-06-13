@@ -20,6 +20,13 @@ import 'package:menu_chat/globals.dart' as glob;
 
 // TODO: Consider making _posts, _favPosts and _ownPosts a queue.
 
+class Coord {
+   int postId = -1;
+   String peerId = '';
+   int chatIdx = -1;
+   Coord(this.postId, this.peerId, this.chatIdx);
+}
+
 void handleLongPressed(List<IdxPair> pairs, int i, int j, bool old)
 {
    if (old) {
@@ -1255,9 +1262,20 @@ class MenuChatState extends State<MenuChat>
       await posts[i].chats[j].setPeerMsgStatus(3, postId);
    }
 
+   Future<void> _onSendFavChatMsg() async
+   {
+      await _onSendChatMsg(_favPosts, _favId, _favPosts.first.from, false);
+   }
+
+   Future<void> _onSendOwnChatMsg() async
+   {
+      await _onSendChatMsg(_ownPosts, _ownId, _ownPeer, true);
+   }
+
    Future<bool> _onPopFavChat() async
    {
-      assert(_favPosts.length == 1);
+      print('==> ${_favPosts.length}');
+      //assert(_favPosts.length == 1);
       await _onPopChat(_favPosts, _favId, _favPosts.first.from);
       _favId = -1;
       setState(() { });
@@ -1266,6 +1284,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopOwnChat() async
    {
+      print('==> 2jdjdjdjd2');
       await _onPopChat(_ownPosts, _ownId, _ownPeer);
       _ownId = -1;
       _ownPeer = '';
@@ -1486,43 +1505,71 @@ class MenuChatState extends State<MenuChat>
          _showSimpleDial(ctx, (){}, 3);
    }
 
-   Future<void> _onFavChatPressed(int i, int j) async
+   Future<Coord>
+   _onChatPressed(List<PostData> posts, int postId,
+                  bool isSenderPost, int i, int j) async
    {
-      assert(j == 0);
+      // WARNING: When working with indexes, ensure you colect them
+      // before any asynchronous functions is called.
 
       assert(_longPressedChatMsgs.isEmpty);
+
+      Coord coord = Coord(postId, '', -1);
       if (!_postsWithLongPressed.isEmpty) {
-         _onFavChatLongPressed(i, j);
+         _onChatLongPressed(posts, i, j);
       } else {
-         if (_favPosts[i].chats[j].hasUnreadMsgs()) {
+         coord.postId = posts[i].id;
+         coord.peerId = posts[i].chats[j].peer;
+
+         final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
+         final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
+
+         if (n != 0) {
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
                'from': _appId,
-               'to': _favPosts[i].from,
-               'post_id': _favPosts[i].id,
-               'is_sender_post': false,
+               'to': posts[i].chats[j].peer,
+               'post_id': posts[i].id,
+               'is_sender_post': isSenderPost,
             };
 
             final String payload = jsonEncode(msgMap);
+            print('Sending ===> $payload');
             await sendChatMsg(payload, 0);
          }
-
-         _favId = _favPosts[i].id;
 
          setState(() {
             SchedulerBinding.instance.addPostFrameCallback((_)
             {
-               // TODO: Jump only up to the first index with unread
-               // msgs.
-               _chatScrollCtrl.jumpTo(
-                  _chatScrollCtrl.position.maxScrollExtent);
+               // It would be actually more correct to calculate
+               // jumpToIdx here, since we may receive other messages
+               // at the time this function is called. But this
+               // extremely unlikey, so I won't care.
+               print('====> Jumping to $jumpToIdx');
+               //_chatScrollCtrl.jumpTo(jumpToIdx);
+               _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
             });
          });
       }
+
+      return coord;
    }
 
-   void _onFavChatLongPressed(int i, int j)
+   Future<void> _onFavChatPressed(int i, int j) async
+   {
+      final Coord c = await _onChatPressed(_favPosts, _favId, false, i, j);
+      _favId = c.postId;
+   }
+
+   Future<void> _onOwnChatPressed(int i, int j) async
+   {
+      final Coord c = await _onChatPressed(_ownPosts, _ownId, true, i, j);
+      _ownId = c.postId;
+      _ownPeer = c.peerId;
+   }
+
+   void _onChatLongPressed(List<PostData> posts, int i, int j)
    {
       assert(j == 0);
 
@@ -1536,54 +1583,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      final bool old = _favPosts[i].togleLongPressedChats(j);
-      handleLongPressed(_postsWithLongPressed, i, j, old);
-      setState(() { });
-   }
-
-   // TODO: Collapse this and the _fav version in a single function.
-   Future<void> _onOwnPostChatPressed(int i, int j) async
-   {
-      assert(_longPressedChatMsgs.isEmpty);
-      if (!_postsWithLongPressed.isEmpty) {
-         _onOwnPostChatLongPressed(i, j);
-      } else {
-         if (_ownPosts[i].chats[j].hasUnreadMsgs()) {
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'from': _appId,
-               'to': _ownPosts[i].chats[j].peer,
-               'post_id': _ownPosts[i].id,
-               'is_sender_post': true,
-            };
-
-            final String payload = jsonEncode(msgMap);
-            await sendChatMsg(payload, 0);
-         }
-
-         _ownId = _ownPosts[i].id;
-         _ownPeer = _ownPosts[i].chats[j].peer;
-         setState(() {
-            SchedulerBinding.instance.addPostFrameCallback((_)
-            {
-               _chatScrollCtrl.jumpTo(
-                  _chatScrollCtrl.position.maxScrollExtent);
-            });
-         });
-      }
-   }
-
-   void _onOwnPostChatLongPressed(int i, int j)
-   {
-      if (!_longPressedChatMsgs.isEmpty) {
-         // Make sure we do not forward to the same chat the messages
-         // were long pressed.
-         setState(() { });
-         return;
-      }
-
-      final bool old = _ownPosts[i].togleLongPressedChats(j);
+      final bool old = posts[i].togleLongPressedChats(j);
       handleLongPressed(_postsWithLongPressed, i, j, old);
       setState(() { });
    }
@@ -1761,7 +1761,6 @@ class MenuChatState extends State<MenuChat>
    _chatAppAckHandler(Map<String, dynamic> ack,
                       final int status) async
    {
-      print('Receiving ack.');
       final String from = ack['from'];
       final int postId = ack['post_id'];
 
@@ -1781,8 +1780,9 @@ class MenuChatState extends State<MenuChat>
          if (res == 'ok') {
             final int isChat = _outChatMsgsQueue.first.isChat;
             await _chatServerAckHandler(ack);
-            if (isChat == 1)
+            if (isChat == 1) {
                await _chatAppAckHandler(ack, 1);
+            }
          }
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
@@ -2279,8 +2279,7 @@ class MenuChatState extends State<MenuChat>
             _onPopFavChat,
             _favPosts[i].chats.first,
             _txtCtrl,
-            () async {await _onSendChatMsg(_favPosts, _favId,
-                                           _favPosts.first.from, false);},
+            _onSendFavChatMsg,
             _chatScrollCtrl,
             (int idx, bool isTap) {toggleLongPressedChatMsg(0, idx, isTap, true);},
             _longPressedChatMsgs.length);
@@ -2298,7 +2297,7 @@ class MenuChatState extends State<MenuChat>
              _onPopOwnChat,
              _ownPosts[i].chats[j],
              _txtCtrl,
-             () async {await _onSendChatMsg(_ownPosts, _ownId, _ownPeer, true);},
+             _onSendOwnChatMsg,
              _chatScrollCtrl,
              (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, false);},
              _longPressedChatMsgs.length);
@@ -2333,8 +2332,8 @@ class MenuChatState extends State<MenuChat>
       bodies[0] = makeChatTab(
          ctx,
          _ownPosts,
-         _onOwnPostChatPressed,
-         _onOwnPostChatLongPressed,
+         _onOwnChatPressed,
+         (int i, int j) {_onChatLongPressed(_ownPosts, i, j);},
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
@@ -2350,7 +2349,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _favPosts,
          _onFavChatPressed,
-         _onFavChatLongPressed,
+         (int i, int j) {_onChatLongPressed(_favPosts, i, j);},
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
