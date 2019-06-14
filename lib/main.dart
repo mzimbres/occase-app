@@ -852,13 +852,9 @@ class MenuChatState extends State<MenuChat>
    // menu, 1 for the models menu etc.
    int _botBarIdx = 0;
 
-   // Stores the current chat index in the array _favPosts, -1
-   // means we are not in this screen.
-   int _favId = -1;
-
-   // Similar to _favId but corresponds to the *my own posts*
-   // screen.
-   int _ownId = -1;
+   // Stores the current chat index in the array _favPosts or
+   // _ownPosts, -1 means we are not in this screen.
+   int _postId = -1;
 
    // This string will be set to the name of user interested on our
    // post.
@@ -908,6 +904,11 @@ class MenuChatState extends State<MenuChat>
 
    static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
 
+   bool isOnOwn()
+   {
+      return _tabCtrl.index == 0;
+   }
+
    bool isOnPosts()
    {
       return _tabCtrl.index == 1;
@@ -920,17 +921,12 @@ class MenuChatState extends State<MenuChat>
 
    bool isOnFavChat()
    {
-      return _favId != -1;
-   }
-
-   bool isOnOwn()
-   {
-      return _tabCtrl.index == 0;
+      return isOnFav() && _postId != -1;
    }
 
    bool isOnOwnChat()
    {
-      return _ownId != -1 && !_ownPeer.isEmpty;
+      return isOnOwn() && _postId != -1 && !_ownPeer.isEmpty;
    }
 
    bool previousWasFav()
@@ -1178,7 +1174,7 @@ class MenuChatState extends State<MenuChat>
          // posts.
          _favPosts.add(data);
          rotateElements(_favPosts, _favPosts.length - 1);
-         assert(_favId == -1);
+         assert(_postId == -1);
 
          final String content = serializeList(<PostData>[data]);
          await File(_favPostsFileFullPath).
@@ -1264,20 +1260,20 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendFavChatMsg() async
    {
-      await _onSendChatMsg(_favPosts, _favId, _favPosts.first.from, false);
+      await _onSendChatMsg(_favPosts, _postId, _favPosts.first.from, false);
    }
 
    Future<void> _onSendOwnChatMsg() async
    {
-      await _onSendChatMsg(_ownPosts, _ownId, _ownPeer, true);
+      await _onSendChatMsg(_ownPosts, _postId, _ownPeer, true);
    }
 
    Future<bool> _onPopFavChat() async
    {
       print('==> ${_favPosts.length}');
       //assert(_favPosts.length == 1);
-      await _onPopChat(_favPosts, _favId, _favPosts.first.from);
-      _favId = -1;
+      await _onPopChat(_favPosts, _postId, _favPosts.first.from);
+      _postId = -1;
       setState(() { });
       return false;
    }
@@ -1285,8 +1281,8 @@ class MenuChatState extends State<MenuChat>
    Future<bool> _onPopOwnChat() async
    {
       print('==> 2jdjdjdjd2');
-      await _onPopChat(_ownPosts, _ownId, _ownPeer);
-      _ownId = -1;
+      await _onPopChat(_ownPosts, _postId, _ownPeer);
+      _postId = -1;
       _ownPeer = '';
       setState(() { });
       return false;
@@ -1412,6 +1408,7 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
+      print('Sending ===> $payload');
       print(payload);
       channel.sink.add(payload);
    }
@@ -1558,14 +1555,14 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onFavChatPressed(int i, int j) async
    {
-      final Coord c = await _onChatPressed(_favPosts, _favId, false, i, j);
-      _favId = c.postId;
+      final Coord c = await _onChatPressed(_favPosts, _postId, false, i, j);
+      _postId = c.postId;
    }
 
    Future<void> _onOwnChatPressed(int i, int j) async
    {
-      final Coord c = await _onChatPressed(_ownPosts, _ownId, true, i, j);
-      _ownId = c.postId;
+      final Coord c = await _onChatPressed(_ownPosts, _postId, true, i, j);
+      _postId = c.postId;
       _ownPeer = c.peerId;
    }
 
@@ -1614,11 +1611,11 @@ class MenuChatState extends State<MenuChat>
          return;
 
       if (isFav) {
-         final int k = _favPosts.indexWhere((e) { return e.id == _favId;});
+         final int k = _favPosts.indexWhere((e) { return e.id == _postId;});
          final bool old = _favPosts[k].togleLongPressedChatMsg(i, j);
          handleLongPressed(_longPressedChatMsgs, i, j, old);
       } else {
-         final int k = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+         final int k = _ownPosts.indexWhere((e) { return e.id == _postId;});
          final bool old = _ownPosts[k].togleLongPressedChatMsg(i, j);
          handleLongPressed(_longPressedChatMsgs, i, j, old);
       }
@@ -1727,7 +1724,7 @@ class MenuChatState extends State<MenuChat>
       // it with app_ack_read and skip app_ack_received.
       if (isOnFavChat() || isOnOwnChat()) {
          // Yes, we are chatting with an user.
-         if (posts.first.id == _favId || posts.first.id == _ownId) {
+         if (posts.first.id == _postId || posts.first.id == _postId) {
             posts.first.chats.first.setPeerMsgStatus(3, postId);
             var msgMap = {
                'cmd': 'message',
@@ -1915,6 +1912,7 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onPublishAck(Map<String, dynamic> ack) async
    {
       final String res = ack['result'];
+      print('publish_ack ===> $res');
       if (res == 'ok')
          await handlePublishAck(ack['id'], ack['date']);
       else
@@ -2069,14 +2067,8 @@ class MenuChatState extends State<MenuChat>
    {
       _unmarkLongPressedChats();
 
-      if (_ownId != -1) {
-         _ownId = -1;
-         setState(() { });
-         return false;
-      }
-
-      if (_favId != -1) {
-         _favId = -1;
+      if (_postId != -1) {
+         _postId = -1;
          setState(() { });
          return false;
       }
@@ -2273,7 +2265,7 @@ class MenuChatState extends State<MenuChat>
       if (isOnFavChat()) {
          // The user has clicked in a chat and this leads us to the
          // chat screen with the peer.
-         final int i = _favPosts.indexWhere((e) { return e.id == _favId;});
+         final int i = _favPosts.indexWhere((e) { return e.id == _postId;});
          return makeChatScreen(
             ctx,
             _onPopFavChat,
@@ -2286,7 +2278,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (isOnOwnChat()) {
-         final int i = _ownPosts.indexWhere((e) { return e.id == _ownId;});
+         final int i = _ownPosts.indexWhere((e) { return e.id == _postId;});
 
          // Same as above but for own posts.
          final int j = _ownPosts[i].getChatHistIdx(_ownPeer);
