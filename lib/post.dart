@@ -900,33 +900,32 @@ makePostTabListView(BuildContext context,
                     List<PostData> posts,
                     Function onPostSelection,
                     List<MenuItem> menus,
-                    int numberOfNewPosts)
+                    Function updateLasSeenPostIdx)
 {
    final int postsLength = posts.length;
 
    return ListView.builder(
              padding: const EdgeInsets.all(0.0),
-             itemCount: postsLength,
+             itemCount: posts.length,
              itemBuilder: (BuildContext context, int i)
              {
-                // Posts are shown in reverse order.
-                final int idx = postsLength - i - 1;
+                updateLasSeenPostIdx(i);
 
                 // New posts are shown with a different color.
                 Color color = cts.postFrameColor;
-                if (i < numberOfNewPosts)
-                   color = cts.newReceivedPostColor; 
+                //if (i > lastSeenPostIdx)
+                //   color = cts.newReceivedPostColor; 
 
                 List<Card> cards = postTextAssembler(
                                       context,
-                                      posts[idx],
+                                      posts[i],
                                       menus,
                                       color);
    
                 return makePostWidget(
                           context,
                           cards,
-                          (int fav) {onPostSelection(posts[idx], fav);},
+                          (int fav) {onPostSelection(posts[i], fav);},
                           cts.favIcon,
                           color);
              });

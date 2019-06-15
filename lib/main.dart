@@ -807,10 +807,6 @@ class MenuChatState extends State<MenuChat>
    // will be filtered out.
    List<PostData> _posts = List<PostData>();
 
-   // Same as _posts but stores posts that have been just received
-   // from the server and haven't been viewed by the user.
-   List<PostData> _unreadPosts = List<PostData>();
-
    // The list of posts the user has selected in the posts screen.
    // They are moved from _posts to here.
    List<PostData> _favPosts = List<PostData>();
@@ -864,6 +860,9 @@ class MenuChatState extends State<MenuChat>
    // post received and will be read when the app starts. It used by
    // the subscribe command.
    int _lastPostId = 0;
+
+   // The last post id seen by the user.
+   int _lastSeenPostIdx = 0;
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
@@ -964,7 +963,6 @@ class MenuChatState extends State<MenuChat>
    void _initPaths()
    {
       _nickFullPath            = '${glob.docDir}/${cts.nickFullPath}';
-      _unreadPostsFileFullPath = '${glob.docDir}/${cts.unreadPostsFileName}';
       _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
       _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
@@ -1024,12 +1022,6 @@ class MenuChatState extends State<MenuChat>
       try {
          lines = await File(_postsFileFullPath).readAsLines();
          _posts = await decodePostsStr(lines);
-      } catch (e) {
-      }
-
-      try {
-         lines = await File(_unreadPostsFileFullPath).readAsLines();
-         _unreadPosts = await decodePostsStr(lines);
       } catch (e) {
       }
 
@@ -1868,8 +1860,8 @@ class MenuChatState extends State<MenuChat>
    {
       // Remember the size of the list to append later the new items
       // to a file.
-      final int size = _unreadPosts.length;
       var items = ack['items'];
+      List<PostData> tmp = List<PostData>();
       for (var item in items) {
          PostData post = readPostData(item);
          if (post.from == _appId) {
@@ -1883,8 +1875,11 @@ class MenuChatState extends State<MenuChat>
 
          // Since this post is not from this app we have to add a chat
          // entry in it.
+         //
+         // TODO: Change this to only create the entry if the post is
+         // moved to the _fav list.
          await post.createChatEntryForPeer(post.from, post.nick);
-         _unreadPosts.add(post);
+         tmp.add(post);
 
          // It is not guaranteed that the array of posts sent by
          // the server has increasing post ids so we should check.
@@ -1896,11 +1891,9 @@ class MenuChatState extends State<MenuChat>
          await File(_lastPostIdFileFullPath)
             .writeAsString('${_lastPostId}', mode: FileMode.write);
 
-         // At the moment we do not impose a limit on how big this
-         // file can grow.
-         final String content = serializeList(_unreadPosts);
-         await File(_unreadPostsFileFullPath)
-            .writeAsString(content, mode: FileMode.append);
+         _posts.addAll(tmp);
+         writeListToDisk( tmp, _postsFileFullPath
+                        , FileMode.append);
       } catch (e) {
       }
 
@@ -2191,6 +2184,12 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _updateLastSeenPostIdx(int i)
+   {
+      if (i > _lastSeenPostIdx)
+         _lastSeenPostIdx = i;
+   }
+
    void _onNewPostDetail(int i)
    {
       if (i == cts.postDetails.length) {
@@ -2308,18 +2307,6 @@ class MenuChatState extends State<MenuChat>
       fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter);
       fltButtons[2] = null;
 
-      final int newPostsLength = _unreadPosts.length;
-      if (isOnPosts()) {
-         if (!_unreadPosts.isEmpty) {
-            _posts.addAll(_unreadPosts);
-            writeListToDisk( _unreadPosts, _postsFileFullPath
-                           , FileMode.append);
-            _unreadPosts.clear();
-            // Wipes out all the data in the unread posts file.
-            writeToFile('', _unreadPostsFileFullPath, FileMode.write);
-         }
-      }
-
       List<Widget> bodies = List<Widget>(cts.tabNames.length);
       bodies[0] = makeChatTab(
          ctx,
@@ -2335,7 +2322,7 @@ class MenuChatState extends State<MenuChat>
          (PostData data, int fav) async
             {await _alertUserOnselectPost(ctx, data, fav);},
          _menus,
-         newPostsLength);
+         _updateLastSeenPostIdx);
 
       bodies[2] = makeChatTab(
          ctx,
@@ -2364,7 +2351,8 @@ class MenuChatState extends State<MenuChat>
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
-      newMsgsCounters[1] = newPostsLength;
+      print('Setting anew $_lastSeenPostIdx.');
+      newMsgsCounters[1] = _posts.length - _lastSeenPostIdx;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
       List<double> opacities = getNewMsgsOpacities();
