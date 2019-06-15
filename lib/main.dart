@@ -286,7 +286,7 @@ makeNewFiltersScreens( BuildContext ctx
                      , int screen)
 {
    Widget wid;
-   String appBarTitle = cts.appName;
+   String appBarTitle = cts.filterTabNames[screen];
    if (screen == 3) {
       wid = createSendScreen((){onSendFilters(ctx);}, 'Enviar');
    } else if (screen == 2) {
@@ -2355,7 +2355,6 @@ class MenuChatState extends State<MenuChat>
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
-      print('Setting anew $_lastSeenPostIdx.');
       newMsgsCounters[1] = _posts.length - _lastSeenPostIdx;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
