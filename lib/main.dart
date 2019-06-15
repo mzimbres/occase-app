@@ -1560,8 +1560,6 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatLongPressed(List<PostData> posts, int i, int j)
    {
-      assert(j == 0);
-
       // If a chat is long pressed and we have chat messages to
       // forward, we do not mark it long pressed, but only forward the
       // long pressed messages.
@@ -1700,17 +1698,23 @@ class MenuChatState extends State<MenuChat>
       if (isSenderPost)
          posts = _favPosts;
 
-      final IdxPair pair = await findInsertAndRotateMsg(
-            posts, postId, from, msg, false, '', 0);
-
-      if (pair.i == -1) {
+      final int i = posts.indexWhere((e) { return e.id == postId;});
+      if (i == -1) {
          print('===> Error: Ignoring chat msg.');
          return;
       }
 
+      final int j = await posts[i].getChatHistIdxOrCreate(from, nick);
+      await posts[i].addMsg(j, msg, false, 0);
+
+      // FIXME: The indexes used in the rotate function below may be
+      // wrong after the await function.
+      rotateElements(posts[i].chats, j);
+      rotateElements(posts, i);
+
       // When we insert the message above the chat history it belongs
       // to is moved to the front in that history.
-      posts.first.chats.first.nick = nick;
+      //posts.first.chats.first.nick = nick;
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.

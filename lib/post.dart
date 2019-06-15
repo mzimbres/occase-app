@@ -570,28 +570,6 @@ int CompPostData(final PostData lhs, final PostData rhs)
    return ts1 < ts2 ? -1 : 1;
 }
 
-// Returns the old index in posts that has postId. Will rotate
-// elements so that it becomes the first in the list. The nick is used
-// only if creation is necessary.
-Future<IdxPair>
-findInsertAndRotateMsg(List<PostData> posts,
-                       final int postId,
-                       final String from,
-                       final String msg,
-                       final bool thisApp,
-                       final String nick,
-                       final int status) async
-{
-   final int i = posts.indexWhere((e) { return e.id == postId;});
-   if (i == -1)
-      return IdxPair(-1, -1);
-
-   final int j = await posts[i].getChatHistIdxOrCreate(from, nick);
-   await posts[i].addMsg(j, msg, thisApp, status);
-   rotateElements(posts, i);
-   return IdxPair(i, j);
-}
-
 Future<void>
 findAndMarkChatApp( final List<PostData> posts
                   , final String from
