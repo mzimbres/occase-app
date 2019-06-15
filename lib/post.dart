@@ -1024,19 +1024,20 @@ Widget makePostChatCol(BuildContext context,
          widget = Icon(Icons.check);
          bgColor = cts.chatLongPressendColor;
       } else {
-         widget = Text( ch[i].getChatAbbrevStr()
-                      , style: cts.abbrevStl);
+         widget = cts.unknownPersonIcon;
          bgColor = Colors.white;
       }
 
       Widget trailing = null;
       if (n != 0) {
-         trailing = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
+         Container cont = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
+         trailing = Column(children: <Widget>
+            [Icon(Icons.clear), cont]);
       }
 
       ListTile lt =
          ListTile(
-            dense: true,
+            dense: false,
             enabled: true,
             leading: makeCircleAvatar(widget, Colors.grey),
             trailing: trailing,

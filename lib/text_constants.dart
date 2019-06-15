@@ -158,7 +158,7 @@ final String nichTextFieldHintStr = "Digite seu nome";
 
 final int nickMaxLength = 10;
 
-final IconData newPostIcon = Icons.publish;
+final IconData newPostIcon = Icons.add;
 
 final String hintTextChat = "Digite sua mensagem";
 
@@ -239,4 +239,7 @@ final String host = 'ws://10.0.2.2:80';
 
 // My public ip.
 //final String host = 'ws://37.24.165.216:80';
+
+final Icon unknownPersonIcon =
+   Icon(Icons.person, color: Colors.white, size: 30.0);
 

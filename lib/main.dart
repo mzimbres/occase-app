@@ -625,8 +625,7 @@ makeChatScreen(BuildContext ctx,
    } else {
       title = ListTile(
           leading: CircleAvatar(
-              child: Icon(Icons.person, color: Colors.white,
-                          size: 30.0),
+              child: cts.unknownPersonIcon,
               backgroundColor: Colors.grey),
           title: Text(ch.getChatDisplayName(), style: ts),
           dense: true,
@@ -2308,7 +2307,7 @@ class MenuChatState extends State<MenuChat>
       List<FloatingActionButton> fltButtons =
             List<FloatingActionButton>(cts.tabNames.length);
       fltButtons[0] = makeNewPostButton(_onNewPost, cts.newPostIcon);
-      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter);
+      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter_list);
       fltButtons[2] = null;
 
       List<Widget> bodies = List<Widget>(cts.tabNames.length);
