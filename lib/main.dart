@@ -593,7 +593,8 @@ makeChatScreen(BuildContext ctx,
                Function onChatSendPressed,
                ScrollController scrollCtrl,
                Function onChatMsgLongPressed,
-               int nLongPressed)
+               int nLongPressed,
+               Function onFwdChatMsg)
 {
    IconButton sendButCol =
       IconButton(
@@ -667,7 +668,7 @@ makeChatScreen(BuildContext ctx,
 
       IconButton forward = IconButton(
          icon: Icon(Icons.forward, color: Colors.white),
-         onPressed:  (){print('=====');});
+         onPressed: onFwdChatMsg);
 
       actions.add(forward);
 
@@ -1321,6 +1322,17 @@ class MenuChatState extends State<MenuChat>
          await _onSendChatMsgImpl(_ownPosts, true);
    }
 
+   void _onFwdChatMsg()
+   {
+      assert(!_lpChatMsgs.isEmpty);
+      print('I am fwd a chat msg.');
+
+      _postId = -1;
+      _peer = '';
+
+      setState(() { });
+   }
+
    void _onBotBarTapped(int i)
    {
       if (_botBarIdx < _menus.length)
@@ -1657,7 +1669,7 @@ class MenuChatState extends State<MenuChat>
       if (isTap && _lpChatMsgs.isEmpty)
          return;
 
-      final Coord tmp = Coord(-1, post.chats[j].peer, k);
+      final Coord tmp = Coord(_postId, post.chats[j].peer, k);
 
       handleLPChats(
          _lpChatMsgs,
@@ -2148,7 +2160,7 @@ class MenuChatState extends State<MenuChat>
       return !_lpChats.isEmpty;
    }
 
-   bool hasLongPressedChatMsg()
+   bool hasLongPressedChatMsgs()
    {
       return !_lpChatMsgs.isEmpty;
    }
@@ -2232,6 +2244,19 @@ class MenuChatState extends State<MenuChat>
                   actions: actions);
          },
       );
+   }
+
+   void _onBackFromChatMsgRedirect()
+   {
+      print('_onBackFromChatMsgRedirect');
+      assert(!_lpChatMsgs.isEmpty);
+
+      // All items int _lpChatMsgs should have the same post id and
+      // peer so we can use the first.
+      _postId = _lpChatMsgs.first.postId;
+      _peer = _lpChatMsgs.first.peer;
+
+      setState(() { });
    }
 
    Future<void> _onNickPressed() async
@@ -2334,7 +2359,8 @@ class MenuChatState extends State<MenuChat>
             _onSendChatMsg,
             _chatScrollCtrl,
             _toggleLPChatMsgs,
-            _lpChatMsgs.length);
+            _lpChatMsgs.length,
+            _onFwdChatMsg);
       }
 
       if (isOnOwnChat()) {
@@ -2350,7 +2376,8 @@ class MenuChatState extends State<MenuChat>
              _onSendChatMsg,
              _chatScrollCtrl,
              _toggleLPChatMsgs,
-             _lpChatMsgs.length);
+             _lpChatMsgs.length,
+            _onFwdChatMsg);
       }
 
       List<Function> onWillPops = List<Function>(cts.tabNames.length);
@@ -2392,11 +2419,11 @@ class MenuChatState extends State<MenuChat>
 
       Widget appBarLeading = null;
       if (isOnFav() || isOnOwn()) {
-         if (hasLongPressedChatMsg()) {
+         if (hasLongPressedChatMsgs()) {
             appBarTitle = 'Redirecionando ...';
             appBarLeading = IconButton(
                icon: Icon(Icons.arrow_back , color: Colors.white),
-                  onPressed: (){print('Retornar a tela anterior.');});
+                  onPressed: _onBackFromChatMsgRedirect);
          }
       }
 
