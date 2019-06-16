@@ -1536,7 +1536,7 @@ class MenuChatState extends State<MenuChat>
 
       Coord coord = Coord(_postId, '', -1);
       if (!_lpChats.isEmpty) {
-         _onChatLP(posts, i, j);
+         _onChatLPImpl(posts, i, j);
       } else {
          coord.postId = posts[i].id;
          coord.peer = posts[i].chats[j].peer;
@@ -1589,7 +1589,7 @@ class MenuChatState extends State<MenuChat>
       _peer = c.peer;
    }
 
-   void _onChatLP(List<PostData> posts, int i, int j)
+   void _onChatLPImpl(List<PostData> posts, int i, int j)
    {
       // If a chat is long pressed and we have chat messages to
       // forward, we do not mark it long pressed, but only forward the
@@ -1610,6 +1610,15 @@ class MenuChatState extends State<MenuChat>
          tmp, CompPostIdAndPeer);
 
       setState(() { });
+   }
+
+   void _onChatLP(int i, int j)
+   {
+      if (isOnFav()) {
+         _onChatLPImpl(_favPosts, i, j);
+      } else {
+         _onChatLPImpl(_ownPosts, i, j);
+      }
    }
 
    Future<void> sendChatMsg(final String payload, int isChat) async
@@ -2352,7 +2361,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _ownPosts,
          _onChatPressed,
-         (int i, int j) {_onChatLP(_ownPosts, i, j);},
+         _onChatLP,
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
@@ -2368,7 +2377,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _favPosts,
          _onChatPressed,
-         (int i, int j) {_onChatLP(_favPosts, i, j);},
+         _onChatLP,
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
