@@ -18,21 +18,61 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
-// TODO: Consider making _posts, _favPosts and _ownPosts a queue.
-
 class Coord {
    int postId = -1;
-   String peerId = '';
-   int chatIdx = -1;
-   Coord(this.postId, this.peerId, this.chatIdx);
+   String peer = '';
+   int msgIdx = -1;
+   Coord(this.postId, this.peer, this.msgIdx);
 }
 
-void handleLongPressed(List<IdxPair> pairs, int i, int j, bool old)
+void myprint(Coord c, String prefix)
+{
+   print('$prefix ===> (${c.postId}, ${c.peer}, ${c.msgIdx})');
+}
+
+bool CompPostIdAndPeer(Coord a, Coord b)
+{
+   return a.postId == b.postId && a.peer == b.peer;
+}
+
+bool CompPeerAndChatIdx(Coord a, Coord b)
+{
+   return a.peer == b.peer && a.msgIdx == b.msgIdx;
+}
+
+void
+handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
 {
    if (old) {
-      pairs.removeWhere((IdxPair e) { return e.i == i && e.j == j; });
+      myprint(coord, 'Removing');
+      pairs.removeWhere((e) {return comp(e, coord);});
    } else {
-      pairs.add(IdxPair(i, j));
+      myprint(coord, 'Adding');
+      pairs.add(coord);
+   }
+}
+
+void toggleLPChats(List<PostData> posts, List<Coord> coords)
+{
+   for (Coord c in coords) {
+      final int i = posts.indexWhere((e) { return e.id == c.postId;});
+      assert(i != -1);
+      final int j = posts[i].getChatHistIdx(c.peer);
+      assert(j != -1);
+      toggleLPChat(posts[i].chats[j]);
+   }
+}
+
+Future<void> removeLPChats(List<PostData> posts, List<Coord> coords) async
+{
+   // TODO: Change this function to pass all indexes at once to
+   // removeLongPressedChats.
+   for (Coord c in coords) {
+      final int i = posts.indexWhere((e) { return e.id == c.postId;});
+      assert(i != -1);
+      final int j = posts[i].getChatHistIdx(c.peer);
+      assert(j != -1);
+      await posts[i].removeLongPressedChats(j);
    }
 }
 
@@ -884,7 +924,7 @@ class MenuChatState extends State<MenuChat>
    // have been long pressed by the user. However, once one post is
    // long pressed to select the others is enough to perform a simple
    // click.
-   List<IdxPair> _postsWithLongPressed = List<IdxPair>();
+   List<Coord> _postsWithLongPressed = List<Coord>();
 
    // The menu details filter.
    int _filter = 0;
@@ -896,7 +936,7 @@ class MenuChatState extends State<MenuChat>
    TextEditingController _txtCtrl = TextEditingController();
 
    // A temporary variable used to store forwarded chat messages.
-   List<IdxPair> _longPressedChatMsgs = List<IdxPair>();
+   List<Coord> _longPressedChatMsgs = List<Coord>();
 
    IOWebSocketChannel channel;
 
@@ -1236,17 +1276,15 @@ class MenuChatState extends State<MenuChat>
       final int i = posts.indexWhere((e) { return e.id == postId;});
       final int j = posts[i].getChatHistIdx(peer);
 
-      if (!_longPressedChatMsgs.isEmpty) {
-         for (IdxPair o in _longPressedChatMsgs) {
-            assert(o.i == j);
-            posts[i].togleLongPressedChatMsg(o.i, o.j);
-         }
-
-         _longPressedChatMsgs.clear();
-         setState(() { });
+      for (Coord o in _longPressedChatMsgs) {
+         assert(o.peer == peer);
+         posts[i].toggleLPChatMsg(j, o.msgIdx);
       }
 
+      _longPressedChatMsgs.clear();
+
       await posts[i].chats[j].setPeerMsgStatus(3, postId);
+      setState(() { });
    }
 
    Future<void> _onSendFavChatMsg() async
@@ -1504,10 +1542,10 @@ class MenuChatState extends State<MenuChat>
 
       Coord coord = Coord(postId, '', -1);
       if (!_postsWithLongPressed.isEmpty) {
-         _onChatLongPressed(posts, i, j);
+         _onChatLP(posts, i, j);
       } else {
          coord.postId = posts[i].id;
-         coord.peerId = posts[i].chats[j].peer;
+         coord.peer = posts[i].chats[j].peer;
 
          final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
          final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
@@ -1554,10 +1592,10 @@ class MenuChatState extends State<MenuChat>
    {
       final Coord c = await _onChatPressed(_ownPosts, _postId, true, i, j);
       _postId = c.postId;
-      _ownPeer = c.peerId;
+      _ownPeer = c.peer;
    }
 
-   void _onChatLongPressed(List<PostData> posts, int i, int j)
+   void _onChatLP(List<PostData> posts, int i, int j)
    {
       // If a chat is long pressed and we have chat messages to
       // forward, we do not mark it long pressed, but only forward the
@@ -1569,8 +1607,14 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      final bool old = posts[i].togleLongPressedChats(j);
-      handleLongPressed(_postsWithLongPressed, i, j, old);
+      final Coord tmp =
+         Coord(posts[i].id, posts[i].chats[j].peer, -1);
+
+      handleLPChats(
+         _postsWithLongPressed,
+         toggleLPChat(posts[i].chats[j]),
+         tmp, CompPostIdAndPeer);
+
       setState(() { });
    }
 
@@ -1594,21 +1638,29 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void toggleLongPressedChatMsg(int i, int j, bool isTap, bool isFav)
+   void toggleLPChatMsgs(List<PostData> posts, int j, int k, bool isTap)
    {
       if (isTap && _longPressedChatMsgs.isEmpty)
          return;
 
-      if (isFav) {
-         final int k = _favPosts.indexWhere((e) { return e.id == _postId;});
-         final bool old = _favPosts[k].togleLongPressedChatMsg(i, j);
-         handleLongPressed(_longPressedChatMsgs, i, j, old);
-      } else {
-         final int k = _ownPosts.indexWhere((e) { return e.id == _postId;});
-         final bool old = _ownPosts[k].togleLongPressedChatMsg(i, j);
-         handleLongPressed(_longPressedChatMsgs, i, j, old);
-      }
+      final int i = posts.indexWhere((e) { return e.id == _postId;});
+      final Coord tmp = Coord(-1, posts[i].chats[j].peer, k);
 
+      handleLPChats(
+         _postsWithLongPressed,
+         posts[i].toggleLPChatMsg(j, k),
+         tmp, CompPeerAndChatIdx);
+   }
+
+   void toggleLongPressedFavChatMsg(int j, int k, bool isTap)
+   {
+      toggleLPChatMsgs(_favPosts, j, k, isTap);
+      setState((){});
+   }
+
+   void toggleLongPressedOwnChatMsg(int j, int k, bool isTap)
+   {
+      toggleLPChatMsgs(_ownPosts, j, k, isTap);
       setState((){});
    }
 
@@ -2088,18 +2140,16 @@ class MenuChatState extends State<MenuChat>
          return;
 
       if (isOnOwn()) {
-         for (IdxPair e in _postsWithLongPressed)
-            _ownPosts[e.i].togleLongPressedChats(e.j);
+         toggleLPChats(_ownPosts, _postsWithLongPressed);
       } else {
-         for (IdxPair e in _postsWithLongPressed)
-            _favPosts[e.i].togleLongPressedChats(e.j);
+         toggleLPChats(_favPosts, _postsWithLongPressed);
       }
 
       _postsWithLongPressed.clear();
       setState(() { });
    }
 
-   Future<void> _removeLongPressedChatEntries() async
+   Future<void> _removeLPChats() async
    {
       assert(isOnFav() || isOnOwn());
 
@@ -2107,26 +2157,14 @@ class MenuChatState extends State<MenuChat>
       if (_postsWithLongPressed.isEmpty)
          return;
 
-      // Now we have to observe carefully that the indexes contained
-      // in _postsWithLongPressed may come in any other the user
-      // selected the chats. So if we can removeLongPressedChats on
-      // say 2 and then with 3, it will be a bug since the order of
-      // the element will change. It may even cause a crash. Therefore
-      // we have move bigger indexes to the front.
-      _postsWithLongPressed.sort((IdxPair a, IdxPair b) {
-         return a.j < b.j ? 1 : -1;
-      });
-
       if (isOnOwn()) {
-         for (IdxPair e in _postsWithLongPressed)
-            _ownPosts[e.i].removeLongPressedChats(e.j);
+         await removeLPChats(_ownPosts, _postsWithLongPressed);
 
          // We do not remove the post from the list of own posts if it
          // became empty. Otherwise other chat messages directed to it
          // would be ignored.
       } else {
-         for (IdxPair e in _postsWithLongPressed)
-            _favPosts[e.i].removeLongPressedChats(e.j);
+         await removeLPChats(_favPosts, _postsWithLongPressed);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
 
@@ -2135,7 +2173,7 @@ class MenuChatState extends State<MenuChat>
             writeAsString(content, mode: FileMode.write);
       }
 
-      _postsWithLongPressed = List<IdxPair>();
+      _postsWithLongPressed.clear();
       setState(() { });
    }
 
@@ -2149,7 +2187,7 @@ class MenuChatState extends State<MenuChat>
                      child: cts.deleteChatOkText,
                      onPressed: () async
                      {
-                        await _removeLongPressedChatEntries();
+                        await _removeLPChats();
                         Navigator.of(ctx).pop();
                      });
 
@@ -2275,14 +2313,16 @@ class MenuChatState extends State<MenuChat>
             _txtCtrl,
             _onSendFavChatMsg,
             _chatScrollCtrl,
-            (int idx, bool isTap) {toggleLongPressedChatMsg(0, idx, isTap, true);},
+            (int idx, bool isTap)
+               {toggleLongPressedFavChatMsg(0, idx, isTap);},
             _longPressedChatMsgs.length);
       }
 
       if (isOnOwnChat()) {
          final int i = _ownPosts.indexWhere((e) { return e.id == _postId;});
 
-         // Same as above but for own posts.
+         // FIXME: We cannot capture this index below since if a
+         // message arrives the posts and chat histories are rotated.
          final int j = _ownPosts[i].getChatHistIdx(_ownPeer);
          assert(j != -1);
 
@@ -2293,7 +2333,8 @@ class MenuChatState extends State<MenuChat>
              _txtCtrl,
              _onSendOwnChatMsg,
              _chatScrollCtrl,
-             (int idx, bool isTap) {toggleLongPressedChatMsg(j, idx, isTap, false);},
+             (int idx, bool isTap)
+                {toggleLongPressedOwnChatMsg(j, idx, isTap);},
              _longPressedChatMsgs.length);
       }
 
@@ -2315,7 +2356,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _ownPosts,
          _onOwnChatPressed,
-         (int i, int j) {_onChatLongPressed(_ownPosts, i, j);},
+         (int i, int j) {_onChatLP(_ownPosts, i, j);},
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 
@@ -2331,7 +2372,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _favPosts,
          _onFavChatPressed,
-         (int i, int j) {_onChatLongPressed(_favPosts, i, j);},
+         (int i, int j) {_onChatLP(_favPosts, i, j);},
          _menus,
          (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
 

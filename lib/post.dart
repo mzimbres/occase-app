@@ -10,12 +10,6 @@ import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
-class IdxPair {
-   int i = 0;
-   int j = 0;
-   IdxPair(this.i, this.j);
-}
-
 void writeToFile( final String data
                 , final String fullPath
                 , final FileMode mode)
@@ -516,16 +510,7 @@ class PostData {
       }
    }
 
-   bool togleLongPressedChats(int i)
-   {
-      assert(!chats.isEmpty);
-      assert(i < chats.length);
-      final bool old = chats[i].isLongPressed;
-      chats[i].isLongPressed = !old;
-      return old;
-   }
-
-   bool togleLongPressedChatMsg(int i, int j)
+   bool toggleLPChatMsg(int i, int j)
    {
       final bool old = chats[i].msgs[j].isLongPressed;
       chats[i].msgs[j].isLongPressed = !old;
@@ -561,6 +546,14 @@ class PostData {
          'date': date,
       };
    }
+}
+
+bool toggleLPChat(ChatHistory ch)
+{
+   print('toggling ${ch.peer}');
+   final bool old = ch.isLongPressed;
+   ch.isLongPressed = !old;
+   return old;
 }
 
 int CompPostData(final PostData lhs, final PostData rhs)
