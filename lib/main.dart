@@ -59,6 +59,7 @@ void toggleLPChats(List<PostData> posts, List<Coord> coords)
       assert(i != -1);
       final int j = posts[i].getChatHistIdx(c.peer);
       assert(j != -1);
+      myprint(c, '');
       toggleLPChat(posts[i].chats[j]);
    }
 }
@@ -984,6 +985,11 @@ class MenuChatState extends State<MenuChat>
       return _tabCtrl.index == 0;
    }
 
+   bool _previousWasOwn()
+   {
+      return _tabCtrl.previousIndex == 0;
+   }
+
    bool isOnPosts()
    {
       return _tabCtrl.index == 1;
@@ -992,6 +998,11 @@ class MenuChatState extends State<MenuChat>
    bool _isOnFav()
    {
       return _tabCtrl.index == 2;
+   }
+
+   bool _previousWasFav()
+   {
+      return _tabCtrl.previousIndex == 2;
    }
 
    bool isOnFavChat()
@@ -1004,14 +1015,9 @@ class MenuChatState extends State<MenuChat>
       return _isOnOwn() && _postId != -1 && !_peer.isEmpty;
    }
 
-   bool previousWasFav()
+   bool hasSwitchedTab()
    {
-      return _tabCtrl.previousIndex == 2;
-   }
-
-   bool previousWasOwn()
-   {
-      return _tabCtrl.previousIndex == 2;
+      return _tabCtrl.indexIsChanging;
    }
 
    List<double> getNewMsgsOpacities()
@@ -1307,16 +1313,65 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
+   void _cleanUpLpOnSwitchTab()
+   {
+      if (_previousWasFav()) {
+         toggleLPChats(_favPosts, _lpChats);
+         _unmarkLPChatMsgsImpl(_favPosts);
+      } else if (_previousWasOwn()) {
+         toggleLPChats(_ownPosts, _lpChats);
+         _unmarkLPChatMsgsImpl(_ownPosts);
+      }
+
+      _lpChats.clear();
+      _lpChatMsgs.clear();
+   }
+
+   Future<void> _onFwdSendButton() async
+   {
+      print('_onFwdSendButton()');
+   }
+
+   // FIXME: Make this non-member.
+   void _unmarkLPChatMsgsImpl(List<PostData> posts)
+   {
+      if (_lpChatMsgs.isEmpty)
+         return;
+      
+      final int postId = _lpChatMsgs.first.postId;
+      final String peer = _lpChatMsgs.first.peer;
+
+      // WARNING: All items in _lpChatMsgs should have the same postId
+      // and peer, so I will use the first in the list.
+      final int i = posts.indexWhere((e) { return e.id == postId;});
+      if (i == -1) {
+         print('Cannot find1');
+         return;
+      }
+
+      final int j = posts[i].getChatHistIdx(peer);
+      if (j == -1) {
+         print('Cannot find2');
+         return;
+      }
+
+      for (Coord o in _lpChatMsgs)
+         toggleLPChatMsg(posts[i].chats[j].msgs[o.msgIdx]);
+   }
+
    Future<bool>
    _onPopChatImpl(List<PostData> posts) async
    {
+      // The following four lines of code are equal to
+      // _unmarkLPChatMsgsImpl. I cannot reuse them here though as I
+      // need the indexes futher below and I do not want to create a
+      // return value to return them.
+
       final int i = posts.indexWhere((e) { return e.id == _postId;});
       final int j = posts[i].getChatHistIdx(_peer);
 
-      for (Coord o in _lpChatMsgs) {
-         assert(o.peer == _peer);
+      for (Coord o in _lpChatMsgs)
          toggleLPChatMsg(posts[i].chats[j].msgs[o.msgIdx]);
-      }
 
       final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
@@ -1573,83 +1628,66 @@ class MenuChatState extends State<MenuChat>
          _showSimpleDial(ctx, (){}, 3);
    }
 
-   Future<Coord>
+   Future<void>
    _onChatPressedImpl(List<PostData> posts,
                       bool isSenderPost, int i, int j) async
    {
       // WARNING: When working with indexes, ensure you colect them
       // before any asynchronous functions is called.
 
-      assert(_lpChatMsgs.isEmpty);
-
-      Coord coord = Coord(_postId, '', -1);
-      if (!_lpChats.isEmpty) {
+      print('===> 1');
+      if (!_lpChats.isEmpty || !_lpChatMsgs.isEmpty) {
+      print('===> 2');
          _onChatLPImpl(posts, i, j);
-      } else {
-         coord.postId = posts[i].id;
-         coord.peer = posts[i].chats[j].peer;
+         setState(() { });
+         return;
+      }
+      
+      _postId = posts[i].id;
+      _peer = posts[i].chats[j].peer;
 
-         final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
-         final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
+      final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
+      final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
 
-         if (n != 0) {
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'from': _appId,
-               'to': posts[i].chats[j].peer,
-               'post_id': posts[i].id,
-               'is_sender_post': isSenderPost,
-            };
+      if (n != 0) {
+         var msgMap = {
+            'cmd': 'message',
+            'type': 'app_ack_read',
+            'from': _appId,
+            'to': posts[i].chats[j].peer,
+            'post_id': posts[i].id,
+            'is_sender_post': isSenderPost,
+         };
 
-            final String payload = jsonEncode(msgMap);
-            print('Sending ===> $payload');
-            await sendChatMsg(payload, 0);
-         }
-
-         setState(() {
-            SchedulerBinding.instance.addPostFrameCallback((_)
-            {
-               // It would be actually more correct to calculate
-               // jumpToIdx here, since we may receive other messages
-               // at the time this function is called. But this
-               // extremely unlikey, so I won't care.
-               print('====> Jumping to $jumpToIdx');
-               //_chatScrollCtrl.jumpTo(jumpToIdx);
-               _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
-            });
-         });
+         final String payload = jsonEncode(msgMap);
+         print('Sending ===> $payload');
+         await sendChatMsg(payload, 0);
       }
 
-      return coord;
+      setState(() {
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            // It would be actually more correct to calculate
+            // jumpToIdx here, since we may receive other messages
+            // at the time this function is called. But this
+            // extremely unlikey, so I won't care.
+            print('====> Jumping to $jumpToIdx');
+            //_chatScrollCtrl.jumpTo(jumpToIdx);
+            _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
+         });
+      });
    }
 
    Future<void> _onChatPressed(int i, int j) async
    {
-      Coord c;
-
       if (_isOnFav())
-         c = await _onChatPressedImpl(_favPosts, false, i, j);
+         await _onChatPressedImpl(_favPosts, false, i, j);
       else
-         c = await _onChatPressedImpl(_ownPosts, true, i, j);
-
-      // FIXME: Move this to the function _onChatPressedImpl
-      _postId = c.postId;
-      _peer = c.peer;
+         await _onChatPressedImpl(_ownPosts, true, i, j);
    }
 
    void _onChatLPImpl(List<PostData> posts, int i, int j)
    {
-      // If a chat is long pressed and we have chat messages to
-      // forward, we do not mark it long pressed, but only forward the
-      // long pressed messages.
-      if (!_lpChatMsgs.isEmpty) {
-         // Make sure we do not forward to the same chat the messages
-         // were long pressed.
-         setState(() { });
-         return;
-      }
-
       final Coord tmp =
          Coord(posts[i].id, posts[i].chats[j].peer, -1);
 
@@ -1657,8 +1695,6 @@ class MenuChatState extends State<MenuChat>
          _lpChats,
          toggleLPChat(posts[i].chats[j]),
          tmp, CompPostIdAndPeer);
-
-      setState(() { });
    }
 
    void _onChatLP(int i, int j)
@@ -1668,6 +1704,8 @@ class MenuChatState extends State<MenuChat>
       } else {
          _onChatLPImpl(_ownPosts, i, j);
       }
+
+      setState(() { });
    }
 
    Future<void> sendChatMsg(final String payload, int isChat) async
@@ -2171,7 +2209,7 @@ class MenuChatState extends State<MenuChat>
 
    bool _onChatsBackPressed()
    {
-      _unmarkLongPressedChats();
+      _unmarkLPChats();
 
       if (_postId != -1) {
          _postId = -1;
@@ -2179,6 +2217,7 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
+      setState(() { });
       return true;
    }
 
@@ -2192,11 +2231,8 @@ class MenuChatState extends State<MenuChat>
       return !_lpChatMsgs.isEmpty;
    }
 
-   void _unmarkLongPressedChats()
+   void _unmarkLPChats()
    {
-      if (_lpChats.isEmpty)
-         return;
-
       if (_isOnOwn()) {
          toggleLPChats(_ownPosts, _lpChats);
       } else {
@@ -2204,7 +2240,6 @@ class MenuChatState extends State<MenuChat>
       }
 
       _lpChats.clear();
-      setState(() { });
    }
 
    Future<void> _removeLPChats() async
@@ -2275,8 +2310,10 @@ class MenuChatState extends State<MenuChat>
 
    void _onBackFromChatMsgRedirect()
    {
-      print('_onBackFromChatMsgRedirect');
       assert(!_lpChatMsgs.isEmpty);
+
+      // Unmark any long pressed chats.
+      _unmarkLPChats();
 
       // All items int _lpChatMsgs should have the same post id and
       // peer so we can use the first.
@@ -2341,8 +2378,8 @@ class MenuChatState extends State<MenuChat>
       if (_nick.isEmpty)
          return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
-      if (isOnPosts() && (previousWasFav() || previousWasOwn()))
-         _unmarkLongPressedChats();
+      if (hasSwitchedTab())
+         _cleanUpLpOnSwitchTab();
 
       if (_newPostPressed)
          return
@@ -2375,7 +2412,7 @@ class MenuChatState extends State<MenuChat>
 
       if (isOnFavChat()) {
          final int i = _favPosts.indexWhere((e) { return e.id == _postId;});
-         final int j = _ownPosts[i].getChatHistIdx(_peer);
+         final int j = _favPosts[i].getChatHistIdx(_peer);
          assert(j == 0);
 
          return makeChatScreen(
@@ -2418,10 +2455,7 @@ class MenuChatState extends State<MenuChat>
             List<FloatingActionButton>(cts.tabNames.length);
 
       fltButtons[0] =
-         makeFaButton(
-            _onNewPost,
-            (){print('Will be implemented');},
-            !_lpChatMsgs.isEmpty);
+         makeFaButton(_onNewPost,_onFwdSendButton, !_lpChatMsgs.isEmpty);
 
       fltButtons[1] = makeFiltersFaButton(_onNewFilters, Icons.filter_list);
       fltButtons[2] = null;
@@ -2460,7 +2494,7 @@ class MenuChatState extends State<MenuChat>
                   onPressed: _onBackFromChatMsgRedirect);
          }
 
-         if (_hasLPChats()) {
+         if (_hasLPChats() && !_hasLPChatMsgs()) {
             actions = makeOnLongPressedActions(ctx, _deleteChatDialog);
          }
       }
