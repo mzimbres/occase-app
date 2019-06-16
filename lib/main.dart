@@ -468,64 +468,19 @@ int postIndexHelper(int i)
    return 1;
 }
 
-Widget
-makeChatScreen(BuildContext ctx,
-               Function onWillPopScope,
-               ChatHistory ch,
-               TextEditingController ctrl,
-               Function onChatSendPressed,
-               ScrollController scrollCtrl,
-               Function onChatMsgLongPressed,
-               int nLongPressed)
+ListView
+makeChatMsgListView(
+   BuildContext ctx,
+   ScrollController scrollCtrl,
+   ChatHistory ch,
+   onChatSendPressed,
+   onChatMsgLongPressed)
 {
-   IconButton sendButCol =
-      IconButton(
-         icon: Icon(Icons.send),
-         onPressed: onChatSendPressed,
-         color: Theme.of(ctx).primaryColor
-         );
-
-   TextField tf = TextField(
-       controller: ctrl,
-       //textInputAction: TextInputAction.go,
-       //onSubmitted: onTextFieldPressed,
-       keyboardType: TextInputType.multiline,
-       maxLines: null,
-       maxLength: null,
-       decoration:
-          InputDecoration.collapsed( hintText: cts.chatTextFieldHintStr));
-
-   Container cont = Container(
-       child: ConstrainedBox(
-           constraints: BoxConstraints(maxHeight: 100.0),
-           child: Row(children: <Widget>
-              [ Expanded( child: Column(children: <Widget>
-                  [ Expanded(child: Scrollbar(
-                     child: SingleChildScrollView(
-                         //padding: EdgeInsets.all(10.0),
-                         scrollDirection: Axis.vertical,
-                         reverse: true,
-                         child: Card(
-                            margin: EdgeInsets.all(0.0),
-                            color: Colors.white,
-                            child: Padding(
-                               padding: EdgeInsets.all(14.0),
-                               child: tf))))),
-                    
-                    ]))
-              , Column(children: <Widget>
-                    [ Spacer()
-                    , sendButCol])
-              ])),
-   );
-
-   //_____________
-
    final int nMsgs = ch.msgs.length;
    final int nUnreadMsgs = ch.getNumberOfUnreadMsgs();
    final int shift = nUnreadMsgs == 0 ? 0 : 1;
 
-   ListView list = ListView.builder(
+   return ListView.builder(
       controller: scrollCtrl,
       reverse: false,
       //padding: const EdgeInsets.all(6.0),
@@ -581,9 +536,6 @@ makeChatScreen(BuildContext ctx,
             msgAndStatus = Text(items[i].msg);
          }
 
-         print('${items[i].isLongPressed}');
-         //______________-
-
          final Radius rd = const Radius.circular(45.0);
          Container cont = Container(
              margin: const EdgeInsets.all(5.0),
@@ -631,6 +583,66 @@ makeChatScreen(BuildContext ctx,
             );
       },
    );
+}
+
+Widget
+makeChatScreen(BuildContext ctx,
+               Function onWillPopScope,
+               ChatHistory ch,
+               TextEditingController ctrl,
+               Function onChatSendPressed,
+               ScrollController scrollCtrl,
+               Function onChatMsgLongPressed,
+               int nLongPressed)
+{
+   IconButton sendButCol =
+      IconButton(
+         icon: Icon(Icons.send),
+         onPressed: onChatSendPressed,
+         color: Theme.of(ctx).primaryColor
+         );
+
+   TextField tf = TextField(
+       controller: ctrl,
+       //textInputAction: TextInputAction.go,
+       //onSubmitted: onTextFieldPressed,
+       keyboardType: TextInputType.multiline,
+       maxLines: null,
+       maxLength: null,
+       decoration:
+          InputDecoration.collapsed( hintText: cts.chatTextFieldHintStr));
+
+   Container cont = Container(
+       child: ConstrainedBox(
+           constraints: BoxConstraints(maxHeight: 100.0),
+           child: Row(children: <Widget>
+              [ Expanded( child: Column(children: <Widget>
+                  [ Expanded(child: Scrollbar(
+                     child: SingleChildScrollView(
+                         //padding: EdgeInsets.all(10.0),
+                         scrollDirection: Axis.vertical,
+                         reverse: true,
+                         child: Card(
+                            margin: EdgeInsets.all(0.0),
+                            color: Colors.white,
+                            child: Padding(
+                               padding: EdgeInsets.all(14.0),
+                               child: tf))))),
+                    
+                    ]))
+              , Column(children: <Widget>
+                    [ Spacer()
+                    , sendButCol])
+              ])),
+   );
+
+   ListView list = makeChatMsgListView(
+         ctx,
+         scrollCtrl,
+         ch,
+         onChatSendPressed,
+         onChatMsgLongPressed,
+         );
 
    Column mainCol = Column(
          children: <Widget>[
@@ -1269,7 +1281,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<bool>
-   _onPopChat(List<PostData> posts) async
+   _onPopChatImpl(List<PostData> posts) async
    {
       final int i = posts.indexWhere((e) { return e.id == _postId;});
       final int j = posts[i].getChatHistIdx(_peer);
@@ -1279,10 +1291,26 @@ class MenuChatState extends State<MenuChat>
          toggleLPChatMsg(posts[i].chats[j].msgs[o.msgIdx]);
       }
 
+      final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
 
-      await posts[i].chats[j].setPeerMsgStatus(3, _postId);
+      if (isEmpty) {
+         _postId = -1;
+         _peer = '';
+      } else {
+         await posts[i].chats[j].setPeerMsgStatus(3, _postId);
+      }
+   }
+
+   Future<bool> _onPopChat() async
+   {
+      if (isOnFav())
+         await _onPopChatImpl(_favPosts);
+      else
+         await _onPopChatImpl(_ownPosts);
+
       setState(() { });
+      return false;
    }
 
    Future<void> _onSendChatMsg() async
@@ -1291,24 +1319,6 @@ class MenuChatState extends State<MenuChat>
          await _onSendChatMsgImpl(_favPosts, false);
       else
          await _onSendChatMsgImpl(_ownPosts, true);
-   }
-
-   Future<bool> _onPopFavChat() async
-   {
-      await _onPopChat(_favPosts);
-      _postId = -1;
-      _peer = '';
-      setState(() { });
-      return false;
-   }
-
-   Future<bool> _onPopOwnChat() async
-   {
-      await _onPopChat(_ownPosts);
-      _postId = -1;
-      _peer = '';
-      setState(() { });
-      return false;
    }
 
    void _onBotBarTapped(int i)
@@ -1510,7 +1520,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onRemoveOwnPostButton()
+   void _onRemovePost()
    {
       print('Has no implementation yet.');
    }
@@ -1650,7 +1660,7 @@ class MenuChatState extends State<MenuChat>
       final Coord tmp = Coord(-1, post.chats[j].peer, k);
 
       handleLPChats(
-         _lpChats,
+         _lpChatMsgs,
          toggleLPChatMsg(post.chats[j].msgs[k]),
          tmp, CompPeerAndChatIdx);
    }
@@ -2186,7 +2196,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _deleteChatEntryDialog(BuildContext ctx)
+   void _deleteChatDialog(BuildContext ctx)
    {
       showDialog(
          context: ctx,
@@ -2318,7 +2328,7 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
             ctx,
-            _onPopFavChat,
+            _onPopChat,
             _favPosts[i].chats[j],
             _txtCtrl,
             _onSendChatMsg,
@@ -2334,7 +2344,7 @@ class MenuChatState extends State<MenuChat>
 
          return makeChatScreen(
              ctx,
-             _onPopOwnChat,
+             _onPopChat,
              _ownPosts[i].chats[j],
              _txtCtrl,
              _onSendChatMsg,
@@ -2363,7 +2373,7 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
+         (){_showSimpleDial(ctx, _onRemovePost, 4);});
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -2378,7 +2388,7 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (){_showSimpleDial(ctx, _onRemoveOwnPostButton, 4);});
+         (){_showSimpleDial(ctx, _onRemovePost, 4);});
 
       Widget appBarLeading = null;
       if (isOnFav() || isOnOwn()) {
@@ -2392,7 +2402,7 @@ class MenuChatState extends State<MenuChat>
 
       List<Widget> actions = List<Widget>();
       if ((isOnFav() || isOnOwn()) && hasLongPressedChat()) {
-         actions = makeOnLongPressedActions(ctx, _deleteChatEntryDialog);
+         actions = makeOnLongPressedActions(ctx, _deleteChatDialog);
       }
       
       actions.add(Icon(Icons.more_vert, color: Colors.white));
