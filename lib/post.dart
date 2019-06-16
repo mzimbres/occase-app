@@ -488,7 +488,7 @@ class PostData {
       return hist.getMostRecentTimestamp();
    }
 
-   Future<void> removeLongPressedChats(int idx) async
+   Future<void> removeLPChats(int idx) async
    {
       try {
          print('removeLPC($idx), length = ${chats.length}, id = $id');
@@ -508,13 +508,6 @@ class PostData {
          await persistPeers();
       } catch (e) {
       }
-   }
-
-   bool toggleLPChatMsg(int i, int j)
-   {
-      final bool old = chats[i].msgs[j].isLongPressed;
-      chats[i].msgs[j].isLongPressed = !old;
-      return old;
    }
 
    PostData.fromJson(Map<String, dynamic> map)
@@ -550,9 +543,15 @@ class PostData {
 
 bool toggleLPChat(ChatHistory ch)
 {
-   print('toggling ${ch.peer}');
    final bool old = ch.isLongPressed;
    ch.isLongPressed = !old;
+   return old;
+}
+
+bool toggleLPChatMsg(ChatItem ci)
+{
+   final bool old = ci.isLongPressed;
+   ci.isLongPressed = !old;
    return old;
 }
 
