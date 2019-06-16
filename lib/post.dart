@@ -903,14 +903,6 @@ makePostTabListView(BuildContext ctx,
              });
 }
 
-FloatingActionButton makeNewPostButton(Function onNewPost, IconData id)
-{
-   return FloatingActionButton(
-             backgroundColor: cts.postFrameColor,
-             child: Icon(id, color: Colors.white),
-             onPressed: onNewPost);
-}
-
 ListView createPostMenuListView(BuildContext context, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {

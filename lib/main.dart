@@ -460,6 +460,32 @@ makeBottomBarItems(List<IconData> icons,
              onTap: onBotBarTapped);
 }
 
+FloatingActionButton
+makeFiltersFaButton(Function onNewPost, IconData id)
+{
+   return FloatingActionButton(
+             backgroundColor: cts.postFrameColor,
+             child: Icon(id, color: Colors.white),
+             onPressed: onNewPost);
+}
+
+FloatingActionButton
+makeFaButton(Function onNewPost,
+             Function onFwdChatMsg,
+             bool isOnFwd)
+{
+   IconData id = cts.newPostIcon;
+   if (isOnFwd) {
+      onNewPost = onFwdChatMsg;
+      id = Icons.send;
+   }
+
+   return FloatingActionButton(
+             backgroundColor: cts.postFrameColor,
+             child: Icon(id, color: Colors.white),
+             onPressed: onNewPost);
+}
+
 int postIndexHelper(int i)
 {
    if (i == 0) return 1;
@@ -953,7 +979,7 @@ class MenuChatState extends State<MenuChat>
 
    static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
 
-   bool isOnOwn()
+   bool _isOnOwn()
    {
       return _tabCtrl.index == 0;
    }
@@ -963,19 +989,19 @@ class MenuChatState extends State<MenuChat>
       return _tabCtrl.index == 1;
    }
 
-   bool isOnFav()
+   bool _isOnFav()
    {
       return _tabCtrl.index == 2;
    }
 
    bool isOnFavChat()
    {
-      return isOnFav() && _postId != -1 && !_peer.isEmpty;
+      return _isOnFav() && _postId != -1 && !_peer.isEmpty;
    }
 
    bool isOnOwnChat()
    {
-      return isOnOwn() && _postId != -1 && !_peer.isEmpty;
+      return _isOnOwn() && _postId != -1 && !_peer.isEmpty;
    }
 
    bool previousWasFav()
@@ -996,7 +1022,7 @@ class MenuChatState extends State<MenuChat>
       double notOnFocusOp = 0.7;
 
       opacities[0] = notOnFocusOp;
-      if (isOnOwn())
+      if (_isOnOwn())
          opacities[0] = onFocusOp;
 
       opacities[1] = notOnFocusOp;
@@ -1004,7 +1030,7 @@ class MenuChatState extends State<MenuChat>
          opacities[1] = onFocusOp;
 
       opacities[2] = notOnFocusOp;
-      if (isOnFav())
+      if (_isOnFav())
          opacities[2] = onFocusOp;
 
       return opacities;
@@ -1305,7 +1331,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopChat() async
    {
-      if (isOnFav())
+      if (_isOnFav())
          await _onPopChatImpl(_favPosts);
       else
          await _onPopChatImpl(_ownPosts);
@@ -1316,7 +1342,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
-      if (isOnFav())
+      if (_isOnFav())
          await _onSendChatMsgImpl(_favPosts, false);
       else
          await _onSendChatMsgImpl(_ownPosts, true);
@@ -1602,11 +1628,12 @@ class MenuChatState extends State<MenuChat>
    {
       Coord c;
 
-      if (isOnFav())
+      if (_isOnFav())
          c = await _onChatPressedImpl(_favPosts, false, i, j);
       else
          c = await _onChatPressedImpl(_ownPosts, true, i, j);
 
+      // FIXME: Move this to the function _onChatPressedImpl
       _postId = c.postId;
       _peer = c.peer;
    }
@@ -1636,7 +1663,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatLP(int i, int j)
    {
-      if (isOnFav()) {
+      if (_isOnFav()) {
          _onChatLPImpl(_favPosts, i, j);
       } else {
          _onChatLPImpl(_ownPosts, i, j);
@@ -1679,7 +1706,7 @@ class MenuChatState extends State<MenuChat>
 
    void _toggleLPChatMsgs(int k, bool isTap)
    {
-      if (isOnFav()) {
+      if (_isOnFav()) {
          int i = _favPosts.indexWhere((e) { return e.id == _postId;});
          assert(i != -1);
          int j = _favPosts[i].getChatHistIdx(_peer);
@@ -2155,12 +2182,12 @@ class MenuChatState extends State<MenuChat>
       return true;
    }
 
-   bool hasLongPressedChat()
+   bool _hasLPChats()
    {
       return !_lpChats.isEmpty;
    }
 
-   bool hasLongPressedChatMsgs()
+   bool _hasLPChatMsgs()
    {
       return !_lpChatMsgs.isEmpty;
    }
@@ -2170,7 +2197,7 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      if (isOnOwn()) {
+      if (_isOnOwn()) {
          toggleLPChats(_ownPosts, _lpChats);
       } else {
          toggleLPChats(_favPosts, _lpChats);
@@ -2182,13 +2209,13 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _removeLPChats() async
    {
-      assert(isOnFav() || isOnOwn());
+      assert(_isOnFav() || _isOnOwn());
 
       // Optimization to avoid writing files.
       if (_lpChats.isEmpty)
          return;
 
-      if (isOnOwn()) {
+      if (_isOnOwn()) {
          await removeLPChats(_ownPosts, _lpChats);
 
          // We do not remove the post from the list of own posts if it
@@ -2234,7 +2261,7 @@ class MenuChatState extends State<MenuChat>
             actions[1] = ok;
 
             Text txt = cts.delOwnChatTitleText;
-            if (isOnFav()) {
+            if (_isOnFav()) {
                txt = cts.delFavChatTitleText;
             }
 
@@ -2389,8 +2416,14 @@ class MenuChatState extends State<MenuChat>
 
       List<FloatingActionButton> fltButtons =
             List<FloatingActionButton>(cts.tabNames.length);
-      fltButtons[0] = makeNewPostButton(_onNewPost, cts.newPostIcon);
-      fltButtons[1] = makeNewPostButton(_onNewFilters, Icons.filter_list);
+
+      fltButtons[0] =
+         makeFaButton(
+            _onNewPost,
+            (){print('Will be implemented');},
+            !_lpChatMsgs.isEmpty);
+
+      fltButtons[1] = makeFiltersFaButton(_onNewFilters, Icons.filter_list);
       fltButtons[2] = null;
 
       List<Widget> bodies = List<Widget>(cts.tabNames.length);
@@ -2417,21 +2450,21 @@ class MenuChatState extends State<MenuChat>
          _menus,
          (){_showSimpleDial(ctx, _onRemovePost, 4);});
 
+      List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
-      if (isOnFav() || isOnOwn()) {
-         if (hasLongPressedChatMsgs()) {
+      if (_isOnFav() || _isOnOwn()) {
+         if (_hasLPChatMsgs()) {
             appBarTitle = 'Redirecionando ...';
             appBarLeading = IconButton(
                icon: Icon(Icons.arrow_back , color: Colors.white),
                   onPressed: _onBackFromChatMsgRedirect);
          }
+
+         if (_hasLPChats()) {
+            actions = makeOnLongPressedActions(ctx, _deleteChatDialog);
+         }
       }
 
-      List<Widget> actions = List<Widget>();
-      if ((isOnFav() || isOnOwn()) && hasLongPressedChat()) {
-         actions = makeOnLongPressedActions(ctx, _deleteChatDialog);
-      }
-      
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
