@@ -866,7 +866,7 @@ makeTextInputFieldCard( TextEditingController ctrl
 }
 
 ListView
-makePostTabListView(BuildContext context,
+makePostTabListView(BuildContext ctx,
                     List<PostData> posts,
                     Function onPostSelection,
                     List<MenuItem> menus,
@@ -877,7 +877,7 @@ makePostTabListView(BuildContext context,
    return ListView.builder(
              padding: const EdgeInsets.all(0.0),
              itemCount: posts.length,
-             itemBuilder: (BuildContext context, int i)
+             itemBuilder: (BuildContext ctx, int i)
              {
                 updateLasSeenPostIdx(i);
 
@@ -886,18 +886,20 @@ makePostTabListView(BuildContext context,
                 //if (i > lastSeenPostIdx)
                 //   color = cts.newReceivedPostColor; 
 
-                List<Card> cards = postTextAssembler(
-                                      context,
-                                      posts[i],
-                                      menus,
-                                      color);
+                List<Card> cards =
+                   postTextAssembler(
+                      ctx,
+                      posts[i],
+                      menus,
+                      color);
    
                 return makePostWidget(
-                          context,
-                          cards,
-                          (int fav) {onPostSelection(posts[i], fav);},
-                          cts.favIcon,
-                          color);
+                    ctx,
+                    cards,
+                    (int fav) async
+                       {await onPostSelection(ctx, posts[i], fav);},
+                    cts.favIcon,
+                    color);
              });
 }
 

@@ -2368,8 +2368,7 @@ class MenuChatState extends State<MenuChat>
       bodies[1] = makePostTabListView(
          ctx,
          _posts,
-         (PostData data, int fav) async
-            {await _alertUserOnselectPost(ctx, data, fav);},
+         _alertUserOnselectPost,
          _menus,
          _updateLastSeenPostIdx);
 
