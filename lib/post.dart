@@ -1018,7 +1018,7 @@ Widget makePostChatCol(BuildContext context,
       if (n != 0) {
          Container cont = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
          trailing = Column(children: <Widget>
-            [Icon(Icons.clear), cont]);
+            [Icon(Icons.place), cont]);
       }
 
       ListTile lt =

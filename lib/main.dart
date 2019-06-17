@@ -419,10 +419,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-TabBar makeTabBar( List<int> counters
-                 , TabController tabCtrl
-                 , List<double> opacity)
+TabBar
+makeTabBar(List<int> counters,
+           TabController tabCtrl,
+           List<double> opacity,
+           bool isFwd)
 {
+   if (isFwd)
+      return null;
+
    List<Widget> tabs = List<Widget>(cts.tabNames.length);
 
    for (int i = 0; i < tabs.length; ++i) {
@@ -473,18 +478,28 @@ makeFiltersFaButton(Function onNewPost, IconData id)
 FloatingActionButton
 makeFaButton(Function onNewPost,
              Function onFwdChatMsg,
-             bool isOnFwd)
+             int lpChats,
+             int lpChatMsgs)
 {
+   print('$lpChats === $lpChatMsgs');
+   if (lpChats == 0 && lpChatMsgs != 0)
+      return null;
+
    IconData id = cts.newPostIcon;
-   if (isOnFwd) {
-      onNewPost = onFwdChatMsg;
-      id = Icons.send;
+   if (lpChats != 0 && lpChatMsgs != 0) {
+      return FloatingActionButton(
+         backgroundColor: cts.postFrameColor,
+         child: Icon(Icons.send, color: Colors.white),
+         onPressed: onFwdChatMsg);
    }
 
+   if (lpChats != 0)
+      return null;
+
    return FloatingActionButton(
-             backgroundColor: cts.postFrameColor,
-             child: Icon(id, color: Colors.white),
-             onPressed: onNewPost);
+      backgroundColor: cts.postFrameColor,
+      child: Icon(id, color: Colors.white),
+      onPressed: onNewPost);
 }
 
 int postIndexHelper(int i)
@@ -1329,7 +1344,35 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onFwdSendButton() async
    {
-      print('_onFwdSendButton()');
+      for (Coord chat in _lpChats) {
+         myprint(chat, '');
+         for (Coord msgs in _lpChatMsgs) {
+            if (_isOnFav()) {
+               await _onSendChatMsgImpl(_favPosts, chat.postId,
+                                        chat.peer, false, "aaaaaaaaa");
+            } else {
+               myprint(msgs, '   ');
+               await _onSendChatMsgImpl(_ownPosts, chat.postId,
+                                        chat.peer, true, "bbbbbbbbbb");
+            }
+         }
+      }
+
+      if (_isOnFav()) {
+         toggleLPChats(_favPosts, _lpChats);
+         _unmarkLPChatMsgsImpl(_favPosts);
+      } else {
+         toggleLPChats(_ownPosts, _lpChats);
+         _unmarkLPChatMsgsImpl(_ownPosts);
+      }
+
+      _postId = _lpChatMsgs.first.postId;
+      _peer = _lpChatMsgs.first.peer;
+
+      _lpChats.clear();
+      _lpChatMsgs.clear();
+
+      setState(() { });
    }
 
    // FIXME: Make this non-member.
@@ -1376,11 +1419,11 @@ class MenuChatState extends State<MenuChat>
       final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
 
+      await posts[i].chats[j].setPeerMsgStatus(3, _postId);
+
       if (isEmpty) {
          _postId = -1;
          _peer = '';
-      } else {
-         await posts[i].chats[j].setPeerMsgStatus(3, _postId);
       }
    }
 
@@ -1397,16 +1440,31 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
-      if (_isOnFav())
-         await _onSendChatMsgImpl(_favPosts, false);
-      else
-         await _onSendChatMsgImpl(_ownPosts, true);
+      if (_isOnFav()) {
+         await _onSendChatMsgImpl(_favPosts, _postId,
+                                 _peer, false, _txtCtrl.text);
+      } else {
+         await _onSendChatMsgImpl(_ownPosts, _postId,
+                                  _peer, true, _txtCtrl.text);
+      }
+
+      _txtCtrl.text = "";
+
+      setState(()
+      {
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            _chatScrollCtrl.animateTo(
+               _chatScrollCtrl.position.maxScrollExtent,
+               duration: const Duration(milliseconds: 300),
+               curve: Curves.easeOut);
+         });
+      });
    }
 
    void _onFwdChatMsg()
    {
       assert(!_lpChatMsgs.isEmpty);
-      print('I am fwd a chat msg.');
 
       _postId = -1;
       _peer = '';
@@ -1635,9 +1693,7 @@ class MenuChatState extends State<MenuChat>
       // WARNING: When working with indexes, ensure you colect them
       // before any asynchronous functions is called.
 
-      print('===> 1');
       if (!_lpChats.isEmpty || !_lpChatMsgs.isEmpty) {
-      print('===> 2');
          _onChatLPImpl(posts, i, j);
          setState(() { });
          return;
@@ -1710,6 +1766,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> sendChatMsg(final String payload, int isChat) async
    {
+      print(payload);
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
       _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, payload));
 
@@ -1762,19 +1819,23 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-   _onSendChatMsgImpl(List<PostData> posts, bool isSenderPost) async
+   _onSendChatMsgImpl(List<PostData> posts,
+                      int postId,
+                      String peer,
+                      bool isSenderPost,
+                      String msg) async
    {
       try {
-         if (_txtCtrl.text.isEmpty)
+         if (msg.isEmpty)
             return;
 
          // We have to make sure every unread msg is marked as read
          // before we receive any reply.
-         final int i = posts.indexWhere((e) { return e.id == _postId;});
-         final int j = posts[i].getChatHistIdx(_peer);
+         final int i = posts.indexWhere((e) { return e.id == postId;});
+         final int j = posts[i].getChatHistIdx(peer);
 
-         await posts[i].chats[j].setPeerMsgStatus(3, _postId);
-         await posts[i].chats[j].addMsg(_txtCtrl.text, true, _postId, 0);
+         await posts[i].chats[j].setPeerMsgStatus(3, postId);
+         await posts[i].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
          rotateElements(posts[i].chats, j);
          await posts[i].persistPeers();
          rotateElements(posts, i);
@@ -1782,28 +1843,15 @@ class MenuChatState extends State<MenuChat>
          var msgMap = {
             'cmd': 'message',
             'type': 'chat',
-            'to': _peer,
-            'msg': _txtCtrl.text,
-            'post_id': _postId,
+            'to': peer,
+            'msg': msg,
+            'post_id': postId,
             'is_sender_post': isSenderPost,
             'nick': _nick
          };
 
-         _txtCtrl.text = "";
          await sendChatMsg(jsonEncode(msgMap), 1);
 
-         setState(()
-         {
-            // Needed to automatically scroll the chat to the last
-            // message on the list.
-            SchedulerBinding.instance.addPostFrameCallback((_)
-            {
-               _chatScrollCtrl.animateTo(
-                  _chatScrollCtrl.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut);
-            });
-         });
       } catch(e) {
       }
    }
@@ -2455,7 +2503,11 @@ class MenuChatState extends State<MenuChat>
             List<FloatingActionButton>(cts.tabNames.length);
 
       fltButtons[0] =
-         makeFaButton(_onNewPost,_onFwdSendButton, !_lpChatMsgs.isEmpty);
+         makeFaButton(
+            _onNewPost,
+            _onFwdSendButton,
+            _lpChats.length,
+            _lpChatMsgs.length);
 
       fltButtons[1] = makeFiltersFaButton(_onNewFilters, Icons.filter_list);
       fltButtons[2] = null;
@@ -2520,9 +2572,10 @@ class MenuChatState extends State<MenuChat>
                        pinned: true,
                        floating: true,
                        forceElevated: innerBoxIsScrolled,
-                       bottom: makeTabBar( newMsgsCounters
-                                         , _tabCtrl
-                                         , opacities),
+                       bottom: makeTabBar(newMsgsCounters,
+                                         _tabCtrl,
+                                         opacities,
+                                         _hasLPChatMsgs()),
                        actions: actions,
                        leading: appBarLeading
                      ),
