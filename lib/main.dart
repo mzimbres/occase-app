@@ -20,34 +20,32 @@ import 'package:menu_chat/globals.dart' as glob;
 
 class Coord {
    PostData post = null;
-   String peer = '';
+   ChatHistory chat = null;
    int msgIdx = -1;
-   Coord(this.post, this.peer, this.msgIdx);
+   Coord(this.post, this.chat, this.msgIdx);
 }
 
 void myprint(Coord c, String prefix)
 {
-   print('$prefix ===> (${c.post.id}, ${c.peer}, ${c.msgIdx})');
+   print('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
 }
 
 bool CompPostIdAndPeer(Coord a, Coord b)
 {
-   return a.post.id == b.post.id && a.peer == b.peer;
+   return a.post.id == b.post.id && a.chat.peer == b.chat.peer;
 }
 
 bool CompPeerAndChatIdx(Coord a, Coord b)
 {
-   return a.peer == b.peer && a.msgIdx == b.msgIdx;
+   return a.chat.peer == b.chat.peer && a.msgIdx == b.msgIdx;
 }
 
 void
 handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
 {
    if (old) {
-      myprint(coord, 'Removing');
       pairs.removeWhere((e) {return comp(e, coord);});
    } else {
-      myprint(coord, 'Adding');
       pairs.add(coord);
    }
 }
@@ -55,17 +53,15 @@ handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
 void toggleLPChats(List<PostData> posts, List<Coord> coords)
 {
    for (Coord c in coords) {
-      final int j = c.post.getChatHistIdx(c.peer);
-      assert(j != -1);
       myprint(c, '');
-      toggleLPChat(c.post.chats[j]);
+      toggleLPChat(c.chat);
    }
 }
 
 Future<void> removeLPChats(List<PostData> posts, List<Coord> coords) async
 {
    for (Coord c in coords) {
-      final int j = c.post.getChatHistIdx(c.peer);
+      final int j = c.post.getChatHistIdx(c.chat.peer);
       assert(j != -1);
       await c.post.removeLPChats(j);
    }
@@ -937,9 +933,8 @@ class MenuChatState extends State<MenuChat>
    // menu, 1 for the models menu etc.
    int _botBarIdx = 0;
 
-   // This string will be set to the name of user interested on our
-   // post.
-   String _peer = '';
+   // The current chat, if any.
+   ChatHistory _chat = null;
 
    // The last post id we have received. It will be persisted on every
    // post received and will be read when the app starts. It used by
@@ -1015,12 +1010,12 @@ class MenuChatState extends State<MenuChat>
 
    bool isOnFavChat()
    {
-      return _isOnFav() && _post != null && !_peer.isEmpty;
+      return _isOnFav() && _post != null && _chat != null;
    }
 
    bool isOnOwnChat()
    {
-      return _isOnOwn() && _post != null && !_peer.isEmpty;
+      return _isOnOwn() && _post != null && _chat != null;
    }
 
    bool hasSwitchedTab()
@@ -1342,12 +1337,12 @@ class MenuChatState extends State<MenuChat>
          myprint(chat, '');
          for (Coord msgs in _lpChatMsgs) {
             if (_isOnFav()) {
-               await _onSendChatMsgImpl(_favPosts, chat.post,
-                                        chat.peer, false, "aaaaaaaaa");
+               await _onSendChatMsgImpl(_favPosts, chat.post.id,
+                                        chat.chat.peer, false, "aaaaaaaaa");
             } else {
                myprint(msgs, '   ');
-               await _onSendChatMsgImpl(_ownPosts, chat.post,
-                                        chat.peer, true, "bbbbbbbbbb");
+               await _onSendChatMsgImpl(_ownPosts, chat.post.id,
+                                        chat.chat.peer, true, "bbbbbbbbbb");
             }
          }
       }
@@ -1361,7 +1356,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       _post = _lpChatMsgs.first.post;
-      _peer = _lpChatMsgs.first.peer;
+      _chat = _lpChatMsgs.first.chat;
 
       _lpChats.clear();
       _lpChatMsgs.clear();
@@ -1375,51 +1370,24 @@ class MenuChatState extends State<MenuChat>
       if (_lpChatMsgs.isEmpty)
          return;
       
-      final String peer = _lpChatMsgs.first.peer;
-
-      // WARNING: All items in _lpChatMsgs should have the same id
-      // and peer, so I will use the first in the list.
-
-      final int j = _lpChatMsgs.first.post.getChatHistIdx(peer);
-      if (j == -1) {
-         print('Cannot find2');
-         return;
-      }
-
       for (Coord o in _lpChatMsgs)
-         toggleLPChatMsg(o.post.chats[j].msgs[o.msgIdx]);
-   }
-
-   Future<bool>
-   _onPopChatImpl(List<PostData> posts) async
-   {
-      // The following four lines of code are equal to
-      // _unmarkLPChatMsgsImpl. I cannot reuse them here though as I
-      // need the indexes futher below and I do not want to create a
-      // return value to return them.
-
-      final int j = _post.getChatHistIdx(_peer);
-
-      for (Coord o in _lpChatMsgs)
-         toggleLPChatMsg(_post.chats[j].msgs[o.msgIdx]);
-
-      final bool isEmpty = _lpChatMsgs.isEmpty;
-      _lpChatMsgs.clear();
-
-      await _post.chats[j].setPeerMsgStatus(3, _post.id);
-
-      if (isEmpty) {
-         _post = null;
-         _peer = '';
-      }
+         toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
    }
 
    Future<bool> _onPopChat() async
    {
-      if (_isOnFav())
-         await _onPopChatImpl(_favPosts);
-      else
-         await _onPopChatImpl(_ownPosts);
+      for (Coord o in _lpChatMsgs)
+         toggleLPChatMsg(_chat.msgs[o.msgIdx]);
+
+      final bool isEmpty = _lpChatMsgs.isEmpty;
+      _lpChatMsgs.clear();
+
+      await _chat.setPeerMsgStatus(3, _post.id);
+
+      if (isEmpty) {
+         _post = null;
+         _chat = null;
+      }
 
       setState(() { });
       return false;
@@ -1428,11 +1396,11 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onSendChatMsg() async
    {
       if (_isOnFav()) {
-         await _onSendChatMsgImpl(_favPosts, _post,
-                                 _peer, false, _txtCtrl.text);
+         await _onSendChatMsgImpl(_favPosts, _post.id,
+                                 _chat.peer, false, _txtCtrl.text);
       } else {
-         await _onSendChatMsgImpl(_ownPosts, _post,
-                                  _peer, true, _txtCtrl.text);
+         await _onSendChatMsgImpl(_ownPosts, _post.id,
+                                  _chat.peer, true, _txtCtrl.text);
       }
 
       _txtCtrl.text = "";
@@ -1454,7 +1422,7 @@ class MenuChatState extends State<MenuChat>
       assert(!_lpChatMsgs.isEmpty);
 
       _post = null;
-      _peer = '';
+      _chat = null;
 
       setState(() { });
    }
@@ -1680,7 +1648,7 @@ class MenuChatState extends State<MenuChat>
       }
       
       _post = posts[i];
-      _peer = posts[i].chats[j].peer;
+      _chat = posts[i].chats[j];
 
       final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
       final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
@@ -1724,7 +1692,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatLPImpl(List<PostData> posts, int i, int j)
    {
-      final Coord tmp = Coord(posts[i], posts[i].chats[j].peer, -1);
+      final Coord tmp = Coord(posts[i], posts[i].chats[j], -1);
 
       handleLPChats(
          _lpChats,
@@ -1764,39 +1732,26 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void
-   toggleLPChatMsgsImpl(PostData post, int j, int k, bool isTap)
-   {
-      if (isTap && _lpChatMsgs.isEmpty)
-         return;
-
-      final Coord tmp = Coord(post, post.chats[j].peer, k);
-
-      handleLPChats(
-         _lpChatMsgs,
-         toggleLPChatMsg(post.chats[j].msgs[k]),
-         tmp, CompPeerAndChatIdx);
-   }
-
    void _toggleLPChatMsgs(int k, bool isTap)
    {
       assert(_post != null);
-      if (_isOnFav()) {
-         int j = _post.getChatHistIdx(_peer);
-         assert(j != -1);
-         toggleLPChatMsgsImpl(_post, j, k, isTap);
-      } else {
-         int j = _post.getChatHistIdx(_peer);
-         assert(j != -1);
-         toggleLPChatMsgsImpl(_post, j, k, isTap);
-      }
+      assert(_chat != null);
+
+      if (isTap && _lpChatMsgs.isEmpty)
+         return;
+
+      final Coord tmp = Coord(_post, _chat, k);
+
+      handleLPChats(_lpChatMsgs,
+                    toggleLPChatMsg(_chat.msgs[k]),
+                    tmp, CompPeerAndChatIdx);
 
       setState((){});
    }
 
    Future<void>
    _onSendChatMsgImpl(List<PostData> posts,
-                      PostData post,
+                      int postId,
                       String peer,
                       bool isSenderPost,
                       String msg) async
@@ -1805,15 +1760,15 @@ class MenuChatState extends State<MenuChat>
          if (msg.isEmpty)
             return;
 
-         final int i = posts.indexWhere((e) { return e.id == post.id;});
+         final int i = posts.indexWhere((e) { return e.id == postId;});
          // We have to make sure every unread msg is marked as read
          // before we receive any reply.
-         final int j = post.getChatHistIdx(peer);
+         final int j = posts[i].getChatHistIdx(peer);
 
-         await post.chats[j].setPeerMsgStatus(3, post.id);
-         await post.chats[j].addMsg(msg, true, post.id, 0);
-         rotateElements(post.chats, j);
-         await post.persistPeers();
+         await posts[i].chats[j].setPeerMsgStatus(3, posts[i].id);
+         await posts[i].chats[j].addMsg(msg, true, posts[i].id, 0);
+         rotateElements(posts[i].chats, j);
+         await posts[i].persistPeers();
          rotateElements(posts, i);
 
          var msgMap = {
@@ -1821,7 +1776,7 @@ class MenuChatState extends State<MenuChat>
             'type': 'chat',
             'to': peer,
             'msg': msg,
-            'post_id': post.id,
+            'post_id': posts[i].id,
             'is_sender_post': isSenderPost,
             'nick': _nick
          };
@@ -2342,7 +2297,7 @@ class MenuChatState extends State<MenuChat>
       // All items int _lpChatMsgs should have the same post id and
       // peer so we can use the first.
       _post = _lpChatMsgs.first.post;
-      _peer = _lpChatMsgs.first.peer;
+      _chat = _lpChatMsgs.first.chat;
 
       setState(() { });
    }
@@ -2436,14 +2391,10 @@ class MenuChatState extends State<MenuChat>
                _botBarIdx);
 
       if (isOnFavChat() || isOnOwnChat()) {
-         final int j = _post.getChatHistIdx(_peer);
-         assert(_post != null);
-         assert(j != -1);
-
          return makeChatScreen(
             ctx,
             _onPopChat,
-            _post.chats[j],
+            _chat,
             _txtCtrl,
             _onSendChatMsg,
             _chatScrollCtrl,
