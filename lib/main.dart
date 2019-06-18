@@ -892,7 +892,7 @@ class MenuChatState extends State<MenuChat>
    List<MenuItem> _menus = List<MenuItem>();
 
    // The temporary variable used to store the post the user sends.
-   PostData _postInput = PostData();
+   PostData _post = null;
 
    // The list of posts received from the server. Our own posts that the
    // server echoes back to us (if we are subscribed to the channel)
@@ -1286,6 +1286,7 @@ class MenuChatState extends State<MenuChat>
    void _onNewPost()
    {
       _newPostPressed = true;
+      _post = PostData();
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
       _botBarIdx = 0;
@@ -1520,7 +1521,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onPostLeafReached()
    {
-      _postInput.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
+      _post.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
       _menus[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
@@ -1648,41 +1649,34 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _onSendNewPostPressedImpl(final int i) async
-   {
-      _newPostPressed = false;
-
-      if (i == 0) {
-         _postInput = PostData();
-         _postInput.from = _appId;
-         _postInput.nick = _nick;
-         setState(() { });
-         return;
-      }
-
-      _botBarIdx = 0;
-      _postInput.description = _txtCtrl.text;
-      _txtCtrl.text = '';
-
-      _postInput.from = _appId;
-      _postInput.nick = _nick;
-      await sendPost(_postInput.clone());
-      _postInput = PostData();
-      setState(() { });
-   }
-
    void _onRemovePost()
    {
       print('Has no implementation yet.');
    }
 
    Future<void>
-   _onSendNewPostPressed(BuildContext ctx, final int add) async
+   _onSendNewPostPressed(BuildContext ctx, final int i) async
    {
-      await _onSendNewPostPressedImpl(add);
+      _newPostPressed = false;
+
+      if (i == 0) {
+         _post = null;
+         setState(() { });
+         return;
+      }
+
+      _botBarIdx = 0;
+      _post.description = _txtCtrl.text;
+      _txtCtrl.text = '';
+
+      _post.from = _appId;
+      _post.nick = _nick;
+      await sendPost(_post.clone());
+      _post = null;
+      setState(() { });
 
       // If the user cancels the operation we do not show the dialog.
-      if (add == 1)
+      if (i == 1)
          _showSimpleDial(ctx, (){}, 3);
    }
 
@@ -1835,7 +1829,7 @@ class MenuChatState extends State<MenuChat>
          final int j = posts[i].getChatHistIdx(peer);
 
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
-         await posts[i].chats[j].addMsg(_txtCtrl.text, true, postId, 0);
+         await posts[i].chats[j].addMsg(msg, true, postId, 0);
          rotateElements(posts[i].chats, j);
          await posts[i].persistPeers();
          rotateElements(posts, i);
@@ -2395,7 +2389,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      _postInput.filter ^= 1 << i;
+      _post.filter ^= 1 << i;
       setState(() { });
    }
 
@@ -2429,11 +2423,11 @@ class MenuChatState extends State<MenuChat>
       if (hasSwitchedTab())
          _cleanUpLpOnSwitchTab();
 
-      if (_newPostPressed)
+      if (_newPostPressed) {
          return
             makeNewPostScreens(
                ctx,
-               _postInput,
+               _post,
                _menus,
                _txtCtrl,
                _onSendNewPostPressed,
@@ -2443,6 +2437,7 @@ class MenuChatState extends State<MenuChat>
                _onPostNodePressed,
                _onWillPopMenu,
                _onNewPostBotBarTapped);
+      }
 
       if (_newFiltersPressed)
          return
