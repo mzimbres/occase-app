@@ -50,7 +50,7 @@ handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
    }
 }
 
-void toggleLPChats(List<PostData> posts, List<Coord> coords)
+void toggleLPChats(List<Coord> coords)
 {
    for (Coord c in coords) {
       myprint(c, '');
@@ -58,13 +58,19 @@ void toggleLPChats(List<PostData> posts, List<Coord> coords)
    }
 }
 
-Future<void> removeLPChats(List<PostData> posts, List<Coord> coords) async
+Future<void> removeLPChats(List<Coord> coords) async
 {
    for (Coord c in coords) {
       final int j = c.post.getChatHistIdx(c.chat.peer);
       assert(j != -1);
       await c.post.removeLPChats(j);
    }
+}
+
+void unmarkLPChatMsgsImpl(List<Coord> lpChatMsgs)
+{
+   for (Coord o in lpChatMsgs)
+      toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
 }
 
 Future<Null> main() async
@@ -1319,13 +1325,8 @@ class MenuChatState extends State<MenuChat>
 
    void _cleanUpLpOnSwitchTab()
    {
-      if (_previousWasFav()) {
-         toggleLPChats(_favPosts, _lpChats);
-         _unmarkLPChatMsgsImpl(_favPosts);
-      } else if (_previousWasOwn()) {
-         toggleLPChats(_ownPosts, _lpChats);
-         _unmarkLPChatMsgsImpl(_ownPosts);
-      }
+      toggleLPChats(_lpChats);
+      unmarkLPChatMsgsImpl(_lpChatMsgs);
 
       _lpChats.clear();
       _lpChatMsgs.clear();
@@ -1333,27 +1334,24 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onFwdSendButton() async
    {
-      for (Coord chat in _lpChats) {
-         myprint(chat, '');
-         for (Coord msgs in _lpChatMsgs) {
+      for (Coord c1 in _lpChats) {
+         myprint(c1, '');
+         for (Coord c2 in _lpChatMsgs) {
             if (_isOnFav()) {
-               await _onSendChatMsgImpl(_favPosts, chat.post.id,
-                                        chat.chat.peer, false, "aaaaaaaaa");
+               await _onSendChatMsgImpl(
+                  _favPosts, c1.post.id, c1.chat.peer,
+                   false, c2.chat.msgs[c2.msgIdx].msg);
             } else {
-               myprint(msgs, '   ');
-               await _onSendChatMsgImpl(_ownPosts, chat.post.id,
-                                        chat.chat.peer, true, "bbbbbbbbbb");
+               myprint(c2, '   ');
+               await _onSendChatMsgImpl(
+                  _ownPosts, c1.post.id, c1.chat.peer,
+                  true, c2.chat.msgs[c2.msgIdx].msg);
             }
          }
       }
 
-      if (_isOnFav()) {
-         toggleLPChats(_favPosts, _lpChats);
-         _unmarkLPChatMsgsImpl(_favPosts);
-      } else {
-         toggleLPChats(_ownPosts, _lpChats);
-         _unmarkLPChatMsgsImpl(_ownPosts);
-      }
+      toggleLPChats(_lpChats);
+      unmarkLPChatMsgsImpl(_lpChatMsgs);
 
       _post = _lpChatMsgs.first.post;
       _chat = _lpChatMsgs.first.chat;
@@ -1362,16 +1360,6 @@ class MenuChatState extends State<MenuChat>
       _lpChatMsgs.clear();
 
       setState(() { });
-   }
-
-   // FIXME: Make this non-member.
-   void _unmarkLPChatMsgsImpl(List<PostData> posts)
-   {
-      if (_lpChatMsgs.isEmpty)
-         return;
-      
-      for (Coord o in _lpChatMsgs)
-         toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
    }
 
    Future<bool> _onPopChat() async
@@ -1395,6 +1383,8 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
+      print('2 ====> ${_post.id} and ${_chat.peer}');
+
       if (_isOnFav()) {
          await _onSendChatMsgImpl(_favPosts, _post.id,
                                  _chat.peer, false, _txtCtrl.text);
@@ -1649,6 +1639,7 @@ class MenuChatState extends State<MenuChat>
       
       _post = posts[i];
       _chat = posts[i].chats[j];
+      print('1 ====> ${_post.id} and ${_chat.peer}');
 
       final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
       final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
@@ -1664,7 +1655,7 @@ class MenuChatState extends State<MenuChat>
          };
 
          final String payload = jsonEncode(msgMap);
-         print('Sending ===> $payload');
+         //print('Sending ===> $payload');
          await sendChatMsg(payload, 0);
       }
 
@@ -1760,13 +1751,18 @@ class MenuChatState extends State<MenuChat>
          if (msg.isEmpty)
             return;
 
+         print('3 ====> ${postId} and ${peer}');
+
          final int i = posts.indexWhere((e) { return e.id == postId;});
+         assert(i != -1);
+
          // We have to make sure every unread msg is marked as read
          // before we receive any reply.
          final int j = posts[i].getChatHistIdx(peer);
+         assert(j != -1);
 
-         await posts[i].chats[j].setPeerMsgStatus(3, posts[i].id);
-         await posts[i].chats[j].addMsg(msg, true, posts[i].id, 0);
+         await posts[i].chats[j].setPeerMsgStatus(3, postId);
+         await posts[i].chats[j].addMsg(msg, true, postId, 0);
          rotateElements(posts[i].chats, j);
          await posts[i].persistPeers();
          rotateElements(posts, i);
@@ -1776,7 +1772,7 @@ class MenuChatState extends State<MenuChat>
             'type': 'chat',
             'to': peer,
             'msg': msg,
-            'post_id': posts[i].id,
+            'post_id': postId,
             'is_sender_post': isSenderPost,
             'nick': _nick
          };
@@ -2212,12 +2208,7 @@ class MenuChatState extends State<MenuChat>
 
    void _unmarkLPChats()
    {
-      if (_isOnOwn()) {
-         toggleLPChats(_ownPosts, _lpChats);
-      } else {
-         toggleLPChats(_favPosts, _lpChats);
-      }
-
+      toggleLPChats(_lpChats);
       _lpChats.clear();
    }
 
@@ -2229,15 +2220,9 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      if (_isOnOwn()) {
-         await removeLPChats(_ownPosts, _lpChats);
+      await removeLPChats(_lpChats);
 
-         // We do not remove the post from the list of own posts if it
-         // became empty. Otherwise other chat messages directed to it
-         // would be ignored.
-      } else {
-         await removeLPChats(_favPosts, _lpChats);
-
+      if (_isOnFav()) {
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
 
          final String content = serializeList(_favPosts);
