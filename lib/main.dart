@@ -2299,8 +2299,14 @@ class MenuChatState extends State<MenuChat>
 
    void _updateLastSeenPostIdx(int i)
    {
-      if (i > _lastSeenPostIdx)
+      if (i > _lastSeenPostIdx) {
          _lastSeenPostIdx = i;
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            setState(() { });
+         });
+      }
+
    }
 
    void _onNewPostDetail(int i)
