@@ -109,19 +109,6 @@ Future<List<PostData>> decodePostsStr(final List<String> lines) async
    return foo;
 }
 
-List<bool> parseBoolsFromLines(final List<String> lines)
-{
-   List<bool> ret = List<bool>();
-   for (String s in lines) {
-      if (s == 'true')
-         ret.add(true);
-      else
-         ret.add(false);
-   }
-
-   return ret;
-}
-
 String makePostPayload(final PostData post)
 {
    var pubMap = {
@@ -872,6 +859,8 @@ class Config {
    String nick = '';
    int lastPostId = 0;
    int lastSeenPostId = 0;
+   String showDialogOnSelectPost = 'yes';
+   String showDialogOnDelPost = 'yes';
 
    Config();
 }
@@ -884,6 +873,8 @@ Map<String, dynamic> configToMap(Config cfg)
       'nick': cfg.nick,
       'last_post_id': cfg.lastPostId,
       'last_seen_post_id': cfg.lastSeenPostId,
+      'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
+      'show_dialog_on_del_post': cfg.showDialogOnDelPost,
     };
 }
 
@@ -900,6 +891,8 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
      cfg.nick = maps[i]['nick'];
      cfg.lastPostId = maps[i]['last_post_id'];
      cfg.lastSeenPostId = maps[i]['last_seen_post_id'];
+     cfg.showDialogOnSelectPost = maps[i]['show_dialog_on_select_post'];
+     cfg.showDialogOnDelPost = maps[i]['show_dialog_on_del_post'];
 
      return cfg;
   });
@@ -991,7 +984,6 @@ class MenuChatState extends State<MenuChat>
    String _menuFileFullPath = '';
    String _outPostsFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
-   String _dialogPrefsFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -1079,7 +1071,6 @@ class MenuChatState extends State<MenuChat>
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
-      _dialogPrefsFullPath     = '${glob.docDir}/${cts.dialogPrefsFullPath}';
    }
 
    MenuChatState()
@@ -1087,9 +1078,6 @@ class MenuChatState extends State<MenuChat>
       _newPostPressed = false;
       _newFiltersPressed = false;
       _botBarIdx = 0;
-
-      _dialogPrefs[0] = true;
-      _dialogPrefs[1] = true;
 
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
@@ -1168,18 +1156,6 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
       }
 
-      try {
-         lines = await File(_dialogPrefsFullPath).readAsLines();
-         final List<bool> dialogPrefs = parseBoolsFromLines(lines);
-         if (!dialogPrefs.isEmpty) {
-            _dialogPrefs = dialogPrefs;
-            assert(_dialogPrefs.length == 2);
-            // To avoid problems it may be a good idea to set the file
-            // empty and let the user choose the options again.
-         }
-      } catch (e) {
-      }
-
       channel = IOWebSocketChannel.connect(cts.host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
@@ -1189,15 +1165,15 @@ class MenuChatState extends State<MenuChat>
          // TODO: The _posts array is expected to be sorted on its
          // ids, so we could perform a binary search here instead.
          final int i = _posts.indexWhere((e)
-         {
-            return e.id == cfg.lastSeenPostId;
-         });
+            { return e.id == cfg.lastSeenPostId; });
 
          if (i != -1) {
             _lastSeenPostIdx = i + 1;
             print('_lastSeenPostIdx ===> $_lastSeenPostIdx');
          }
 
+         _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
+         _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
       } catch (e) {
          print(e);
       }
@@ -1243,16 +1219,16 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl.addListener(_tabCtrlChangeHandler);
    }
 
-   Future<void> _setDialogPref(final int idx, bool v) async
+   Future<void> _setDialogPref(final int i, bool v) async
    {
-      _dialogPrefs[idx] = v;
+      _dialogPrefs[i] = v;
 
-      // At the moment there are only two options so I will not loop.
-      String data = '';
-      data += '${_dialogPrefs[0]}\n';
-      data += '${_dialogPrefs[1]}\n';
+      final String str = v ? 'yes' : 'no';
 
-      await File(_dialogPrefsFullPath).writeAsString(data, mode: FileMode.write);
+      if (i == 0)
+         await _db.execute(cts.updateShowDialogOnDelPost, [str]);
+      else
+         await _db.execute(cts.updateShowDialogOnSelectPost, [str]);
    }
 
    Future<void>

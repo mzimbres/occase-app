@@ -202,7 +202,6 @@ final String menuFileName = 'menu.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
-final String dialogPrefsFullPath = 'dialog_prefs.txt';
 
 // The texts showed on the dialog in the *Posts* screen
 final List<String> dialTitleStrs = <String>
@@ -269,7 +268,9 @@ CREATE TABLE config
 , app_pwd TEXT
 , nick TEXT
 , last_post_id INTEGER
-, last_seen_post_id INTEGER)
+, last_seen_post_id INTEGER
+, show_dialog_on_select_post TEXT
+, show_dialog_on_del_post TEXT)
 ''';
 
 final String updateNick =
@@ -285,5 +286,15 @@ UPDATE config SET last_post_id = ?
 final String updateLastSeenPostId =
 '''
 UPDATE config SET last_seen_post_id = ?
+''';
+
+final String updateShowDialogOnSelectPost =
+'''
+UPDATE config SET show_dialog_on_select_post = ?
+''';
+
+final String updateShowDialogOnDelPost =
+'''
+UPDATE config SET show_dialog_on_del_post = ?
 ''';
 
