@@ -566,7 +566,7 @@ Map<String, dynamic> toMap(PostData post)
     };
 }
 
-Future<List<PostData>> posts(Database db, String tableName) async
+Future<List<PostData>> loadPosts(Database db, String tableName) async
 {
   final List<Map<String, dynamic>> maps =
      await db.query(tableName);

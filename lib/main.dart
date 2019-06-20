@@ -962,8 +962,6 @@ class MenuChatState extends State<MenuChat>
    String _loginFileFullPath = '';
    String _menuFileFullPath = '';
    String _lastPostIdFileFullPath = '';
-   String _postsFileFullPath = '';
-   String _favPostsFileFullPath = '';
    String _outPostsFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
    String _dialogPrefsFullPath = '';
@@ -1058,8 +1056,6 @@ class MenuChatState extends State<MenuChat>
       _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
       _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
-      _postsFileFullPath       = '${glob.docDir}/${cts.postsFileName}';
-      _favPostsFileFullPath    = '${glob.docDir}/${cts.favPostsFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
       _dialogPrefsFullPath     = '${glob.docDir}/${cts.dialogPrefsFullPath}';
@@ -1137,24 +1133,23 @@ class MenuChatState extends State<MenuChat>
       List<String> lines = List<String>();
 
       try {
-         lines = await File(_postsFileFullPath).readAsLines();
-         _posts = await decodePostsStr(lines);
-      } catch (e) {
-      }
-
-      try {
-         lines = await File(_favPostsFileFullPath).readAsLines();
-         _favPosts = await decodePostsStr(lines);
-         _favPosts.sort(CompPostData);
-      } catch (e) {
-      }
-
-      try {
-         _ownPosts = await posts(_db, 'posts');
-         for (PostData o in _ownPosts)
-            await o.loadChats();
+         final List<PostData> posts = await loadPosts(_db, 'posts');
+         for (PostData p in posts) {
+            if (p.status == 0) {
+               await p.loadChats();
+               _ownPosts.add(p);
+            } else if (p.status == 1) {
+               _posts.add(p);
+            } else if (p.status == 2) {
+               await p.loadChats();
+               _favPosts.add(p);
+            } else {
+               assert(false);
+            }
+         }
 
          _ownPosts.sort(CompPostData);
+         _favPosts.sort(CompPostData);
       } catch (e) {
          print('===> Error caught.');
       }
@@ -1279,29 +1274,27 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   Future<void> _onPostSelection(PostData data, int fav) async
+   Future<void> _onPostSelection(PostData post, int fav) async
    {
       if (fav == 1) {
-         // Had I use a queue, there would be no need of rotating the
-         // posts.
-         _favPosts.add(data);
+         post.status = 2;
+         await post.createChatEntryForPeer(post.from, post.nick);
+         _favPosts.add(post);
          rotateElements(_favPosts, _favPosts.length - 1);
-         assert(_post == null);
 
-         final String content = serializeList(<PostData>[data]);
-         await File(_favPostsFileFullPath).
-            writeAsString(content, mode: FileMode.append);
+         await _db.update(
+            'posts',
+            toMap(post),
+            where: "id = ?",
+            whereArgs: [post.id]);
+      } else {
+         await _db.delete(
+            'posts',
+            where: "id = ?",
+            whereArgs: [post.id]);
       }
 
-      _posts.remove(data);
-
-      // As far as I can see, there is no way of removing the element
-      // from the posts persisted on file without rewriting it
-      // completely. We can use the oportunity to write only the
-      // newest.
-      final String content = serializeList(_posts);
-      await File(_postsFileFullPath).
-         writeAsString(content, mode: FileMode.write);
+      _posts.remove(post);
 
       setState(() { });
    }
@@ -2019,12 +2012,9 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onPost(Map<String, dynamic> ack) async
    {
-      // Remember the size of the list to append later the new items
-      // to a file.
-      var items = ack['items'];
-      List<PostData> tmp = List<PostData>();
-      for (var item in items) {
+      for (var item in ack['items']) {
          PostData post = readPostData(item);
+         post.status = 1;
          if (post.from == _appId) {
             // Our own post being sent back to us. We have to drop it
             // but update our last post id.
@@ -2034,13 +2024,13 @@ class MenuChatState extends State<MenuChat>
             continue;
          }
 
-         // Since this post is not from this app we have to add a chat
-         // entry in it.
-         //
-         // TODO: Change this to only create the entry if the post is
-         // moved to the _fav list.
-         await post.createChatEntryForPeer(post.from, post.nick);
-         tmp.add(post);
+         await _db.insert(
+            'posts',
+            toMap(post),
+            conflictAlgorithm: ConflictAlgorithm.replace);
+
+         //await post.createChatEntryForPeer(post.from, post.nick);
+         _posts.add(post);
 
          // It is not guaranteed that the array of posts sent by
          // the server has increasing post ids so we should check.
@@ -2051,10 +2041,6 @@ class MenuChatState extends State<MenuChat>
       try {
          await File(_lastPostIdFileFullPath)
             .writeAsString('${_lastPostId}', mode: FileMode.write);
-
-         _posts.addAll(tmp);
-         writeListToDisk( tmp, _postsFileFullPath
-                        , FileMode.append);
       } catch (e) {
       }
 
@@ -2251,18 +2237,22 @@ class MenuChatState extends State<MenuChat>
    {
       assert(_isOnFav() || _isOnOwn());
 
-      // Optimization to avoid writing files.
       if (_lpChats.isEmpty)
          return;
 
       await removeLPChats(_lpChats);
 
       if (_isOnFav()) {
-         _favPosts.removeWhere((e) { return e.chats.isEmpty; });
+         for (PostData o in _favPosts) {
+            if (o.chats.isEmpty) {
+               await _db.delete(
+                  'posts',
+                  where: "id = ?",
+                  whereArgs: [o.id]);
+            }
+         }
 
-         final String content = serializeList(_favPosts);
-         await File(_favPostsFileFullPath).
-            writeAsString(content, mode: FileMode.write);
+         _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       }
 
       _lpChats.clear();
