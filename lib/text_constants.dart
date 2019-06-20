@@ -199,13 +199,11 @@ final TextStyle expTileStl =
                     color: Colors.white);
 
 final String menuFileName = 'menu.txt';
-final String loginFileName = 'login.txt';
 final String lastPostIdFileName = 'last_post_id.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
 final String dialogPrefsFullPath = 'dialog_prefs.txt';
-final String nickFullPath = 'nick.txt';
 
 // The texts showed on the dialog in the *Posts* screen
 final List<String> dialTitleStrs = <String>
@@ -265,3 +263,20 @@ final String deletePost =
 DELETE FROM posts WHERE id = ?
 ''';
 
+final String createConfig =
+'''
+CREATE TABLE config
+( app_id TEXT PRIMARY KEY
+, app_pwd TEXT
+, nick TEXT)
+''';
+
+final String insertLogin =
+'''
+INSERT INTO config (app_id, app_pwd) VALUES (?, ?)
+''';
+
+final String updateNick =
+'''
+UPDATE config SET nick = ?
+''';

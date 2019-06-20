@@ -866,6 +866,30 @@ class DialogWithOpState extends State<DialogWithOp> {
    }
 }
 
+class Config {
+   String appId = '';
+   String appPwd = '';
+   String nick = '';
+
+   Config();
+}
+
+Future<List<Config>> loadConfig(Database db, String tableName) async
+{
+  final List<Map<String, dynamic>> maps =
+     await db.query(tableName);
+
+  return List.generate(maps.length, (i)
+  {
+     Config cfg = Config();
+     cfg.appId = maps[i]['app_id'];
+     cfg.appPwd = maps[i]['app_pwd'];
+     cfg.nick = maps[i]['nick'];
+
+     return cfg;
+  });
+}
+
 //_____________________________________________________________________
 
 class MenuChat extends StatefulWidget {
@@ -881,11 +905,7 @@ class MenuChatState extends State<MenuChat>
    ScrollController _scrollCtrl = ScrollController();
    ScrollController _chatScrollCtrl = ScrollController();
 
-   // The credentials we use to communicate with the server. Both are
-   // sent back by the server in the acknowledge to the register
-   // command.
-   String _appId = '';
-   String _appPwd = '';
+   Config cfg = Config();
 
    // Array with the length equal to the number of menus there
    // are. Used both on the filter and on the *new post* screens.
@@ -957,9 +977,7 @@ class MenuChatState extends State<MenuChat>
    List<bool> _dialogPrefs = List<bool>(2);
 
    // Full path to files.
-   String _nickFullPath = '';
    String _unreadPostsFileFullPath = '';
-   String _loginFileFullPath = '';
    String _menuFileFullPath = '';
    String _lastPostIdFileFullPath = '';
    String _outPostsFileFullPath = '';
@@ -974,9 +992,6 @@ class MenuChatState extends State<MenuChat>
 
    // The menu details filter.
    int _filter = 0;
-
-   // The nickname provided by the user.
-   String _nick = '';
 
    // The *new post* text controler
    TextEditingController _txtCtrl = TextEditingController();
@@ -1052,8 +1067,6 @@ class MenuChatState extends State<MenuChat>
 
    void _initPaths()
    {
-      _nickFullPath            = '${glob.docDir}/${cts.nickFullPath}';
-      _loginFileFullPath       = '${glob.docDir}/${cts.loginFileName}';
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
       _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
@@ -1087,17 +1100,13 @@ class MenuChatState extends State<MenuChat>
          p.join(dbPath, 'main.db'),
          onCreate: (db, version) async
          {
-            print('====> Creating posts table.');
+            print('====> Creating tables.');
             await db.execute(cts.createPostsTable);
+            await db.execute(cts.createConfig);
          },
 
          version: 1,
       );
-
-      try {
-         _nick = await File(_nickFullPath).readAsString();
-      } catch (e) {
-      }
 
       try {
          final String path = '${glob.docDir}/${cts.menuFileName}';
@@ -1176,13 +1185,10 @@ class MenuChatState extends State<MenuChat>
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
       try {
-         lines = await File(_loginFileFullPath).readAsLines();
-         if (!lines.isEmpty) {
-            final List<String> fields = lines.first.split(":");
-            _appId = fields.first;
-            _appPwd = fields.last;
-         }
+         final List<Config> configs = await loadConfig(_db, 'config');
+         cfg = configs.first;
       } catch (e) {
+         print(e);
       }
 
 
@@ -1192,7 +1198,7 @@ class MenuChatState extends State<MenuChat>
 
       print('Last post id: ${_lastPostId}.');
       print('Menu versions: ${versions}');
-      print('Login: ${_appId}:${_appPwd}.');
+      print('Login: ${cfg.appId}:${cfg.appPwd}.');
       setState(() { });
    }
 
@@ -1207,14 +1213,14 @@ class MenuChatState extends State<MenuChat>
 
    String _makeConnCmd(final List<int> versions)
    {
-      if (_appId.isEmpty) {
+      if (cfg.appId.isEmpty) {
          // This is the first time we are connecting to the server (or
          // the login file is corrupted, etc.)
          return makeRegisterCmd();
       }
 
       // We are already registered in the server.
-      return makeLoginCmd(_appId, _appPwd, versions);
+      return makeLoginCmd(cfg.appId, cfg.appPwd, versions);
    }
 
    @override
@@ -1622,8 +1628,8 @@ class MenuChatState extends State<MenuChat>
       _post.description = _txtCtrl.text;
       _txtCtrl.text = '';
 
-      _post.from = _appId;
-      _post.nick = _nick;
+      _post.from = cfg.appId;
+      _post.nick = cfg.nick;
       await sendPost(_post.clone());
       _post = null;
       setState(() { });
@@ -1657,7 +1663,7 @@ class MenuChatState extends State<MenuChat>
          var msgMap = {
             'cmd': 'message',
             'type': 'app_ack_read',
-            'from': _appId,
+            'from': cfg.appId,
             'to': posts[i].chats[j].peer,
             'post_id': posts[i].id,
             'is_sender_post': isSenderPost,
@@ -1783,7 +1789,7 @@ class MenuChatState extends State<MenuChat>
             'msg': msg,
             'post_id': postId,
             'is_sender_post': isSenderPost,
-            'nick': _nick
+            'nick': cfg.nick
          };
 
          await sendChatMsg(jsonEncode(msgMap), 1);
@@ -1811,7 +1817,7 @@ class MenuChatState extends State<MenuChat>
    Future<void> _chatMsgHandler(Map<String, dynamic> ack) async
    {
       final String to = ack['to'];
-      if (to != _appId) {
+      if (to != cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
@@ -1856,7 +1862,7 @@ class MenuChatState extends State<MenuChat>
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
-               'from': _appId,
+               'from': cfg.appId,
                'to': from,
                'post_id': postId,
                'is_sender_post': !isSenderPost,
@@ -1920,7 +1926,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-      _onRegisterAck(Map<String, dynamic> ack, final String msg) async
+   _onRegisterAck(Map<String, dynamic> ack, final String msg) async
    {
       final String res = ack["result"];
       if (res == 'fail') {
@@ -1928,17 +1934,11 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      assert(res == 'ok');
+      print('register_ack: ok.');
 
-      _appId = ack["id"];
-      _appPwd = ack["password"];
-      final String login = '${_appId}:${_appPwd}';
-
-      // On register_ack ok we will receive our credentials to log
-      // in the server and the menu, they should both be persisted
-      // in a file.
-      print('register_ack: Persisting login $login');
-      await File(_loginFileFullPath).writeAsString(login, mode: FileMode.write);
+      cfg.appId = ack["id"];
+      cfg.appPwd = ack["password"];
+      await _db.execute(cts.insertLogin, [cfg.appId, cfg.appPwd]);
 
       _menus = menuReader(ack);
       assert(_menus != null);
@@ -1948,7 +1948,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-      _onLoginAck(Map<String, dynamic> ack, final String msg) async
+   _onLoginAck(Map<String, dynamic> ack, final String msg) async
    {
       final String res = ack["result"];
 
@@ -1996,7 +1996,7 @@ class MenuChatState extends State<MenuChat>
       for (var item in ack['items']) {
          PostData post = readPostData(item);
          post.status = 1;
-         if (post.from == _appId) {
+         if (post.from == cfg.appId) {
             // Our own post being sent back to us. We have to drop it
             // but update our last post id.
             if (post.id > _lastPostId)
@@ -2290,11 +2290,9 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onNickPressed() async
    {
-      _nick = _txtCtrl.text;;
-
-      await File(_nickFullPath).writeAsString(_nick, mode: FileMode.write);
-
+      cfg.nick = _txtCtrl.text;;
       _txtCtrl.text = '';
+      await _db.execute(cts.updateNick, [cfg.nick]);
       setState(() { });
    }
 
@@ -2346,7 +2344,7 @@ class MenuChatState extends State<MenuChat>
       if (_menus.isEmpty)
          return Scaffold();
 
-      if (_nick.isEmpty)
+      if (cfg.nick.isEmpty)
          return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
 
       if (hasSwitchedTab())
