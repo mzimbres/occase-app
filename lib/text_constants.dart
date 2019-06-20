@@ -169,6 +169,7 @@ final double outerPostCardPadding = 1.0;
 
 final String deleteChatStr = "Remover conversa";
 final String blockUserChatStr = "Bloquear usuário";
+final String pinChatStr = "Fixar conversa";
 
 final TextStyle abbrevStl = TextStyle(color: Colors.white);
 
@@ -220,7 +221,7 @@ final List<String> dialBodyStrs = <String>
 , 'Seu post será removido definitivamente.'
 ];
 
-final String postTimePrefix = 'Detalhes do post';
+final String postTimePrefix = 'Post';
 final String unknownNick = 'Desconhecido';
 
 final String menuSelectAllStr = 'Selecionar todos';

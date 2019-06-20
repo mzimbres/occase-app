@@ -120,6 +120,7 @@ class ChatHistory {
    List<ChatItem> msgs = List<ChatItem>();
    bool isLongPressed = false;
    int date = 0;
+   int pinDate = -1;
 
    String getChatDisplayName()
    {
@@ -800,20 +801,28 @@ Card createChatEntry(BuildContext context,
                      PostData post,
                      List<MenuItem> menus,
                      Widget chats,
-                     Function onDelPost)
+                     Function onDelPost,
+                     Function onPinPost,
+                     int i)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        cts.postFrameColor);
 
+   Row leading = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+   [ IconButton(icon: Icon(Icons.clear),
+                onPressed: (){onDelPost(i);})
+   , IconButton(icon: Icon(Icons.place),
+                onPressed: (){onPinPost(i);})
+   ]);
+
    ExpansionTile et =
       ExpansionTile(
-          leading:
-             IconButton(
-                icon: Icon(Icons.clear),
-                onPressed: onDelPost),
+          leading: leading,
           key: PageStorageKey<int>(2 * post.id),
-          title: Text( '${cts.postTimePrefix}: ${post.id}'
-                     , style: cts.expTileStl),
+          title: Text('${cts.postTimePrefix}: ${post.id}',
+                      style: cts.expTileStl),
           children: ListTile.divideTiles(
                      context: context,
                      tiles: textCards,
@@ -1062,10 +1071,15 @@ Widget makePostChatCol(BuildContext context,
       }
 
       Widget trailing = null;
-      if (n != 0) {
-         Container cont = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
+      if (n != 0 && ch[i].pinDate != -1) {
          trailing = Column(children: <Widget>
-            [Icon(Icons.place), cont]);
+         [ Icon(Icons.place)
+         , makeCircleUnreadMsgs(n, Colors.grey, Colors.white)
+         ]);
+      } else if (n == 0 && ch[i].pinDate != -1) {
+         trailing = Icon(Icons.place);
+      } else if (n != 0 && ch[i].pinDate == -1) {
+         trailing = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
       }
 
       ListTile lt =
@@ -1120,7 +1134,8 @@ Widget makeChatTab(
    Function onPressed,
    Function onLongPressed,
    List<MenuItem> menus,
-   Function onDelPost)
+   Function onDelPost,
+   Function onPinPost)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
@@ -1137,7 +1152,9 @@ Widget makeChatTab(
                          (j) {onPressed(i, j);},
                          (j) {onLongPressed(i, j);},
                          data[i].id),
-                      onDelPost);
+                      onDelPost,
+                      onPinPost,
+                      i);
          },
    );
 }

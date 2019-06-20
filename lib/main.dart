@@ -140,12 +140,19 @@ String makeRegisterCmd()
 }
 
 List<Widget>
-makeOnLongPressedActions( BuildContext ctx
-                        , Function deleteChatEntryDialog)
+makeOnLongPressedActions(BuildContext ctx,
+                         Function deleteChatEntryDialog,
+                         Function pinChat)
 {
    List<Widget> actions = List<Widget>();
 
-   // Delete chat forever button.
+   IconButton pinChatBut = IconButton(
+      icon: Icon(Icons.place, color: Colors.white),
+      tooltip: cts.pinChatStr,
+      onPressed: pinChat);
+
+   actions.add(pinChatBut);
+
    IconButton delChatBut = IconButton(
       icon: Icon(Icons.delete_forever, color: Colors.white),
       tooltip: cts.deleteChatStr,
@@ -1601,9 +1608,14 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onRemovePost()
+   void _onRemovePost(int i)
    {
-      print('Has no implementation yet.');
+      print('_onRemovePost $i.');
+   }
+
+   void _onPinPost(int i)
+   {
+      print('_onPinPost $i.');
    }
 
    Future<void>
@@ -2201,6 +2213,28 @@ class MenuChatState extends State<MenuChat>
       _lpChats.clear();
    }
 
+   Future<void> _pinChats() async
+   {
+      assert(_isOnFav() || _isOnOwn());
+
+      if (_lpChats.isEmpty)
+         return;
+
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      for (Coord c in _lpChats) {
+         if (c.chat.pinDate == -1)
+            c.chat.pinDate = now;
+         else
+            c.chat.pinDate = -1;
+
+         toggleLPChat(c.chat);
+      }
+
+      _lpChats.clear();
+
+      setState(() { });
+   }
+
    Future<void> _removeLPChats() async
    {
       assert(_isOnFav() || _isOnOwn());
@@ -2411,7 +2445,8 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (){_showSimpleDial(ctx, _onRemovePost, 4);});
+         (int i){_showSimpleDial(ctx, (){_onRemovePost(i);}, 4);},
+         _onPinPost);
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -2426,7 +2461,8 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (){_showSimpleDial(ctx, _onRemovePost, 4);});
+         (int i){_showSimpleDial(ctx, (){_onRemovePost(i);}, 4);},
+         _onPinPost);
 
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
@@ -2439,7 +2475,11 @@ class MenuChatState extends State<MenuChat>
          }
 
          if (_hasLPChats() && !_hasLPChatMsgs()) {
-            actions = makeOnLongPressedActions(ctx, _deleteChatDialog);
+            actions =
+               makeOnLongPressedActions(
+                  ctx,
+                  _deleteChatDialog,
+                  _pinChats);
          }
       }
 
