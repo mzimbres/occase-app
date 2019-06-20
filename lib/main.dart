@@ -1085,24 +1085,12 @@ class MenuChatState extends State<MenuChat>
       print('Path ===> $dbPath');
       _db = await openDatabase(
          p.join(dbPath, 'main.db'),
-         onCreate: (db, version)
+         onCreate: (db, version) async
          {
             print('====> Creating posts table.');
-
-            final String sqlCmd =
-            '''CREATE TABLE posts
-               ( id INTEGER PRIMARY KEY
-               , from_ TEXT
-               , nick TEXT
-               , channel TEXT
-               , filter INTEGER
-               , date INTEGER
-               , pin_date INTEGER
-               , status INTEGER
-               , description TEXT)''';
-
-            return db.execute(sqlCmd);
+            await db.execute(cts.createPostsTable);
          },
+
          version: 1,
       );
 
@@ -1282,16 +1270,9 @@ class MenuChatState extends State<MenuChat>
          _favPosts.add(post);
          rotateElements(_favPosts, _favPosts.length - 1);
 
-         await _db.update(
-            'posts',
-            toMap(post),
-            where: "id = ?",
-            whereArgs: [post.id]);
+         await _db.execute(cts.updatePostStatus, [2, post.id]);
       } else {
-         await _db.delete(
-            'posts',
-            where: "id = ?",
-            whereArgs: [post.id]);
+         await _db.execute(cts.deletePost, [post.id]);
       }
 
       _posts.remove(post);
@@ -2243,14 +2224,9 @@ class MenuChatState extends State<MenuChat>
       await removeLPChats(_lpChats);
 
       if (_isOnFav()) {
-         for (PostData o in _favPosts) {
-            if (o.chats.isEmpty) {
-               await _db.delete(
-                  'posts',
-                  where: "id = ?",
-                  whereArgs: [o.id]);
-            }
-         }
+         for (PostData o in _favPosts)
+            if (o.chats.isEmpty)
+               await _db.execute(cts.deletePost, [o.id]);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       }

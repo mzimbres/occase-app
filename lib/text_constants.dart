@@ -240,3 +240,28 @@ final String host = 'ws://37.24.165.216:80';
 final Icon unknownPersonIcon =
    Icon(Icons.person, color: Colors.white, size: 30.0);
 
+// SQL commands.
+final String createPostsTable =
+'''
+CREATE TABLE posts
+( id INTEGER PRIMARY KEY
+, from_ TEXT
+, nick TEXT
+, channel TEXT
+, filter INTEGER
+, date INTEGER
+, pin_date INTEGER
+, status INTEGER
+, description TEXT)
+''';
+
+final String updatePostStatus =
+'''
+UPDATE posts SET status = ? WHERE id = ?
+''';
+
+final String deletePost =
+'''
+DELETE FROM posts WHERE id = ?
+''';
+
