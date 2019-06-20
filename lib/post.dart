@@ -154,10 +154,10 @@ class ChatHistory {
 
    int getMostRecentTimestamp()
    {
-      if (!msgs.isEmpty)
-         return msgs.last.date;
+      if (msgs.isEmpty)
+         return 0;
 
-      return date;
+      return msgs.last.date;
    }
 
    Future<void> loadMsgs(final int postId) async
@@ -270,16 +270,21 @@ class ChatHistory {
 }
 
 // Used to rotate a new chat item in a chat history and also posts.
-void rotateElements<T>(List<T> elems, int j)
+void rotateElements(List<ChatHistory> elems, int j)
 {
    if (j == 0)
       return; // This is already the first element.
 
-   T elem = elems[j];
-   for (int i = j; i > 0; --i)
-      elems[i] = elems[i - 1];
+   if (elems[j].pinDate != -1)
+      return; // The element is pinned and should not be rotated.
 
-   elems[0] = elem;
+   ChatHistory elem = elems[j];
+   int i = j;
+   for (; i > 0; --i) {
+      elems[i] = elems[i - 1];
+   }
+
+   elems[i] = elem;
 }
 
 ChatHistory
@@ -325,7 +330,7 @@ class PostData {
    int date = 0;
 
    // The date this post has been pinned by the user.
-   int pinDate = 0;
+   int pinDate = -1;
 
    // Post status.
    //   0: Posts published by the app.
@@ -381,6 +386,7 @@ class PostData {
       ret.filter = this.filter;
       ret.nick = this.nick;
       ret.date = this.date;
+      ret.pinDate = this.pinDate;
       return ret;
    }
 
@@ -492,7 +498,7 @@ class PostData {
    int getMostRecentTimestamp()
    {
       if (chats.isEmpty)
-         return date;
+         return 0;
 
       final ChatHistory hist = chats.reduce(selectMostRecentChat);
 
@@ -533,6 +539,7 @@ class PostData {
       filter = pd.filter;
       nick = pd.nick;
       date = pd.date;
+      pinDate = pd.pinDate;
    }
 
    Map<String, dynamic> toJson()
@@ -605,9 +612,51 @@ bool toggleLPChatMsg(ChatItem ci)
 
 int CompPostData(final PostData lhs, final PostData rhs)
 {
+
+   if (lhs.chats.length == 0 && rhs.chats.length == 0)
+      return lhs.date > rhs.date ? -1 : 1;
+
+   if (lhs.chats.length == 0)
+      return 1;
+
+   if (rhs.chats.length == 0)
+      return -1;
+
+   if (lhs.pinDate != -1 && rhs.pinDate != -1)
+      return lhs.pinDate > rhs.pinDate ? -1 : 1;
+
+   if (lhs.pinDate != -1)
+      return -1;
+
+   if (rhs.pinDate != -1)
+      return 1;
+
    final int ts1 = lhs.getMostRecentTimestamp();
    final int ts2 = rhs.getMostRecentTimestamp();
-   return ts1 < ts2 ? -1 : 1;
+   return ts1 > ts2 ? -1 : 1;
+}
+
+int rotatePostData(List<PostData> posts, int j)
+{
+   if (j == 0)
+      return 0; // This is already the first element.
+
+   if (posts[j].pinDate != -1) {
+      print('====> Element is fixed.');
+      return j; // The element is pinned and should not be rotated.
+   }
+
+   PostData elem = posts[j];
+   int i = j;
+   for (; i > 0; --i) {
+      if (CompPostData(posts[i], posts[i - 1]) < 0)
+         posts[i] = posts[i - 1];
+      else
+         break;
+   }
+
+   posts[i] = elem;
+   return i;
 }
 
 Future<void>
@@ -808,12 +857,13 @@ Card createChatEntry(BuildContext context,
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        cts.postFrameColor);
 
+   IconData pinIcon = post.pinDate == -1 ? Icons.place : Icons.pin_drop;
    Row leading = Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>
    [ IconButton(icon: Icon(Icons.clear),
                 onPressed: (){onDelPost(i);})
-   , IconButton(icon: Icon(Icons.place),
+   , IconButton(icon: Icon(pinIcon),
                 onPressed: (){onPinPost(i);})
    ]);
 
@@ -1187,6 +1237,7 @@ PostData readPostData(var item)
    post.filter = item['filter'];
    post.nick = item['nick'];
    post.channel = decodeChannel(item['to']);
+   post.pinDate = -1;
    return post;
 }
 

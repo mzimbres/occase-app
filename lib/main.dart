@@ -75,6 +75,17 @@ void unmarkLPChatMsgsImpl(List<Coord> lpChatMsgs)
       toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
 }
 
+void onPinPost(List<PostData> posts, int i)
+{
+   if (posts[i].pinDate == -1) {
+      posts[i].pinDate = DateTime.now().millisecondsSinceEpoch;
+   } else {
+      posts[i].pinDate = -1;
+   }
+
+   posts.sort(CompPostData);
+}
+
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -475,7 +486,6 @@ makeFaButton(Function onNewPost,
              int lpChats,
              int lpChatMsgs)
 {
-   print('$lpChats === $lpChatMsgs');
    if (lpChats == 0 && lpChatMsgs != 0)
       return null;
 
@@ -1271,7 +1281,7 @@ class MenuChatState extends State<MenuChat>
          await _posts[i].createChatEntryForPeer(_posts[i].from,
                _posts[i].nick);
          _favPosts.add(_posts[i]);
-         rotateElements(_favPosts, _favPosts.length - 1);
+         rotatePostData(_favPosts, _favPosts.length - 1);
 
          await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
       } else {
@@ -1576,8 +1586,9 @@ class MenuChatState extends State<MenuChat>
             post.id = id;
             post.date = timestamp;
             post.status = 0;
+            post.pinDate = -1;
             _ownPosts.add(post);
-            rotateElements(_ownPosts, _ownPosts.length - 1);
+            rotatePostData(_ownPosts, _ownPosts.length - 1);
          }
 
          final String content1 =
@@ -1615,7 +1626,12 @@ class MenuChatState extends State<MenuChat>
 
    void _onPinPost(int i)
    {
-      print('_onPinPost $i.');
+      if (_isOnFav()) {
+         onPinPost(_favPosts, i);
+      } else {
+         onPinPost(_ownPosts, i);
+      }
+      setState(() { });
    }
 
    Future<void>
@@ -1785,7 +1801,7 @@ class MenuChatState extends State<MenuChat>
          await posts[i].chats[j].addMsg(msg, true, postId, 0);
          rotateElements(posts[i].chats, j);
          await posts[i].persistPeers();
-         rotateElements(posts, i);
+         rotatePostData(posts, i);
 
          var msgMap = {
             'cmd': 'message',
@@ -1852,18 +1868,16 @@ class MenuChatState extends State<MenuChat>
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.
       rotateElements(posts[i].chats, j);
-      rotateElements(posts, i);
-
-      // When we insert the message above the chat history it belongs
-      // to is moved to the front in that history.
-      //posts.first.chats.first.nick = nick;
+      final int pos = rotatePostData(posts, i);
+      print('New post pos $pos');
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
       if (isOnFavChat() || isOnOwnChat()) {
          // Yes, we are chatting with an user.
-         if (posts.first.id == _post.id || posts.first.id == _post.id) {
-            posts.first.chats.first.setPeerMsgStatus(3, postId);
+         // FIXME: Do we have to check if the peer is also equal?
+         if (posts[pos].id == _post.id) {
+            _post.chats.first.setPeerMsgStatus(3, postId);
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
@@ -2220,10 +2234,9 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c in _lpChats) {
          if (c.chat.pinDate == -1)
-            c.chat.pinDate = now;
+            c.chat.pinDate = DateTime.now().millisecondsSinceEpoch;
          else
             c.chat.pinDate = -1;
 
