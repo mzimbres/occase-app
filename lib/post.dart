@@ -551,7 +551,7 @@ class PostData {
    }
 }
 
-Map<String, dynamic> toMap(PostData post)
+Map<String, dynamic> postToMap(PostData post)
 {
     return {
       'id': post.id,
@@ -944,7 +944,7 @@ makePostTabListView(BuildContext ctx,
                     ctx,
                     cards,
                     (int fav) async
-                       {await onPostSelection(ctx, posts[i], fav);},
+                       {await onPostSelection(ctx, i, fav);},
                     cts.favIcon,
                     color);
              });

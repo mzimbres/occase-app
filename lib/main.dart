@@ -870,8 +870,21 @@ class Config {
    String appId = '';
    String appPwd = '';
    String nick = '';
+   int lastPostId = 0;
+   int lastSeenPostId = 0;
 
    Config();
+}
+
+Map<String, dynamic> configToMap(Config cfg)
+{
+    return {
+      'app_id': cfg.appId,
+      'app_pwd': cfg.appPwd,
+      'nick': cfg.nick,
+      'last_post_id': cfg.lastPostId,
+      'last_seen_post_id': cfg.lastSeenPostId,
+    };
 }
 
 Future<List<Config>> loadConfig(Database db, String tableName) async
@@ -885,6 +898,8 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
      cfg.appId = maps[i]['app_id'];
      cfg.appPwd = maps[i]['app_pwd'];
      cfg.nick = maps[i]['nick'];
+     cfg.lastPostId = maps[i]['last_post_id'];
+     cfg.lastSeenPostId = maps[i]['last_seen_post_id'];
 
      return cfg;
   });
@@ -964,11 +979,6 @@ class MenuChatState extends State<MenuChat>
    // The current chat, if any.
    ChatHistory _chat = null;
 
-   // The last post id we have received. It will be persisted on every
-   // post received and will be read when the app starts. It used by
-   // the subscribe command.
-   int _lastPostId = 0;
-
    // The last post id seen by the user.
    int _lastSeenPostIdx = 0;
 
@@ -979,7 +989,6 @@ class MenuChatState extends State<MenuChat>
    // Full path to files.
    String _unreadPostsFileFullPath = '';
    String _menuFileFullPath = '';
-   String _lastPostIdFileFullPath = '';
    String _outPostsFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
    String _dialogPrefsFullPath = '';
@@ -1068,7 +1077,6 @@ class MenuChatState extends State<MenuChat>
    void _initPaths()
    {
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
-      _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
       _dialogPrefsFullPath     = '${glob.docDir}/${cts.dialogPrefsFullPath}';
@@ -1116,15 +1124,6 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
          print('Using default menu.');
          _menus = menuReader(jsonDecode(Consts.menus));
-      }
-
-      try {
-         final String path = '${docDir}/${cts.lastPostIdFileName}';
-         final String n = await File(path).readAsString();
-         _lastPostId = int.parse(n);
-      } catch (e) {
-         print('Unable to read last post id from file.');
-         _lastPostId = 0;
       }
 
       List<String> lines = List<String>();
@@ -1187,6 +1186,18 @@ class MenuChatState extends State<MenuChat>
       try {
          final List<Config> configs = await loadConfig(_db, 'config');
          cfg = configs.first;
+         // TODO: The _posts array is expected to be sorted on its
+         // ids, so we could perform a binary search here instead.
+         final int i = _posts.indexWhere((e)
+         {
+            return e.id == cfg.lastSeenPostId;
+         });
+
+         if (i != -1) {
+            _lastSeenPostIdx = i + 1;
+            print('_lastSeenPostIdx ===> $_lastSeenPostIdx');
+         }
+
       } catch (e) {
          print(e);
       }
@@ -1196,7 +1207,8 @@ class MenuChatState extends State<MenuChat>
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
 
-      print('Last post id: ${_lastPostId}.');
+      print('Last post id: ${cfg.lastPostId}.');
+      print('Last post id seen: ${cfg.lastSeenPostId}.');
       print('Menu versions: ${versions}');
       print('Login: ${cfg.appId}:${cfg.appPwd}.');
       setState(() { });
@@ -1244,11 +1256,10 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-   _alertUserOnselectPost(BuildContext ctx,
-                          PostData data, int fav) async
+   _alertUserOnselectPost(BuildContext ctx, int i, int fav) async
    {
       if (!_dialogPrefs[fav]) {
-         await _onPostSelection(data, fav);
+         await _onPostSelection(i, fav);
          return;
       }
 
@@ -1260,7 +1271,7 @@ class MenuChatState extends State<MenuChat>
                fav,
                () {return _dialogPrefs[fav];},
                (bool v) async {await _setDialogPref(fav, v);},
-               () async {await _onPostSelection(data, fav);},
+               () async {await _onPostSelection(i, fav);},
                cts.dialTitleStrs[fav],
                cts.dialBodyStrs[fav]);
             
@@ -1268,20 +1279,26 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   Future<void> _onPostSelection(PostData post, int fav) async
+   Future<void> _onPostSelection(int i, int fav) async
    {
+      assert(isOnPosts());
+
       if (fav == 1) {
-         post.status = 2;
-         await post.createChatEntryForPeer(post.from, post.nick);
-         _favPosts.add(post);
+         _posts[i].status = 2;
+         await _posts[i].createChatEntryForPeer(_posts[i].from,
+               _posts[i].nick);
+         _favPosts.add(_posts[i]);
          rotateElements(_favPosts, _favPosts.length - 1);
 
-         await _db.execute(cts.updatePostStatus, [2, post.id]);
+         await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
       } else {
-         await _db.execute(cts.deletePost, [post.id]);
+         await _db.execute(cts.deletePost, [_posts[i].id]);
       }
 
-      _posts.remove(post);
+      _posts.removeAt(i);
+
+      if (i < _lastSeenPostIdx)
+         --_lastSeenPostIdx;
 
       setState(() { });
    }
@@ -1595,7 +1612,7 @@ class MenuChatState extends State<MenuChat>
 
          await _db.insert(
             'posts',
-            toMap(post),
+            postToMap(post),
             conflictAlgorithm: ConflictAlgorithm.replace);
 
          if (_outPostsQueue.isEmpty)
@@ -1938,7 +1955,11 @@ class MenuChatState extends State<MenuChat>
 
       cfg.appId = ack["id"];
       cfg.appPwd = ack["password"];
-      await _db.execute(cts.insertLogin, [cfg.appId, cfg.appPwd]);
+
+      await _db.insert(
+         'config',
+         configToMap(cfg),
+         conflictAlgorithm: ConflictAlgorithm.replace);
 
       _menus = menuReader(ack);
       assert(_menus != null);
@@ -1996,37 +2017,26 @@ class MenuChatState extends State<MenuChat>
       for (var item in ack['items']) {
          PostData post = readPostData(item);
          post.status = 1;
-         if (post.from == cfg.appId) {
-            // Our own post being sent back to us. We have to drop it
-            // but update our last post id.
-            if (post.id > _lastPostId)
-               _lastPostId = post.id;
 
+         // Just in case the server sends us posts out of order I
+         // will check. It should however be considered a server
+         // error.
+         if (post.id > cfg.lastPostId)
+            cfg.lastPostId = post.id;
+
+         if (post.from == cfg.appId)
             continue;
-         }
 
          await _db.insert(
             'posts',
-            toMap(post),
+            postToMap(post),
             conflictAlgorithm: ConflictAlgorithm.replace);
 
-         //await post.createChatEntryForPeer(post.from, post.nick);
          _posts.add(post);
-
-         // It is not guaranteed that the array of posts sent by
-         // the server has increasing post ids so we should check.
-         if (post.id > _lastPostId)
-            _lastPostId = post.id;
       }
 
-      try {
-         await File(_lastPostIdFileFullPath)
-            .writeAsString('${_lastPostId}', mode: FileMode.write);
-      } catch (e) {
-      }
+      await _db.execute(cts.updateLastPostId, [cfg.lastPostId]);
 
-      // Consider: Before triggering a redraw we should perhaps
-      // check whether it is necessary given our current state.
       setState(() { });
    }
 
@@ -2148,13 +2158,14 @@ class MenuChatState extends State<MenuChat>
 
       var subCmd = {
          'cmd': 'subscribe',
-         'last_post_id': _lastPostId,
+         'last_post_id': cfg.lastPostId,
          'channels': channels,
          'filter': _filter
       };
 
-      final String subText = jsonEncode(subCmd);
-      channel.sink.add(subText);
+      final String payload = jsonEncode(subCmd);
+      print('====> $payload');
+      channel.sink.add(payload);
    }
 
    // Called when the main tab changes.
@@ -2296,16 +2307,20 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _updateLastSeenPostIdx(int i)
+   Future<void> _updateLastSeenPostIdx(int i) async
    {
-      if (i > _lastSeenPostIdx) {
-         _lastSeenPostIdx = i;
-         SchedulerBinding.instance.addPostFrameCallback((_)
-         {
-            setState(() { });
-         });
-      }
+      if (i <= _lastSeenPostIdx)
+         return;
 
+      _lastSeenPostIdx = i;
+
+      await _db.execute(cts.updateLastSeenPostId,
+                        [_posts[i].id]);
+
+      SchedulerBinding.instance.addPostFrameCallback((_)
+      {
+         setState(() { });
+      });
    }
 
    void _onNewPostDetail(int i)

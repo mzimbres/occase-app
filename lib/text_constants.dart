@@ -199,7 +199,6 @@ final TextStyle expTileStl =
                     color: Colors.white);
 
 final String menuFileName = 'menu.txt';
-final String lastPostIdFileName = 'last_post_id.txt';
 final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
@@ -268,15 +267,23 @@ final String createConfig =
 CREATE TABLE config
 ( app_id TEXT PRIMARY KEY
 , app_pwd TEXT
-, nick TEXT)
-''';
-
-final String insertLogin =
-'''
-INSERT INTO config (app_id, app_pwd) VALUES (?, ?)
+, nick TEXT
+, last_post_id INTEGER
+, last_seen_post_id INTEGER)
 ''';
 
 final String updateNick =
 '''
 UPDATE config SET nick = ?
 ''';
+
+final String updateLastPostId =
+'''
+UPDATE config SET last_post_id = ?
+''';
+
+final String updateLastSeenPostId =
+'''
+UPDATE config SET last_seen_post_id = ?
+''';
+
