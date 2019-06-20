@@ -9,6 +9,7 @@ import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 void writeToFile( final String data
                 , final String fullPath
@@ -291,45 +292,54 @@ selectMostRecentChat(final ChatHistory lhs, final ChatHistory rhs)
 
 List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
 {
-   List<List<List<int>>> codes = List<List<List<int>>>(n);
+   List<List<List<int>>> channel = List<List<List<int>>>(n);
    for (int i = 0; i < n; ++i) {
-      codes[i] = List<List<int>>(1);
-      codes[i][0] = List<int>();
+      channel[i] = List<List<int>>(1);
+      channel[i][0] = List<int>();
    }
 
-   return codes;
+   return channel;
 }
 
 class PostData {
+   // The post unique identifier.  Its value is sent back by the
+   // server when the post publication is acknowledged.
+   int id = -1;
+
    // The person that published this post.
    String from = '';
 
-   // The post unique identifier.  Its value is sent back by the
-   // server when the post is acknowledged.
-   int id = -1;
+   // The publisher nick name.
+   String nick = cts.unknownNick;
 
-   // Contains channel codes in the form
+   // Contains the channel of the channel this post was published.
    //
    //  [[[1, 2]], [[3, 2]], [[3, 2, 1, 1]]]
    //
-   List<List<List<int>>> codes;
+   List<List<List<int>>> channel;
 
    int filter = 0;
 
+   // The publication date.
+   int date = 0;
+
+   // The date this post has been pinned by the user.
+   int pinDate = 0;
+
+   // Post status.
+   //   0: Posts published by the app.
+   //   1: Posts received
+   //   2: Posts moved to favorites.
+   int status = -1;
+
    // The string *description* inputed when user writes an post.
    String description = '';
-
-   // The user nick name.
-   String nick = cts.unknownNick;
-
-   // The date when the post was created.
-   int date = 0;
 
    List<ChatHistory> chats = List<ChatHistory>();
 
    PostData()
    {
-      codes = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
+      channel = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
    String makePathToPeersFile()
@@ -362,7 +372,7 @@ class PostData {
    PostData clone()
    {
       PostData ret = PostData();
-      ret.codes = List<List<List<int>>>.from(this.codes);
+      ret.channel = List<List<List<int>>>.from(this.channel);
       ret.description = this.description;
       ret.chats = List<ChatHistory>.from(this.chats);
       ret.from = this.from;
@@ -517,7 +527,7 @@ class PostData {
       PostData pd = readPostData(map);
       from = pd.from;
       id = pd.id;
-      codes = pd.codes;
+      channel = pd.channel;
       description = pd.description;
       filter = pd.filter;
       nick = pd.nick;
@@ -531,7 +541,7 @@ class PostData {
       return
       {
          'from': from,
-         'to': codes,
+         'to': channel,
          'id': id,
          'filter': filter,
          'msg': description,
@@ -539,6 +549,43 @@ class PostData {
          'date': date,
       };
    }
+}
+
+Map<String, dynamic> toMap(PostData post)
+{
+    return {
+      'id': post.id,
+      'from_': post.from,
+      'nick': post.nick,
+      'channel': jsonEncode(post.channel),
+      'filter': post.filter,
+      'date': post.date,
+      'pin_date': post.pinDate,
+      'status': post.status,
+      'description': post.description,
+    };
+}
+
+Future<List<PostData>> posts(Database db, String tableName) async
+{
+  final List<Map<String, dynamic>> maps =
+     await db.query(tableName);
+
+  return List.generate(maps.length, (i)
+  {
+     PostData post = PostData();
+     post.id = maps[i]['id'];
+     post.from = maps[i]['from_'];
+     post.nick = maps[i]['nick'];
+     post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
+     post.filter = maps[i]['filter'];
+     post.date = maps[i]['date'];
+     post.pinDate = maps[i]['pin_date'];
+     post.status = maps[i]['status'];
+     post.description = maps[i]['description'];
+
+     return post;
+  });
 }
 
 bool toggleLPChat(ChatHistory ch)
@@ -694,9 +741,9 @@ makeMenuInfoCards(BuildContext context,
 {
    List<Card> list = List<Card>();
 
-   for (int i = 0; i < data.codes.length; ++i) {
+   for (int i = 0; i < data.channel.length; ++i) {
       List<String> names =
-            loadNames(menus[i].root.first, data.codes[i][0]);
+            loadNames(menus[i].root.first, data.channel[i][0]);
 
       Card card = makePostElem(
                      context,
@@ -1094,18 +1141,9 @@ Widget makeChatTab(
          },
    );
 }
-
-PostData readPostData(var item)
+List<List<List<int>>> decodeChannel(List<dynamic> to)
 {
-   PostData post = PostData();
-   post.description = item['msg'];
-   post.from = item['from'];
-   post.id = item['id'];
-   post.filter = item['filter'];
-   post.nick = item['nick'];
-   post.codes = List<List<List<int>>>();
-
-   List<dynamic> to = item['to'];
+   List<List<List<int>>> channel = List<List<List<int>>>();
 
    for (List<dynamic> a in to) {
       List<List<int>> foo = List<List<int>>();
@@ -1116,9 +1154,22 @@ PostData readPostData(var item)
          }
          foo.add(bar);
       }
-      post.codes.add(foo);
+
+      channel.add(foo);
    }
 
+   return channel;
+}
+
+PostData readPostData(var item)
+{
+   PostData post = PostData();
+   post.description = item['msg'];
+   post.from = item['from'];
+   post.id = item['id'];
+   post.filter = item['filter'];
+   post.nick = item['nick'];
+   post.channel = decodeChannel(item['to']);
    return post;
 }
 

@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as p;
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -962,7 +964,6 @@ class MenuChatState extends State<MenuChat>
    String _lastPostIdFileFullPath = '';
    String _postsFileFullPath = '';
    String _favPostsFileFullPath = '';
-   String _ownPostsFileFullPath = '';
    String _outPostsFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
    String _dialogPrefsFullPath = '';
@@ -986,8 +987,8 @@ class MenuChatState extends State<MenuChat>
    List<Coord> _lpChatMsgs = List<Coord>();
 
    IOWebSocketChannel channel;
-
-   static final DeviceInfoPlugin devInfo = DeviceInfoPlugin();
+   
+   Database _db;
 
    bool _isOnOwn()
    {
@@ -1059,7 +1060,6 @@ class MenuChatState extends State<MenuChat>
       _lastPostIdFileFullPath  = '${glob.docDir}/${cts.lastPostIdFileName}';
       _postsFileFullPath       = '${glob.docDir}/${cts.postsFileName}';
       _favPostsFileFullPath    = '${glob.docDir}/${cts.favPostsFileName}';
-      _ownPostsFileFullPath    = '${glob.docDir}/${cts.ownPostsFileName}';
       _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
       _dialogPrefsFullPath     = '${glob.docDir}/${cts.dialogPrefsFullPath}';
@@ -1084,6 +1084,32 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _load(final String docDir) async
    {
+      final String dbPath = await getDatabasesPath();
+      await deleteDatabase(dbPath);
+      print('Path ===> $dbPath');
+      _db = await openDatabase(
+         p.join(dbPath, 'main.db'),
+         onCreate: (db, version)
+         {
+            print('====> Creating posts table.');
+
+            final String sqlCmd =
+            '''CREATE TABLE posts
+               ( id INTEGER PRIMARY KEY
+               , from_ TEXT
+               , nick TEXT
+               , channel TEXT
+               , filter INTEGER
+               , date INTEGER
+               , pin_date INTEGER
+               , status INTEGER
+               , description TEXT)''';
+
+            return db.execute(sqlCmd);
+         },
+         version: 1,
+      );
+
       try {
          _nick = await File(_nickFullPath).readAsString();
       } catch (e) {
@@ -1124,10 +1150,13 @@ class MenuChatState extends State<MenuChat>
       }
 
       try {
-         lines = await File(_ownPostsFileFullPath).readAsLines();
-         _ownPosts = await decodePostsStr(lines);
+         _ownPosts = await posts(_db, 'posts');
+         for (PostData o in _ownPosts)
+            await o.loadChats();
+
          _ownPosts.sort(CompPostData);
       } catch (e) {
+         print('===> Error caught.');
       }
 
       try {
@@ -1465,7 +1494,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onPostLeafReached()
    {
-      _post.codes[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
+      _post.channel[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
       _menus[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
@@ -1566,23 +1595,29 @@ class MenuChatState extends State<MenuChat>
          if (id != -1) {
             post.id = id;
             post.date = timestamp;
+            post.status = 0;
             _ownPosts.add(post);
-            print('Insertion ready');
             rotateElements(_ownPosts, _ownPosts.length - 1);
          }
 
-         final String content1 = serializeList(List<PostData>.from(_outPostsQueue));
-         await File(_outPostsFileFullPath).writeAsString(content1, mode: FileMode.write);
+         final String content1 =
+            serializeList(List<PostData>.from(_outPostsQueue));
+         await File(_outPostsFileFullPath)
+            .writeAsString(content1, mode: FileMode.write);
 
          if (id == -1) {
             print("Publish failed. The post will be discarded.");
             // Wipe out all queue elements.
-            await File(_outPostsFileFullPath).writeAsString('', mode: FileMode.write);
+            await File(_outPostsFileFullPath)
+               .writeAsString('', mode: FileMode.write);
             return;
          }
 
-         final String content2 = serializeList(<PostData>[post]);
-         await File(_ownPostsFileFullPath).writeAsString(content2, mode: FileMode.append);
+         await _db.insert(
+            'posts',
+            toMap(post),
+            conflictAlgorithm: ConflictAlgorithm.replace);
+
          if (_outPostsQueue.isEmpty)
             return;
 
@@ -2131,23 +2166,23 @@ class MenuChatState extends State<MenuChat>
 
    void _subscribeToChannels()
    {
-      List<List<List<int>>> codes = List<List<List<int>>>();
+      List<List<List<int>>> channels = List<List<List<int>>>();
       for (MenuItem item in _menus) {
          List<List<int>> hashCodes =
                readHashCodes(item.root.first, item.filterDepth);
 
          if (hashCodes.isEmpty) {
-            print("Menu hash codes is empty. Nothing to do ...");
+            print("Menu channels hash is empty. Nothing to do ...");
             return;
          }
 
-         codes.add(hashCodes);
+         channels.add(hashCodes);
       }
 
       var subCmd = {
          'cmd': 'subscribe',
          'last_post_id': _lastPostId,
-         'channels': codes,
+         'channels': channels,
          'filter': _filter
       };
 
