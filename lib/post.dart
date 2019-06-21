@@ -114,7 +114,7 @@ List<ChatItem> chatItemsFromStrs(final List<String> lines)
    return foo;
 }
 
-class ChatHistory {
+class Chat {
    String peer = '';
    String nick = '';
    List<ChatItem> msgs = List<ChatItem>();
@@ -145,7 +145,7 @@ class ChatHistory {
       return nick.substring(0, 2);
    }
 
-   ChatHistory(this.peer, this.nick, this.date, final int postId);
+   Chat(this.peer, this.nick, this.date, final int postId);
 
    String makeFullPath(final String prefix, final int postId)
    {
@@ -270,7 +270,7 @@ class ChatHistory {
 }
 
 // Used to rotate a new chat item in a chat history and also posts.
-void rotateElements(List<ChatHistory> elems, int j)
+void rotateElements(List<Chat> elems, int j)
 {
    if (j == 0)
       return; // This is already the first element.
@@ -278,7 +278,7 @@ void rotateElements(List<ChatHistory> elems, int j)
    if (elems[j].pinDate != 0)
       return; // The element is pinned and should not be rotated.
 
-   ChatHistory elem = elems[j];
+   Chat elem = elems[j];
    int i = j;
    for (; i > 0; --i) {
       elems[i] = elems[i - 1];
@@ -287,8 +287,7 @@ void rotateElements(List<ChatHistory> elems, int j)
    elems[i] = elem;
 }
 
-ChatHistory
-selectMostRecentChat(final ChatHistory lhs, final ChatHistory rhs)
+Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
 {
    final int t1 = lhs.getMostRecentTimestamp();
    final int t2 = rhs.getMostRecentTimestamp();
@@ -307,7 +306,7 @@ List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
    return channel;
 }
 
-class PostData {
+class Post {
    // The post unique identifier.  Its value is sent back by the
    // server when the post publication is acknowledged.
    int id = -1;
@@ -341,9 +340,9 @@ class PostData {
    // The string *description* inputed when user writes an post.
    String description = '';
 
-   List<ChatHistory> chats = List<ChatHistory>();
+   List<Chat> chats = List<Chat>();
 
-   PostData()
+   Post()
    {
       channel = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
@@ -356,7 +355,7 @@ class PostData {
    Future<void> loadChats() async
    {
       try {
-         chats = List<ChatHistory>();
+         chats = List<Chat>();
          File f = File(makePathToPeersFile());
          final List<String> lines = await f.readAsLines();
          print('Peers: $lines');
@@ -364,9 +363,8 @@ class PostData {
             final List<String> fields = line.split(';');
             // The assertion should be for == not >=.
             assert(fields.length >= 3);
-            ChatHistory hist =
-               ChatHistory(
-                  fields[0], fields[1], int.parse(fields[2]), id);
+            Chat hist = Chat(
+               fields[0], fields[1], int.parse(fields[2]), id);
             await hist.loadMsgs(id);
             chats.add(hist);
          }
@@ -375,12 +373,12 @@ class PostData {
       }
    }
 
-   PostData clone()
+   Post clone()
    {
-      PostData ret = PostData();
+      Post ret = Post();
       ret.channel = List<List<List<int>>>.from(this.channel);
       ret.description = this.description;
-      ret.chats = List<ChatHistory>.from(this.chats);
+      ret.chats = List<Chat>.from(this.chats);
       ret.from = this.from;
       ret.id = this.id;
       ret.filter = this.filter;
@@ -395,7 +393,7 @@ class PostData {
       final int j = getChatHistIdx(peer);
       if (j == -1) {
          // AFAIK, the only way this can happen ist if the app user
-         // has deleted the ChatHistory in the time between the
+         // has deleted the Chat in the time between the
          // nick_req has been sent and the ack has been received.  So
          // there is no need or way to proceeed.
          return;
@@ -409,7 +407,7 @@ class PostData {
    {
       // Overwrites the previous content.
       String data = '';
-      for (ChatHistory o in chats)
+      for (Chat o in chats)
          data += '${o.peer};${o.nick};${o.date}\n';
 
       print('Persisting peers: \n$data');
@@ -423,7 +421,7 @@ class PostData {
    {
       print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
-      ChatHistory history = ChatHistory(peer, nick, now, id);
+      Chat history = Chat(peer, nick, now, id);
       chats.add(history);
       await persistPeers();
    }
@@ -476,7 +474,7 @@ class PostData {
    int getNumberOfUnreadChats()
    {
       int i = 0;
-      for (ChatHistory h in chats)
+      for (Chat h in chats)
          if (h.getNumberOfUnreadMsgs() > 0)
             ++i;
 
@@ -488,7 +486,7 @@ class PostData {
       // This is more eficient than comparing
       // getNumberOfUnreadChats != 0
 
-      for (ChatHistory h in chats)
+      for (Chat h in chats)
          if (h.getNumberOfUnreadMsgs() > 0)
             return true;
 
@@ -500,7 +498,7 @@ class PostData {
       if (chats.isEmpty)
          return 0;
 
-      final ChatHistory hist = chats.reduce(selectMostRecentChat);
+      final Chat hist = chats.reduce(selectMostRecentChat);
 
       return hist.getMostRecentTimestamp();
    }
@@ -527,11 +525,11 @@ class PostData {
       }
    }
 
-   PostData.fromJson(Map<String, dynamic> map)
+   Post.fromJson(Map<String, dynamic> map)
    {
       // Part of the object can be deserialized by readPostData. The
       // only remaining field will be *peers* and the chat history.
-      PostData pd = readPostData(map);
+      Post pd = readPostData(map);
       from = pd.from;
       id = pd.id;
       channel = pd.channel;
@@ -559,7 +557,7 @@ class PostData {
    }
 }
 
-Map<String, dynamic> postToMap(PostData post)
+Map<String, dynamic> postToMap(Post post)
 {
     return {
       'id': post.id,
@@ -574,14 +572,14 @@ Map<String, dynamic> postToMap(PostData post)
     };
 }
 
-Future<List<PostData>> loadPosts(Database db, String tableName) async
+Future<List<Post>> loadPosts(Database db, String tableName) async
 {
   final List<Map<String, dynamic>> maps =
      await db.query(tableName);
 
   return List.generate(maps.length, (i)
   {
-     PostData post = PostData();
+     Post post = Post();
      post.id = maps[i]['id'];
      post.from = maps[i]['from_'];
      post.nick = maps[i]['nick'];
@@ -596,7 +594,7 @@ Future<List<PostData>> loadPosts(Database db, String tableName) async
   });
 }
 
-bool toggleLPChat(ChatHistory ch)
+bool toggleLPChat(Chat ch)
 {
    final bool old = ch.isLongPressed;
    ch.isLongPressed = !old;
@@ -610,7 +608,7 @@ bool toggleLPChatMsg(ChatItem ci)
    return old;
 }
 
-int CompPostData(final PostData lhs, final PostData rhs)
+int CompPostData(final Post lhs, final Post rhs)
 {
 
    if (lhs.chats.length == 0 && rhs.chats.length == 0)
@@ -637,7 +635,7 @@ int CompPostData(final PostData lhs, final PostData rhs)
 }
 
 Future<void>
-findAndMarkChatApp( final List<PostData> posts
+findAndMarkChatApp( final List<Post> posts
                   , final String from
                   , final int postId
                   , final int status) async
@@ -762,7 +760,7 @@ Card makePostDetailElem(int filter)
 
 List<Card>
 makeMenuInfoCards(BuildContext context,
-                  PostData data,
+                  Post data,
                   List<MenuItem> menus,
                   Color color)
 {
@@ -787,7 +785,7 @@ makeMenuInfoCards(BuildContext context,
 
 // Will assemble menu information and the description in cards
 List<Card> postTextAssembler(BuildContext context,
-                            PostData data,
+                            Post data,
                             List<MenuItem> menus,
                             Color color)
 {
@@ -814,7 +812,7 @@ List<Card> postTextAssembler(BuildContext context,
    return list;
 }
 
-Text makeChatSubStrWidget(ChatHistory ch)
+Text makeChatSubStrWidget(Chat ch)
 {
    FontWeight fw = FontWeight.normal;
    if (ch.hasUnreadMsgs())
@@ -824,7 +822,7 @@ Text makeChatSubStrWidget(ChatHistory ch)
 }
 
 Card createChatEntry(BuildContext context,
-                     PostData post,
+                     Post post,
                      List<MenuItem> menus,
                      Widget chats,
                      Function onDelPost,
@@ -950,7 +948,7 @@ makeTextInputFieldCard( TextEditingController ctrl
 
 ListView
 makePostTabListView(BuildContext ctx,
-                    List<PostData> posts,
+                    List<Post> posts,
                     Function onPostSelection,
                     List<MenuItem> menus,
                     Function updateLasSeenPostIdx)
@@ -1057,7 +1055,7 @@ Widget chooseIcon(final int status)
       padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
-Widget makeChatTileSubStr(final ChatHistory ch)
+Widget makeChatTileSubStr(final Chat ch)
 {
    if (ch.getNumberOfUnreadMsgs() > 0)
       return makeChatSubStrWidget(ch);
@@ -1074,7 +1072,7 @@ Widget makeChatTileSubStr(final ChatHistory ch)
 }
 
 Widget makePostChatCol(BuildContext context,
-                      List<ChatHistory> ch,
+                      List<Chat> ch,
                       Function onPressed,
                       Function onLongPressed,
                       int postId)
@@ -1157,7 +1155,7 @@ Widget makePostChatCol(BuildContext context,
 
 Widget makeChatTab(
    BuildContext context,
-   List<PostData> data,
+   List<Post> data,
    Function onPressed,
    Function onLongPressed,
    List<MenuItem> menus,
@@ -1205,9 +1203,9 @@ List<List<List<int>>> decodeChannel(List<dynamic> to)
    return channel;
 }
 
-PostData readPostData(var item)
+Post readPostData(var item)
 {
-   PostData post = PostData();
+   Post post = Post();
    post.description = item['msg'];
    post.from = item['from'];
    post.id = item['id'];

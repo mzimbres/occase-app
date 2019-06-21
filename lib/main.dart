@@ -21,8 +21,8 @@ import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 
 class Coord {
-   PostData post = null;
-   ChatHistory chat = null;
+   Post post = null;
+   Chat chat = null;
    int msgIdx = -1;
    Coord(this.post, this.chat, this.msgIdx);
 }
@@ -76,7 +76,7 @@ void unmarkLPChatMsgsImpl(List<Coord> lpChatMsgs)
 }
 
 Future<void>
-onPinPost(List<PostData> posts, int i, Database db) async
+onPinPost(List<Post> posts, int i, Database db) async
 {
    if (posts[i].pinDate == 0) {
       posts[i].pinDate = DateTime.now().millisecondsSinceEpoch;
@@ -91,7 +91,7 @@ onPinPost(List<PostData> posts, int i, Database db) async
 }
 
 Future<void>
-onRemovePost(List<PostData> posts, int i, Database db) async
+onRemovePost(List<Post> posts, int i, Database db) async
 {
    await db.execute(cts.deletePost, [posts[i].id]);
    posts.removeAt(i);
@@ -117,13 +117,13 @@ String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
    return str;
 }
 
-Future<List<PostData>> decodePostsStr(final List<String> lines) async
+Future<List<Post>> decodePostsStr(final List<String> lines) async
 {
-   List<PostData> foo = List<PostData>();
+   List<Post> foo = List<Post>();
 
    for (String o in lines) {
       Map<String, dynamic> map = jsonDecode(o);
-      PostData tmp = PostData.fromJson(map);
+      Post tmp = Post.fromJson(map);
       await tmp.loadChats();
       foo.add(tmp);
    }
@@ -131,11 +131,11 @@ Future<List<PostData>> decodePostsStr(final List<String> lines) async
    return foo;
 }
 
-String makePostPayload(final PostData post)
+String makePostPayload(final Post post)
 {
    var pubMap = {
       'cmd': 'publish',
-      'items': <PostData>[post]
+      'items': <Post>[post]
    };
 
    return jsonEncode(pubMap);
@@ -234,7 +234,7 @@ makeNickRegisterScreen( TextEditingController txtCtrl
 
 ListView
 makeNewPostFinalScreenWidget( BuildContext ctx
-                            , PostData post
+                            , Post post
                             , final List<MenuItem> menu
                             , TextEditingController txtCtrl
                             , onSendNewPostPressed)
@@ -271,7 +271,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
 
 WillPopScope
 makeNewPostScreens( BuildContext ctx
-                  , PostData postInput
+                  , Post postInput
                   , final List<MenuItem> menu
                   , TextEditingController txtCtrl
                   , onSendNewPostPressed
@@ -529,7 +529,7 @@ ListView
 makeChatMsgListView(
    BuildContext ctx,
    ScrollController scrollCtrl,
-   ChatHistory ch,
+   Chat ch,
    onChatSendPressed,
    onChatMsgLongPressed)
 {
@@ -645,7 +645,7 @@ makeChatMsgListView(
 Widget
 makeChatScreen(BuildContext ctx,
                Function onWillPopScope,
-               ChatHistory ch,
+               Chat ch,
                TextEditingController ctrl,
                Function onChatSendPressed,
                ScrollController scrollCtrl,
@@ -949,16 +949,16 @@ class MenuChatState extends State<MenuChat>
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
-   PostData _post = null;
+   Post _post = null;
 
    // The list of posts received from the server. Our own posts that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
-   List<PostData> _posts = List<PostData>();
+   List<Post> _posts = List<Post>();
 
    // The list of posts the user has selected in the posts screen.
    // They are moved from _posts to here.
-   List<PostData> _favPosts = List<PostData>();
+   List<Post> _favPosts = List<Post>();
 
    // Posts the user wrote itself and sent to the server. One issue we
    // have to observe is that if the user is subscribed to the channel
@@ -968,7 +968,7 @@ class MenuChatState extends State<MenuChat>
    //
    // The only posts inserted here are those that have been acked with
    // ok by the server, before that they will live in _outPostsQueue
-   List<PostData> _ownPosts = List<PostData>();
+   List<Post> _ownPosts = List<Post>();
 
    // Posts sent to the server that haven't been acked yet. I found it
    // easier to have this list. For example, if the user sends more
@@ -977,7 +977,7 @@ class MenuChatState extends State<MenuChat>
    // more efficient in terms of persistency. The _ownPosts becomes
    // append only, this is important if there is a large number of
    // posts.
-   Queue<PostData> _outPostsQueue = Queue<PostData>();
+   Queue<Post> _outPostsQueue = Queue<Post>();
 
    // Stores chat messages that cannot be lost in case the connection
    // to the server is lost. 
@@ -998,7 +998,7 @@ class MenuChatState extends State<MenuChat>
    int _botBarIdx = 0;
 
    // The current chat, if any.
-   ChatHistory _chat = null;
+   Chat _chat = null;
 
    // The last post id seen by the user.
    int _lastSeenPostIdx = 0;
@@ -1144,8 +1144,8 @@ class MenuChatState extends State<MenuChat>
       List<String> lines = List<String>();
 
       try {
-         final List<PostData> posts = await loadPosts(_db, 'posts');
-         for (PostData p in posts) {
+         final List<Post> posts = await loadPosts(_db, 'posts');
+         for (Post p in posts) {
             if (p.status == 0) {
                await p.loadChats();
                _ownPosts.add(p);
@@ -1167,8 +1167,8 @@ class MenuChatState extends State<MenuChat>
 
       try {
          lines = await File(_outPostsFileFullPath).readAsLines();
-         List<PostData> tmp = await decodePostsStr(lines);
-         _outPostsQueue = Queue<PostData>.from(tmp);
+         List<Post> tmp = await decodePostsStr(lines);
+         _outPostsQueue = Queue<Post>.from(tmp);
       } catch (e) {
       }
 
@@ -1309,7 +1309,7 @@ class MenuChatState extends State<MenuChat>
    void _onNewPost()
    {
       _newPostPressed = true;
-      _post = PostData();
+      _post = Post();
       _menus[0].restoreMenuStack();
       _menus[1].restoreMenuStack();
       _botBarIdx = 0;
@@ -1546,7 +1546,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> sendPost(PostData post) async
+   Future<void> sendPost(Post post) async
    {
       final bool isEmpty = _outPostsQueue.isEmpty;
 
@@ -1556,7 +1556,7 @@ class MenuChatState extends State<MenuChat>
       // list should not contain our own posts.
       _outPostsQueue.add(post);
 
-      final String content = serializeList(<PostData>[post]);
+      final String content = serializeList(<Post>[post]);
       await File(_outPostsFileFullPath).writeAsString(content, mode: FileMode.append);
 
       if (!isEmpty)
@@ -1591,7 +1591,7 @@ class MenuChatState extends State<MenuChat>
          // won't be so fast. But since this is my test condition, I
          // will cope with that by inserting the post in _ownPosts and
          // only after removing from the queue.
-         PostData post = _outPostsQueue.removeFirst();
+         Post post = _outPostsQueue.removeFirst();
          if (id != -1) {
             post.id = id;
             post.date = timestamp;
@@ -1602,7 +1602,7 @@ class MenuChatState extends State<MenuChat>
          }
 
          final String content1 =
-            serializeList(List<PostData>.from(_outPostsQueue));
+            serializeList(List<Post>.from(_outPostsQueue));
          await File(_outPostsFileFullPath)
             .writeAsString(content1, mode: FileMode.write);
 
@@ -1677,7 +1677,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-   _onChatPressedImpl(List<PostData> posts,
+   _onChatPressedImpl(List<Post> posts,
                       bool isSenderPost, int i, int j) async
    {
       // WARNING: When working with indexes, ensure you colect them
@@ -1732,7 +1732,7 @@ class MenuChatState extends State<MenuChat>
          await _onChatPressedImpl(_ownPosts, true, i, j);
    }
 
-   void _onChatLPImpl(List<PostData> posts, int i, int j)
+   void _onChatLPImpl(List<Post> posts, int i, int j)
    {
       final Coord tmp = Coord(posts[i], posts[i].chats[j], -1);
 
@@ -1792,7 +1792,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-   _onSendChatMsgImpl(List<PostData> posts,
+   _onSendChatMsgImpl(List<Post> posts,
                       int postId,
                       String peer,
                       bool isSenderPost,
@@ -1867,7 +1867,7 @@ class MenuChatState extends State<MenuChat>
       // A user message can be either directed to one of the posts
       // published by this app or one that the app is interested
       // in. We distinguish this with the field 'is_sender_post'
-      List<PostData> posts = _ownPosts;
+      List<Post> posts = _ownPosts;
       if (isSenderPost)
          posts = _favPosts;
 
@@ -1882,8 +1882,8 @@ class MenuChatState extends State<MenuChat>
 
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.
-      PostData postTmp = posts[i];
-      ChatHistory chatTmp = postTmp.chats[j];
+      Post postTmp = posts[i];
+      Chat chatTmp = postTmp.chats[j];
       rotateElements(posts[i].chats, j);
       posts.sort(CompPostData);
 
@@ -2031,7 +2031,7 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onPost(Map<String, dynamic> ack) async
    {
       for (var item in ack['items']) {
-         PostData post = readPostData(item);
+         Post post = readPostData(item);
          post.status = 1;
 
          // Just in case the server sends us posts out of order I
@@ -2196,7 +2196,7 @@ class MenuChatState extends State<MenuChat>
    int _getNUnreadFavChats()
    {
       int i = 0;
-      for (PostData post in _favPosts)
+      for (Post post in _favPosts)
          i += post.getNumberOfUnreadChats();
 
       return i;
@@ -2205,7 +2205,7 @@ class MenuChatState extends State<MenuChat>
    int _getNUnreadOwnChats()
    {
       int i = 0;
-      for (PostData post in _ownPosts)
+      for (Post post in _ownPosts)
          i += post.getNumberOfUnreadChats();
 
       return i;
@@ -2272,7 +2272,7 @@ class MenuChatState extends State<MenuChat>
       await removeLPChats(_lpChats);
 
       if (_isOnFav()) {
-         for (PostData o in _favPosts)
+         for (Post o in _favPosts)
             if (o.chats.isEmpty)
                await _db.execute(cts.deletePost, [o.id]);
 
