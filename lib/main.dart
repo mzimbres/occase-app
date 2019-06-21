@@ -1118,14 +1118,12 @@ class MenuChatState extends State<MenuChat>
    Future<void> _load(final String docDir) async
    {
       final String dbPath = await getDatabasesPath();
-      await deleteDatabase(dbPath);
-      print('Path ===> $dbPath');
       _db = await openDatabase(
          p.join(dbPath, 'main.db'),
          readOnly: false,
          onCreate: (db, version) async
          {
-            print('====> Creating tables.');
+            print('====> Creating database.');
             await db.execute(cts.createPostsTable);
             await db.execute(cts.createConfig);
          },
@@ -1199,7 +1197,6 @@ class MenuChatState extends State<MenuChat>
 
             if (i != -1) {
                _lastSeenPostIdx = i + 1;
-               print('_lastSeenPostIdx ===> $_lastSeenPostIdx');
             }
 
             _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
@@ -1208,7 +1205,6 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
          print(e);
       }
-
 
       final List<int> versions = _makeMenuVersions(_menus);
       final String cmd = _makeConnCmd(versions);
@@ -1976,6 +1972,7 @@ class MenuChatState extends State<MenuChat>
       cfg.appId = ack["id"];
       cfg.appPwd = ack["password"];
 
+      print('register_ack: Persisting the login.');
       await _db.insert(
          'config',
          configToMap(cfg),
@@ -1984,7 +1981,6 @@ class MenuChatState extends State<MenuChat>
       _menus = menuReader(ack);
       assert(_menus != null);
 
-      print('register_ack: Persisting the menu received.');
       await _persistMenu();
    }
 
