@@ -120,7 +120,7 @@ class ChatHistory {
    List<ChatItem> msgs = List<ChatItem>();
    bool isLongPressed = false;
    int date = 0;
-   int pinDate = -1;
+   int pinDate = 0;
 
    String getChatDisplayName()
    {
@@ -275,7 +275,7 @@ void rotateElements(List<ChatHistory> elems, int j)
    if (j == 0)
       return; // This is already the first element.
 
-   if (elems[j].pinDate != -1)
+   if (elems[j].pinDate != 0)
       return; // The element is pinned and should not be rotated.
 
    ChatHistory elem = elems[j];
@@ -293,7 +293,7 @@ selectMostRecentChat(final ChatHistory lhs, final ChatHistory rhs)
    final int t1 = lhs.getMostRecentTimestamp();
    final int t2 = rhs.getMostRecentTimestamp();
 
-   return t1 < t2 ? lhs : rhs;
+   return t1 > t2 ? lhs : rhs;
 }
 
 List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
@@ -330,7 +330,7 @@ class PostData {
    int date = 0;
 
    // The date this post has been pinned by the user.
-   int pinDate = -1;
+   int pinDate = 0;
 
    // Post status.
    //   0: Posts published by the app.
@@ -622,41 +622,18 @@ int CompPostData(final PostData lhs, final PostData rhs)
    if (rhs.chats.length == 0)
       return -1;
 
-   if (lhs.pinDate != -1 && rhs.pinDate != -1)
+   if (lhs.pinDate != 0 && rhs.pinDate != 0)
       return lhs.pinDate > rhs.pinDate ? -1 : 1;
 
-   if (lhs.pinDate != -1)
+   if (lhs.pinDate != 0)
       return -1;
 
-   if (rhs.pinDate != -1)
+   if (rhs.pinDate != 0)
       return 1;
 
    final int ts1 = lhs.getMostRecentTimestamp();
    final int ts2 = rhs.getMostRecentTimestamp();
    return ts1 > ts2 ? -1 : 1;
-}
-
-int rotatePostData(List<PostData> posts, int j)
-{
-   if (j == 0)
-      return 0; // This is already the first element.
-
-   if (posts[j].pinDate != -1) {
-      print('====> Element is fixed.');
-      return j; // The element is pinned and should not be rotated.
-   }
-
-   PostData elem = posts[j];
-   int i = j;
-   for (; i > 0; --i) {
-      if (CompPostData(posts[i], posts[i - 1]) < 0)
-         posts[i] = posts[i - 1];
-      else
-         break;
-   }
-
-   posts[i] = elem;
-   return i;
 }
 
 Future<void>
@@ -857,7 +834,7 @@ Card createChatEntry(BuildContext context,
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        cts.postFrameColor);
 
-   IconData pinIcon = post.pinDate == -1 ? Icons.place : Icons.pin_drop;
+   IconData pinIcon = post.pinDate == 0 ? Icons.place : Icons.pin_drop;
    Row leading = Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>
@@ -1121,14 +1098,14 @@ Widget makePostChatCol(BuildContext context,
       }
 
       Widget trailing = null;
-      if (n != 0 && ch[i].pinDate != -1) {
+      if (n != 0 && ch[i].pinDate != 0) {
          trailing = Column(children: <Widget>
          [ Icon(Icons.place)
          , makeCircleUnreadMsgs(n, Colors.grey, Colors.white)
          ]);
-      } else if (n == 0 && ch[i].pinDate != -1) {
+      } else if (n == 0 && ch[i].pinDate != 0) {
          trailing = Icon(Icons.place);
-      } else if (n != 0 && ch[i].pinDate == -1) {
+      } else if (n != 0 && ch[i].pinDate == 0) {
          trailing = makeCircleUnreadMsgs(n, Colors.grey, Colors.white);
       }
 
@@ -1237,7 +1214,7 @@ PostData readPostData(var item)
    post.filter = item['filter'];
    post.nick = item['nick'];
    post.channel = decodeChannel(item['to']);
-   post.pinDate = -1;
+   post.pinDate = 0;
    return post;
 }
 
