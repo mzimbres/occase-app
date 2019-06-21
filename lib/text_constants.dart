@@ -200,7 +200,6 @@ final TextStyle expTileStl =
                     color: Colors.white);
 
 final String menuFileName = 'menu.txt';
-final String outPostsFileName = 'out_posts_queue.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
 
@@ -242,7 +241,7 @@ final Icon unknownPersonIcon =
 final String createPostsTable =
 '''
 CREATE TABLE posts
-( id INTEGER PRIMARY KEY
+( id INTEGER
 , from_ TEXT
 , nick TEXT
 , channel TEXT
@@ -256,6 +255,15 @@ CREATE TABLE posts
 final String updatePostStatus =
 '''
 UPDATE posts SET status = ? WHERE id = ?
+''';
+
+final String updatePostOnAck =
+'''
+UPDATE posts
+SET status = ?,
+    id = ?,
+    date = ?
+WHERE rowid = ?
 ''';
 
 final String updatePostPinDate =

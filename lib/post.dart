@@ -11,16 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-void writeToFile( final String data
-                , final String fullPath
-                , final FileMode mode)
-{
-   try {
-      File(fullPath).writeAsStringSync(data, mode: mode);
-   } catch (e) {
-   }
-}
-
 String serializeList<T>(final List<T> data)
 {
    String content = '';
@@ -30,13 +20,6 @@ String serializeList<T>(final List<T> data)
    }
 
    return content;
-}
-
-void writeListToDisk<T>( final List<T> data, final String fullPath
-                       , FileMode mode)
-{
-   final String content = serializeList(data);
-   writeToFile(content, fullPath, mode);
 }
 
 int cmdToChatStatus(final String cmd)
@@ -302,6 +285,9 @@ List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
 }
 
 class Post {
+   // The auto increment sqlite rowid.
+   int dbId = -1;
+
    // The post unique identifier.  Its value is sent back by the
    // server when the post publication is acknowledged.
    int id = -1;
@@ -330,6 +316,7 @@ class Post {
    //   0: Posts published by the app.
    //   1: Posts received
    //   2: Posts moved to favorites.
+   //   3: Posts published by the app but still unacked by the server.
    int status = -1;
 
    // The string *description* inputed when user writes an post.
@@ -379,6 +366,7 @@ class Post {
       ret.filter = this.filter;
       ret.nick = this.nick;
       ret.date = this.date;
+      ret.status = this.status;
       ret.pinDate = this.pinDate;
       return ret;
    }
@@ -520,6 +508,7 @@ class Post {
       nick = pd.nick;
       date = pd.date;
       pinDate = pd.pinDate;
+      status = pd.status;
    }
 
    Map<String, dynamic> toJson()
@@ -562,6 +551,7 @@ Future<List<Post>> loadPosts(Database db, String tableName) async
   return List.generate(maps.length, (i)
   {
      Post post = Post();
+     post.dbId = maps[i]['rowid'];
      post.id = maps[i]['id'];
      post.from = maps[i]['from_'];
      post.nick = maps[i]['nick'];
@@ -1195,6 +1185,7 @@ Post readPostData(var item)
    post.nick = item['nick'];
    post.channel = decodeChannel(item['to']);
    post.pinDate = 0;
+   post.status = -1;
    return post;
 }
 

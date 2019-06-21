@@ -117,20 +117,6 @@ String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
    return str;
 }
 
-Future<List<Post>> decodePostsStr(final List<String> lines) async
-{
-   List<Post> foo = List<Post>();
-
-   for (String o in lines) {
-      Map<String, dynamic> map = jsonDecode(o);
-      Post tmp = Post.fromJson(map);
-      await tmp.loadChats();
-      foo.add(tmp);
-   }
-
-   return foo;
-}
-
 String makePostPayload(final Post post)
 {
    var pubMap = {
@@ -1013,7 +999,6 @@ class MenuChatState extends State<MenuChat>
    // Full path to files.
    String _unreadPostsFileFullPath = '';
    String _menuFileFullPath = '';
-   String _outPostsFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
@@ -1100,7 +1085,6 @@ class MenuChatState extends State<MenuChat>
    void _initPaths()
    {
       _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
-      _outPostsFileFullPath    = '${glob.docDir}/${cts.outPostsFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
    }
 
@@ -1162,7 +1146,10 @@ class MenuChatState extends State<MenuChat>
             } else if (p.status == 2) {
                await p.loadChats();
                _favPosts.add(p);
+            } else if (p.status == 3) {
+               _outPostsQueue.add(p);
             } else {
+               print('====> ${p.status}');
                assert(false);
             }
          }
@@ -1170,14 +1157,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.sort(CompPosts);
          _favPosts.sort(CompPosts);
       } catch (e) {
-         print('===> Error caught.');
-      }
-
-      try {
-         lines = await File(_outPostsFileFullPath).readAsLines();
-         List<Post> tmp = await decodePostsStr(lines);
-         _outPostsQueue = Queue<Post>.from(tmp);
-      } catch (e) {
+         print(e);
       }
 
       try {
@@ -1189,6 +1169,7 @@ class MenuChatState extends State<MenuChat>
             _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
          }
       } catch (e) {
+         print(e);
       }
 
       channel = IOWebSocketChannel.connect(cts.host);
@@ -1552,7 +1533,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> sendPost(Post post) async
+   Future<void> _sendPost(Post post) async
    {
       final bool isEmpty = _outPostsQueue.isEmpty;
 
@@ -1560,10 +1541,14 @@ class MenuChatState extends State<MenuChat>
       // will be echoed back to us if we are subscribed to its
       // channel. It has to be filtered out from _posts since that
       // list should not contain our own posts.
-      _outPostsQueue.add(post);
 
-      final String content = serializeList(<Post>[post]);
-      await File(_outPostsFileFullPath).writeAsString(content, mode: FileMode.append);
+      final int dbId = 
+         await _db.insert('posts', postToMap(post),
+                          conflictAlgorithm:
+                             ConflictAlgorithm.replace);
+
+      post.dbId = dbId;
+      _outPostsQueue.add(post);
 
       if (!isEmpty)
          return;
@@ -1586,49 +1571,39 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   Future<void> handlePublishAck(final int id, final int timestamp) async
+   Future<void> handlePublishAck(final int id, final int date) async
    {
       try {
          assert(!_outPostsQueue.isEmpty);
 
-         // When working with the simulator I found out that is
-         // replies on my machine before we could move the post from
+         // When working with the simulator I found out that it
+         // replies on my machine before the post could be moved from
          // the output queue to the _ownPosts. In normal cases users
          // won't be so fast. But since this is my test condition, I
          // will cope with that by inserting the post in _ownPosts and
-         // only after removing from the queue.
+         // only after that removing from the queue.
          Post post = _outPostsQueue.removeFirst();
          if (id != -1) {
             post.id = id;
-            post.date = timestamp;
+            post.date = date;
             post.status = 0;
             post.pinDate = 0;
             _ownPosts.add(post);
             _ownPosts.sort(CompPosts);
          }
 
-         final String content1 =
-            serializeList(List<Post>.from(_outPostsQueue));
-         await File(_outPostsFileFullPath)
-            .writeAsString(content1, mode: FileMode.write);
-
          if (id == -1) {
-            print("Publish failed. The post will be discarded.");
-            // Wipe out all queue elements.
-            await File(_outPostsFileFullPath)
-               .writeAsString('', mode: FileMode.write);
+            // TODO: Consider removing the post from the db.
+            print("Publish failed.");
             return;
          }
 
-         await _db.insert(
-            'posts',
-            postToMap(post),
-            conflictAlgorithm: ConflictAlgorithm.replace);
+         await _db.execute(cts.updatePostOnAck,
+                           [0, id, date, post.dbId]);
 
          if (_outPostsQueue.isEmpty)
             return;
 
-         // If the queue is not empty we can send the next.
          final String payload = makePostPayload(_outPostsQueue.first);
          channel.sink.add(payload);
       } catch (e) {
@@ -1673,7 +1648,8 @@ class MenuChatState extends State<MenuChat>
 
       _post.from = cfg.appId;
       _post.nick = cfg.nick;
-      await sendPost(_post.clone());
+      _post.status = 3;
+      await _sendPost(_post.clone());
       _post = null;
       setState(() { });
 
@@ -1889,6 +1865,10 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int j = await posts[i].getChatHistIdxOrCreate(peer, nick);
+      if (j == -1) {
+         print('_chatMsgHandler ===> Error: Ignoring $peer $nick.');
+         return;
+      }
       final int now = DateTime.now().millisecondsSinceEpoch;
       await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
 
