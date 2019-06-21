@@ -269,22 +269,30 @@ class Chat {
    }
 }
 
-// Used to rotate a new chat item in a chat history and also posts.
-void rotateElements(List<Chat> elems, int j)
+int CompChats(final Chat lhs, final Chat rhs)
 {
-   if (j == 0)
-      return; // This is already the first element.
 
-   if (elems[j].pinDate != 0)
-      return; // The element is pinned and should not be rotated.
+   if (lhs.msgs.length == 0 && rhs.msgs.length == 0)
+      return lhs.date > rhs.date ? -1 : 1;
 
-   Chat elem = elems[j];
-   int i = j;
-   for (; i > 0; --i) {
-      elems[i] = elems[i - 1];
-   }
+   if (lhs.msgs.length == 0)
+      return 1;
 
-   elems[i] = elem;
+   if (rhs.msgs.length == 0)
+      return -1;
+
+   if (lhs.pinDate != 0 && rhs.pinDate != 0)
+      return lhs.pinDate > rhs.pinDate ? -1 : 1;
+
+   if (lhs.pinDate != 0)
+      return -1;
+
+   if (rhs.pinDate != 0)
+      return 1;
+
+   final int ts1 = lhs.getMostRecentTimestamp();
+   final int ts2 = rhs.getMostRecentTimestamp();
+   return ts1 > ts2 ? -1 : 1;
 }
 
 Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
@@ -453,12 +461,6 @@ class Post {
       await chats[j].addMsg(msg, thisApp, id, status);
    }
 
-   Future<void> moveToFront(final int j) async
-   {
-      rotateElements(chats, j);
-      await persistPeers();
-   }
-
    Future<void>
    markChatAppAck(final String peer, final int status) async
    {
@@ -608,7 +610,7 @@ bool toggleLPChatMsg(ChatItem ci)
    return old;
 }
 
-int CompPostData(final Post lhs, final Post rhs)
+int CompPosts(final Post lhs, final Post rhs)
 {
 
    if (lhs.chats.length == 0 && rhs.chats.length == 0)

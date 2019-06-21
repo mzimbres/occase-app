@@ -87,7 +87,7 @@ onPinPost(List<Post> posts, int i, Database db) async
    await db.execute(cts.updatePostPinDate,
                     [posts[i].pinDate, posts[i].id]);
 
-   posts.sort(CompPostData);
+   posts.sort(CompPosts);
 }
 
 Future<void>
@@ -1167,8 +1167,8 @@ class MenuChatState extends State<MenuChat>
             }
          }
 
-         _ownPosts.sort(CompPostData);
-         _favPosts.sort(CompPostData);
+         _ownPosts.sort(CompPosts);
+         _favPosts.sort(CompPosts);
       } catch (e) {
          print('===> Error caught.');
       }
@@ -1299,7 +1299,7 @@ class MenuChatState extends State<MenuChat>
          await _posts[i].createChatEntryForPeer(_posts[i].from,
                _posts[i].nick);
          _favPosts.add(_posts[i]);
-         _favPosts.sort(CompPostData);
+         _favPosts.sort(CompPosts);
 
          await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
       } else {
@@ -1606,7 +1606,7 @@ class MenuChatState extends State<MenuChat>
             post.status = 0;
             post.pinDate = 0;
             _ownPosts.add(post);
-            _ownPosts.sort(CompPostData);
+            _ownPosts.sort(CompPosts);
          }
 
          final String content1 =
@@ -1822,9 +1822,9 @@ class MenuChatState extends State<MenuChat>
 
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
          await posts[i].chats[j].addMsg(msg, true, postId, 0);
-         rotateElements(posts[i].chats, j);
          await posts[i].persistPeers();
-         posts.sort(CompPostData);
+         posts[i].chats.sort(CompChats);
+         posts.sort(CompPosts);
 
          var msgMap = {
             'cmd': 'message',
@@ -1892,8 +1892,8 @@ class MenuChatState extends State<MenuChat>
       // wrong after the await function.
       Post postTmp = posts[i];
       Chat chatTmp = postTmp.chats[j];
-      rotateElements(posts[i].chats, j);
-      posts.sort(CompPostData);
+      posts[i].chats.sort(CompChats);
+      posts.sort(CompPosts);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
@@ -2267,6 +2267,11 @@ class MenuChatState extends State<MenuChat>
 
       _lpChats.clear();
 
+      // TODO: Sort _favPosts and _ownPosts. Beaware that the array
+      // Coord many have entries from chats from different posts and
+      // they may be out of order. So care should be taken to not sort
+      // the arrays multiple times.
+
       setState(() { });
    }
 
@@ -2286,7 +2291,7 @@ class MenuChatState extends State<MenuChat>
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       } else {
-         _ownPosts.sort(CompPostData);
+         _ownPosts.sort(CompPosts);
       }
 
       _lpChats.clear();
