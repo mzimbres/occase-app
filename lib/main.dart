@@ -511,6 +511,9 @@ makeFaButton(Function onNewPost,
    if (lpChats != 0)
       return null;
 
+   if (onNewPost == null)
+      return null;
+
    return FloatingActionButton(
       backgroundColor: cts.postFrameColor,
       child: Icon(id, color: Colors.white),
@@ -2457,15 +2460,19 @@ class MenuChatState extends State<MenuChat>
       List<FloatingActionButton> fltButtons =
             List<FloatingActionButton>(cts.tabNames.length);
 
-      fltButtons[0] =
-         makeFaButton(
-            _onNewPost,
-            _onFwdSendButton,
-            _lpChats.length,
-            _lpChatMsgs.length);
+      fltButtons[0] = makeFaButton(
+         _onNewPost,
+         _onFwdSendButton,
+         _lpChats.length,
+         _lpChatMsgs.length);
 
       fltButtons[1] = makeFiltersFaButton(_onNewFilters, Icons.filter_list);
-      fltButtons[2] = null;
+
+      fltButtons[2] = makeFaButton(
+         null,
+         _onFwdSendButton,
+         _lpChats.length,
+         _lpChatMsgs.length);
 
       List<Widget> bodies = List<Widget>(cts.tabNames.length);
       bodies[0] = makeChatTab(
