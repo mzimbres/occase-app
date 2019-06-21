@@ -257,6 +257,11 @@ final String updatePostStatus =
 UPDATE posts SET status = ? WHERE id = ?
 ''';
 
+final String updatePostPinDate =
+'''
+UPDATE posts SET pin_date = ? WHERE id = ?
+''';
+
 final String deletePost =
 '''
 DELETE FROM posts WHERE id = ?

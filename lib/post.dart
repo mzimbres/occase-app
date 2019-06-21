@@ -318,7 +318,7 @@ class PostData {
    // The publisher nick name.
    String nick = cts.unknownNick;
 
-   // Contains the channel of the channel this post was published.
+   // Contains the channel this post was published in.
    //
    //  [[[1, 2]], [[3, 2]], [[3, 2, 1, 1]]]
    //
@@ -839,9 +839,9 @@ Card createChatEntry(BuildContext context,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>
    [ IconButton(icon: Icon(Icons.clear),
-                onPressed: (){onDelPost(i);})
+                onPressed: () async {await onDelPost(i);})
    , IconButton(icon: Icon(pinIcon),
-                onPressed: (){onPinPost(i);})
+                onPressed: () async {await onPinPost(i);})
    ]);
 
    ExpansionTile et =

@@ -75,7 +75,8 @@ void unmarkLPChatMsgsImpl(List<Coord> lpChatMsgs)
       toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
 }
 
-void onPinPost(List<PostData> posts, int i)
+Future<void>
+onPinPost(List<PostData> posts, int i, Database db) async
 {
    if (posts[i].pinDate == 0) {
       posts[i].pinDate = DateTime.now().millisecondsSinceEpoch;
@@ -83,7 +84,17 @@ void onPinPost(List<PostData> posts, int i)
       posts[i].pinDate = 0;
    }
 
+   await db.execute(cts.updatePostPinDate,
+                    [posts[i].pinDate, posts[i].id]);
+
    posts.sort(CompPostData);
+}
+
+Future<void>
+onRemovePost(List<PostData> posts, int i, Database db) async
+{
+   await db.execute(cts.deletePost, [posts[i].id]);
+   posts.removeAt(i);
 }
 
 Future<Null> main() async
@@ -1619,17 +1630,23 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void _onRemovePost(int i)
-   {
-      print('_onRemovePost $i.');
-   }
-
-   void _onPinPost(int i)
+   Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         onPinPost(_favPosts, i);
+         await onRemovePost(_favPosts, i, _db);
       } else {
-         onPinPost(_ownPosts, i);
+         await onRemovePost(_ownPosts, i, _db);
+      }
+
+      setState(() { });
+   }
+
+   Future<void> _onPinPost(int i) async
+   {
+      if (_isOnFav()) {
+         await onPinPost(_favPosts, i, _db);
+      } else {
+         await onPinPost(_ownPosts, i, _db);
       }
       setState(() { });
    }
@@ -2458,7 +2475,7 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (int i){_showSimpleDial(ctx, (){_onRemovePost(i);}, 4);},
+         (int i){_showSimpleDial(ctx, () async { await _onRemovePost(i);}, 4);},
          _onPinPost);
 
       bodies[1] = makePostTabListView(
@@ -2474,7 +2491,7 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (int i){_showSimpleDial(ctx, (){_onRemovePost(i);}, 4);},
+         (int i){_showSimpleDial(ctx, () async {await _onRemovePost(i);}, 4);},
          _onPinPost);
 
       List<Widget> actions = List<Widget>();
