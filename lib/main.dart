@@ -1821,6 +1821,11 @@ class MenuChatState extends State<MenuChat>
          await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
          await posts[i].persistPeers();
 
+         final int msgId =
+            await _db.rawInsert(cts.insertChatMsg,
+                                [postId, peer, 1, now, msg]);
+         print('======> MsgId $msgId');
+
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
 
@@ -1886,6 +1891,12 @@ class MenuChatState extends State<MenuChat>
       final int j = await posts[i].getChatHistIdxOrCreate(peer, nick);
       final int now = DateTime.now().millisecondsSinceEpoch;
       await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
+
+      final int msgId =
+         await _db.rawInsert(cts.insertChatMsg,
+                             [postId, peer, 0, now, msg]);
+
+      print('======> MsgId $msgId');
 
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.

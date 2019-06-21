@@ -316,9 +316,13 @@ CREATE TABLE chats
 , type INTEGER
 , date INTEGER
 , body TEXT
-, PRIMARY KEY (post_id, user_id)
 , FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
 )
+''';
+
+final String insertChatMsg =
+'''
+INSERT INTO chats VALUES (?, ?, ?, ?, ?)
 ''';
 
 //___________________________________________________________
@@ -332,7 +336,6 @@ CREATE TABLE chat_status
 , server_ack_idx INTEGER
 , app_ack_received_idx INTEGER
 , app_ack_read_idx INTEGER
-, PRIMARY KEY (post_id, user_id)
 , FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
 )
 ''';
