@@ -1122,6 +1122,7 @@ class MenuChatState extends State<MenuChat>
       print('Path ===> $dbPath');
       _db = await openDatabase(
          p.join(dbPath, 'main.db'),
+         readOnly: false,
          onCreate: (db, version) async
          {
             print('====> Creating tables.');
@@ -1189,19 +1190,21 @@ class MenuChatState extends State<MenuChat>
 
       try {
          final List<Config> configs = await loadConfig(_db, 'config');
-         cfg = configs.first;
-         // TODO: The _posts array is expected to be sorted on its
-         // ids, so we could perform a binary search here instead.
-         final int i = _posts.indexWhere((e)
-            { return e.id == cfg.lastSeenPostId; });
+         if (!configs.isEmpty) {
+            cfg = configs.first;
+            // TODO: The _posts array is expected to be sorted on its
+            // ids, so we could perform a binary search here instead.
+            final int i = _posts.indexWhere((e)
+               { return e.id == cfg.lastSeenPostId; });
 
-         if (i != -1) {
-            _lastSeenPostIdx = i + 1;
-            print('_lastSeenPostIdx ===> $_lastSeenPostIdx');
+            if (i != -1) {
+               _lastSeenPostIdx = i + 1;
+               print('_lastSeenPostIdx ===> $_lastSeenPostIdx');
+            }
+
+            _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
+            _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
          }
-
-         _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
-         _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
       } catch (e) {
          print(e);
       }
