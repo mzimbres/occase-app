@@ -321,6 +321,8 @@ CREATE TABLE chats
 )
 ''';
 
+//___________________________________________________________
+
 final String createChatStatus =
 '''
 CREATE TABLE chat_status

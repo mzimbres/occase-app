@@ -259,9 +259,9 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                     , Icon(Icons.publish, color: Colors.white)
                     , cts.postFrameColor);
 
-   // I added this ListView to prevent widget_tmp from
-   // extending the whole screen. Inside the ListView it
-   // appears compact. Remove this later.
+   // FIXME: I added this ListView to prevent widget_tmp from
+   // extending the whole screen. Inside the ListView it appears
+   // compact. Remove this later.
    return ListView(
       shrinkWrap: true,
       //padding: const EdgeInsets.all(20.0),
@@ -1420,8 +1420,6 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
-      print('2 ====> ${_post.id} and ${_chat.peer}');
-
       if (_isOnFav()) {
          await _onSendChatMsgImpl(_favPosts, _post.id,
                                  _chat.peer, false, _txtCtrl.text);
@@ -1810,8 +1808,6 @@ class MenuChatState extends State<MenuChat>
          if (msg.isEmpty)
             return;
 
-         print('3 ====> ${postId} and ${peer}');
-
          final int i = posts.indexWhere((e) { return e.id == postId;});
          assert(i != -1);
 
@@ -1820,9 +1816,11 @@ class MenuChatState extends State<MenuChat>
          final int j = posts[i].getChatHistIdx(peer);
          assert(j != -1);
 
+         final int now = DateTime.now().millisecondsSinceEpoch;
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
-         await posts[i].chats[j].addMsg(msg, true, postId, 0);
+         await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
          await posts[i].persistPeers();
+
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
 
@@ -1868,7 +1866,7 @@ class MenuChatState extends State<MenuChat>
 
       final int postId = ack['post_id'];
       final String msg = ack['msg'];
-      final String from = ack['from'];
+      final String peer = ack['from'];
       final String nick = ack['nick'];
       final bool isSenderPost = ack['is_sender_post'];
 
@@ -1885,8 +1883,9 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      final int j = await posts[i].getChatHistIdxOrCreate(from, nick);
-      await posts[i].addMsg(j, msg, false, 0);
+      final int j = await posts[i].getChatHistIdxOrCreate(peer, nick);
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
 
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.
@@ -1904,7 +1903,7 @@ class MenuChatState extends State<MenuChat>
                'cmd': 'message',
                'type': 'app_ack_read',
                'from': cfg.appId,
-               'to': from,
+               'to': peer,
                'post_id': postId,
                'is_sender_post': !isSenderPost,
             };
@@ -1919,7 +1918,7 @@ class MenuChatState extends State<MenuChat>
       var map = {
          'cmd': 'message',
          'type': 'app_ack_received',
-         'to': from,
+         'to': peer,
          'post_id': postId,
          'is_sender_post': !isSenderPost,
       };

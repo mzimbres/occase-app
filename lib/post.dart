@@ -36,10 +36,6 @@ void writeListToDisk<T>( final List<T> data, final String fullPath
                        , FileMode mode)
 {
    final String content = serializeList(data);
-
-   // TODO: Limit the size of this file to a given size. When
-   // this happens it may be easier to always overwrite the file
-   // contents.
    writeToFile(content, fullPath, mode);
 }
 
@@ -81,14 +77,6 @@ class ChatItem {
          'msg': msg,
          'status': status,
       };
-   }
-
-   void setStatus(final String st)
-   {
-      // This check is just in case some messages come out of order.
-      final int foo = cmdToChatStatus(st);
-      if (foo > status)
-         status = foo;
    }
 }
 
@@ -225,9 +213,8 @@ class Chat {
 
    Future<void>
    addMsg(final String msg, final bool thisApp,
-          final int postId, int status) async
+          final int postId, int status, int now) async
    {
-      final int now = DateTime.now().millisecondsSinceEpoch;
       ChatItem item = ChatItem(thisApp, msg, status, now);
       msgs.add(item);
 
@@ -452,13 +439,6 @@ class Post {
       }
 
       return i;
-   }
-
-   Future<void>
-   addMsg(final int j, final String msg,
-          final bool thisApp, int status) async
-   {
-      await chats[j].addMsg(msg, thisApp, id, status);
    }
 
    Future<void>
