@@ -1126,9 +1126,14 @@ class MenuChatState extends State<MenuChat>
          readOnly: false,
          onCreate: (db, version) async
          {
-            print('====> Creating database.');
+            print('====> Creating posts table.');
             await db.execute(cts.createPostsTable);
+            print('====> Creating config table.');
             await db.execute(cts.createConfig);
+            print('====> Creating chats table.');
+            await db.execute(cts.createChats);
+            print('====> Creating chat-status table.');
+            await db.execute(cts.createChatStatus);
          },
 
          version: 1,

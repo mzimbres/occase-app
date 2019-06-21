@@ -237,6 +237,7 @@ final String host = 'ws://37.24.165.216:80';
 final Icon unknownPersonIcon =
    Icon(Icons.person, color: Colors.white, size: 30.0);
 
+//___________________________________________________________
 // SQL commands.
 final String createPostsTable =
 '''
@@ -267,6 +268,7 @@ final String deletePost =
 DELETE FROM posts WHERE id = ?
 ''';
 
+//___________________________________________________________
 final String createConfig =
 '''
 CREATE TABLE config
@@ -303,4 +305,34 @@ final String updateShowDialogOnDelPost =
 '''
 UPDATE config SET show_dialog_on_del_post = ?
 ''';
+
+//___________________________________________________________
+
+final String createChats =
+'''
+CREATE TABLE chats
+( post_id INTEGER
+, user_id TEXT
+, type INTEGER
+, date INTEGER
+, body TEXT
+, PRIMARY KEY (post_id, user_id)
+, FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
+)
+''';
+
+final String createChatStatus =
+'''
+CREATE TABLE chat_status
+( post_id INTEGER
+, user_id TEXT
+, sent_idx INTEGER
+, server_ack_idx INTEGER
+, app_ack_received_idx INTEGER
+, app_ack_read_idx INTEGER
+, PRIMARY KEY (post_id, user_id)
+, FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
+)
+''';
+
 
