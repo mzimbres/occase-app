@@ -1647,6 +1647,8 @@ class MenuChatState extends State<MenuChat>
    // A temporary variable used to store forwarded chat messages.
    List<Coord> _lpChatMsgs = List<Coord>();
 
+   Queue<dynamic> _wsMsgQueue = Queue<dynamic>();
+
    IOWebSocketChannel channel;
    
    Database _db;
@@ -2684,29 +2686,40 @@ class MenuChatState extends State<MenuChat>
          await handlePublishAck(-1, -1);
    }
 
+   Future<void> onWSDataImpl() async
+   {
+      while (!_wsMsgQueue.isEmpty) {
+         var msg = _wsMsgQueue.removeFirst();
+
+         Map<String, dynamic> ack = jsonDecode(msg);
+         final String cmd = ack["cmd"];
+
+         // TODO: Put most used commands first to improve performance.
+         if (cmd == "register_ack") {
+            await _onRegisterAck(ack, msg);
+         } else if (cmd == "login_ack") {
+            await _onLoginAck(ack, msg);
+         } else if (cmd == "subscribe_ack") {
+            _onSubscribeAck(ack);
+         } else if (cmd == "post") {
+            await _onPost(ack);
+         } else if (cmd == "publish_ack") {
+            await _onPublishAck(ack);
+         } else if (cmd == "message") {
+            print('_onMessage.');
+            await _onMessage(ack);
+         } else {
+            print('Unhandled message received from the server:\n$msg.');
+         }
+      }
+   }
+
    Future<void> onWSData(msg) async
    {
-      print(msg);
-      Map<String, dynamic> ack = jsonDecode(msg);
-      final String cmd = ack["cmd"];
-
-      // TODO: Put most used commands first to improve performance.
-      if (cmd == "register_ack") {
-         await _onRegisterAck(ack, msg);
-      } else if (cmd == "login_ack") {
-         await _onLoginAck(ack, msg);
-      } else if (cmd == "subscribe_ack") {
-         _onSubscribeAck(ack);
-      } else if (cmd == "post") {
-         await _onPost(ack);
-      } else if (cmd == "publish_ack") {
-         await _onPublishAck(ack);
-      } else if (cmd == "message") {
-         print('_onMessage.');
-         await _onMessage(ack);
-      } else {
-         print('Unhandled message received from the server:\n$msg.');
-      }
+      final bool isEmpty = _wsMsgQueue.isEmpty;
+      _wsMsgQueue.add(msg);
+      if (isEmpty)
+         await onWSDataImpl();
    }
 
    void onWSError(error)
