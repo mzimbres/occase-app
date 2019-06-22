@@ -2478,6 +2478,7 @@ class MenuChatState extends State<MenuChat>
          print('_chatMsgHandler ===> Error: Ignoring $peer $nick.');
          return;
       }
+
       final int now = DateTime.now().millisecondsSinceEpoch;
       await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
 

@@ -269,7 +269,7 @@ Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
    final int t1 = lhs.getMostRecentTimestamp();
    final int t2 = rhs.getMostRecentTimestamp();
 
-   return t1 > t2 ? lhs : rhs;
+   return t1 >= t2 ? lhs : rhs;
 }
 
 List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
@@ -579,20 +579,30 @@ bool toggleLPChatMsg(ChatItem ci)
    return old;
 }
 
+// Post sorting criteria
+//
+// 1. A pined post always wins, even one with no chat entries.
+// 2. If two posts are pined, the one with the most recent time stamp
+//    wins.
+//
+// Otherwise (both posts are not pined)
+//
+// 3. A post with chat entries always wins, even if the chat entries
+//    have no message.
+// 4. If two posts do not have chat entries than the one with the most
+//    recent publication date wins.
+//
+// Otherwise (both posts have chat entries)
+//
+// 5. The post with the most recent chat message always wins.
+// 6. If the most recent chat message is zero for both posts, meaning
+//    the chat is empty, the chat entry date is used as criteria.
+//
 int CompPosts(final Post lhs, final Post rhs)
 {
-
-   if (lhs.chats.length == 0 && rhs.chats.length == 0)
-      return lhs.date > rhs.date ? -1 : 1;
-
-   if (lhs.chats.length == 0)
-      return 1;
-
-   if (rhs.chats.length == 0)
-      return -1;
-
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
-      return lhs.pinDate > rhs.pinDate ? -1 : 1;
+      return lhs.pinDate > rhs.pinDate ? -1
+           : lhs.pinDate < rhs.pinDate ? 1 : 0;
 
    if (lhs.pinDate != 0)
       return -1;
@@ -600,9 +610,31 @@ int CompPosts(final Post lhs, final Post rhs)
    if (rhs.pinDate != 0)
       return 1;
 
-   final int ts1 = lhs.getMostRecentTimestamp();
-   final int ts2 = rhs.getMostRecentTimestamp();
-   return ts1 > ts2 ? -1 : 1;
+   if (lhs.chats.length == 0 && rhs.chats.length == 0)
+      return lhs.date > rhs.date ? -1
+           : lhs.date < rhs.date ? 1 : 0;
+
+   if (lhs.chats.length == 0)
+      return 1;
+
+   if (rhs.chats.length == 0)
+      return -1;
+
+   final Chat c1 = lhs.chats.reduce(selectMostRecentChat);
+   final Chat c2 = rhs.chats.reduce(selectMostRecentChat);
+
+   if (c1.msgs.isEmpty && c2.msgs.isEmpty)
+      return c1.date > c2.date ? -1
+           : c1.date < c2.date ? 1 : 0;
+
+   if (c1.msgs.isEmpty)
+      return 1;
+
+   if (c2.msgs.isEmpty)
+      return -1;
+
+   return c1.msgs.last.date > c2.msgs.last.date ? -1
+        : c1.msgs.last.date < c2.msgs.last.date ? 1 : 0;
 }
 
 Future<void>
