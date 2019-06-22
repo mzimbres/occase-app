@@ -367,7 +367,7 @@ INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?)
 
 final String updateChatStatusLastMsg =
 '''
-UPDATE chat_status SET last_msg = ?
+UPDATE chat_status SET last_msg = ? WHERE post_id = ?
 ''';
 
 final String selectChatStatusItem =

@@ -2417,7 +2417,7 @@ class MenuChatState extends State<MenuChat>
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
          await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
          await posts[i].persistPeers();
-         await _db.execute(cts.updateChatStatusLastMsg, [msg]);
+         await _db.execute(cts.updateChatStatusLastMsg, [msg, postId]);
 
          final int msgId =
             await _db.rawInsert(cts.insertChatMsg,
