@@ -2519,7 +2519,7 @@ class MenuChatState extends State<MenuChat>
 
       List<int> newMsgsCounters = List<int>(cts.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
-      newMsgsCounters[1] = _posts.length - _lastSeenPostIdx;
+      newMsgsCounters[1] = _posts.length - _lastSeenPostIdx - 1;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
       List<double> opacities = getNewMsgsOpacities();
