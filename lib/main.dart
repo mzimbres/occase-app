@@ -2448,34 +2448,46 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _chatMsgHandler(Map<String, dynamic> ack) async
    {
+      final int postId = ack['post_id'];
+      final bool isSenderPost = ack['is_sender_post'];
       final String to = ack['to'];
+      final String msg = ack['msg'];
+      final String peer = ack['from'];
+      final String nick = ack['nick'];
+
       if (to != cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
 
-      final int postId = ack['post_id'];
-      final String msg = ack['msg'];
-      final String peer = ack['from'];
-      final String nick = ack['nick'];
-      final bool isSenderPost = ack['is_sender_post'];
-
-      // A user message can be either directed to one of the posts
-      // published by this app or one that the app is interested
-      // in. We distinguish this with the field 'is_sender_post'
-      List<Post> posts = _ownPosts;
+      List<Post> posts;
       if (isSenderPost)
          posts = _favPosts;
+      else
+         posts = _ownPosts;
 
+      await _chatMsgHandlerImpl(to, postId, msg, peer,
+                                nick, isSenderPost, posts);
+   }
+
+   Future<void>
+   _chatMsgHandlerImpl(String to,
+                       int postId,
+                       String msg,
+                       String peer,
+                       String nick,
+                       bool isSenderPost,
+                       List<Post> posts) async
+   {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
-         print('===> Error: Ignoring chat msg.');
+         print('Error: Unable to find postId $postId.');
          return;
       }
 
       final int j = await posts[i].getChatHistIdxOrCreate(peer, nick);
       if (j == -1) {
-         print('_chatMsgHandler ===> Error: Ignoring $peer $nick.');
+         print('Error: Unable to find peer $peer $nick.');
          return;
       }
 
@@ -2527,7 +2539,6 @@ class MenuChatState extends State<MenuChat>
       final String payload = jsonEncode(map);
       await sendChatMsg(payload, 0);
    }
-
    Future<void>
    _chatAppAckHandler(Map<String, dynamic> ack,
                       final int status) async
