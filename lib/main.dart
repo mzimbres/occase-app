@@ -1007,7 +1007,7 @@ class MenuChatState extends State<MenuChat>
    Chat _chat = null;
 
    // The last post id seen by the user.
-   int _lastSeenPostIdx = 0;
+   int _lastSeenPostIdx = -1;
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
@@ -1285,7 +1285,7 @@ class MenuChatState extends State<MenuChat>
 
       _posts.removeAt(i);
 
-      if (i < _lastSeenPostIdx)
+      if (i <= _lastSeenPostIdx)
          --_lastSeenPostIdx;
 
       setState(() { });
