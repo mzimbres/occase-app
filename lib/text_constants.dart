@@ -137,8 +137,8 @@ final List<String> postDetails = <String>
 , 'Banco com regulagem de altura'
 , 'Computador de bordo'
 , 'Desembacador traseiro'
-, 'Encosto de cabeca trazeiro'
-, 'Freio ABS'
+//, 'Encosto de cabeca trazeiro'
+//, 'Freio ABS'
 //, 'Controle automatico de velocidade'
 //, 'Rodas de liga leve'
 //, 'Sensor de chuva'
@@ -199,7 +199,6 @@ final TextStyle expTileStl =
                     fontWeight: FontWeight.normal,
                     color: Colors.white);
 
-final String menuFileName = 'menu.txt';
 final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
 
@@ -286,7 +285,8 @@ CREATE TABLE config
 , last_post_id INTEGER
 , last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
-, show_dialog_on_del_post TEXT)
+, show_dialog_on_del_post TEXT
+, menu TEXT)
 ''';
 
 final String updateNick =
@@ -312,6 +312,11 @@ UPDATE config SET show_dialog_on_select_post = ?
 final String updateShowDialogOnDelPost =
 '''
 UPDATE config SET show_dialog_on_del_post = ?
+''';
+
+final String updateMenu =
+'''
+UPDATE config SET menu = ?
 ''';
 
 //___________________________________________________________

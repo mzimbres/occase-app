@@ -97,6 +97,20 @@ onRemovePost(List<Post> posts, int i, Database db) async
    posts.removeAt(i);
 }
 
+Future<void> onCreateDb(Database db, int version) async
+{
+   print('====> Creating posts table.');
+   await db.execute(cts.createPostsTable);
+   print('====> Creating config table.');
+   await db.execute(cts.createConfig);
+   print('====> Inserting the default menu.');
+   await db.execute(cts.updateMenu, [Consts.menus]);
+   print('====> Creating chats table.');
+   await db.execute(cts.createChats);
+   print('====> Creating chat-status table.');
+   await db.execute(cts.createChatStatus);
+}
+
 Future<Null> main() async
 {
   runApp(MyApp());
@@ -878,6 +892,7 @@ class Config {
    int lastSeenPostId = 0;
    String showDialogOnSelectPost = 'yes';
    String showDialogOnDelPost = 'yes';
+   String menu = Consts.menus;
 
    Config();
 }
@@ -892,6 +907,7 @@ Map<String, dynamic> configToMap(Config cfg)
       'last_seen_post_id': cfg.lastSeenPostId,
       'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
       'show_dialog_on_del_post': cfg.showDialogOnDelPost,
+      'menu': cfg.menu,
     };
 }
 
@@ -910,6 +926,7 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
      cfg.lastSeenPostId = maps[i]['last_seen_post_id'];
      cfg.showDialogOnSelectPost = maps[i]['show_dialog_on_select_post'];
      cfg.showDialogOnDelPost = maps[i]['show_dialog_on_del_post'];
+     cfg.menu = maps[i]['menu'];
 
      return cfg;
   });
@@ -998,7 +1015,6 @@ class MenuChatState extends State<MenuChat>
 
    // Full path to files.
    String _unreadPostsFileFullPath = '';
-   String _menuFileFullPath = '';
    String _outChatMsgsFileFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
@@ -1084,7 +1100,6 @@ class MenuChatState extends State<MenuChat>
 
    void _initPaths()
    {
-      _menuFileFullPath        = '${glob.docDir}/${cts.menuFileName}';
       _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
    }
 
@@ -1104,34 +1119,27 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _load(final String docDir) async
    {
-      final String dbPath = await getDatabasesPath();
       _db = await openDatabase(
-         p.join(dbPath, 'main.db'),
+         p.join(await getDatabasesPath(), 'main.db'),
          readOnly: false,
-         onCreate: (db, version) async
-         {
-            print('====> Creating posts table.');
-            await db.execute(cts.createPostsTable);
-            print('====> Creating config table.');
-            await db.execute(cts.createConfig);
-            print('====> Creating chats table.');
-            await db.execute(cts.createChats);
-            print('====> Creating chat-status table.');
-            await db.execute(cts.createChatStatus);
-         },
-
-         version: 1,
-      );
+         onCreate: onCreateDb,
+         version: 1);
 
       try {
-         final String path = '${glob.docDir}/${cts.menuFileName}';
-         final String menu = await File(path).readAsString();
-         print('The menu has been read from file.');
-         _menus = menuReader(jsonDecode(menu));
+         final List<Config> configs = await loadConfig(_db, 'config');
+         if (!configs.isEmpty)
+            cfg = configs.first;
       } catch (e) {
-         print('Using default menu.');
-         _menus = menuReader(jsonDecode(Consts.menus));
+         print(e);
       }
+
+      _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
+      _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
+      _menus = menuReader(jsonDecode(cfg.menu));
+
+      // We do not need all fields from cfg.menu during runtime. The
+      // menu field is big and we should release it memory.
+      cfg.menu = '';
 
       List<String> lines = List<String>();
 
@@ -1160,6 +1168,14 @@ class MenuChatState extends State<MenuChat>
          print(e);
       }
 
+      // TODO: The _posts array is expected to be sorted on its
+      // ids, so we could perform a binary search here instead.
+      final int i = _posts.indexWhere((e)
+         { return e.id == cfg.lastSeenPostId; });
+
+      if (i != -1)
+         _lastSeenPostIdx = i;
+
       try {
          lines = await File(_outChatMsgsFileFullPath).readAsLines();
          for (String s in lines) {
@@ -1174,26 +1190,6 @@ class MenuChatState extends State<MenuChat>
 
       channel = IOWebSocketChannel.connect(cts.host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
-
-      try {
-         final List<Config> configs = await loadConfig(_db, 'config');
-         if (!configs.isEmpty) {
-            cfg = configs.first;
-            // TODO: The _posts array is expected to be sorted on its
-            // ids, so we could perform a binary search here instead.
-            final int i = _posts.indexWhere((e)
-               { return e.id == cfg.lastSeenPostId; });
-
-            if (i != -1) {
-               _lastSeenPostIdx = i + 1;
-            }
-
-            _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
-            _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
-         }
-      } catch (e) {
-         print(e);
-      }
 
       final List<int> versions = _makeMenuVersions(_menus);
       final String cmd = _makeConnCmd(versions);
@@ -2012,7 +2008,6 @@ class MenuChatState extends State<MenuChat>
          // field. TODO: Keep the status field.
          _menus = menuReader(ack);
          assert(_menus != null);
-         print('login_ack: Persisting new menu received.');
          await _persistMenu();
       }
    }
@@ -2132,12 +2127,13 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _persistMenu() async
    {
+      print('====> Updating the menu.');
       try {
          var foo = {'menus': _menus};
-         final String bar = jsonEncode(foo);
-         await File(_menuFileFullPath)
-               .writeAsString(bar, mode: FileMode.write);
+         final String str = jsonEncode(foo);
+         await _db.execute(cts.updateMenu, [str]);
       } catch (e) {
+         print(e);
       }
    }
 
