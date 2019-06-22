@@ -11,11 +11,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
-import 'package:menu_chat/menu.dart';
-import 'package:menu_chat/menu_tree.dart';
+import 'package:menu_chat/tree.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
@@ -139,26 +139,6 @@ String makePostPayload(final Post post)
    };
 
    return jsonEncode(pubMap);
-}
-
-String makeLoginCmd( final String id
-                    , final String pwd
-                    , final List<int> versions)
-{
-   var loginCmd = {
-      'cmd': 'login',
-      'user': id,
-      'password': pwd,
-      'menu_versions': versions,
-   };
-
-   return jsonEncode(loginCmd);
-}
-
-String makeRegisterCmd()
-{
-   var loginCmd = {'cmd': 'register'};
-   return jsonEncode(loginCmd);
 }
 
 List<Widget>
@@ -486,7 +466,7 @@ FloatingActionButton
 makeFiltersFaButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
-             backgroundColor: cts.postFrameColor,
+             backgroundColor: cts.coral,
              child: Icon(id, color: Colors.white),
              onPressed: onNewPost);
 }
@@ -503,7 +483,7 @@ makeFaButton(Function onNewPost,
    IconData id = cts.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: cts.postFrameColor,
+         backgroundColor: cts.coral,
          child: Icon(Icons.send, color: Colors.white),
          onPressed: onFwdChatMsg);
    }
@@ -515,7 +495,7 @@ makeFaButton(Function onNewPost,
       return null;
 
    return FloatingActionButton(
-      backgroundColor: cts.postFrameColor,
+      backgroundColor: cts.darkYellow,
       child: Icon(id, color: Colors.white),
       onPressed: onNewPost);
 }
@@ -780,6 +760,689 @@ Widget makeTabWidget(int n, String title, double opacity)
    return Row(children: widgets);
 }
 
+Text createMenuItemSubStrWidget(String str, FontWeight fw)
+{
+   if (str == null)
+      return null;
+
+   return Text(str, style: TextStyle(fontSize: 14.0, fontWeight: fw),
+               maxLines: 1,
+               overflow: TextOverflow.clip);
+}
+
+CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
+{
+   return CircleAvatar(child: child, backgroundColor: bgcolor);
+}
+
+String makeStrAbbrev(final String str)
+{
+   if (str.length < 2)
+      return str;
+
+   return str.substring(0, 2);
+}
+
+/*
+ *  To support the "select all" buttom in the menu checkbox we have to
+ *  add some complex logic.  First we note that the "Todos" checkbox
+ *  should appear in all screens that present checkboxes, namely, when
+ *  
+ *  1. makeLeaf is true, or
+ *  2. isLeaf is true for more than one node.
+ *
+ *  In those cases the builder will go through all node children
+ *  otherwise the first should be skipped.
+ */
+ListView createFilterListView(BuildContext context,
+                              MenuNode o,
+                              Function onLeafPressed,
+                              Function onNodePressed,
+                              bool makeLeaf)
+{
+   // TODO: We should check all children and not only the last.
+   int shift = 0;
+   if (makeLeaf || o.children.last.isLeaf())
+      shift = 1;
+
+   return ListView.builder(
+      //padding: const EdgeInsets.all(8.0),
+      itemCount: o.children.length + shift,
+      itemBuilder: (BuildContext context, int i)
+      {
+         if (shift == 1 && i == 0) {
+            // Handles the *select all* button.
+            return ListTile(
+                leading: Icon(
+                   Icons.select_all,
+                   size: 35.0,
+                   color: Theme.of(context).primaryColor),
+                title: Text(cts.menuSelectAllStr,
+                          style: cts.menuTitleStl),
+                dense: true,
+                onTap: () { onLeafPressed(0); },
+                enabled: true,);
+         }
+
+         if (shift == 1) {
+            MenuNode child = o.children[i - 1];
+            Widget icon = Icon(Icons.check_box_outline_blank);
+            if (child.status)
+               icon = Icon(Icons.check_box);
+
+            Widget subtitle = null;
+            if (!child.isLeaf()) {
+               final int lc = child.leafCounter;
+               final String names = child.getChildrenNames();
+               subtitle =  Text(
+                   '($lc) $names',
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip);
+            }
+
+            Color cc = Colors.grey;
+            if (child.status)
+               cc = Theme.of(context).primaryColor;
+
+            // Notice we do not subtract -1 on onLeafPressed so that
+            // this function can diferentiate the Todos button case.
+            final String abbrev = makeStrAbbrev(child.name);
+            return ListTile(
+                leading: 
+                   makeCircleAvatar(
+                      Text(abbrev, style: cts.abbrevStl),
+                      cc),
+                title: Text(child.name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: subtitle,
+                trailing: icon,
+                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                onTap: () { onLeafPressed(i);},
+                enabled: true,
+                selected: child.status,
+                isThreeLine: !child.isLeaf()
+                );
+         }
+
+         final int c = o.children[i].getCounterOfFilterChildren();
+         final int cs = o.children[i].getChildrenSize();
+
+         final String names = o.children[i].getChildrenNames();
+         final String subtitle = '($c/$cs) $names';
+         Color cc = Colors.grey;
+         if (c != 0)
+            cc = Theme.of(context).primaryColor;
+
+         return
+            ListTile(
+                leading: makeCircleAvatar(
+                   Text(makeStrAbbrev(o.children[i].name), style: cts.abbrevStl), cc),
+                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: Text(
+                   subtitle,
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip),
+                trailing: Icon(Icons.keyboard_arrow_right),
+                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+                onTap: () { onNodePressed(i); },
+                enabled: true,
+                selected: c != 0,
+                isThreeLine: true,
+                );
+      },
+   );
+}
+
+Center
+createSendScreen( Function onPressed
+                , final String txt)
+{
+   RaisedButton but =
+      RaisedButton(
+         child: Text(txt,
+            style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: cts.mainFontSize)),
+         color: cts.postFrameColor,
+         onPressed: onPressed);
+
+   return Center(child: but);
+}
+
+// Study how to convert this into an elipsis like whatsapp.
+Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
+{
+   final Text txt = Text("${n}", style: TextStyle(color: textColor));
+   final Radius rd = const Radius.circular(45.0);
+   return Container(
+       margin: const EdgeInsets.all(2.0),
+       padding: const EdgeInsets.all(2.0),
+       constraints: BoxConstraints(
+             minHeight: 21.0, minWidth: 21.0,
+             maxHeight: 21.0, maxWidth: 40.0),
+       //height: 21.0,
+       //width: 21.0,
+       decoration:
+          BoxDecoration(
+             color: bgColor,
+             borderRadius:
+                BorderRadius.only(
+                   topLeft:  rd,
+                   topRight: rd,
+                   bottomLeft: rd,
+                   bottomRight: rd)),
+         child: Center(widthFactor: 1.0, child: txt));
+}
+
+Card makePostElemSimple(Icon ic, List<Column> cols)
+{
+   List<Widget> r = List<Widget>();
+   r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
+
+   Row row = Row(children: cols);
+   r.add(row);
+
+   // Padding needed to show the text inside the post element with some
+   // distance from the border.
+   Padding leftWidget = Padding(
+         padding: EdgeInsets.all(cts.postElemTextPadding),
+         child: Column(
+               crossAxisAlignment: CrossAxisAlignment.stretch,
+               children: r,
+            )
+         );
+
+   // Here we need another padding to make the post inner element have
+   // some distance to the outermost card.
+   return Card(
+            child: leftWidget,
+            color: Colors.white,
+            margin: EdgeInsets.all(cts.postInnerMargin),
+            elevation: 0.0,
+   );
+}
+
+Card makePostElem( BuildContext context
+                 , List<String> values
+                 , List<String> keys
+                 , Icon ic)
+{
+   List<Widget> leftList = List<Widget>();
+   List<Widget> rightList = List<Widget>();
+
+   for (int i = 0; i < values.length; ++i) {
+      RichText left =
+         RichText(text: TextSpan( text: keys[i] + ': '
+                                , style: cts.postTitleStl));
+      leftList.add(left);
+
+      RichText right =
+         RichText(text: TextSpan( text: values[i]
+                                , style: cts.postValueTextStl));
+      rightList.add(right);
+   }
+
+   Column leftCol =
+      Column( children: leftList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   Column rightCol =
+      Column( children: rightList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   return makePostElemSimple(ic, <Column>[leftCol, rightCol]);
+}
+
+Card makePostDetailElem(int filter)
+{
+   List<Widget> leftList = List<Widget>();
+
+   for (int i = 0; i < cts.postDetails.length; ++i) {
+      final bool b = (filter & (1 << i)) == 0;
+      if (b)
+         continue;
+
+      Icon icTmp = Icon(Icons.check, color: cts.postFrameColor);
+      Text txt = Text( ' ${cts.postDetails[i]}'
+                     , style: cts.postValueTextStl);
+      Row row = Row(children: <Widget>[icTmp, txt]); 
+      leftList.add(row);
+   }
+
+   Column col =
+      Column( children: leftList
+            , crossAxisAlignment: CrossAxisAlignment.start);
+
+   Icon ic = Icon(Icons.details, color: cts.postFrameColor);
+   return makePostElemSimple(ic, <Column>[col]);
+}
+
+List<Card>
+makeMenuInfoCards(BuildContext context,
+                  Post data,
+                  List<MenuItem> menus,
+                  Color color)
+{
+   List<Card> list = List<Card>();
+
+   for (int i = 0; i < data.channel.length; ++i) {
+      List<String> names =
+            loadNames(menus[i].root.first, data.channel[i][0]);
+
+      Card card = makePostElem(
+                     context,
+                     names,
+                     cts.menuDepthNames[i],
+                     Icon( cts.newPostTabIcons[i]
+                         , color: cts.postFrameColor));
+
+      list.add(card);
+   }
+
+   return list;
+}
+
+// Will assemble menu information and the description in cards
+List<Card> postTextAssembler(BuildContext context,
+                            Post data,
+                            List<MenuItem> menus,
+                            Color color)
+{
+   List<Card> list = makeMenuInfoCards(context, data, menus, color);
+   DateTime date = DateTime.fromMillisecondsSinceEpoch(data.date);
+   DateFormat format = DateFormat.yMd().add_jm();
+   String dateString = format.format(date);
+
+   List<String> values = List<String>();
+   values.add(data.nick);
+   values.add('${data.from}');
+   values.add('${data.id}');
+   values.add(dateString);
+   values.add(data.description);
+
+   Card dc1 =
+      makePostElem( context, values, cts.descList
+                  , Icon( Icons.description
+                        , color: cts.postFrameColor));
+
+   list.add(dc1);
+   list.add(makePostDetailElem(data.filter));
+
+   return list;
+}
+
+Text makeChatSubStrWidget(Chat ch)
+{
+   FontWeight fw = FontWeight.normal;
+   if (ch.hasUnreadMsgs())
+      fw = FontWeight.bold;
+
+   return createMenuItemSubStrWidget(ch.getLastMsg(), FontWeight.bold);
+}
+
+Card createChatEntry(BuildContext context,
+                     Post post,
+                     List<MenuItem> menus,
+                     Widget chats,
+                     Function onDelPost,
+                     Function onPinPost,
+                     int i)
+{
+   List<Card> textCards = postTextAssembler(context, post, menus,
+                                       cts.postFrameColor);
+
+   IconData pinIcon = post.pinDate == 0 ? Icons.place : Icons.pin_drop;
+   Row leading = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+   [ IconButton(icon: Icon(Icons.clear),
+                onPressed: () async {await onDelPost(i);})
+   , IconButton(icon: Icon(pinIcon),
+                onPressed: () async {await onPinPost(i);})
+   ]);
+
+   ExpansionTile et =
+      ExpansionTile(
+          leading: leading,
+          key: PageStorageKey<int>(2 * post.id),
+          title: Text('${cts.postTimePrefix}: ${post.id}',
+                      style: cts.expTileStl),
+          children: ListTile.divideTiles(
+                     context: context,
+                     tiles: textCards,
+                     color: Colors.grey).toList());
+
+   List<Widget> cards = List<Card>();
+   cards.add(Card(child: et,
+                  color: cts.postFrameColor,
+                  margin: EdgeInsets.all(0.0),
+                  elevation: 0.0));
+
+   Card chatCard = Card(child: chats,
+                        color: cts.postFrameColor,
+                        margin: EdgeInsets.all(cts.postInnerMargin),
+                        elevation: 0.0);
+
+   cards.add(chatCard);
+
+   Column col = Column(children: cards);
+
+   final double padding = cts.outerPostCardPadding;
+   return Card(
+      child: Padding(child: col, padding: EdgeInsets.all(padding)),
+      color: cts.postFrameColor,
+      margin: EdgeInsets.all(cts.postMarging),
+      elevation: 0.0,
+   );
+}
+
+Card makePostWidget(BuildContext context,
+                    List<Card> cards,
+                    Function onPressed,
+                    Icon icon,
+                    Color color)
+{
+   IconButton icon1 = IconButton(
+                         icon: Icon(Icons.clear, color: Colors.white),
+                         iconSize: 30.0,
+                         onPressed: () {onPressed(0);});
+
+   IconButton icon2 = IconButton(
+                         icon: icon,
+                         onPressed: () {onPressed(1);},
+                         color: Theme.of(context).primaryColor,
+                         iconSize: 30.0);
+
+   Row row = Row(children: <Widget>[
+                Expanded(child: icon1),
+                Expanded(child: icon2)]);
+
+   Card c4 = Card(
+      child: row,
+      color: color,
+      margin: EdgeInsets.all(cts.postInnerMargin),
+      elevation: 0.0,
+   );
+
+   cards.add(c4);
+
+   Column col = Column(children: cards);
+
+   final double padding = cts.outerPostCardPadding;
+   return Card(
+      child: Padding(child: col, padding: EdgeInsets.all(padding)),
+      color: color,
+      margin: EdgeInsets.all(cts.postMarging),
+      elevation: 5.0,
+   );
+}
+
+Card makeCard(Widget widget, Color color)
+{
+   return Card(
+         child:
+            Padding(child: widget,
+                    padding: EdgeInsets.all( cts.postElemTextPadding)),
+         color: color,
+         margin: EdgeInsets.all(cts.postInnerMargin),
+         elevation: 0.0,
+   );
+}
+
+TextField
+makeTextInputFieldCard( TextEditingController ctrl
+                      , int maxLength
+                      , InputDecoration deco)
+{
+   // TODO: Set a max length.
+   return TextField(
+             controller: ctrl,
+             //textInputAction: TextInputAction.go,
+             //onSubmitted: onTextFieldPressed,
+             keyboardType: TextInputType.multiline,
+             maxLines: null,
+             maxLength: maxLength,
+             decoration: deco);
+}
+
+ListView
+makePostTabListView(BuildContext ctx,
+                    List<Post> posts,
+                    Function onPostSelection,
+                    List<MenuItem> menus,
+                    Function updateLasSeenPostIdx)
+{
+   final int postsLength = posts.length;
+
+   return ListView.builder(
+             padding: const EdgeInsets.all(0.0),
+             itemCount: posts.length,
+             itemBuilder: (BuildContext ctx, int i)
+             {
+                updateLasSeenPostIdx(i);
+
+                // New posts are shown with a different color.
+                Color color = cts.postFrameColor;
+                //if (i > lastSeenPostIdx)
+                //   color = cts.newReceivedPostColor; 
+
+                List<Card> cards =
+                   postTextAssembler(
+                      ctx,
+                      posts[i],
+                      menus,
+                      color);
+   
+                return makePostWidget(
+                    ctx,
+                    cards,
+                    (int fav) async
+                       {await onPostSelection(ctx, i, fav);},
+                    cts.favIcon,
+                    color);
+             });
+}
+
+ListView createPostMenuListView(BuildContext context, MenuNode o,
+      Function onLeafPressed, Function onNodePressed)
+{
+   return ListView.builder(
+      itemCount: o.children.length,
+      itemBuilder: (BuildContext context, int i)
+      {
+         final int c = o.children[i].getCounterOfFilterChildren();
+         final int cs = o.children[i].getChildrenSize();
+
+         final String names = o.children[i].getChildrenNames();
+         final String subtitle = '($c/$cs) $names';
+
+         MenuNode child = o.children[i];
+         if (child.isLeaf()) {
+            return ListTile(
+                leading: makeCircleAvatar(
+                   Text(makeStrAbbrev(child.name),
+                        style: cts.abbrevStl),
+                   Colors.grey),
+                title: Text(child.name, style: cts.menuTitleStl),
+                dense: true,
+                onTap: () { onLeafPressed(i);},
+                enabled: true,
+                onLongPress: (){});
+         }
+         
+         return
+            ListTile(
+                leading: makeCircleAvatar(
+                   Text(
+                      makeStrAbbrev(
+                         o.children[i].name),
+                         style: cts.abbrevStl),
+                   Colors.grey),
+                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                dense: true,
+                subtitle: Text(
+                   subtitle,
+                   style: TextStyle(fontSize: 14.0), maxLines: 2,
+                                    overflow: TextOverflow.clip),
+                trailing: Icon(Icons.keyboard_arrow_right),
+                onTap: () { onNodePressed(i); },
+                enabled: true,
+                selected: c != 0,
+                isThreeLine: true);
+      },
+   );
+}
+
+// Returns an icon based on the message status.
+Widget chooseIcon(final int status)
+{
+   final double s = 17.0;
+
+   Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
+
+   if (status == 1)
+      icon = Icon(Icons.check, color: Colors.grey, size: s);
+
+   if (status == 2)
+      icon = Icon(Icons.done_all, color: Colors.grey, size: s);
+
+   if (status == 3)
+      icon = Icon(Icons.done_all, color: Colors.green, size: s);
+
+   return Padding(
+      child: icon,
+      padding: const EdgeInsets.symmetric(horizontal: 2.0));
+}
+
+Widget makeChatTileSubStr(final Chat ch)
+{
+   if (ch.getNumberOfUnreadMsgs() > 0)
+      return makeChatSubStrWidget(ch);
+
+   if (ch.msgs.isEmpty)
+      return makeChatSubStrWidget(ch);
+
+   if (!ch.msgs.last.thisApp)
+      return makeChatSubStrWidget(ch);
+
+   return Row(children: <Widget>
+             [ chooseIcon(ch.msgs.last.status)
+             , Expanded(child: makeChatSubStrWidget(ch))]);
+}
+
+Widget makePostChatCol(BuildContext context,
+                      List<Chat> ch,
+                      Function onPressed,
+                      Function onLongPressed,
+                      int postId)
+{
+   List<Widget> list = List<Widget>(ch.length);
+
+   int nUnredChats = 0;
+   for (int i = 0; i < list.length; ++i) {
+      final int n = ch[i].getNumberOfUnreadMsgs();
+      if (n > 0)
+         ++nUnredChats;
+
+      Widget widget;
+      Color bgColor;
+      if (ch[i].isLongPressed) {
+         widget = Icon(Icons.check);
+         bgColor = cts.chatLongPressendColor;
+      } else {
+         widget = cts.unknownPersonIcon;
+         bgColor = Colors.white;
+      }
+
+      Widget trailing = null;
+      if (n != 0 && ch[i].pinDate != 0) {
+         trailing = Column(children: <Widget>
+         [ Icon(Icons.place)
+         , makeCircleUnreadMsgs(n, cts.accentColor, Colors.white)
+         ]);
+      } else if (n == 0 && ch[i].pinDate != 0) {
+         trailing = Icon(Icons.place);
+      } else if (n != 0 && ch[i].pinDate == 0) {
+         trailing = makeCircleUnreadMsgs(n, cts.accentColor, Colors.white);
+      }
+
+      ListTile lt =
+         ListTile(
+            dense: false,
+            enabled: true,
+            leading: makeCircleAvatar(widget, Colors.grey),
+            trailing: trailing,
+            title: Text(ch[i].getChatDisplayName(),
+                        maxLines: 1,
+                        overflow: TextOverflow.clip,
+                        style: cts.menuTitleStl),
+            subtitle: makeChatTileSubStr(ch[i]),
+            //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+            onTap: () { onPressed(i); },
+            onLongPress: () { onLongPressed(i); });
+
+      list[i] = Container(decoration: BoxDecoration(color: bgColor),
+                  child: lt);
+   }
+
+  if (list.length == 1)
+     return Column(children: ListTile.divideTiles(
+                      context: context,
+                      tiles: list,
+                      color: Colors.grey).toList());
+
+   final TextStyle stl =
+             TextStyle(fontSize: 15.0,
+                       fontWeight: FontWeight.normal,
+                       color: Colors.white);
+
+   String str = '${ch.length} conversas';
+   if (nUnredChats != 0)
+      str = '${ch.length} conversas / $nUnredChats nao lidas';
+
+   final bool expState = ch.length <= 5 || nUnredChats != 0;
+   return ExpansionTile(
+             initiallyExpanded: expState,
+             leading: Icon(Icons.chat, color: Colors.white),
+             key: PageStorageKey<int>(2 * postId + 1),
+             title: Text(str, style: cts.expTileStl),
+             children: ListTile.divideTiles(
+                        context: context,
+                        tiles: list,
+                        color: Colors.grey).toList());
+}
+
+Widget makeChatTab(
+   BuildContext context,
+   List<Post> data,
+   Function onPressed,
+   Function onLongPressed,
+   List<MenuItem> menus,
+   Function onDelPost,
+   Function onPinPost)
+{
+   return ListView.builder(
+         padding: const EdgeInsets.all(0.0),
+         itemCount: data.length,
+         itemBuilder: (BuildContext context, int i)
+         {
+            return createChatEntry(
+                      context,
+                      data[i],
+                      menus,
+                      makePostChatCol(
+                         context,
+                         data[i].chats,
+                         (j) {onPressed(i, j);},
+                         (j) {onLongPressed(i, j);},
+                         data[i].id),
+                      onDelPost,
+                      onPinPost,
+                      i);
+         },
+   );
+}
 //_____________________________________________________________________
 
 class DialogWithOp extends StatefulWidget {
@@ -882,54 +1545,6 @@ class DialogWithOpState extends State<DialogWithOp> {
                            
              ]);
    }
-}
-
-class Config {
-   String appId = '';
-   String appPwd = '';
-   String nick = '';
-   int lastPostId = 0;
-   int lastSeenPostId = 0;
-   String showDialogOnSelectPost = 'yes';
-   String showDialogOnDelPost = 'yes';
-   String menu = Consts.menus;
-
-   Config();
-}
-
-Map<String, dynamic> configToMap(Config cfg)
-{
-    return {
-      'app_id': cfg.appId,
-      'app_pwd': cfg.appPwd,
-      'nick': cfg.nick,
-      'last_post_id': cfg.lastPostId,
-      'last_seen_post_id': cfg.lastSeenPostId,
-      'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
-      'show_dialog_on_del_post': cfg.showDialogOnDelPost,
-      'menu': cfg.menu,
-    };
-}
-
-Future<List<Config>> loadConfig(Database db, String tableName) async
-{
-  final List<Map<String, dynamic>> maps =
-     await db.query(tableName);
-
-  return List.generate(maps.length, (i)
-  {
-     Config cfg = Config();
-     cfg.appId = maps[i]['app_id'];
-     cfg.appPwd = maps[i]['app_pwd'];
-     cfg.nick = maps[i]['nick'];
-     cfg.lastPostId = maps[i]['last_post_id'];
-     cfg.lastSeenPostId = maps[i]['last_seen_post_id'];
-     cfg.showDialogOnSelectPost = maps[i]['show_dialog_on_select_post'];
-     cfg.showDialogOnDelPost = maps[i]['show_dialog_on_del_post'];
-     cfg.menu = maps[i]['menu'];
-
-     return cfg;
-  });
 }
 
 //_____________________________________________________________________
@@ -1191,7 +1806,7 @@ class MenuChatState extends State<MenuChat>
       channel = IOWebSocketChannel.connect(cts.host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
-      final List<int> versions = _makeMenuVersions(_menus);
+      final List<int> versions = makeMenuVersions(_menus);
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
 
@@ -1202,25 +1817,23 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   List<int> _makeMenuVersions(final List<MenuItem> menus)
-   {
-      List<int> versions = List<int>();
-      for (MenuItem o in menus)
-         versions.add(o.version);
-
-      return versions;
-   }
-
    String _makeConnCmd(final List<int> versions)
    {
       if (cfg.appId.isEmpty) {
          // This is the first time we are connecting to the server (or
          // the login file is corrupted, etc.)
-         return makeRegisterCmd();
+         return jsonEncode({'cmd': 'register'});
       }
 
       // We are already registered in the server.
-      return makeLoginCmd(cfg.appId, cfg.appPwd, versions);
+      var loginCmd = {
+         'cmd': 'login',
+         'user': cfg.appId,
+         'password': cfg.appPwd,
+         'menu_versions': versions,
+      };
+
+      return jsonEncode(loginCmd);
    }
 
    @override

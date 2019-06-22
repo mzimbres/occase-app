@@ -420,3 +420,12 @@ String serializeMenuToStr(final MenuNode root)
    return menu;
 }
 
+List<int> makeMenuVersions(final List<MenuItem> menus)
+{
+   List<int> versions = List<int>();
+   for (MenuItem o in menus)
+      versions.add(o.version);
+
+   return versions;
+}
+

@@ -11,7 +11,8 @@ final Color oliveDrab = Color(0xFF6B8E23);
 //final Color primaryColor = Colors.blueGrey;
 final Color primaryColor = whatsAppPrimaryColor;
 //final Color accentColor = Colors.grey;
-final Color accentColor = whatsAppAccentColor;
+//final Color accentColor = whatsAppAccentColor;
+final Color accentColor = coral;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
