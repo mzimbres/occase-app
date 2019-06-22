@@ -1755,7 +1755,7 @@ class MenuChatState extends State<MenuChat>
       _menus = menuReader(jsonDecode(cfg.menu));
 
       // We do not need all fields from cfg.menu during runtime. The
-      // menu field is big and we should release it memory.
+      // menu field is big and we should release its memory.
       cfg.menu = '';
 
       List<String> lines = List<String>();
@@ -1766,6 +1766,8 @@ class MenuChatState extends State<MenuChat>
             if (p.status == 0) {
                await p.loadChats();
                _ownPosts.add(p);
+               for (Post o in _ownPosts)
+                  List<Chat> tmp = await loadChat(_db, o.id);
             } else if (p.status == 1) {
                _posts.add(p);
             } else if (p.status == 2) {
@@ -1890,10 +1892,18 @@ class MenuChatState extends State<MenuChat>
          _posts[i].status = 2;
          await _posts[i].createChatEntryForPeer(_posts[i].from,
                _posts[i].nick);
+
          _favPosts.add(_posts[i]);
          _favPosts.sort(CompPosts);
 
          await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
+
+         final int now = DateTime.now().millisecondsSinceEpoch;
+
+         final int msgId =
+            await _db.rawInsert(cts.insertChatOnPost,
+               [ _posts[i].id, _posts[i].from
+               , now, -1, _posts[i].nick, '']);
       } else {
          await _db.execute(cts.deletePost, [_posts[i].id]);
       }
@@ -2407,11 +2417,11 @@ class MenuChatState extends State<MenuChat>
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
          await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
          await posts[i].persistPeers();
+         await _db.execute(cts.updateChatStatusLastMsg, [msg]);
 
          final int msgId =
             await _db.rawInsert(cts.insertChatMsg,
                                 [postId, peer, 1, now, msg]);
-         print('======> MsgId $msgId');
 
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
@@ -2496,11 +2506,16 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
 
-      final int msgId =
+      // Updates the chats table.
+      final int msgId1 =
          await _db.rawInsert(cts.insertChatMsg,
                              [postId, peer, 0, now, msg]);
 
-      print('======> MsgId $msgId');
+      // Updates the chat-status table.
+      final int msgId2 =
+         await _db.rawInsert(cts.insertOrReplaceChatOnPost,
+            [ postId, peer, now, -1, nick
+            , posts[i].chats[j].getLastMsg()]);
 
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.

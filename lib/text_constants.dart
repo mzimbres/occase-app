@@ -346,12 +346,37 @@ final String createChatStatus =
 CREATE TABLE chat_status
 ( post_id INTEGER
 , user_id TEXT
-, sent_idx INTEGER
-, server_ack_idx INTEGER
-, app_ack_received_idx INTEGER
-, app_ack_read_idx INTEGER
+, date INTEGER
+, pin_date INTEGER
+, nick TEXT
+, last_msg TEXT
 , FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
+, UNIQUE(post_id, user_id)
 )
 ''';
 
+final String insertChatOnPost =
+'''
+INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?)
+''';
+
+final String insertOrReplaceChatOnPost =
+'''
+INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?)
+''';
+
+final String updateChatStatusLastMsg =
+'''
+UPDATE chat_status SET last_msg = ?
+''';
+
+final String selectChatStatusItem =
+'''
+SELECT user_id,
+       date,
+       pin_date,
+       nick,
+       last_msg
+FROM chat_status WHERE post_id = ?
+''';
 

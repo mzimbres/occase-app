@@ -87,10 +87,10 @@ List<ChatItem> chatItemsFromStrs(final List<String> lines)
 class Chat {
    String peer = '';
    String nick = '';
-   List<ChatItem> msgs = List<ChatItem>();
-   bool isLongPressed = false;
    int date = 0;
    int pinDate = 0;
+   bool isLongPressed = false;
+   List<ChatItem> msgs = List<ChatItem>();
 
    String getChatDisplayName()
    {
@@ -732,6 +732,24 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
      cfg.menu = maps[i]['menu'];
 
      return cfg;
+  });
+}
+
+Future<List<Chat>> loadChat(Database db, int postId) async
+{
+  final List<Map<String, dynamic>> maps =
+     await db.rawQuery(cts.selectChatStatusItem, [postId]);
+
+  return List.generate(maps.length, (i)
+  {
+     final String user_id = maps[i]['user_id'];
+     final int date = maps[i]['date'];
+     final int pinDate = maps[i]['pin_date'];
+     final String nick = maps[i]['nick'];
+     final String last_msg = maps[i]['last_msg'];
+     print('====> $user_id $date $pinDate $nick $last_msg');
+
+     return Chat('', '', 0, 0);
   });
 }
 
