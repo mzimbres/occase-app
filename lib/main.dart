@@ -123,7 +123,8 @@ class ChatMsgOutQueueElem {
    int rowid = 0;
    int isChat = 0;
    String payload = '';
-   ChatMsgOutQueueElem(this.rowid, this.isChat, this.payload);
+   bool sent = false; // Used for debugging.
+   ChatMsgOutQueueElem(this.rowid, this.isChat, this.payload, this.sent);
 }
 
 Future<List<ChatMsgOutQueueElem>>
@@ -138,7 +139,7 @@ loadOutChatMsg(Database db, String tableName) async
      final int isChat = maps[i]['is_chat'];
      final String payload = maps[i]['payload'];
 
-     return ChatMsgOutQueueElem(rowid, isChat, payload);
+     return ChatMsgOutQueueElem(rowid, isChat, payload, false);
   });
 }
 
@@ -2354,20 +2355,30 @@ class MenuChatState extends State<MenuChat>
    Future<void> sendChatMsg(final String payload, int isChat) async
    {
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
+      ChatMsgOutQueueElem tmp =
+         ChatMsgOutQueueElem(-1, isChat, payload, false);
+
+      _outChatMsgsQueue.add(tmp);
 
       final int rowid =
          await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
 
-      _outChatMsgsQueue.add(ChatMsgOutQueueElem(rowid, isChat, payload));
+      tmp.rowid = rowid;
 
-      if (isEmpty)
+      if (isEmpty) {
+         assert(!_outChatMsgsQueue.first.sent);
+         _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
+      }
    }
 
    void sendOfflineChatMsgs()
    {
-      if (!_outChatMsgsQueue.isEmpty)
+      if (!_outChatMsgsQueue.isEmpty) {
+         assert(!_outChatMsgsQueue.first.sent);
+         _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
+      }
    }
 
    void _toggleLPChatMsgs(int k, bool isTap)
@@ -2445,8 +2456,11 @@ class MenuChatState extends State<MenuChat>
          print('Removing==> ${_outChatMsgsQueue.first.payload}');
          _outChatMsgsQueue.removeFirst();
 
-         if (!_outChatMsgsQueue.isEmpty)
+         if (!_outChatMsgsQueue.isEmpty) {
+            assert(!_outChatMsgsQueue.first.sent);
+            _outChatMsgsQueue.first.sent = true;
             channel.sink.add(_outChatMsgsQueue.first.payload);
+         }
       } catch (e) {
          print(e);
       }
@@ -2570,6 +2584,7 @@ class MenuChatState extends State<MenuChat>
       if (type == 'server_ack') {
          if (_outChatMsgsQueue.isEmpty)
             print('==============> $ack');
+         assert(_outChatMsgsQueue.first.sent);
          assert(!_outChatMsgsQueue.isEmpty);
          final int isChat = _outChatMsgsQueue.first.isChat;
          await _chatServerAckHandler(ack);
