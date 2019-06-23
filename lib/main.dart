@@ -109,6 +109,8 @@ Future<void> onCreateDb(Database db, int version) async
    await db.execute(cts.createChats);
    print('====> Creating chat-status table.');
    await db.execute(cts.createChatStatus);
+   print('====> Creating out-chat table.');
+   await db.execute(cts.creatOutChatTable);
 }
 
 Future<Null> main() async
@@ -117,18 +119,26 @@ Future<Null> main() async
 }
 
 class ChatMsgOutQueueElem {
+   int rowid = 0;
    int isChat = 0;
    String payload = '';
-   ChatMsgOutQueueElem(this.isChat, this.payload);
+   ChatMsgOutQueueElem(this.rowid, this.isChat, this.payload);
 }
 
-String accumulateChatMsgs(final Queue<ChatMsgOutQueueElem> data)
+Future<List<ChatMsgOutQueueElem>>
+loadOutChatMsg(Database db, String tableName) async
 {
-   String str = '';
-   for (ChatMsgOutQueueElem o in data)
-      str += '${o.isChat} ${o.payload}\n';
+  final List<Map<String, dynamic>> maps =
+     await db.query(tableName);
 
-   return str;
+  return List.generate(maps.length, (i)
+  {
+     final int rowid = maps[i]['rowid'];
+     final int isChat = maps[i]['is_chat'];
+     final String payload = maps[i]['payload'];
+
+     return ChatMsgOutQueueElem(rowid, isChat, payload);
+  });
 }
 
 String makePostPayload(final Post post)
@@ -1591,13 +1601,7 @@ class MenuChatState extends State<MenuChat>
    // ok by the server, before that they will live in _outPostsQueue
    List<Post> _ownPosts = List<Post>();
 
-   // Posts sent to the server that haven't been acked yet. I found it
-   // easier to have this list. For example, if the user sends more
-   // than one post while the app is offline we do not have to search
-   // _ownPosts to set the post id in the correct order. It is also
-   // more efficient in terms of persistency. The _ownPosts becomes
-   // append only, this is important if there is a large number of
-   // posts.
+   // Posts sent to the server that haven't been acked yet.
    Queue<Post> _outPostsQueue = Queue<Post>();
 
    // Stores chat messages that cannot be lost in case the connection
@@ -1630,7 +1634,6 @@ class MenuChatState extends State<MenuChat>
 
    // Full path to files.
    String _unreadPostsFileFullPath = '';
-   String _outChatMsgsFileFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -1715,11 +1718,6 @@ class MenuChatState extends State<MenuChat>
       return opacities;
    }
 
-   void _initPaths()
-   {
-      _outChatMsgsFileFullPath = '${glob.docDir}/${cts.outChatMsgsFileName}';
-   }
-
    MenuChatState()
    {
       _newPostPressed = false;
@@ -1729,7 +1727,6 @@ class MenuChatState extends State<MenuChat>
       getApplicationDocumentsDirectory().then((Directory docDir) async
       {
          glob.docDir = docDir.path;
-         _initPaths();
          _load(docDir.path);
       });
    }
@@ -1795,17 +1792,10 @@ class MenuChatState extends State<MenuChat>
       if (i != -1)
          _lastSeenPostIdx = i;
 
-      try {
-         lines = await File(_outChatMsgsFileFullPath).readAsLines();
-         for (String s in lines) {
-            final List<String> foo = s.split(' ');
-            assert(foo.length == 2);
-            final int isChat = int.parse(foo.first);
-            _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, foo.last));
-         }
-      } catch (e) {
-         print(e);
-      }
+      List<ChatMsgOutQueueElem> tmp =
+         await loadOutChatMsg(_db, 'out_chat_msg_queue');
+
+      _outChatMsgsQueue = Queue<ChatMsgOutQueueElem>.from(tmp.reversed);
 
       channel = IOWebSocketChannel.connect(cts.host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
@@ -2178,7 +2168,6 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
-      print('Sending ===> $payload');
       print(payload);
       channel.sink.add(payload);
    }
@@ -2203,6 +2192,8 @@ class MenuChatState extends State<MenuChat>
          // won't be so fast. But since this is my test condition, I
          // will cope with that by inserting the post in _ownPosts and
          // only after that removing from the queue.
+         // TODO: I think this does not hold anymore after I
+         // introduced a message queue.
          Post post = _outPostsQueue.removeFirst();
          if (id != -1) {
             post.id = id;
@@ -2308,7 +2299,6 @@ class MenuChatState extends State<MenuChat>
          };
 
          final String payload = jsonEncode(msgMap);
-         //print('Sending ===> $payload');
          await sendChatMsg(payload, 0);
       }
 
@@ -2357,12 +2347,16 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> sendChatMsg(final String payload, int isChat) async
    {
-      print(payload);
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
-      _outChatMsgsQueue.add(ChatMsgOutQueueElem(isChat, payload));
 
-      await File(_outChatMsgsFileFullPath)
-         .writeAsString('${isChat} ${payload}\n', mode: FileMode.append);
+      ChatMsgOutQueueElem tmp = ChatMsgOutQueueElem(-1, isChat, payload);
+
+      _outChatMsgsQueue.add(tmp);
+
+      final int rowid =
+         await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
+
+      tmp.rowid = rowid;
 
       if (isEmpty)
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2370,10 +2364,8 @@ class MenuChatState extends State<MenuChat>
 
    void sendOfflineChatMsgs()
    {
-      if (!_outChatMsgsQueue.isEmpty) {
-         //print('====> OfflineChatMsgs: ${_outChatMsgsQueue.first.payload}');
+      if (!_outChatMsgsQueue.isEmpty)
          channel.sink.add(_outChatMsgsQueue.first.payload);
-      }
    }
 
    void _toggleLPChatMsgs(int k, bool isTap)
@@ -2444,12 +2436,8 @@ class MenuChatState extends State<MenuChat>
    Future<void> _chatServerAckHandler(Map<String, dynamic> ack) async
    {
       try {
-         assert(!_outChatMsgsQueue.isEmpty);
-
-         _outChatMsgsQueue.removeFirst();
-         final String accStr = accumulateChatMsgs(_outChatMsgsQueue);
-         await File(_outChatMsgsFileFullPath)
-            .writeAsString(accStr, mode: FileMode.write);
+         ChatMsgOutQueueElem tmp = _outChatMsgsQueue.removeFirst();
+         await _db.execute(cts.deleteOutChatMsg, [tmp.rowid]);
 
          if (!_outChatMsgsQueue.isEmpty)
             channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2573,14 +2561,12 @@ class MenuChatState extends State<MenuChat>
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
+         assert(!_outChatMsgsQueue.isEmpty);
+         final int isChat = _outChatMsgsQueue.first.isChat;
+         await _chatServerAckHandler(ack);
          final String res = ack['result'];
-         if (res == 'ok') {
-            final int isChat = _outChatMsgsQueue.first.isChat;
-            await _chatServerAckHandler(ack);
-            if (isChat == 1) {
-               await _chatAppAckHandler(ack, 1);
-            }
-         }
+         if (res == 'ok' && isChat == 1)
+            await _chatAppAckHandler(ack, 1);
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
@@ -2719,7 +2705,6 @@ class MenuChatState extends State<MenuChat>
          } else if (cmd == "publish_ack") {
             await _onPublishAck(ack);
          } else if (cmd == "message") {
-            print('_onMessage.');
             await _onMessage(ack);
          } else {
             print('Unhandled message received from the server:\n$msg.');

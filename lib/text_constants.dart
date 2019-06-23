@@ -200,7 +200,6 @@ final TextStyle expTileStl =
                     fontWeight: FontWeight.normal,
                     color: Colors.white);
 
-final String outChatMsgsFileName = 'out_chat_msgs_queue.txt';
 final String chatFilePrefix = 'chat';
 
 // The texts showed on the dialog in the *Posts* screen
@@ -378,5 +377,24 @@ SELECT user_id,
        nick,
        last_msg
 FROM chat_status WHERE post_id = ?
+''';
+
+//___________________________________________________________
+
+final String creatOutChatTable =
+'''
+CREATE TABLE out_chat_msg_queue
+( is_chat INTEGER
+, payload TEXT)
+''';
+
+final String deleteOutChatMsg =
+'''
+DELETE FROM out_chat_msg_queue WHERE rowid = ?
+''';
+
+final String insertOutChatMsg =
+'''
+INSERT INTO out_chat_msg_queue VALUES (?, ?)
 ''';
 
