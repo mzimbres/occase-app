@@ -32,6 +32,14 @@ void myprint(Coord c, String prefix)
    print('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
 }
 
+void toggleChatPinDate(Chat chat)
+{
+   if (chat.pinDate == 0)
+      chat.pinDate = DateTime.now().millisecondsSinceEpoch;
+   else
+      chat.pinDate = 0;
+}
+
 bool CompPostIdAndPeer(Coord a, Coord b)
 {
    return a.post.id == b.post.id && a.chat.peer == b.chat.peer;
@@ -52,14 +60,6 @@ handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
    }
 }
 
-void toggleLPChats(List<Coord> coords)
-{
-   for (Coord c in coords) {
-      myprint(c, '');
-      toggleLPChat(c.chat);
-   }
-}
-
 Future<void>
 removeLPChats(List<Coord> coords, Database db) async
 {
@@ -68,12 +68,6 @@ removeLPChats(List<Coord> coords, Database db) async
       assert(j != -1);
       await c.post.removeLPChats(j, db);
    }
-}
-
-void unmarkLPChatMsgsImpl(List<Coord> lpChatMsgs)
-{
-   for (Coord o in lpChatMsgs)
-      toggleLPChatMsg(o.chat.msgs[o.msgIdx]);
 }
 
 Future<void>
@@ -1961,8 +1955,8 @@ class MenuChatState extends State<MenuChat>
 
    void _cleanUpLpOnSwitchTab()
    {
-      toggleLPChats(_lpChats);
-      unmarkLPChatMsgsImpl(_lpChatMsgs);
+      _lpChats.forEach((e){toggleLPChat(e.chat);});
+      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
 
       _lpChats.clear();
       _lpChatMsgs.clear();
@@ -1986,8 +1980,8 @@ class MenuChatState extends State<MenuChat>
          }
       }
 
-      toggleLPChats(_lpChats);
-      unmarkLPChatMsgsImpl(_lpChatMsgs);
+      _lpChats.forEach((e){toggleLPChat(e.chat);});
+      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
 
       _post = _lpChatMsgs.first.post;
       _chat = _lpChatMsgs.first.chat;
@@ -2000,8 +1994,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopChat() async
    {
-      for (Coord o in _lpChatMsgs)
-         toggleLPChatMsg(_chat.msgs[o.msgIdx]);
+      _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
 
       final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
@@ -2891,7 +2884,7 @@ class MenuChatState extends State<MenuChat>
 
    void _unmarkLPChats()
    {
-      toggleLPChats(_lpChats);
+      _lpChats.forEach((e){toggleLPChat(e.chat);});
       _lpChats.clear();
    }
 
@@ -2902,15 +2895,9 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      for (Coord c in _lpChats) {
-         if (c.chat.pinDate == 0)
-            c.chat.pinDate = DateTime.now().millisecondsSinceEpoch;
-         else
-            c.chat.pinDate = 0;
-
-         toggleLPChat(c.chat);
-      }
-
+      _lpChats.forEach((e){toggleChatPinDate(e.chat);});
+      _lpChats.forEach((e){toggleLPChat(e.chat);});
+      _lpChats.first.post.chats.sort(CompChats);
       _lpChats.clear();
 
       // TODO: Sort _favPosts and _ownPosts. Beaware that the array

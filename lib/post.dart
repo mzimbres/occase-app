@@ -252,20 +252,25 @@ class Chat {
    }
 }
 
+/* Chat sorting criteria
+ *
+ * (applies to chats belonging to the same post)
+ *
+ * 1. A pined chat alwas wins, even if it contains no messages. The
+ *    need to sort chats that contain no messages however won't
+ *    happen.  If _favPosts there is only one chat, and in _ownPosts
+ *    they will always contain messages.
+ * 2. If two chats are pined, the one with the most recent date wins.
+ *    The date to be used is the date of the last chat message. Again,
+ *    two or more chats with no message won't happen as said above.
+ *
+ *
+ */
 int CompChats(final Chat lhs, final Chat rhs)
 {
-
-   if (lhs.msgs.length == 0 && rhs.msgs.length == 0)
-      return lhs.date > rhs.date ? -1 : 1;
-
-   if (lhs.msgs.length == 0)
-      return 1;
-
-   if (rhs.msgs.length == 0)
-      return -1;
-
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
-      return lhs.pinDate > rhs.pinDate ? -1 : 1;
+      return lhs.pinDate > rhs.pinDate ? -1
+           : lhs.pinDate < rhs.pinDate ? 1 : 0;
 
    if (lhs.pinDate != 0)
       return -1;
@@ -273,9 +278,28 @@ int CompChats(final Chat lhs, final Chat rhs)
    if (rhs.pinDate != 0)
       return 1;
 
-   final int ts1 = lhs.getMostRecentTimestamp();
-   final int ts2 = rhs.getMostRecentTimestamp();
-   return ts1 > ts2 ? -1 : 1;
+   if (lhs.msgs.length == 0 && rhs.msgs.length == 0)
+      return lhs.date > rhs.date ? -1
+           : lhs.date < rhs.date ? 1 : 0;
+
+   if (lhs.msgs.length == 0)
+      return 1;
+
+   if (rhs.msgs.length == 0)
+      return -1;
+
+   if (lhs.msgs.isEmpty && rhs.msgs.isEmpty)
+      return lhs.date > rhs.date ? -1
+           : lhs.date < rhs.date ? 1 : 0;
+
+   if (lhs.msgs.isEmpty)
+      return 1;
+
+   if (rhs.msgs.isEmpty)
+      return -1;
+
+   return lhs.msgs.last.date > rhs.msgs.last.date ? -1
+        : lhs.msgs.last.date < rhs.msgs.last.date ? 1 : 0;
 }
 
 Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
@@ -527,25 +551,25 @@ bool toggleLPChatMsg(ChatItem ci)
    return old;
 }
 
-// Post sorting criteria
-//
-// 1. A pined post always wins, even one with no chat entries.
-// 2. If two posts are pined, the one with the most recent time stamp
-//    wins.
-//
-// Otherwise (both posts are not pined)
-//
-// 3. A post with chat entries always wins, even if the chat entries
-//    have no message.
-// 4. If two posts do not have chat entries than the one with the most
-//    recent publication date wins.
-//
-// Otherwise (both posts have chat entries)
-//
-// 5. The post with the most recent chat message always wins.
-// 6. If the most recent chat message is zero for both posts, meaning
-//    the chat is empty, the chat entry date is used as criteria.
-//
+/* Post sorting criteria
+ *
+ * 1. A pined post always wins, even one with no chat entries.
+ * 2. If two posts are pined, the one with the most recent time stamp
+ *    wins.
+ *
+ * Otherwise (both posts are not pined)
+ *
+ * 3. A post with chat entries always wins, even if the chat entries
+ *    have no message.
+ * 4. If two posts do not have chat entries than the one with the most
+ *    recent publication date wins.
+ *
+ * Otherwise (both posts have chat entries)
+ *
+ * 5. The post with the most recent chat message always wins.
+ * 6. If the most recent chat message is zero for both posts, meaning
+ *    the chat is empty, the chat entry date is used as criteria.
+ */
 int CompPosts(final Post lhs, final Post rhs)
 {
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
