@@ -321,25 +321,6 @@ UPDATE config SET menu = ?
 
 //___________________________________________________________
 
-final String createChats =
-'''
-CREATE TABLE chats
-( post_id INTEGER
-, user_id TEXT
-, type INTEGER
-, date INTEGER
-, body TEXT
-, FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
-)
-''';
-
-final String insertChatMsg =
-'''
-INSERT INTO chats VALUES (?, ?, ?, ?, ?)
-''';
-
-//___________________________________________________________
-
 final String createChatStatus =
 '''
 CREATE TABLE chat_status
@@ -354,7 +335,7 @@ CREATE TABLE chat_status
 )
 ''';
 
-final String insertChatOnPost =
+final String insertChatStOnPost =
 '''
 INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?)
 ''';
@@ -371,12 +352,32 @@ UPDATE chat_status SET last_msg = ? WHERE post_id = ?
 
 final String selectChatStatusItem =
 '''
-SELECT user_id,
-       date,
-       pin_date,
-       nick,
-       last_msg
-FROM chat_status WHERE post_id = ?
+SELECT * FROM chat_status WHERE post_id = ?
+''';
+
+final String deleteChatStElem =
+'''
+DELETE FROM chat_status WHERE post_id = ? AND user_id == ?
+''';
+
+//___________________________________________________________
+
+final String createChats =
+'''
+CREATE TABLE chats
+( post_id INTEGER
+, user_id TEXT
+, type INTEGER
+, date INTEGER
+, body TEXT
+, FOREIGN KEY (post_id, user_id)
+  REFERENCES chat_status (post_id, user_id) ON DELETE CASCADE
+)
+''';
+
+final String insertChatMsg =
+'''
+INSERT INTO chats VALUES (?, ?, ?, ?, ?)
 ''';
 
 //___________________________________________________________

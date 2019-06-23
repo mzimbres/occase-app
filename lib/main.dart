@@ -60,12 +60,13 @@ void toggleLPChats(List<Coord> coords)
    }
 }
 
-Future<void> removeLPChats(List<Coord> coords) async
+Future<void>
+removeLPChats(List<Coord> coords, Database db) async
 {
    for (Coord c in coords) {
       final int j = c.post.getChatHistIdx(c.chat.peer);
       assert(j != -1);
-      await c.post.removeLPChats(j);
+      await c.post.removeLPChats(j, db);
    }
 }
 
@@ -1761,15 +1762,21 @@ class MenuChatState extends State<MenuChat>
          final List<Post> posts = await loadPosts(_db, 'posts');
          for (Post p in posts) {
             if (p.status == 0) {
-               await p.loadChats();
                _ownPosts.add(p);
-               for (Post o in _ownPosts)
-                  List<Chat> tmp = await loadChat(_db, o.id);
+               for (Post o in _ownPosts) {
+                  o.chats = await loadChats(_db, o.id);
+                  for (Chat c in o.chats)
+                     await c.loadMsgs(o.id);
+               }
             } else if (p.status == 1) {
                _posts.add(p);
             } else if (p.status == 2) {
-               await p.loadChats();
                _favPosts.add(p);
+               for (Post o in _favPosts) {
+                  o.chats = await loadChats(_db, o.id);
+                  for (Chat c in o.chats)
+                     await c.loadMsgs(o.id);
+               }
             } else if (p.status == 3) {
                _outPostsQueue.add(p);
             } else {
@@ -1880,20 +1887,19 @@ class MenuChatState extends State<MenuChat>
 
       if (fav == 1) {
          _posts[i].status = 2;
-         await _posts[i].createChatEntryForPeer(_posts[i].from,
-               _posts[i].nick);
+         final int now = DateTime.now().millisecondsSinceEpoch;
+         final int ignore =
+            await _db.rawInsert(cts.insertChatStOnPost,
+               [ _posts[i].id, _posts[i].from
+               , now, -1, _posts[i].nick, '']);
+
+         _posts[i].createChatEntryForPeer(_posts[i].from, _posts[i].nick);
 
          _favPosts.add(_posts[i]);
          _favPosts.sort(CompPosts);
 
          await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
 
-         final int now = DateTime.now().millisecondsSinceEpoch;
-
-         final int msgId =
-            await _db.rawInsert(cts.insertChatOnPost,
-               [ _posts[i].id, _posts[i].from
-               , now, -1, _posts[i].nick, '']);
       } else {
          await _db.execute(cts.deletePost, [_posts[i].id]);
       }
@@ -2349,14 +2355,10 @@ class MenuChatState extends State<MenuChat>
    {
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
 
-      ChatMsgOutQueueElem tmp = ChatMsgOutQueueElem(-1, isChat, payload);
-
-      _outChatMsgsQueue.add(tmp);
-
       final int rowid =
          await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
 
-      tmp.rowid = rowid;
+      _outChatMsgsQueue.add(ChatMsgOutQueueElem(rowid, isChat, payload));
 
       if (isEmpty)
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2407,7 +2409,6 @@ class MenuChatState extends State<MenuChat>
          final int now = DateTime.now().millisecondsSinceEpoch;
          await posts[i].chats[j].setPeerMsgStatus(3, postId);
          await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
-         await posts[i].persistPeers();
          await _db.execute(cts.updateChatStatusLastMsg, [msg, postId]);
 
          final int msgId =
@@ -2436,12 +2437,18 @@ class MenuChatState extends State<MenuChat>
    Future<void> _chatServerAckHandler(Map<String, dynamic> ack) async
    {
       try {
-         ChatMsgOutQueueElem tmp = _outChatMsgsQueue.removeFirst();
-         await _db.execute(cts.deleteOutChatMsg, [tmp.rowid]);
+         // TODO: Use rawDelete and assert one element was removed.
+         await _db.execute(
+            cts.deleteOutChatMsg,
+            [_outChatMsgsQueue.first.rowid]);
+
+         print('Removing==> ${_outChatMsgsQueue.first.payload}');
+         _outChatMsgsQueue.removeFirst();
 
          if (!_outChatMsgsQueue.isEmpty)
             channel.sink.add(_outChatMsgsQueue.first.payload);
       } catch (e) {
+         print(e);
       }
    }
 
@@ -2484,13 +2491,21 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      final int j = await posts[i].getChatHistIdxOrCreate(peer, nick);
-      if (j == -1) {
-         print('Error: Unable to find peer $peer $nick.');
-         return;
-      }
+      Post postTmp = posts[i];
 
       final int now = DateTime.now().millisecondsSinceEpoch;
+
+      // Updates the chat-status table.
+      final int ignore =
+         await _db.rawInsert(cts.insertOrReplaceChatOnPost,
+            [postId, peer, now, -1, nick , '']);
+
+      print('rowid2 ====> $ignore');
+      final int j = posts[i].getChatHistIdxOrCreate(peer, nick);
+      assert(j != -1);
+
+      Chat chatTmp = postTmp.chats[j];
+
       await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
 
       // Updates the chats table.
@@ -2498,17 +2513,9 @@ class MenuChatState extends State<MenuChat>
          await _db.rawInsert(cts.insertChatMsg,
                              [postId, peer, 0, now, msg]);
 
-      // Updates the chat-status table.
-      final int msgId2 =
-         await _db.rawInsert(cts.insertOrReplaceChatOnPost,
-            [ postId, peer, now, -1, nick
-            , posts[i].chats[j].getLastMsg()]);
-
       // FIXME: The indexes used in the rotate function below may be
       // wrong after the await function.
-      Post postTmp = posts[i];
-      Chat chatTmp = postTmp.chats[j];
-      posts[i].chats.sort(CompChats);
+      postTmp.chats.sort(CompChats);
       posts.sort(CompPosts);
 
       // If we are in the screen having chat with the user we can ack
@@ -2561,6 +2568,8 @@ class MenuChatState extends State<MenuChat>
    {
       final String type = ack['type'];
       if (type == 'server_ack') {
+         if (_outChatMsgsQueue.isEmpty)
+            print('==============> $ack');
          assert(!_outChatMsgsQueue.isEmpty);
          final int isChat = _outChatMsgsQueue.first.isChat;
          await _chatServerAckHandler(ack);
@@ -2904,7 +2913,7 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      await removeLPChats(_lpChats);
+      await removeLPChats(_lpChats, _db);
 
       if (_isOnFav()) {
          for (Post o in _favPosts)

@@ -129,7 +129,7 @@ class Chat {
       return nick.substring(0, 2);
    }
 
-   Chat(this.peer, this.nick, this.date, final int postId);
+   Chat(this.peer, this.nick, this.date);
 
    String makeFullPath(final String prefix, final int postId)
    {
@@ -342,32 +342,6 @@ class Post {
       channel = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
    }
 
-   String makePathToPeersFile()
-   {
-      return '${glob.docDir}/post_peers_${id}.txt';
-   }
-
-   Future<void> loadChats() async
-   {
-      try {
-         chats = List<Chat>();
-         File f = File(makePathToPeersFile());
-         final List<String> lines = await f.readAsLines();
-         print('Peers: $lines');
-         for (String line in lines) {
-            final List<String> fields = line.split(';');
-            // The assertion should be for == not >=.
-            assert(fields.length >= 3);
-            Chat hist = Chat(
-               fields[0], fields[1], int.parse(fields[2]), id);
-            await hist.loadMsgs(id);
-            chats.add(hist);
-         }
-      } catch (e) {
-         //print(e);
-      }
-   }
-
    Post clone()
    {
       Post ret = Post();
@@ -384,42 +358,14 @@ class Post {
       return ret;
    }
 
-   Future<void> setNick(final String peer, final String nick) async
-   {
-      final int j = getChatHistIdx(peer);
-      if (j == -1) {
-         // AFAIK, the only way this can happen ist if the app user
-         // has deleted the Chat in the time between the
-         // nick_req has been sent and the ack has been received.  So
-         // there is no need or way to proceeed.
-         return;
-      }
-
-      chats[j].nick = nick;
-      await persistPeers();
-   }
-
-   Future<void> persistPeers() async
-   {
-      // Overwrites the previous content.
-      String data = '';
-      for (Chat o in chats)
-         data += '${o.peer};${o.nick};${o.date}\n';
-
-      print('Persisting peers: \n$data');
-
-      await File(makePathToPeersFile())
-         .writeAsString(data, mode: FileMode.write);
-   }
-
-   Future<void>
-   createChatEntryForPeer(String peer, final String nick) async
+   int createChatEntryForPeer(String peer, String nick)
    {
       print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
-      Chat history = Chat(peer, nick, now, id);
+      Chat history = Chat(peer, nick, now);
+      final int l = chats.length;
       chats.add(history);
-      await persistPeers();
+      return l;
    }
 
    int getChatHistIdx(final String peer)
@@ -427,17 +373,12 @@ class Post {
       return chats.indexWhere((e) {return e.peer == peer;});
    }
 
-   Future<int>
-   getChatHistIdxOrCreate(final String peer, final String nick) async
+   int getChatHistIdxOrCreate(final String peer,
+                              final String nick)
    {
       final int i = getChatHistIdx(peer);
-      if (i == -1) {
-         print('creating $peer $id');
-         // This is the first message with this user (peer).
-         final int l = chats.length;
-         await createChatEntryForPeer(peer, nick);
-         return l;
-      }
+      if (i == -1)
+         return createChatEntryForPeer(peer, nick);
 
       return i;
    }
@@ -486,25 +427,18 @@ class Post {
       return hist.getMostRecentTimestamp();
    }
 
-   Future<void> removeLPChats(int idx) async
+   Future<void> removeLPChats(int j, Database db) async
    {
       try {
-         print('removeLPC($idx), length = ${chats.length}, id = $id');
-
          assert(!chats.isEmpty);
-         assert(idx < chats.length);
-
-         if (chats[idx].isLongPressed) {
-            try {
-               await File(chats[idx].makeFullPath(cts.chatFilePrefix, id))
-                  .deleteSync();
-            } catch (e) {
-            }
-         }
-
-         chats.removeAt(idx);
-         await persistPeers();
+         assert(j < chats.length);
+         final String peer = chats[j].peer;
+         chats.removeAt(j);
+         final int n =
+            await db.rawDelete(cts.deleteChatStElem, [id, peer]);
+         assert(n == 1);
       } catch (e) {
+         print(e);
       }
    }
 
@@ -749,21 +683,21 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
   });
 }
 
-Future<List<Chat>> loadChat(Database db, int postId) async
+Future<List<Chat>> loadChats(Database db, int postId) async
 {
   final List<Map<String, dynamic>> maps =
      await db.rawQuery(cts.selectChatStatusItem, [postId]);
 
   return List.generate(maps.length, (i)
   {
-     final String user_id = maps[i]['user_id'];
+     final int post_id = maps[i]['post_id'];
+     final String peer = maps[i]['user_id'];
      final int date = maps[i]['date'];
      final int pinDate = maps[i]['pin_date'];
      final String nick = maps[i]['nick'];
-     final String last_msg = maps[i]['last_msg'];
-     print('====> $user_id $date $pinDate $nick $last_msg');
+     print('====> $peer $date $pinDate $nick');
 
-     return Chat('', '', 0, 0);
+     return Chat(peer, nick, date);
   });
 }
 
