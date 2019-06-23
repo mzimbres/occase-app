@@ -2302,7 +2302,6 @@ class MenuChatState extends State<MenuChat>
          var msgMap = {
             'cmd': 'message',
             'type': 'app_ack_read',
-            'from': cfg.appId,
             'to': posts[i].chats[j].peer,
             'post_id': posts[i].id,
             'is_sender_post': isSenderPost,
@@ -2532,7 +2531,6 @@ class MenuChatState extends State<MenuChat>
             var msgMap = {
                'cmd': 'message',
                'type': 'app_ack_read',
-               'from': cfg.appId,
                'to': peer,
                'post_id': postId,
                'is_sender_post': !isSenderPost,

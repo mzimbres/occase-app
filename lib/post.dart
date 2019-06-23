@@ -21,7 +21,7 @@ String serializeList<T>(final List<T> data)
    return content;
 }
 
-int cmdToChatStatus(final String cmd)
+int chatStatusStrToInt(final String cmd)
 {
    if (cmd == 'chat')
       return 0;
@@ -31,6 +31,20 @@ int cmdToChatStatus(final String cmd)
       return 2;
    if (cmd == 'app_ack_read')
       return 3;
+
+   assert(false);
+}
+
+String chatStatusIntToStr(final int status)
+{
+   if (status == 0)
+      return 'chat';
+   if (status == 1)
+      return 'server_ack';
+   if (status == 2)
+      return 'app_ack_received';
+   if (status == 3)
+      return 'app_ack_read';
 
    assert(false);
 }
