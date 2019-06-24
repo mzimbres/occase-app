@@ -451,21 +451,6 @@ class Post {
       return hist.getMostRecentTimestamp();
    }
 
-   Future<void> removeLPChats(int j, Database db) async
-   {
-      try {
-         assert(!chats.isEmpty);
-         assert(j < chats.length);
-         final String peer = chats[j].peer;
-         chats.removeAt(j);
-         final int n =
-            await db.rawDelete(cts.deleteChatStElem, [id, peer]);
-         assert(n == 1);
-      } catch (e) {
-         print(e);
-      }
-   }
-
    Post.fromJson(Map<String, dynamic> map)
    {
       // Part of the object can be deserialized by readPostData. The

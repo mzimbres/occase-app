@@ -60,14 +60,19 @@ handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
    }
 }
 
-Future<void>
-removeLPChats(List<Coord> coords, Database db) async
+Future<void> removeLpChat(Coord c, Database db) async
 {
-   for (Coord c in coords) {
-      final int j = c.post.getChatHistIdx(c.chat.peer);
-      assert(j != -1);
-      await c.post.removeLPChats(j, db);
-   }
+   // removeWhere could also be used, but that traverses all elements
+   // always and we know there is only one element to remove.
+
+   final bool ret = c.post.chats.remove(c.chat);
+   assert(ret);
+
+   final int n =
+      await db.rawDelete(cts.deleteChatStElem,
+         [c.post.id, c.chat.peer]);
+
+   assert(n == 1);
 }
 
 Future<void>
@@ -2915,7 +2920,10 @@ class MenuChatState extends State<MenuChat>
       if (_lpChats.isEmpty)
          return;
 
-      await removeLPChats(_lpChats, _db);
+      // FIXME: For _fav chats we can directly delete the post since
+      // it will only have one chat element.
+
+      _lpChats.forEach((e) async {removeLpChat(e, _db);});
 
       if (_isOnFav()) {
          for (Post o in _favPosts)
