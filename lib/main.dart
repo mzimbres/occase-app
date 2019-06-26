@@ -525,7 +525,8 @@ makeChatMsgListView(
    ScrollController scrollCtrl,
    Chat ch,
    onChatSendPressed,
-   onChatMsgLongPressed)
+   onChatMsgLongPressed,
+   onDragChatMsg)
 {
    final int nMsgs = ch.msgs.length;
    final int nUnreadMsgs = ch.getNumberOfUnreadMsgs();
@@ -625,7 +626,7 @@ makeChatMsgListView(
          return GestureDetector(
             onLongPress: () {onChatMsgLongPressed(i, false);},
             onTap: () {onChatMsgLongPressed(i, true);},
-            onPanStart: (DragStartDetails d){print('Cool');},
+            onPanStart: (DragStartDetails d) {onDragChatMsg(ctx, i, d);},
             child: Card(child: r, color: onSelectedMsgColor,
                elevation: 0.0,
                margin: const EdgeInsets.all(0.0),
@@ -645,7 +646,10 @@ makeChatScreen(BuildContext ctx,
                ScrollController scrollCtrl,
                Function onChatMsgLongPressed,
                int nLongPressed,
-               Function onFwdChatMsg)
+               Function onFwdChatMsg,
+               Function onDragChatMsg,
+               FocusNode chatFocusNode,
+               Function onChatMsgReply)
 {
    IconButton sendButCol =
       IconButton(
@@ -661,6 +665,7 @@ makeChatScreen(BuildContext ctx,
        keyboardType: TextInputType.multiline,
        maxLines: null,
        maxLength: null,
+       focusNode: chatFocusNode,
        decoration:
           InputDecoration.collapsed( hintText: cts.chatTextFieldHintStr));
 
@@ -694,7 +699,7 @@ makeChatScreen(BuildContext ctx,
          ch,
          onChatSendPressed,
          onChatMsgLongPressed,
-         );
+         onDragChatMsg);
 
    Column mainCol = Column(
          children: <Widget>[
@@ -710,13 +715,15 @@ makeChatScreen(BuildContext ctx,
        fontSize: cts.mainFontSize,
        color: Color(0xFFFFFFFF));
 
-   if (nLongPressed != 0) {
+   if (nLongPressed == 1) {
       IconButton reply = IconButton(
          icon: Icon(Icons.reply, color: Colors.white),
-         onPressed: (){print('------');});
+         onPressed: () {onChatMsgReply(ctx);});
 
       actions.add(reply);
+   }
 
+   if (nLongPressed > 0) {
       IconButton forward = IconButton(
          icon: Icon(Icons.forward, color: Colors.white),
          onPressed: onFwdChatMsg);
@@ -1569,10 +1576,6 @@ class MenuChat extends StatefulWidget {
 
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
-   TabController _tabCtrl;
-   ScrollController _scrollCtrl = ScrollController();
-   ScrollController _chatScrollCtrl = ScrollController();
-
    Config cfg = Config();
 
    // Array with the length equal to the number of menus there
@@ -1645,17 +1648,43 @@ class MenuChatState extends State<MenuChat>
    // The menu details filter.
    int _filter = 0;
 
-   // The *new post* text controler
-   TextEditingController _txtCtrl = TextEditingController();
-
    // A temporary variable used to store forwarded chat messages.
    List<Coord> _lpChatMsgs = List<Coord>();
 
    Queue<dynamic> _wsMsgQueue = Queue<dynamic>();
 
+   TabController _tabCtrl;
+   ScrollController _scrollCtrl = ScrollController();
+   ScrollController _chatScrollCtrl = ScrollController();
+
+   // The *new post* text controler
+   TextEditingController _txtCtrl = TextEditingController();
+   FocusNode _chatFocusNode;
+
    IOWebSocketChannel channel;
    
    Database _db;
+
+   @override
+   void initState()
+   {
+      super.initState();
+      _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
+      _tabCtrl.addListener(_tabCtrlChangeHandler);
+      _chatFocusNode = FocusNode();
+   }
+
+   @override
+   void dispose()
+   {
+      _txtCtrl.dispose();
+      _tabCtrl.dispose();
+      _scrollCtrl.dispose();
+      _chatScrollCtrl.dispose();
+      _chatFocusNode.dispose();
+
+      super.dispose();
+   }
 
    bool _isOnOwn()
    {
@@ -1837,14 +1866,6 @@ class MenuChatState extends State<MenuChat>
       return jsonEncode(loginCmd);
    }
 
-   @override
-   void initState()
-   {
-      super.initState();
-      _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
-      _tabCtrl.addListener(_tabCtrlChangeHandler);
-   }
-
    Future<void> _setDialogPref(final int i, bool v) async
    {
       _dialogPrefs[i] = v;
@@ -2019,10 +2040,12 @@ class MenuChatState extends State<MenuChat>
    {
       if (_isOnFav()) {
          await _onSendChatMsgImpl(_favPosts, _post.id,
-                                 _chat.peer, false, _txtCtrl.text);
+                                 _chat.peer, false,
+                                 _txtCtrl.text);
       } else {
          await _onSendChatMsgImpl(_ownPosts, _post.id,
-                                  _chat.peer, true, _txtCtrl.text);
+                                  _chat.peer, true,
+                                  _txtCtrl.text);
       }
 
       _txtCtrl.text = "";
@@ -2046,6 +2069,21 @@ class MenuChatState extends State<MenuChat>
       _post = null;
       _chat = null;
 
+      setState(() { });
+   }
+
+   void _onDragChatMsg(BuildContext ctx, int k, DragStartDetails d)
+   {
+      print('Message $k has been dragged.');
+      FocusScope.of(ctx).requestFocus(_chatFocusNode);
+      setState(() { });
+   }
+
+   void _onChatMsgReply(BuildContext ctx)
+   {
+      print('Reply requested.');
+      //_toggleLPChatMsgs(int k, false)
+      FocusScope.of(ctx).requestFocus(_chatFocusNode);
       setState(() { });
    }
 
@@ -2190,6 +2228,12 @@ class MenuChatState extends State<MenuChat>
    {
       try {
          assert(!_outPostsQueue.isEmpty);
+         Post post = _outPostsQueue.removeFirst();
+         if (id == -1) {
+            // TODO: Consider removing the post from the db.
+            print("Publish failed.");
+            return;
+         }
 
          // When working with the simulator I found out that it
          // replies on my machine before the post could be moved from
@@ -2199,21 +2243,12 @@ class MenuChatState extends State<MenuChat>
          // only after that removing from the queue.
          // TODO: I think this does not hold anymore after I
          // introduced a message queue.
-         Post post = _outPostsQueue.removeFirst();
-         if (id != -1) {
-            post.id = id;
-            post.date = date;
-            post.status = 0;
-            post.pinDate = 0;
-            _ownPosts.add(post);
-            _ownPosts.sort(CompPosts);
-         }
-
-         if (id == -1) {
-            // TODO: Consider removing the post from the db.
-            print("Publish failed.");
-            return;
-         }
+         post.id = id;
+         post.date = date;
+         post.status = 0;
+         post.pinDate = 0;
+         _ownPosts.add(post);
+         _ownPosts.sort(CompPosts);
 
          await _db.execute(cts.updatePostOnAck,
                            [0, id, date, post.dbId]);
@@ -2671,6 +2706,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onPost(Map<String, dynamic> ack) async
    {
+      Batch batch = _db.batch();
       for (var item in ack['items']) {
          Post post = readPostData(item);
          post.status = 1;
@@ -2684,15 +2720,14 @@ class MenuChatState extends State<MenuChat>
          if (post.from == cfg.appId)
             continue;
 
-         await _db.insert(
-            'posts',
-            postToMap(post),
+         batch.insert('posts', postToMap(post),
             conflictAlgorithm: ConflictAlgorithm.replace);
 
          _posts.add(post);
       }
 
-      await _db.execute(cts.updateLastPostId, [cfg.lastPostId]);
+      batch.execute(cts.updateLastPostId, [cfg.lastPostId]);
+      await batch.commit(noResult: true, continueOnError: true);
 
       setState(() { });
    }
@@ -2700,7 +2735,6 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onPublishAck(Map<String, dynamic> ack) async
    {
       final String res = ack['result'];
-      print('publish_ack ===> $res');
       if (res == 'ok')
          await handlePublishAck(ack['id'], ack['date']);
       else
@@ -3035,17 +3069,6 @@ class MenuChatState extends State<MenuChat>
    }
 
    @override
-   void dispose()
-   {
-      _txtCtrl.dispose();
-      _tabCtrl.dispose();
-      _scrollCtrl.dispose();
-      _chatScrollCtrl.dispose();
-
-      super.dispose();
-   }
-
-   @override
    Widget build(BuildContext ctx)
    {
       // Just for safety if we did not load the menu fast enough.
@@ -3098,7 +3121,10 @@ class MenuChatState extends State<MenuChat>
             _chatScrollCtrl,
             _toggleLPChatMsgs,
             _lpChatMsgs.length,
-            _onFwdChatMsg);
+            _onFwdChatMsg,
+            _onDragChatMsg,
+            _chatFocusNode,
+            _onChatMsgReply);
       }
 
       List<Function> onWillPops = List<Function>(cts.tabNames.length);
