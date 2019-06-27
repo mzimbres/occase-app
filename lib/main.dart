@@ -519,6 +519,16 @@ int postIndexHelper(int i)
    return 1;
 }
 
+Card makeUnreadMsgsInfoWidget(int n)
+{
+   return Card(
+      color: cts.postFrameColor,
+      margin: const EdgeInsets.all(12.0),
+      child: Center(
+          child: Text('$n nao lidas.',
+                      style: TextStyle(fontSize: 17.0))));
+}
+
 ListView
 makeChatMsgListView(
    BuildContext ctx,
@@ -541,19 +551,11 @@ makeChatMsgListView(
       {
          List<ChatItem> items = ch.msgs;
          if (shift == 1) {
-            if (i == nMsgs - nUnreadMsgs) {
-               return Card(
-                  color: cts.postFrameColor,
-                  margin: const EdgeInsets.all(12.0),
-                  child: Center(
-                      child: Text(
-                         '$nUnreadMsgs nao lidas.',
-                         style: TextStyle(fontSize: 17.0))));
-            }
+            if (i == nMsgs - nUnreadMsgs)
+               return makeUnreadMsgsInfoWidget(nUnreadMsgs);
 
-            if (i > (nMsgs - nUnreadMsgs)) {
+            if (i > (nMsgs - nUnreadMsgs))
                i -= 1; // For the shift
-            }
          }
 
          Alignment align = Alignment.bottomLeft;
@@ -1349,11 +1351,41 @@ Widget makeChatTileSubStr(final Chat ch)
              , Expanded(child: makeChatSubStrWidget(ch))]);
 }
 
-Widget makePostChatCol(BuildContext context,
-                      List<Chat> ch,
-                      Function onPressed,
-                      Function onLongPressed,
-                      int postId)
+Widget
+makeChatListTileTrailingWidget(
+   int nUnreadMsgs,
+   int pinDate,
+   bool isFwdChatMsgs)
+{
+   if (isFwdChatMsgs)
+      return null;
+
+   if (nUnreadMsgs != 0 && pinDate != 0) {
+      return Column(children: <Widget>
+      [ Icon(Icons.place)
+      , makeCircleUnreadMsgs(nUnreadMsgs, cts.accentColor, Colors.white)
+      ]);
+   } 
+   
+   if (nUnreadMsgs == 0 && pinDate != 0) {
+      return Icon(Icons.place);
+   }
+   
+   if (nUnreadMsgs != 0 && pinDate == 0) {
+      return makeCircleUnreadMsgs(
+         nUnreadMsgs,
+         cts.accentColor,
+         Colors.white);
+   }
+}
+
+Widget makePostChatCol(
+   BuildContext context,
+   List<Chat> ch,
+   Function onPressed,
+   Function onLongPressed,
+   int postId,
+   bool isFwdChatMsgs)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -1373,17 +1405,8 @@ Widget makePostChatCol(BuildContext context,
          bgColor = Colors.white;
       }
 
-      Widget trailing = null;
-      if (n != 0 && ch[i].pinDate != 0) {
-         trailing = Column(children: <Widget>
-         [ Icon(Icons.place)
-         , makeCircleUnreadMsgs(n, cts.accentColor, Colors.white)
-         ]);
-      } else if (n == 0 && ch[i].pinDate != 0) {
-         trailing = Icon(Icons.place);
-      } else if (n != 0 && ch[i].pinDate == 0) {
-         trailing = makeCircleUnreadMsgs(n, cts.accentColor, Colors.white);
-      }
+      Widget trailing = makeChatListTileTrailingWidget(n,
+            ch[i].pinDate, isFwdChatMsgs);
 
       ListTile lt =
          ListTile(
@@ -1438,7 +1461,8 @@ Widget makeChatTab(
    Function onLongPressed,
    List<MenuItem> menus,
    Function onDelPost,
-   Function onPinPost)
+   Function onPinPost,
+   bool isFwdChatMsgs)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
@@ -1454,7 +1478,8 @@ Widget makeChatTab(
                          data[i].chats,
                          (j) {onPressed(i, j);},
                          (j) {onLongPressed(i, j);},
-                         data[i].id),
+                         data[i].id,
+                         isFwdChatMsgs),
                       onDelPost,
                       onPinPost,
                       i);
@@ -3159,7 +3184,8 @@ class MenuChatState extends State<MenuChat>
          _onChatLP,
          _menus,
          (int i){_showSimpleDial(ctx, () async { await _onRemovePost(i);}, 4);},
-         _onPinPost);
+         _onPinPost,
+         !_lpChatMsgs.isEmpty);
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -3175,7 +3201,8 @@ class MenuChatState extends State<MenuChat>
          _onChatLP,
          _menus,
          (int i){_showSimpleDial(ctx, () async {await _onRemovePost(i);}, 4);},
-         _onPinPost);
+         _onPinPost,
+         !_lpChatMsgs.isEmpty);
 
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
