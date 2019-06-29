@@ -35,34 +35,19 @@ int chatStatusStrToInt(final String cmd)
    assert(false);
 }
 
-String chatStatusIntToStr(final int status)
-{
-   if (status == 0)
-      return 'chat';
-   if (status == 1)
-      return 'server_ack';
-   if (status == 2)
-      return 'app_ack_received';
-   if (status == 3)
-      return 'app_ack_read';
-
-   assert(false);
-}
-
 class ChatItem {
    bool thisApp; 
    String msg = '';
-   int status = 0;
    int date = 0;
    bool isLongPressed = false;
 
-   ChatItem(this.thisApp, this.msg, this.status, this.date);
+   ChatItem(this.thisApp, this.msg, this.date);
 
    ChatItem.fromJson(Map<String, dynamic> map)
    {
       thisApp = map["this_app"];
-      msg = map["msg"];
-      status = map["status"];
+      msg = map['msg'];
+      date = map['date'];
    }
 
    Map<String, dynamic> toJson()
@@ -71,31 +56,24 @@ class ChatItem {
       {
          'this_app': thisApp,
          'msg': msg,
-         'status': status,
+         'date': date,
       };
    }
 }
 
-List<ChatItem> chatItemsFromStrs(final List<String> lines)
+List<dynamic> makeChatUpdateSql(Chat chat, int postId)
 {
-   List<ChatItem> foo = List<ChatItem>();
-   for (String line in lines) {
-      Map<String, dynamic> map = jsonDecode(line);
-      ChatItem item = ChatItem.fromJson(map);
-      if (item.msg.isEmpty) {
-         assert(!foo.isEmpty);
-         for (int i = 0; i < foo.length; ++i) {
-            final int j = foo.length - i - 1;
-            if (foo[j].status >= item.status)
-               break;
-            foo[j].status = item.status;
-         }
-      } else {
-         foo.add(item);
-      }
-   }
-
-   return foo;
+   return <dynamic>
+   [ postId
+   , chat.peer
+   , chat.date
+   , chat.pinDate
+   , chat.nick
+   , chat.lastAppReadIdx
+   , chat.lastAppReceivedIdx
+   , chat.lastServerAckedIdx
+   , chat.nUnreadMsgs
+   ];
 }
 
 class Chat {
@@ -103,8 +81,18 @@ class Chat {
    String nick = '';
    int date = 0;
    int pinDate = 0;
+
+   int lastAppReadIdx = -1;
+   int lastAppReceivedIdx = -1;
+   int lastServerAckedIdx = -1;
+   int nUnreadMsgs = 0;
+
    bool isLongPressed = false;
    List<ChatItem> msgs = List<ChatItem>();
+
+   Chat(this.peer, this.nick, this.date, this.pinDate,
+        this.lastAppReadIdx, this.lastAppReceivedIdx,
+        this.lastServerAckedIdx, this.nUnreadMsgs);
 
    String getChatDisplayName()
    {
@@ -129,8 +117,6 @@ class Chat {
       return nick.substring(0, 2);
    }
 
-   Chat(this.peer, this.nick, this.date);
-
    String makeFullPath(final String prefix, final int postId)
    {
       return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
@@ -149,8 +135,10 @@ class Chat {
       try {
          File f = File(makeFullPath(cts.chatFilePrefix, postId));
          final List<String> lines = await f.readAsLines();
-         msgs = chatItemsFromStrs(lines);
+         msgs = List<ChatItem>.generate(lines.length, (int i)
+            { return ChatItem.fromJson(jsonDecode(lines[i])); });
       } catch (e) {
+         print(e);
       }
    }
 
@@ -159,44 +147,9 @@ class Chat {
       return msgs.length;
    }
 
-   Future<void> setPeerMsgStatus(int status, int postId) async
-   {
-      for (int i = 0; i < msgs.length; ++i) {
-         final int j = msgs.length - i - 1;
-         if (msgs[j].thisApp)
-            continue;
-
-         if (msgs[j].status >= status)
-            break;
-
-         msgs[j].status = status;
-         await persistStatus(postId, status, false);
-      }
-   }
-
-   int getNumberOfUnreadMsgs()
-   {
-      int n = 0;
-      for (int i = 0; i < msgs.length; ++i) {
-         final int j = msgs.length - i - 1;
-         if (msgs[j].thisApp)
-            continue;
-
-         if (msgs[j].status >= 3)
-            break;
-
-         ++n;
-      }
-
-      return n;
-   }
-
    bool hasUnreadMsgs()
    {
-      if (msgs.isEmpty)
-         return false;
-
-      return !msgs.last.thisApp && msgs.last.status < 3;
+      return nUnreadMsgs != 0;
    }
 
    String getLastMsg()
@@ -207,48 +160,15 @@ class Chat {
       return msgs.last.msg;
    }
 
-   Future<void>
-   addMsg(final String msg, final bool thisApp,
-          final int postId, int status, int now) async
+   void addMsg(final String msg, final bool thisApp,
+               final int postId, int now)
    {
-      ChatItem item = ChatItem(thisApp, msg, status, now);
+      ChatItem item = ChatItem(thisApp, msg, now);
       msgs.add(item);
 
       final String content = serializeList(<ChatItem>[item]);
-      await File(makeFullPath(cts.chatFilePrefix, postId))
-         .writeAsString(content, mode: FileMode.append);
-   }
-
-   Future<void>
-   markAppChatAck(final int postId, final int status) async
-   {
-      //assert(!msgs.isEmpty); 
-      if (msgs.isEmpty) {
-         print('markAppChatAck ignoring1');
-         return;
-      }
-
-      for (int i = 0; i < msgs.length; ++i) {
-         final int j = msgs.length - i - 1; // Idx of the last element.
-         if (!msgs[j].thisApp)
-            continue; // Not a message from this app.
-
-         if (msgs[j].status >= status) // Should be >=
-            break;
-
-         msgs[j].status = status;
-      }
-
-      await persistStatus(postId, status, true);
-   }
-
-   Future<void>
-   persistStatus(int postId, int status, bool thisApp) async
-   {
-      ChatItem item = ChatItem(thisApp, '', status, 0);
-      final String str = jsonEncode(item);
-      await File(makeFullPath(cts.chatFilePrefix, postId))
-         .writeAsString('${str}\n', mode: FileMode.append);
+      File(makeFullPath(cts.chatFilePrefix, postId))
+         .writeAsStringSync(content, mode: FileMode.append);
    }
 }
 
@@ -386,7 +306,7 @@ class Post {
    {
       print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
-      Chat history = Chat(peer, nick, now);
+      Chat history = Chat(peer, nick, now, 0, -1, -1, -1, 0);
       final int l = chats.length;
       chats.add(history);
       return l;
@@ -407,23 +327,11 @@ class Post {
       return i;
    }
 
-   Future<void>
-   markChatAppAck(final String peer, final int status) async
-   {
-      final int i = getChatHistIdx(peer);
-      if (i == -1) {
-         print('markChatAppAck: Ignoring ack.');
-         return;
-      }
-
-      await chats[i].markAppChatAck(id, status);
-   }
-
    int getNumberOfUnreadChats()
    {
       int i = 0;
       for (Chat h in chats)
-         if (h.getNumberOfUnreadMsgs() > 0)
+         if (h.nUnreadMsgs > 0)
             ++i;
 
       return i;
@@ -435,7 +343,7 @@ class Post {
       // getNumberOfUnreadChats != 0
 
       for (Chat h in chats)
-         if (h.getNumberOfUnreadMsgs() > 0)
+         if (h.nUnreadMsgs > 0)
             return true;
 
       return false;
@@ -594,20 +502,53 @@ int CompPosts(final Post lhs, final Post rhs)
         : c1.msgs.last.date < c2.msgs.last.date ? 1 : 0;
 }
 
-Future<void>
+void
 findAndMarkChatApp( final List<Post> posts
-                  , final String from
+                  , final String peer
                   , final int postId
-                  , final int status) async
+                  , final int status
+                  , Batch batch)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
 
    if (i == -1) {
-      print('====> findAndMarkChatApp: Cannot find msg.');
+      print('====> findAndMarkChatApp: Cannot find post id.');
       return;
    }
 
-   await posts[i].markChatAppAck(from, status);
+   final int j = posts[i].chats.indexWhere((e) {return e.peer == peer;});
+   if (i == -1) {
+      print('====> findAndMarkChatApp: Cannot find user id.');
+      return;
+   }
+
+   final int l = posts[i].chats[j].msgs.length;
+
+   if (status == 1) {
+      print('1 Writing $peer $postId $status $l');
+      posts[i].chats[j].lastServerAckedIdx = l - 1;
+      batch.rawUpdate(cts.updateLastServerAckedIdx,
+                      [l - 1, postId, peer]);
+      return;
+   }
+
+   if (status == 2) {
+      print('2 Writing $peer $postId $status $l');
+      posts[i].chats[j].lastAppReceivedIdx = l - 1;
+      batch.rawUpdate(cts.updateLastAppReceivedIdx,
+                      [l - 1, postId, peer]);
+      return;
+   }
+
+   if (status == 3) {
+      print('3 Writing $peer $postId $status $l');
+      posts[i].chats[j].lastAppReadIdx = l - 1;
+      batch.rawUpdate(cts.updateLastAppReadIdx,
+                      [l - 1, postId, peer]);
+      return;
+   }
+
+   assert(false);
 }
 
 List<List<List<int>>> decodeChannel(List<dynamic> to)
@@ -699,14 +640,20 @@ Future<List<Chat>> loadChats(Database db, int postId) async
 
   return List.generate(maps.length, (i)
   {
-     final int post_id = maps[i]['post_id'];
+     final int postId = maps[i]['post_id'];
      final String peer = maps[i]['user_id'];
      final int date = maps[i]['date'];
      final int pinDate = maps[i]['pin_date'];
      final String nick = maps[i]['nick'];
-     print('====> $peer $date $pinDate $nick');
+     final int lastAppReadIdx = maps[i]['last_app_read_idx'];
+     final int lastAppReceivedIdx = maps[i]['last_app_received_idx'];
+     final int lastServerAckedIdx = maps[i]['last_server_acked_idx'];
+     final int nUnreadMsgs = maps[i]['n_unread_msgs'];
+     print('$peer $postId $date $pinDate $lastAppReadIdx $lastAppReceivedIdx $lastServerAckedIdx $nUnreadMsgs');
 
-     return Chat(peer, nick, date);
+     return Chat(peer, nick, date, pinDate, lastAppReadIdx,
+                 lastAppReceivedIdx, lastServerAckedIdx,
+                 nUnreadMsgs);
   });
 }
 

@@ -539,8 +539,7 @@ makeChatMsgListView(
    onDragChatMsg)
 {
    final int nMsgs = ch.msgs.length;
-   final int nUnreadMsgs = ch.getNumberOfUnreadMsgs();
-   final int shift = nUnreadMsgs == 0 ? 0 : 1;
+   final int shift = ch.nUnreadMsgs == 0 ? 0 : 1;
 
    return ListView.builder(
       controller: scrollCtrl,
@@ -551,10 +550,10 @@ makeChatMsgListView(
       {
          List<ChatItem> items = ch.msgs;
          if (shift == 1) {
-            if (i == nMsgs - nUnreadMsgs)
-               return makeUnreadMsgsInfoWidget(nUnreadMsgs);
+            if (i == nMsgs - ch.nUnreadMsgs)
+               return makeUnreadMsgsInfoWidget(ch.nUnreadMsgs);
 
-            if (i > (nMsgs - nUnreadMsgs))
+            if (i > (nMsgs - ch.nUnreadMsgs))
                i -= 1; // For the shift
          }
 
@@ -578,10 +577,9 @@ makeChatMsgListView(
 
          Widget msgAndStatus;
          if (items[i].thisApp) {
-            final int st =  items[i].status;
             Align foo =
                Align(alignment: Alignment.bottomRight,
-                     child: chooseIcon(st));
+                     child: chooseMsgStatusIcon(ch, i));
 
             msgAndStatus = Row(children: <Widget>
             [ Expanded(child: Text(items[i].msg))
@@ -1315,20 +1313,19 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
 }
 
 // Returns an icon based on the message status.
-Widget chooseIcon(final int status)
+Widget chooseMsgStatusIcon(Chat ch, int i)
 {
-   final double s = 17.0;
+   final double s = 20.0;
 
    Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
 
-   if (status == 1)
-      icon = Icon(Icons.check, color: Colors.grey, size: s);
-
-   if (status == 2)
+   if (i <= ch.lastAppReadIdx)
+      icon = Icon(Icons.place, color: Colors.green, size: s);
+   else if (i <= ch.lastAppReceivedIdx) {
       icon = Icon(Icons.done_all, color: Colors.grey, size: s);
-
-   if (status == 3)
-      icon = Icon(Icons.done_all, color: Colors.green, size: s);
+   } else if (i <= ch.lastServerAckedIdx) {
+      icon = Icon(Icons.check, color: Colors.grey, size: s);
+   }
 
    return Padding(
       child: icon,
@@ -1337,7 +1334,7 @@ Widget chooseIcon(final int status)
 
 Widget makeChatTileSubStr(final Chat ch)
 {
-   if (ch.getNumberOfUnreadMsgs() > 0)
+   if (ch.nUnreadMsgs > 0)
       return makeChatSubStrWidget(ch);
 
    if (ch.msgs.isEmpty)
@@ -1347,7 +1344,7 @@ Widget makeChatTileSubStr(final Chat ch)
       return makeChatSubStrWidget(ch);
 
    return Row(children: <Widget>
-             [ chooseIcon(ch.msgs.last.status)
+             [ chooseMsgStatusIcon(ch, ch.msgs.length - 1)
              , Expanded(child: makeChatSubStrWidget(ch))]);
 }
 
@@ -1391,7 +1388,7 @@ Widget makePostChatCol(
 
    int nUnredChats = 0;
    for (int i = 0; i < list.length; ++i) {
-      final int n = ch[i].getNumberOfUnreadMsgs();
+      final int n = ch[i].nUnreadMsgs;
       if (n > 0)
          ++nUnredChats;
 
@@ -1933,18 +1930,20 @@ class MenuChatState extends State<MenuChat>
 
       if (fav == 1) {
          _posts[i].status = 2;
-         final int now = DateTime.now().millisecondsSinceEpoch;
-         final int ignore =
-            await _db.rawInsert(cts.insertChatStOnPost,
-               [ _posts[i].id, _posts[i].from
-               , now, -1, _posts[i].nick, '']);
+         final int j =
+            _posts[i].createChatEntryForPeer(_posts[i].from,
+                                             _posts[i].nick);
 
-         _posts[i].createChatEntryForPeer(_posts[i].from, _posts[i].nick);
+         Batch batch = _db.batch();
+         batch.rawInsert(cts.insertChatStOnPost,
+            makeChatUpdateSql(_posts[i].chats[j], _posts[i].id));
+
+         batch.execute(cts.updatePostStatus, [2, _posts[i].id]);
+
+         await batch.commit(noResult: true, continueOnError: true);
 
          _favPosts.add(_posts[i]);
          _favPosts.sort(CompPosts);
-
-         await _db.execute(cts.updatePostStatus, [2, _posts[i].id]);
 
       } else {
          await _db.execute(cts.deletePost, [_posts[i].id]);
@@ -2045,12 +2044,13 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopChat() async
    {
+      await _db.rawUpdate(cts.updateNUnreadMsgs, [0, _post.id, _chat.peer]);
+
+      _chat.nUnreadMsgs = 0;
       _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
 
       final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
-
-      await _chat.setPeerMsgStatus(3, _post.id);
 
       if (isEmpty) {
          _post = null;
@@ -2351,10 +2351,7 @@ class MenuChatState extends State<MenuChat>
       _post = posts[i];
       _chat = posts[i].chats[j];
 
-      final int n = posts[i].chats[j].getNumberOfUnreadMsgs();
-      final double jumpToIdx = 1.0 - n / posts[i].chats[j].msgs.length;
-
-      if (n != 0) {
+      if (posts[i].chats[j].nUnreadMsgs != 0) {
          var msgMap = {
             'cmd': 'message',
             'type': 'app_ack_read',
@@ -2370,12 +2367,6 @@ class MenuChatState extends State<MenuChat>
       setState(() {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            // It would be actually more correct to calculate
-            // jumpToIdx here, since we may receive other messages
-            // at the time this function is called. But this
-            // extremely unlikey, so I won't care.
-            print('====> Jumping to $jumpToIdx');
-            //_chatScrollCtrl.jumpTo(jumpToIdx);
             _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
          });
       });
@@ -2476,9 +2467,7 @@ class MenuChatState extends State<MenuChat>
          assert(j != -1);
 
          final int now = DateTime.now().millisecondsSinceEpoch;
-         await posts[i].chats[j].setPeerMsgStatus(3, postId);
-         await posts[i].chats[j].addMsg(msg, true, postId, 0, now);
-         await _db.execute(cts.updateChatStatusLastMsg, [msg, postId]);
+         posts[i].chats[j].addMsg(msg, true, postId, now);
 
          final int msgId =
             await _db.rawInsert(cts.insertChatMsg,
@@ -2503,16 +2492,21 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _chatServerAckHandler(Map<String, dynamic> ack) async
+   void _chatServerAckHandler(Map<String, dynamic> ack, Batch batch)
    {
       try {
-         // TODO: Use rawDelete and assert one element was removed.
-         await _db.execute(
-            cts.deleteOutChatMsg,
-            [_outChatMsgsQueue.first.rowid]);
+         assert(_outChatMsgsQueue.first.sent);
+         assert(!_outChatMsgsQueue.isEmpty);
+         final String res = ack['result'];
 
-         print('Removing==> ${_outChatMsgsQueue.first.payload}');
+         batch.rawDelete(cts.deleteOutChatMsg,
+                         [_outChatMsgsQueue.first.rowid]);
+
+         final bool isChat = _outChatMsgsQueue.first.isChat == 1;
          _outChatMsgsQueue.removeFirst();
+
+         if (res == 'ok' && isChat)
+            _chatAppAckHandler(ack, 1, batch);
 
          if (!_outChatMsgsQueue.isEmpty) {
             assert(!_outChatMsgsQueue.first.sent);
@@ -2559,103 +2553,89 @@ class MenuChatState extends State<MenuChat>
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
-         print('Error: Unable to find postId $postId.');
+         print('Ignoring message to postId $postId.');
          return;
       }
 
-      Post postTmp = posts[i];
+      final int j = posts[i].getChatHistIdxOrCreate(peer, nick);
+      if (j == -1) {
+         print('Ignoring message to (postId, peer) = ($postId, $peer)');
+         return;
+      }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
+      posts[i].chats[j].addMsg(msg, false, postId, now);
 
-      // Updates the chat-status table.
+      // If we are in the screen having chat with the user we can ack
+      // it with app_ack_read and skip app_ack_received.
+      final bool isOnPost = _post != null && _post.id == postId; 
+      final bool isOnChat = _chat != null && _chat.peer == peer; 
+
+      String ack;
+      if (isOnPost && isOnChat) {
+         ack = 'app_ack_read';
+         // TODO: Put an indicator that a new message has arrived
+         // if it out of the field of view.
+      } else {
+         ack = 'app_ack_received';
+         ++posts[i].chats[j].nUnreadMsgs;
+      }
+
+      posts[i].chats.sort(CompChats);
+      posts.sort(CompPosts);
+
+      // FIXME: Perform the following operations in batch.
       final int ignore =
          await _db.rawInsert(cts.insertOrReplaceChatOnPost,
-            [postId, peer, now, -1, nick , '']);
+            makeChatUpdateSql(posts[i].chats[j], postId));
 
-      print('rowid2 ====> $ignore');
-      final int j = posts[i].getChatHistIdxOrCreate(peer, nick);
-      assert(j != -1);
-
-      Chat chatTmp = postTmp.chats[j];
-
-      await posts[i].chats[j].addMsg(msg, false, postId, 0, now);
-
-      // Updates the chats table.
       final int msgId1 =
          await _db.rawInsert(cts.insertChatMsg,
                              [postId, peer, 0, now, msg]);
 
-      // FIXME: The indexes used in the rotate function below may be
-      // wrong after the await function.
-      postTmp.chats.sort(CompChats);
-      posts.sort(CompPosts);
-
-      // If we are in the screen having chat with the user we can ack
-      // it with app_ack_read and skip app_ack_received.
-      if (isOnFavChat() || isOnOwnChat()) {
-         if (postTmp.id == _post.id && chatTmp.peer == _chat.peer) {
-            _post.chats.first.setPeerMsgStatus(3, postId);
-            var msgMap = {
-               'cmd': 'message',
-               'type': 'app_ack_read',
-               'to': peer,
-               'post_id': postId,
-               'is_sender_post': !isSenderPost,
-            };
-
-            final String payload = jsonEncode(msgMap);
-            await sendChatMsg(payload, 0);
-            return;
-         }
-      }
-
-      // Acks we have received the message.
-      var map = {
+      var msgMap = {
          'cmd': 'message',
-         'type': 'app_ack_received',
+         'type': 'app_ack_read',
          'to': peer,
          'post_id': postId,
          'is_sender_post': !isSenderPost,
       };
 
-      final String payload = jsonEncode(map);
+      final String payload = jsonEncode(msgMap);
       await sendChatMsg(payload, 0);
    }
-   Future<void>
-   _chatAppAckHandler(Map<String, dynamic> ack,
-                      final int status) async
+
+   void _chatAppAckHandler(Map<String, dynamic> ack,
+                           final int status,
+                           Batch batch)
    {
       final String from = ack['from'];
       final int postId = ack['post_id'];
-
       final bool isSenderPost = ack['is_sender_post'];
+
       if (isSenderPost) {
-         await findAndMarkChatApp(_favPosts, from, postId, status);
+         findAndMarkChatApp(_favPosts, from, postId, status, batch);
       } else {
-         await findAndMarkChatApp(_ownPosts, from, postId, status);
+         findAndMarkChatApp(_ownPosts, from, postId, status, batch);
       }
    }
 
    Future<void> _onMessage(Map<String, dynamic> ack) async
    {
+      Batch batch = _db.batch();
+
       final String type = ack['type'];
       if (type == 'server_ack') {
-         if (_outChatMsgsQueue.isEmpty)
-            print('==============> $ack');
-         assert(_outChatMsgsQueue.first.sent);
-         assert(!_outChatMsgsQueue.isEmpty);
-         final int isChat = _outChatMsgsQueue.first.isChat;
-         await _chatServerAckHandler(ack);
-         final String res = ack['result'];
-         if (res == 'ok' && isChat == 1)
-            await _chatAppAckHandler(ack, 1);
+         _chatServerAckHandler(ack, batch);
       } else if (type == 'chat') {
          _chatMsgHandler(ack);
       } else if (type == 'app_ack_received') {
-         await _chatAppAckHandler(ack, 2);
+         _chatAppAckHandler(ack, 2, batch);
       } else if (type == 'app_ack_read') {
-         await _chatAppAckHandler(ack, 3);
+         _chatAppAckHandler(ack, 3, batch);
       }
+
+      await batch.commit(noResult: true, continueOnError: true);
 
       setState((){});
    }
