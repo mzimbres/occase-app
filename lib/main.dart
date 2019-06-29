@@ -2467,11 +2467,21 @@ class MenuChatState extends State<MenuChat>
          assert(j != -1);
 
          final int now = DateTime.now().millisecondsSinceEpoch;
-         posts[i].chats[j].addMsg(msg, true, postId, now);
+         final ChatItem item = ChatItem(true, msg, now);
+         posts[i].chats[j].lastChatItem = item;
+         posts[i].chats[j].msgs.add(item);
+         posts[i].chats[j].persistChatMsg(item, postId);
 
-         final int msgId =
-            await _db.rawInsert(cts.insertChatMsg,
-                                [postId, peer, 1, now, msg]);
+         await _db.transaction((txn) async {
+            Batch batch = txn.batch();
+
+            // Perhaps we should update only the last chat item here
+            // for performance?
+            batch.rawInsert(cts.insertOrReplaceChatOnPost,
+               makeChatUpdateSql(posts[i].chats[j], postId));
+            batch.rawInsert(cts.insertChatMsg, [postId, peer, 1, now, msg]);
+            await batch.commit(noResult: true, continueOnError: true);
+         });
 
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
@@ -2564,7 +2574,10 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      posts[i].chats[j].addMsg(msg, false, postId, now);
+      final ChatItem item = ChatItem(false, msg, now);
+      posts[i].chats[j].lastChatItem = item;
+      posts[i].chats[j].msgs.add(item);
+      posts[i].chats[j].persistChatMsg(item, postId);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
@@ -2758,9 +2771,8 @@ class MenuChatState extends State<MenuChat>
          Map<String, dynamic> ack = jsonDecode(msg);
          final String cmd = ack["cmd"];
 
-         // TODO: Put most used commands first to improve performance.
-         if (cmd == "register_ack") {
-            await _onRegisterAck(ack, msg);
+         if (cmd == "message") {
+            await _onMessage(ack);
          } else if (cmd == "login_ack") {
             await _onLoginAck(ack, msg);
          } else if (cmd == "subscribe_ack") {
@@ -2769,8 +2781,8 @@ class MenuChatState extends State<MenuChat>
             await _onPost(ack);
          } else if (cmd == "publish_ack") {
             await _onPublishAck(ack);
-         } else if (cmd == "message") {
-            await _onMessage(ack);
+         } else if (cmd == "register_ack") {
+            await _onRegisterAck(ack, msg);
          } else {
             print('Unhandled message received from the server:\n$msg.');
          }

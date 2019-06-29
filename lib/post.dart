@@ -61,38 +61,24 @@ class ChatItem {
    }
 }
 
-List<dynamic> makeChatUpdateSql(Chat chat, int postId)
-{
-   return <dynamic>
-   [ postId
-   , chat.peer
-   , chat.date
-   , chat.pinDate
-   , chat.nick
-   , chat.lastAppReadIdx
-   , chat.lastAppReceivedIdx
-   , chat.lastServerAckedIdx
-   , chat.nUnreadMsgs
-   ];
-}
-
 class Chat {
    String peer = '';
    String nick = '';
    int date = 0;
    int pinDate = 0;
-
    int lastAppReadIdx = -1;
    int lastAppReceivedIdx = -1;
    int lastServerAckedIdx = -1;
    int nUnreadMsgs = 0;
+   ChatItem lastChatItem = ChatItem(true, '', 0);
 
    bool isLongPressed = false;
    List<ChatItem> msgs = List<ChatItem>();
 
    Chat(this.peer, this.nick, this.date, this.pinDate,
         this.lastAppReadIdx, this.lastAppReceivedIdx,
-        this.lastServerAckedIdx, this.nUnreadMsgs);
+        this.lastServerAckedIdx, this.nUnreadMsgs,
+        this.lastChatItem);
 
    String getChatDisplayName()
    {
@@ -160,12 +146,8 @@ class Chat {
       return msgs.last.msg;
    }
 
-   void addMsg(final String msg, final bool thisApp,
-               final int postId, int now)
+   void persistChatMsg(ChatItem item, final int postId)
    {
-      ChatItem item = ChatItem(thisApp, msg, now);
-      msgs.add(item);
-
       final String content = serializeList(<ChatItem>[item]);
       File(makeFullPath(cts.chatFilePrefix, postId))
          .writeAsStringSync(content, mode: FileMode.append);
@@ -306,7 +288,8 @@ class Post {
    {
       print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
-      Chat history = Chat(peer, nick, now, 0, -1, -1, -1, 0);
+      Chat history =
+         Chat(peer, nick, now, 0, -1, -1, -1, 0, ChatItem(true, '', 0));
       final int l = chats.length;
       chats.add(history);
       return l;
@@ -649,11 +632,37 @@ Future<List<Chat>> loadChats(Database db, int postId) async
      final int lastAppReceivedIdx = maps[i]['last_app_received_idx'];
      final int lastServerAckedIdx = maps[i]['last_server_acked_idx'];
      final int nUnreadMsgs = maps[i]['n_unread_msgs'];
-     print('$peer $postId $date $pinDate $lastAppReadIdx $lastAppReceivedIdx $lastServerAckedIdx $nUnreadMsgs');
+     final String lastChatItemStr = maps[i]['last_chat_item'];
+
+     print('$peer $postId $date $pinDate $lastAppReadIdx $lastAppReceivedIdx $lastServerAckedIdx $nUnreadMsgs $lastChatItemStr');
+
+     ChatItem lastChatItem = ChatItem(true, '', 0);
+     if (!lastChatItemStr.isEmpty)
+         lastChatItem = ChatItem.fromJson(jsonDecode(lastChatItemStr));
 
      return Chat(peer, nick, date, pinDate, lastAppReadIdx,
                  lastAppReceivedIdx, lastServerAckedIdx,
-                 nUnreadMsgs);
+                 nUnreadMsgs, lastChatItem);
   });
+}
+
+List<dynamic> makeChatUpdateSql(Chat chat, int postId)
+{
+   String payload = '';
+   if (!chat.msgs.isEmpty)
+      payload = jsonEncode(chat.msgs.last);
+
+   return <dynamic>
+   [ postId
+   , chat.peer
+   , chat.date
+   , chat.pinDate
+   , chat.nick
+   , chat.lastAppReadIdx
+   , chat.lastAppReceivedIdx
+   , chat.lastServerAckedIdx
+   , chat.nUnreadMsgs
+   , payload
+   ];
 }
 
