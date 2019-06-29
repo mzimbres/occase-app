@@ -2573,25 +2573,17 @@ class MenuChatState extends State<MenuChat>
 
       String ack;
       if (isOnPost && isOnChat) {
+         posts[i].chats[j].nUnreadMsgs = 0;
          ack = 'app_ack_read';
          // TODO: Put an indicator that a new message has arrived
          // if it out of the field of view.
       } else {
-         ack = 'app_ack_received';
          ++posts[i].chats[j].nUnreadMsgs;
+         ack = 'app_ack_received';
       }
 
       posts[i].chats.sort(CompChats);
       posts.sort(CompPosts);
-
-      // FIXME: Perform the following operations in batch.
-      final int ignore =
-         await _db.rawInsert(cts.insertOrReplaceChatOnPost,
-            makeChatUpdateSql(posts[i].chats[j], postId));
-
-      final int msgId1 =
-         await _db.rawInsert(cts.insertChatMsg,
-                             [postId, peer, 0, now, msg]);
 
       var msgMap = {
          'cmd': 'message',
@@ -2601,7 +2593,19 @@ class MenuChatState extends State<MenuChat>
          'is_sender_post': !isSenderPost,
       };
 
+      // Generating the payload before the async operation to avoid
+      // problems.
       final String payload = jsonEncode(msgMap);
+
+      await _db.transaction((txn) async {
+         Batch batch = txn.batch();
+         batch.rawInsert(cts.insertOrReplaceChatOnPost,
+            makeChatUpdateSql(posts[i].chats[j], postId));
+         batch.rawInsert(cts.insertChatMsg, [postId, peer, 0, now, msg]);
+         await batch.commit(noResult: true, continueOnError: true);
+      });
+
+      // TODO: Include this in the transaction above.
       await sendChatMsg(payload, 0);
    }
 
