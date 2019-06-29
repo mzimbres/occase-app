@@ -10,17 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-String serializeList<T>(final List<T> data)
-{
-   String content = '';
-   for (T o in data) {
-      final String postStr = jsonEncode(o);
-      content += '$postStr\n';
-   }
-
-   return content;
-}
-
 int chatStatusStrToInt(final String cmd)
 {
    if (cmd == 'chat')
@@ -73,7 +62,8 @@ class Chat {
    ChatItem lastChatItem = ChatItem(true, '', 0);
 
    bool isLongPressed = false;
-   List<ChatItem> msgs = List<ChatItem>();
+   List<ChatItem> msgs = null;
+   File _msgsFile = null;
 
    Chat(this.peer, this.nick, this.date, this.pinDate,
         this.lastAppReadIdx, this.lastAppReceivedIdx,
@@ -108,19 +98,31 @@ class Chat {
       return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
    }
 
-   int getMostRecentTimestamp()
+   bool isLoaded()
    {
-      if (msgs.isEmpty)
-         return 0;
-
-      return msgs.last.date;
+      return msgs != null;
    }
 
-   Future<void> loadMsgs(final int postId) async
+   bool _isFileOpen()
    {
+      return _msgsFile != null;
+   }
+
+   void _openFile(int postId)
+   {
+      _msgsFile = File(makeFullPath(cts.chatFilePrefix, postId));
+   }
+
+   void loadMsgs(final int postId)
+   {
+      print('Loading msgs');
       try {
-         File f = File(makeFullPath(cts.chatFilePrefix, postId));
-         final List<String> lines = await f.readAsLines();
+         if (!_isFileOpen()) {
+            print('Opening file');
+            _openFile(postId);
+         }
+
+         List<String> lines = _msgsFile.readAsLinesSync();
          msgs = List<ChatItem>.generate(lines.length, (int i)
             { return ChatItem.fromJson(jsonDecode(lines[i])); });
       } catch (e) {
@@ -128,29 +130,14 @@ class Chat {
       }
    }
 
-   int getNumberOfMsgs()
-   {
-      return msgs.length;
-   }
-
-   bool hasUnreadMsgs()
-   {
-      return nUnreadMsgs != 0;
-   }
-
-   String getLastMsg()
-   {
-      if (msgs.isEmpty)
-         return '';
-
-      return msgs.last.msg;
-   }
-
    void persistChatMsg(ChatItem item, final int postId)
    {
-      final String content = serializeList(<ChatItem>[item]);
-      File(makeFullPath(cts.chatFilePrefix, postId))
-         .writeAsStringSync(content, mode: FileMode.append);
+      if (!_isFileOpen())
+         _openFile(postId);
+
+      String content = jsonEncode(item);
+      content += '\n';
+      _msgsFile.writeAsStringSync(content, mode: FileMode.append);
    }
 }
 
@@ -166,7 +153,9 @@ class Chat {
  *    The date to be used is the date of the last chat message. Again,
  *    two or more chats with no message won't happen as said above.
  *
- *
+ * FIXME: Chats may contain empty messages if they are a reply to
+ *        other messages. The function bellow has to be adapted to
+ *        such cases.
  */
 int CompChats(final Chat lhs, final Chat rhs)
 {
@@ -180,34 +169,34 @@ int CompChats(final Chat lhs, final Chat rhs)
    if (rhs.pinDate != 0)
       return 1;
 
-   if (lhs.msgs.length == 0 && rhs.msgs.length == 0)
+   if (lhs.lastChatItem.msg == '' && rhs.lastChatItem.msg == '')
       return lhs.date > rhs.date ? -1
            : lhs.date < rhs.date ? 1 : 0;
 
-   if (lhs.msgs.length == 0)
+   if (lhs.lastChatItem.msg.isEmpty)
       return 1;
 
-   if (rhs.msgs.length == 0)
+   if (rhs.lastChatItem.msg.isEmpty)
       return -1;
 
-   if (lhs.msgs.isEmpty && rhs.msgs.isEmpty)
+   if (lhs.lastChatItem.msg.isEmpty && rhs.lastChatItem.msg.isEmpty)
       return lhs.date > rhs.date ? -1
            : lhs.date < rhs.date ? 1 : 0;
 
-   if (lhs.msgs.isEmpty)
+   if (lhs.lastChatItem.msg.isEmpty)
       return 1;
 
-   if (rhs.msgs.isEmpty)
+   if (rhs.lastChatItem.msg.isEmpty)
       return -1;
 
-   return lhs.msgs.last.date > rhs.msgs.last.date ? -1
-        : lhs.msgs.last.date < rhs.msgs.last.date ? 1 : 0;
+   return lhs.lastChatItem.date > rhs.lastChatItem.date ? -1
+        : lhs.lastChatItem.date < rhs.lastChatItem.date ? 1 : 0;
 }
 
 Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
 {
-   final int t1 = lhs.getMostRecentTimestamp();
-   final int t2 = rhs.getMostRecentTimestamp();
+   final int t1 = lhs.lastChatItem.date;
+   final int t2 = rhs.lastChatItem.date;
 
    return t1 >= t2 ? lhs : rhs;
 }
@@ -339,7 +328,7 @@ class Post {
 
       final Chat hist = chats.reduce(selectMostRecentChat);
 
-      return hist.getMostRecentTimestamp();
+      return hist.lastChatItem.date;
    }
 
    Post.fromJson(Map<String, dynamic> map)
@@ -471,18 +460,18 @@ int CompPosts(final Post lhs, final Post rhs)
    final Chat c1 = lhs.chats.reduce(selectMostRecentChat);
    final Chat c2 = rhs.chats.reduce(selectMostRecentChat);
 
-   if (c1.msgs.isEmpty && c2.msgs.isEmpty)
+   if (c1.lastChatItem.msg.isEmpty && c2.lastChatItem.msg.isEmpty)
       return c1.date > c2.date ? -1
            : c1.date < c2.date ? 1 : 0;
 
-   if (c1.msgs.isEmpty)
+   if (c1.lastChatItem.msg.isEmpty)
       return 1;
 
-   if (c2.msgs.isEmpty)
+   if (c2.lastChatItem.msg.isEmpty)
       return -1;
 
-   return c1.msgs.last.date > c2.msgs.last.date ? -1
-        : c1.msgs.last.date < c2.msgs.last.date ? 1 : 0;
+   return c1.lastChatItem.date > c2.lastChatItem.date ? -1
+        : c1.lastChatItem.date < c2.lastChatItem.date ? 1 : 0;
 }
 
 void
@@ -648,9 +637,7 @@ Future<List<Chat>> loadChats(Database db, int postId) async
 
 List<dynamic> makeChatUpdateSql(Chat chat, int postId)
 {
-   String payload = '';
-   if (!chat.msgs.isEmpty)
-      payload = jsonEncode(chat.msgs.last);
+   final String payload = jsonEncode(chat.lastChatItem);
 
    return <dynamic>
    [ postId

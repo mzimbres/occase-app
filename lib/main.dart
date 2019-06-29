@@ -778,14 +778,14 @@ Widget makeTabWidget(int n, String title, double opacity)
    return Row(children: widgets);
 }
 
-Text createMenuItemSubStrWidget(String str, FontWeight fw)
+Text createMenuItemSubStrWidget(String str)
 {
    if (str == null)
       return null;
 
-   return Text(str, style: TextStyle(fontSize: 14.0, fontWeight: fw),
-               maxLines: 1,
-               overflow: TextOverflow.clip);
+   return Text(str, style:
+         TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal),
+               maxLines: 1, overflow: TextOverflow.clip);
 }
 
 CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
@@ -1090,15 +1090,6 @@ List<Card> postTextAssembler(BuildContext context,
    return list;
 }
 
-Text makeChatSubStrWidget(Chat ch)
-{
-   FontWeight fw = FontWeight.normal;
-   if (ch.hasUnreadMsgs())
-      fw = FontWeight.bold;
-
-   return createMenuItemSubStrWidget(ch.getLastMsg(), FontWeight.bold);
-}
-
 Card createChatEntry(BuildContext context,
                      Post post,
                      List<MenuItem> menus,
@@ -1334,18 +1325,19 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
 
 Widget makeChatTileSubStr(final Chat ch)
 {
-   if (ch.nUnreadMsgs > 0)
-      return makeChatSubStrWidget(ch);
+   final String str = ch.lastChatItem.msg;
 
-   if (ch.msgs.isEmpty)
-      return makeChatSubStrWidget(ch);
+   if (ch.nUnreadMsgs > 0 ||
+       ch.lastChatItem.msg.isEmpty ||
+       !ch.lastChatItem.thisApp)
+      return createMenuItemSubStrWidget(str);
 
-   if (!ch.msgs.last.thisApp)
-      return makeChatSubStrWidget(ch);
-
+   // FIXME: Here we have to pass the biggest index in Chat class.
+   // However it is necessary to incomporate one more index, the last
+   // index.
    return Row(children: <Widget>
-             [ chooseMsgStatusIcon(ch, ch.msgs.length - 1)
-             , Expanded(child: makeChatSubStrWidget(ch))]);
+   [ chooseMsgStatusIcon(ch, 0)
+   , Expanded(child: createMenuItemSubStrWidget(str))]);
 }
 
 Widget
@@ -1814,20 +1806,14 @@ class MenuChatState extends State<MenuChat>
          for (Post p in posts) {
             if (p.status == 0) {
                _ownPosts.add(p);
-               for (Post o in _ownPosts) {
+               for (Post o in _ownPosts)
                   o.chats = await loadChats(_db, o.id);
-                  for (Chat c in o.chats)
-                     await c.loadMsgs(o.id);
-               }
             } else if (p.status == 1) {
                _posts.add(p);
             } else if (p.status == 2) {
                _favPosts.add(p);
-               for (Post o in _favPosts) {
+               for (Post o in _favPosts)
                   o.chats = await loadChats(_db, o.id);
-                  for (Chat c in o.chats)
-                     await c.loadMsgs(o.id);
-               }
             } else if (p.status == 3) {
                _outPostsQueue.add(p);
             } else {
@@ -2339,18 +2325,18 @@ class MenuChatState extends State<MenuChat>
    _onChatPressedImpl(List<Post> posts,
                       bool isSenderPost, int i, int j) async
    {
-      // WARNING: When working with indexes, ensure you colect them
-      // before any asynchronous functions is called.
-
       if (!_lpChats.isEmpty || !_lpChatMsgs.isEmpty) {
          _onChatLPImpl(posts, i, j);
          setState(() { });
          return;
       }
-      
+
       _post = posts[i];
       _chat = posts[i].chats[j];
 
+      if (!_chat.isLoaded())
+         _chat.loadMsgs(_post.id);
+      
       if (posts[i].chats[j].nUnreadMsgs != 0) {
          var msgMap = {
             'cmd': 'message',
@@ -2469,6 +2455,7 @@ class MenuChatState extends State<MenuChat>
          final int now = DateTime.now().millisecondsSinceEpoch;
          final ChatItem item = ChatItem(true, msg, now);
          posts[i].chats[j].lastChatItem = item;
+         assert(posts[i].chats[j].isLoaded());
          posts[i].chats[j].msgs.add(item);
          posts[i].chats[j].persistChatMsg(item, postId);
 
@@ -2576,7 +2563,8 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       final ChatItem item = ChatItem(false, msg, now);
       posts[i].chats[j].lastChatItem = item;
-      posts[i].chats[j].msgs.add(item);
+      if (posts[i].chats[j].isLoaded())
+         posts[i].chats[j].msgs.add(item);
       posts[i].chats[j].persistChatMsg(item, postId);
 
       // If we are in the screen having chat with the user we can ack
@@ -2591,16 +2579,19 @@ class MenuChatState extends State<MenuChat>
          // TODO: Put an indicator that a new message has arrived
          // if it out of the field of view.
       } else {
+         print('=====> Sending ack received');
          ++posts[i].chats[j].nUnreadMsgs;
          ack = 'app_ack_received';
       }
+
+      final Chat chat = posts[i].chats[j];
 
       posts[i].chats.sort(CompChats);
       posts.sort(CompPosts);
 
       var msgMap = {
          'cmd': 'message',
-         'type': 'app_ack_read',
+         'type': ack,
          'to': peer,
          'post_id': postId,
          'is_sender_post': !isSenderPost,
@@ -2613,7 +2604,7 @@ class MenuChatState extends State<MenuChat>
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
          batch.rawInsert(cts.insertOrReplaceChatOnPost,
-            makeChatUpdateSql(posts[i].chats[j], postId));
+            makeChatUpdateSql(chat, postId));
          batch.rawInsert(cts.insertChatMsg, [postId, peer, 0, now, msg]);
          await batch.commit(noResult: true, continueOnError: true);
       });

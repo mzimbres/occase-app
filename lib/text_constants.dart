@@ -16,7 +16,7 @@ final Color accentColor = coral;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
-final double mainFontSize = 15.0;
+final double mainFontSize = 16.5;
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
 final Color selectedMenuColor = Colors.blueGrey[400];
 final Color postFrameColor = Colors.blueGrey[400];
