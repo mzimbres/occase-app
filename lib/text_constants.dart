@@ -214,7 +214,6 @@ final List<String> dialBodyStrs = <String>
 , 'Seu post será removido definitivamente.'
 ];
 
-final String postTimePrefix = 'Post';
 final String unknownNick = 'Desconhecido';
 
 final String menuSelectAllStr = 'Selecionar todos';

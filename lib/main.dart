@@ -813,6 +813,8 @@ makeChatListTileLeading(Widget child, Color bgcolor,
    Stack st = Stack(children: <Widget>
    [ Center(child: child)
    , OutlineButton(child: Text(''),
+                   borderSide: BorderSide(
+                      style: BorderStyle.none),
                    onPressed: onLeadingPressed,
                    shape: CircleBorder())]);
    return CircleAvatar(child: st, backgroundColor: bgcolor);
@@ -1087,21 +1089,21 @@ makeMenuInfoCards(BuildContext context,
 
 // Will assemble menu information and the description in cards
 List<Card> postTextAssembler(BuildContext context,
-                            Post data,
+                            Post post,
                             List<MenuItem> menus,
                             Color color)
 {
-   List<Card> list = makeMenuInfoCards(context, data, menus, color);
-   DateTime date = DateTime.fromMillisecondsSinceEpoch(data.date);
+   List<Card> list = makeMenuInfoCards(context, post, menus, color);
+   DateTime date = DateTime.fromMillisecondsSinceEpoch(post.date);
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
 
    List<String> values = List<String>();
-   values.add(data.nick);
-   values.add('${data.from}');
-   values.add('${data.id}');
+   values.add(post.nick);
+   values.add('${post.from}');
+   values.add('${post.id}');
    values.add(dateString);
-   values.add(data.description);
+   values.add(post.description);
 
    Card dc1 =
       makePostElem( context, values, cts.descList
@@ -1109,9 +1111,15 @@ List<Card> postTextAssembler(BuildContext context,
                         , color: cts.postFrameColor));
 
    list.add(dc1);
-   list.add(makePostDetailElem(data.filter));
+   list.add(makePostDetailElem(post.filter));
 
    return list;
+}
+
+String makePostSummaryStr(MenuNode root, Post post)
+{
+   final List<String> names = loadNames(root, post.channel[1][0]);
+   return names.join('/');
 }
 
 Card createChatEntry(BuildContext context,
@@ -1128,18 +1136,25 @@ Card createChatEntry(BuildContext context,
    IconData pinIcon = post.pinDate == 0 ? Icons.place : Icons.pin_drop;
    Row leading = Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-   [ IconButton(icon: Icon(Icons.clear),
+   [ IconButton(icon: Icon(Icons.delete_forever),
                 onPressed: () async {await onDelPost(i);})
    , IconButton(icon: Icon(pinIcon),
                 onPressed: () async {await onPinPost(i);})
    ]);
 
+   // For the summary I use the second MenuItem.
+   final String postSummaryStr =
+      makePostSummaryStr(menus[1].root.first, post);
+
    ExpansionTile et =
       ExpansionTile(
           leading: leading,
           key: PageStorageKey<int>(2 * post.id),
-          title: Text('${cts.postTimePrefix}: ${post.id}',
+          title: Text(postSummaryStr,
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
                       style: cts.expTileStl),
           children: ListTile.divideTiles(
                      context: context,
