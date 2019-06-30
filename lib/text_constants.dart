@@ -19,7 +19,8 @@ final Color chatLongPressendColor = Colors.grey[400];
 final double mainFontSize = 16.5;
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
 final Color selectedMenuColor = Colors.blueGrey[400];
-final Color postFrameColor = Colors.blueGrey[400];
+final Color postFrameColor = Colors.blueGrey[300];
+final Color newMsgCircleColor = Colors.grey[400];
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
@@ -174,29 +175,21 @@ final String pinChatStr = "Fixar conversa";
 
 final TextStyle abbrevStl = TextStyle(color: Colors.white);
 
-final TextStyle menuTitleStl =
-   TextStyle(fontSize: 15.0,
+final TextStyle listTileTitleStl =
+   TextStyle(fontSize: mainFontSize,
              fontWeight: FontWeight.bold,
              color: Colors.black);
 
-final TextStyle postTitleStl =
-   TextStyle(fontSize: 15.0,
-             fontWeight: FontWeight.bold,
-             color: Colors.grey[800]);
+final TextStyle listTileSubtitleStl =
+   TextStyle(fontSize: mainFontSize);
 
-
-final TextStyle valueTextStl =
-          TextStyle(fontSize: 15.0,
+final TextStyle defaultTextStl =
+          TextStyle(fontSize: mainFontSize,
                     fontWeight: FontWeight.normal,
                     color: Colors.black);
 
-final TextStyle postValueTextStl =
-          TextStyle(fontSize: 15.0,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.grey[800]);
-
 final TextStyle expTileStl =
-          TextStyle(fontSize: 15.0,
+          TextStyle(fontSize: mainFontSize,
                     fontWeight: FontWeight.normal,
                     color: Colors.white);
 

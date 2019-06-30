@@ -90,13 +90,6 @@ onPinPost(List<Post> posts, int i, Database db) async
    posts.sort(CompPosts);
 }
 
-Future<void>
-onRemovePost(List<Post> posts, int i, Database db) async
-{
-   await db.execute(cts.deletePost, [posts[i].id]);
-   posts.removeAt(i);
-}
-
 Future<void> onCreateDb(Database db, int version) async
 {
    print('====> Creating posts table.');
@@ -276,24 +269,24 @@ makeNewPostScreens( BuildContext ctx
    Widget wid;
    if (screen == 3) {
       wid = makeNewPostFinalScreenWidget(
-               ctx,
-               postInput,
-               menu,
-               txtCtrl,
-               onSendNewPostPressed);
+         ctx,
+         postInput,
+         menu,
+         txtCtrl,
+         onSendNewPostPressed);
 
    } else if (screen == 2) {
       wid = makePostDetailScreen(
-               ctx,
-               onNewPostDetail,
-               postInput.filter,
-               1);
+         ctx,
+         onNewPostDetail,
+         postInput.filter,
+         1);
    } else {
       wid = createPostMenuListView(
-               ctx,
-               menu[screen].root.last,
-               onPostLeafPressed,
-               onPostNodePressed);
+         ctx,
+         menu[screen].root.last,
+         onPostLeafPressed,
+         onPostNodePressed);
    }
 
    AppBar appBar = AppBar(
@@ -319,6 +312,23 @@ makeNewPostScreens( BuildContext ctx
                              screen)));
 }
 
+Widget
+makeNewFiltersEndWidget( Function onSendNewFilters
+                       , Function onCancelNewFilters)
+{
+   return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      //mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40.0),
+          child: createSendButton(onSendNewFilters, 'Enviar'))
+      , Padding(
+          padding: const EdgeInsets.symmetric(vertical: 40.0),
+          child: createSendButton(onCancelNewFilters, 'Cancelar'))]);
+}
+
 WillPopScope
 makeNewFiltersScreens( BuildContext ctx
                      , Function onSendFilters
@@ -329,12 +339,14 @@ makeNewFiltersScreens( BuildContext ctx
                      , Function onFilterLeafNodePressed
                      , final List<MenuItem> menu
                      , int filter
-                     , int screen)
+                     , int screen
+                     , Function onCancelNewFilters)
 {
    Widget wid;
    String appBarTitle = cts.filterTabNames[screen];
    if (screen == 3) {
-      wid = createSendScreen((){onSendFilters(ctx);}, 'Enviar');
+      wid = makeNewFiltersEndWidget((){onSendFilters(ctx);},
+                                    onCancelNewFilters);
    } else if (screen == 2) {
       wid = makePostDetailScreen(
                ctx,
@@ -387,12 +399,12 @@ makePostDetailScreen( BuildContext ctx
       itemBuilder: (BuildContext ctx, int i)
       {
          if (i == cts.postDetails.length)
-            return createSendScreen((){proceed(i);}, 'Continuar');
+            return createSendButton((){proceed(i);}, 'Continuar');
 
          bool v = ((filter & (1 << i)) != 0);
-         Color color = Theme.of(ctx).primaryColor;
+         Color color = cts.selectedMenuColor;
          if (v)
-            color = cts.selectedMenuColor;
+            color = Theme.of(ctx).primaryColor;
 
          return CheckboxListTile(
             dense: true,
@@ -401,7 +413,7 @@ makePostDetailScreen( BuildContext ctx
                   Text( cts.postDetails[i].substring(0, 2)
                       , style: cts.abbrevStl),
                   color),
-            title: Text(cts.postDetails[i]),
+            title: Text(cts.postDetails[i], style: cts.listTileTitleStl),
             value: v,
             onChanged: (bool v) { proceed(i); },
             activeColor: color,
@@ -582,10 +594,12 @@ makeChatMsgListView(
                      child: chooseMsgStatusIcon(ch, i));
 
             msgAndStatus = Row(children: <Widget>
-            [ Expanded(child: Text(items[i].msg))
+            [ Expanded(child: Text(items[i].msg, 
+                                   style: cts.defaultTextStl))
             , foo]);
          } else {
-            msgAndStatus = Text(items[i].msg);
+            msgAndStatus = Text(items[i].msg,
+                                style: cts.defaultTextStl);
          }
 
          final Radius rd = const Radius.circular(45.0);
@@ -783,8 +797,7 @@ Text createMenuItemSubStrWidget(String str)
    if (str == null)
       return null;
 
-   return Text(str, style:
-         TextStyle(fontSize: 14.0, fontWeight: FontWeight.normal),
+   return Text(str, style: cts.listTileSubtitleStl,
                maxLines: 1, overflow: TextOverflow.clip);
 }
 
@@ -836,7 +849,7 @@ ListView createFilterListView(BuildContext context,
                    size: 35.0,
                    color: Theme.of(context).primaryColor),
                 title: Text(cts.menuSelectAllStr,
-                          style: cts.menuTitleStl),
+                            style: cts.listTileTitleStl),
                 dense: true,
                 onTap: () { onLeafPressed(0); },
                 enabled: true,);
@@ -852,10 +865,10 @@ ListView createFilterListView(BuildContext context,
             if (!child.isLeaf()) {
                final int lc = child.leafCounter;
                final String names = child.getChildrenNames();
-               subtitle =  Text(
-                   '($lc) $names',
-                   style: TextStyle(fontSize: 14.0), maxLines: 2,
-                                    overflow: TextOverflow.clip);
+               subtitle =  Text('($lc) $names',
+                   style: cts.listTileSubtitleStl,
+                   maxLines: 2,
+                   overflow: TextOverflow.clip);
             }
 
             Color cc = Colors.grey;
@@ -870,7 +883,7 @@ ListView createFilterListView(BuildContext context,
                    makeCircleAvatar(
                       Text(abbrev, style: cts.abbrevStl),
                       cc),
-                title: Text(child.name, style: cts.menuTitleStl),
+                title: Text(child.name, style: cts.listTileTitleStl),
                 dense: true,
                 subtitle: subtitle,
                 trailing: icon,
@@ -895,12 +908,13 @@ ListView createFilterListView(BuildContext context,
             ListTile(
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(o.children[i].name), style: cts.abbrevStl), cc),
-                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                title: Text(o.children[i].name, style: cts.listTileTitleStl),
                 dense: true,
                 subtitle: Text(
                    subtitle,
-                   style: TextStyle(fontSize: 14.0), maxLines: 2,
-                                    overflow: TextOverflow.clip),
+                   style: cts.listTileSubtitleStl,
+                   maxLines: 2,
+                   overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
                 contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
                 onTap: () { onNodePressed(i); },
@@ -912,9 +926,7 @@ ListView createFilterListView(BuildContext context,
    );
 }
 
-Center
-createSendScreen( Function onPressed
-                , final String txt)
+Widget createSendButton(Function onPressed, final String txt)
 {
    RaisedButton but =
       RaisedButton(
@@ -925,7 +937,7 @@ createSendScreen( Function onPressed
          color: cts.postFrameColor,
          onPressed: onPressed);
 
-   return Center(child: but);
+   return Center(child: ButtonTheme(minWidth: 100.0, child: but));
 }
 
 // Study how to convert this into an elipsis like whatsapp.
@@ -992,12 +1004,12 @@ Card makePostElem( BuildContext context
    for (int i = 0; i < values.length; ++i) {
       RichText left =
          RichText(text: TextSpan( text: keys[i] + ': '
-                                , style: cts.postTitleStl));
+                                , style: cts.listTileTitleStl));
       leftList.add(left);
 
       RichText right =
          RichText(text: TextSpan( text: values[i]
-                                , style: cts.postValueTextStl));
+                                , style: cts.defaultTextStl));
       rightList.add(right);
    }
 
@@ -1023,7 +1035,7 @@ Card makePostDetailElem(int filter)
 
       Icon icTmp = Icon(Icons.check, color: cts.postFrameColor);
       Text txt = Text( ' ${cts.postDetails[i]}'
-                     , style: cts.postValueTextStl);
+                     , style: cts.defaultTextStl);
       Row row = Row(children: <Widget>[icTmp, txt]); 
       leftList.add(row);
    }
@@ -1273,7 +1285,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                    Text(makeStrAbbrev(child.name),
                         style: cts.abbrevStl),
                    Colors.grey),
-                title: Text(child.name, style: cts.menuTitleStl),
+                title: Text(child.name, style: cts.listTileTitleStl),
                 dense: true,
                 onTap: () { onLeafPressed(i);},
                 enabled: true,
@@ -1288,12 +1300,13 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                          o.children[i].name),
                          style: cts.abbrevStl),
                    Colors.grey),
-                title: Text(o.children[i].name, style: cts.menuTitleStl),
+                title: Text(o.children[i].name, style: cts.listTileTitleStl),
                 dense: true,
                 subtitle: Text(
                    subtitle,
-                   style: TextStyle(fontSize: 14.0), maxLines: 2,
-                                    overflow: TextOverflow.clip),
+                   style: cts.listTileSubtitleStl,
+                   maxLines: 2,
+                   overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
                 onTap: () { onNodePressed(i); },
                 enabled: true,
@@ -1352,7 +1365,8 @@ makeChatListTileTrailingWidget(
    if (nUnreadMsgs != 0 && pinDate != 0) {
       return Column(children: <Widget>
       [ Icon(Icons.place)
-      , makeCircleUnreadMsgs(nUnreadMsgs, cts.accentColor, Colors.white)
+      , makeCircleUnreadMsgs(nUnreadMsgs, cts.newMsgCircleColor,
+                             Colors.white)
       ]);
    } 
    
@@ -1363,8 +1377,24 @@ makeChatListTileTrailingWidget(
    if (nUnreadMsgs != 0 && pinDate == 0) {
       return makeCircleUnreadMsgs(
          nUnreadMsgs,
-         cts.accentColor,
+         cts.newMsgCircleColor,
          Colors.white);
+   }
+}
+
+Color selectColor(int n)
+{
+   switch (n) {
+      case 2: return Colors.pink;
+      case 3: return Colors.pinkAccent;
+      case 4: return Colors.redAccent;
+      case 5: return Colors.deepOrange;
+      case 6: return Colors.teal;
+      case 7: return Colors.orange;
+      case 8: return Colors.orangeAccent;
+      case 9: return Colors.amberAccent;
+      case 10: return Colors.lightGreen;
+      default: return Colors.grey;
    }
 }
 
@@ -1401,12 +1431,13 @@ Widget makePostChatCol(
          ListTile(
             dense: false,
             enabled: true,
-            leading: makeCircleAvatar(widget, Colors.grey),
+            leading: makeCircleAvatar(widget,
+                        selectColor(ch[i].nick.length)),
             trailing: trailing,
             title: Text(ch[i].getChatDisplayName(),
                         maxLines: 1,
                         overflow: TextOverflow.clip,
-                        style: cts.menuTitleStl),
+                        style: cts.listTileTitleStl),
             subtitle: makeChatTileSubStr(ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
@@ -2108,9 +2139,10 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPostBotBarTapped(int i)
    {
-      // We allow the user to tap backwards to a new tab not forward.
-      // This is to avoid complex logic of avoid the publication of
-      // imcomplete posts.
+      print('====> index $i');
+      // We allow the user to tap backwards to a new tab but not
+      // forward.  This is to avoid complex logic of avoid the
+      // publication of imcomplete posts.
       if (i >= _botBarIdx)
          return;
 
@@ -2118,15 +2150,13 @@ class MenuChatState extends State<MenuChat>
       // tab we land on or walk through we have to restore the menu
       // stack, except for the last two tabs.
 
-      if (i == 3) {
-         _botBarIdx = 3;
+      if (i == 2) {
+         _botBarIdx = 2;
          setState(() { });
          return;
       }
 
-      // To handle the boundary condition on the last tab.
-      if (_botBarIdx < _menus.length)
-         ++_botBarIdx;
+      _botBarIdx = i + 1;
 
       do {
          --_botBarIdx;
@@ -2276,9 +2306,11 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         await onRemovePost(_favPosts, i, _db);
+         _favPosts.removeAt(i);
+         await _db.execute(cts.deletePost, [_favPosts[i].id]);
       } else {
-         await onRemovePost(_ownPosts, i, _db);
+         _ownPosts.removeAt(i);
+         await _db.execute(cts.deletePost, [_ownPosts[i].id]);
       }
 
       setState(() { });
@@ -2319,6 +2351,13 @@ class MenuChatState extends State<MenuChat>
       // If the user cancels the operation we do not show the dialog.
       if (i == 1)
          _showSimpleDial(ctx, (){}, 3);
+   }
+
+   void _onCancelNewFilter()
+   {
+      print('Canceling new filter');
+      _newFiltersPressed = false;
+      setState(() { });
    }
 
    Future<void>
@@ -3121,7 +3160,8 @@ class MenuChatState extends State<MenuChat>
                _onFilterLeafNodePressed,
                _menus,
                _filter,
-               _botBarIdx);
+               _botBarIdx,
+               _onCancelNewFilter);
 
       if (isOnFavChat() || isOnOwnChat()) {
          return makeChatScreen(
