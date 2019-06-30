@@ -75,7 +75,7 @@ class Chat {
       if (nick.isEmpty)
          return '$peer';
 
-      return '$nick ($peer)';
+      return '$nick';
    }
 
    String getChatAbbrevStr()

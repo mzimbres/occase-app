@@ -806,6 +806,18 @@ CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
    return CircleAvatar(child: child, backgroundColor: bgcolor);
 }
 
+CircleAvatar
+makeChatListTileLeading(Widget child, Color bgcolor,
+                        Function onLeadingPressed)
+{
+   Stack st = Stack(children: <Widget>
+   [ Center(child: child)
+   , OutlineButton(child: Text(''),
+                   onPressed: onLeadingPressed,
+                   shape: CircleBorder())]);
+   return CircleAvatar(child: st, backgroundColor: bgcolor);
+}
+
 String makeStrAbbrev(final String str)
 {
    if (str.length < 2)
@@ -1399,12 +1411,13 @@ Color selectColor(int n)
 }
 
 Widget makePostChatCol(
-   BuildContext context,
+   BuildContext ctx,
    List<Chat> ch,
    Function onPressed,
    Function onLongPressed,
    int postId,
-   bool isFwdChatMsgs)
+   bool isFwdChatMsgs,
+   Function onLeadingPressed)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -1431,13 +1444,15 @@ Widget makePostChatCol(
          ListTile(
             dense: false,
             enabled: true,
-            leading: makeCircleAvatar(widget,
-                        selectColor(ch[i].nick.length)),
+            leading: makeChatListTileLeading(
+               widget,
+               selectColor(ch[i].nick.length),
+               (){onLeadingPressed(ctx, postId, i);}),
             trailing: trailing,
             title: Text(ch[i].getChatDisplayName(),
-                        maxLines: 1,
-                        overflow: TextOverflow.clip,
-                        style: cts.listTileTitleStl),
+               maxLines: 1,
+               overflow: TextOverflow.clip,
+               style: cts.listTileTitleStl),
             subtitle: makeChatTileSubStr(ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
@@ -1449,7 +1464,7 @@ Widget makePostChatCol(
 
   if (list.length == 1)
      return Column(children: ListTile.divideTiles(
-                      context: context,
+                      context: ctx,
                       tiles: list,
                       color: Colors.grey).toList());
 
@@ -1469,7 +1484,7 @@ Widget makePostChatCol(
              key: PageStorageKey<int>(2 * postId + 1),
              title: Text(str, style: cts.expTileStl),
              children: ListTile.divideTiles(
-                        context: context,
+                        context: ctx,
                         tiles: list,
                         color: Colors.grey).toList());
 }
@@ -1482,7 +1497,8 @@ Widget makeChatTab(
    List<MenuItem> menus,
    Function onDelPost,
    Function onPinPost,
-   bool isFwdChatMsgs)
+   bool isFwdChatMsgs,
+   Function onLeadingPressed)
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
@@ -1499,7 +1515,8 @@ Widget makeChatTab(
                          (j) {onPressed(i, j);},
                          (j) {onLongPressed(i, j);},
                          data[i].id,
-                         isFwdChatMsgs),
+                         isFwdChatMsgs,
+                         onLeadingPressed),
                       onDelPost,
                       onPinPost,
                       i);
@@ -2350,7 +2367,16 @@ class MenuChatState extends State<MenuChat>
 
       // If the user cancels the operation we do not show the dialog.
       if (i == 1)
-         _showSimpleDial(ctx, (){}, 3);
+         _showSimpleDial(ctx, (){},
+                         cts.dialTitleStrs[3],
+                         cts.dialBodyStrs[3]);
+   }
+
+   void _removePostDialog(BuildContext ctx, int i)
+   {
+      _showSimpleDial(ctx, () async { await _onRemovePost(i);},
+                      cts.dialTitleStrs[4],
+                      cts.dialBodyStrs[4]);
    }
 
    void _onCancelNewFilter()
@@ -2403,6 +2429,25 @@ class MenuChatState extends State<MenuChat>
          await _onChatPressedImpl(_favPosts, false, i, j);
       else
          await _onChatPressedImpl(_ownPosts, true, i, j);
+   }
+
+   void _onLeadingPressed(BuildContext ctx, int postId, int j)
+   {
+      List<Post> posts;
+      if (_isOnFav()) {
+         posts = _favPosts;
+      } else {
+         posts = _ownPosts;
+      }
+
+      final int i = posts.indexWhere((e) { return e.id == postId;});
+      assert(i != -1);
+      assert(j < posts[i].chats.length);
+
+      print('=====> $postId $i');
+
+      final String content = 'Id: ${posts[i].chats[j].peer}';
+      _showSimpleDial(ctx, (){}, cts.userInfo, content);
    }
 
    void _onChatLPImpl(List<Post> posts, int i, int j)
@@ -2844,25 +2889,29 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _showSimpleDial(BuildContext ctx, Function onOk, final int i)
+   void
+   _showSimpleDial(BuildContext ctx,
+                   Function onOk,
+                   String title,
+                   String content)
    {
       showDialog(
          context: ctx,
          builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
-                     child: Text('Ok'),
-                     onPressed: ()
-                     {
-                        onOk();
-                        Navigator.of(ctx).pop();
-                     });
+               child: Text('Ok'),
+               onPressed: ()
+               {
+                  onOk();
+                  Navigator.of(ctx).pop();
+               });
 
             List<FlatButton> actions = List<FlatButton>(1);
             actions[0] = ok;
 
-            return AlertDialog( title: Text(cts.dialTitleStrs[i])
-                              , content: Text(cts.dialBodyStrs[i])
+            return AlertDialog( title: Text(title)
+                              , content: Text(content)
                               , actions: actions);
          },
       );
@@ -2887,7 +2936,10 @@ class MenuChatState extends State<MenuChat>
       // First send the hashes then show the dialog.
       _subscribeToChannels();
 
-      _showSimpleDial(ctx, _onOkDialAfterSendFilters, 2);
+      _showSimpleDial(ctx,
+                      _onOkDialAfterSendFilters,
+                      cts.dialTitleStrs[2],
+                      cts.dialBodyStrs[2]);
 
       // We also have to persist the menu on file here since we may
       // not receive a subscribe_ack if the app is offline.
@@ -3210,9 +3262,10 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (int i){_showSimpleDial(ctx, () async { await _onRemovePost(i);}, 4);},
+         (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
-         !_lpChatMsgs.isEmpty);
+         !_lpChatMsgs.isEmpty,
+         _onLeadingPressed);
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -3227,9 +3280,10 @@ class MenuChatState extends State<MenuChat>
          _onChatPressed,
          _onChatLP,
          _menus,
-         (int i){_showSimpleDial(ctx, () async {await _onRemovePost(i);}, 4);},
+         (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
-         !_lpChatMsgs.isEmpty);
+         !_lpChatMsgs.isEmpty,
+         _onLeadingPressed);
 
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;

@@ -16,11 +16,11 @@ final Color accentColor = coral;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
-final double mainFontSize = 16.5;
+final double mainFontSize = 16.0;
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
 final Color selectedMenuColor = Colors.blueGrey[400];
 final Color postFrameColor = Colors.blueGrey[300];
-final Color newMsgCircleColor = Colors.grey[400];
+final Color newMsgCircleColor = Colors.grey;
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
@@ -70,6 +70,8 @@ final Text deleteChatOkText =
 
 final Text deleteChatCancelText =
    Text("Cancelar", style: TextStyle(color: coral));
+
+final String userInfo = 'Informacoes do usuário';
 
 //______________
 
@@ -181,7 +183,7 @@ final TextStyle listTileTitleStl =
              color: Colors.black);
 
 final TextStyle listTileSubtitleStl =
-   TextStyle(fontSize: mainFontSize);
+   TextStyle(fontSize: 14.0);
 
 final TextStyle defaultTextStl =
           TextStyle(fontSize: mainFontSize,
