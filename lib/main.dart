@@ -1336,7 +1336,7 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
    Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
 
    if (i <= ch.lastAppReadIdx)
-      icon = Icon(Icons.place, color: Colors.green, size: s);
+      icon = Icon(Icons.done_all, color: Colors.green, size: s);
    else if (i <= ch.lastAppReceivedIdx) {
       icon = Icon(Icons.done_all, color: Colors.grey, size: s);
    } else if (i <= ch.lastServerAckedIdx) {
@@ -1365,33 +1365,57 @@ Widget makeChatTileSubStr(final Chat ch)
    , Expanded(child: createMenuItemSubStrWidget(str))]);
 }
 
+String makeDateString(int date, int now)
+{
+   DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
+   DateFormat format = DateFormat.Hm();
+   return format.format(dateObj);
+}
+
 Widget
 makeChatListTileTrailingWidget(
    int nUnreadMsgs,
+   int date,
    int pinDate,
+   int now,
    bool isFwdChatMsgs)
 {
    if (isFwdChatMsgs)
       return null;
 
+   Text dateText = Text(makeDateString(date, now),
+         style: TextStyle(color: cts.primaryColor));
+
    if (nUnreadMsgs != 0 && pinDate != 0) {
-      return Column(children: <Widget>
+      Row row = Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>
       [ Icon(Icons.place)
       , makeCircleUnreadMsgs(nUnreadMsgs, cts.newMsgCircleColor,
-                             Colors.white)
-      ]);
+                             Colors.white)]);
+      
+      return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget> [dateText, row]);
    } 
    
    if (nUnreadMsgs == 0 && pinDate != 0) {
-      return Icon(Icons.place);
+      return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget> [dateText, Icon(Icons.place)]);
    }
    
    if (nUnreadMsgs != 0 && pinDate == 0) {
-      return makeCircleUnreadMsgs(
-         nUnreadMsgs,
-         cts.newMsgCircleColor,
-         Colors.white);
+      return Column(
+         mainAxisSize: MainAxisSize.min,
+         children: <Widget>
+         [ dateText
+         , makeCircleUnreadMsgs(nUnreadMsgs, cts.newMsgCircleColor,
+                                Colors.white)
+         ]);
    }
+
+   return dateText;
 }
 
 Color selectColor(int n)
@@ -1417,7 +1441,8 @@ Widget makePostChatCol(
    Function onLongPressed,
    int postId,
    bool isFwdChatMsgs,
-   Function onLeadingPressed)
+   Function onLeadingPressed,
+   int now)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -1437,8 +1462,10 @@ Widget makePostChatCol(
          bgColor = Colors.white;
       }
 
-      Widget trailing = makeChatListTileTrailingWidget(n,
-            ch[i].pinDate, isFwdChatMsgs);
+      Widget trailing =
+         makeChatListTileTrailingWidget(
+            n, ch[i].lastChatItem.date,
+            ch[i].pinDate, now, isFwdChatMsgs);
 
       ListTile lt =
          ListTile(
@@ -1480,7 +1507,7 @@ Widget makePostChatCol(
    final bool expState = ch.length <= 5 || nUnredChats != 0;
    return ExpansionTile(
              initiallyExpanded: expState,
-             leading: Icon(Icons.chat, color: Colors.white),
+             leading: Icon(Icons.chat),
              key: PageStorageKey<int>(2 * postId + 1),
              title: Text(str, style: cts.expTileStl),
              children: ListTile.divideTiles(
@@ -1505,6 +1532,7 @@ Widget makeChatTab(
          itemCount: data.length,
          itemBuilder: (BuildContext context, int i)
          {
+            final int now = DateTime.now().millisecondsSinceEpoch;
             return createChatEntry(
                       context,
                       data[i],
@@ -1516,7 +1544,8 @@ Widget makeChatTab(
                          (j) {onLongPressed(i, j);},
                          data[i].id,
                          isFwdChatMsgs,
-                         onLeadingPressed),
+                         onLeadingPressed,
+                         now),
                       onDelPost,
                       onPinPost,
                       i);
@@ -2323,11 +2352,11 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         _favPosts.removeAt(i);
          await _db.execute(cts.deletePost, [_favPosts[i].id]);
+         _favPosts.removeAt(i);
       } else {
-         _ownPosts.removeAt(i);
          await _db.execute(cts.deletePost, [_ownPosts[i].id]);
+         _ownPosts.removeAt(i);
       }
 
       setState(() { });
