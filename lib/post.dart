@@ -122,6 +122,8 @@ class Chat {
             _openFile(postId);
          }
 
+         msgs = List<ChatItem>(); 
+
          List<String> lines = _msgsFile.readAsLinesSync();
          msgs = List<ChatItem>.generate(lines.length, (int i)
             { return ChatItem.fromJson(jsonDecode(lines[i])); });
