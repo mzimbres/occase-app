@@ -669,8 +669,7 @@ makeChatScreen(BuildContext ctx,
       IconButton(
          icon: Icon(Icons.send),
          onPressed: onChatSendPressed,
-         color: Theme.of(ctx).primaryColor
-         );
+         color: Theme.of(ctx).primaryColor);
 
    TextField tf = TextField(
        controller: ctrl,
@@ -681,31 +680,35 @@ makeChatScreen(BuildContext ctx,
        maxLength: null,
        focusNode: chatFocusNode,
        decoration:
-          InputDecoration.collapsed( hintText: cts.chatTextFieldHintStr));
+          InputDecoration.collapsed(hintText: cts.chatTextFieldHintStr));
 
-   Container cont = Container(
-       child: ConstrainedBox(
-           constraints: BoxConstraints(maxHeight: 100.0),
-           child: Row(children: <Widget>
-              [ Expanded( child: Column(children: <Widget>
-                  [ Expanded(child: Scrollbar(
-                     child: SingleChildScrollView(
-                         //padding: EdgeInsets.all(10.0),
-                         scrollDirection: Axis.vertical,
-                         reverse: true,
-                         child: Card(
-                            margin: EdgeInsets.all(0.0),
-                            color: Colors.white,
-                            child: Padding(
-                               padding: EdgeInsets.all(14.0),
-                               child: tf))))),
-                    
-                    ]))
-              , Column(children: <Widget>
-                    [ Spacer()
-                    , sendButCol])
-              ])),
-   );
+   Padding placeholder = Padding(
+      child: Icon(Icons.send, color: Colors.white),
+         padding: EdgeInsets.all(10.0));
+
+   Row rr = Row(children: <Widget>
+   [ placeholder
+   , Expanded(child:
+       Scrollbar( child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          reverse: true,
+          child: tf)))
+   , placeholder
+   ]);
+
+   Card card = Card(
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(0.0))),
+      margin: EdgeInsets.all(0.0),
+      color: Colors.white,
+      child: Padding(
+         padding: EdgeInsets.all(4.0),
+         child: ConstrainedBox(
+   constraints: BoxConstraints(
+         maxHeight: 140.0,
+         minHeight: 45.0),
+   child: rr)));
 
    ListView list = makeChatMsgListView(
          ctx,
@@ -715,12 +718,14 @@ makeChatScreen(BuildContext ctx,
          onChatMsgLongPressed,
          onDragChatMsg);
 
-   Column mainCol = Column(
-         children: <Widget>[
-            Expanded(child: list),
-            cont
-         ],
-   );
+   Stack mainCol = Stack(children: <Widget>
+   [ Column(children: <Widget>
+     [Expanded(child: list), card])
+   , Positioned(
+      child: sendButCol,
+      bottom: 4.0,
+      right: 4.0)
+   ]);
 
    List<Widget> actions = List<Widget>();
    Widget title = null;
