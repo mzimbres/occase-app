@@ -877,7 +877,7 @@ ListView createFilterListView(BuildContext context,
          if (shift == 1) {
             MenuNode child = o.children[i - 1];
             Widget icon = Icon(Icons.check_box_outline_blank);
-            if (child.status)
+            if (child.leafReach > 0)
                icon = Icon(Icons.check_box);
 
             Widget subtitle = null;
@@ -891,7 +891,7 @@ ListView createFilterListView(BuildContext context,
             }
 
             Color cc = Colors.grey;
-            if (child.status)
+            if (child.leafReach > 0)
                cc = Theme.of(context).primaryColor;
 
             // Notice we do not subtract -1 on onLeafPressed so that
@@ -909,13 +909,13 @@ ListView createFilterListView(BuildContext context,
                 contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
                 onTap: () { onLeafPressed(i);},
                 enabled: true,
-                selected: child.status,
+                selected: child.leafReach > 0,
                 isThreeLine: !child.isLeaf()
                 );
          }
 
-         final int c = o.children[i].getCounterOfFilterChildren();
-         final int cs = o.children[i].getChildrenSize();
+         final int c = o.children[i].leafReach;
+         final int cs = o.children[i].leafCounter;
 
          final String names = o.children[i].getChildrenNames();
          final String subtitle = '($c/$cs) $names';
@@ -1304,8 +1304,8 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
       itemCount: o.children.length,
       itemBuilder: (BuildContext context, int i)
       {
-         final int c = o.children[i].getCounterOfFilterChildren();
-         final int cs = o.children[i].getChildrenSize();
+         final int c = o.children[i].leafReach;
+         final int cs = o.children[i].leafCounter;
 
          final String names = o.children[i].getChildrenNames();
          final String subtitle = '($c/$cs) $names';
@@ -2276,21 +2276,18 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onFilterLeafNodePressed(int i)
+   void _onFilterLeafNodePressed(int k)
    {
-      if (i == 0) {
-         for (MenuNode p in _menus[_botBarIdx].root.last.children)
-            p.status = true;
-
+      // k = 0 means the *check all fields*.
+      if (k == 0) {
+         _menus[_botBarIdx].updateLeafReachAll();
          setState(() { });
          return;
       }
 
-      --i; // Accounts for the Todos index.
+      --k; // Accounts for the Todos index.
 
-      MenuNode o = _menus[_botBarIdx].root.last.children[i];
-      final bool b = o.status;
-      o.status = !b;;
+      _menus[_botBarIdx].updateLeafReach(k);
       setState(() { });
    }
 

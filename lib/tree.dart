@@ -5,12 +5,12 @@ import 'package:menu_chat/constants.dart';
 class MenuNode {
    String name;
    List<int> code;
-   bool status;
    int leafCounter;
+   int leafReach;
 
    List<MenuNode> children = List<MenuNode>();
 
-   MenuNode([this.name, this.status, this.code]);
+   MenuNode([this.name, this.leafReach, this.code]);
 
    String getChildrenNames()
    {
@@ -31,23 +31,6 @@ class MenuNode {
    bool isLeaf()
    {
       return children.isEmpty;
-   }
-
-   // Gets the counter of children that have filter status true.
-   int getCounterOfFilterChildren()
-   {
-      int c = 0;
-      for (int i = 0; i < children.length; ++i) {
-         if (children[i].status)
-            ++c;
-      }
-
-      return c;
-   }
-
-   int getChildrenSize()
-   {
-      return children.length;
    }
 }
 
@@ -133,11 +116,11 @@ MenuNode parseTree(String dataRaw)
 
       int depth = int.parse(fields.first);
       final String name = fields[1];
-      final bool status = int.parse(fields[2]) == 1;
+      final int leafReach = int.parse(fields[2]);
 
       if (st.isEmpty) {
          root.name = name;
-         root.status = status;
+         root.leafReach = leafReach;
          root.code = List<int>();
          st.add(root);
          continue;
@@ -155,12 +138,12 @@ MenuNode parseTree(String dataRaw)
       // wrong order.
       if (depth > lastDepth) {
          if (lastDepth + 1 != depth) {
-            print('Error on node: ${lastDepth} -- ${depth};${name};${status}');
+            print('Error on node: ${lastDepth} -- ${depth};${name};${leafReach}');
             return MenuNode();
          }
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(name, status, code);
+         MenuNode p = MenuNode(name, leafReach, code);
          st.last.children.add(p);
          st.add(p);
          ++lastDepth;
@@ -175,14 +158,14 @@ MenuNode parseTree(String dataRaw)
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(name, status, code);
+         MenuNode p = MenuNode(name, leafReach, code);
          st.last.children.add(p);
          st.add(p);
 
          lastDepth = depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(name, status, code);
+         MenuNode p = MenuNode(name, leafReach, code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -200,6 +183,38 @@ class MenuItem {
    // menu root node. When a menu entries is selected it is pushed on
    // the stack and the element is treated a the root of the subtree.
    List<MenuNode> root = List<MenuNode>();
+
+   // It is assumed that this function will be called when the last
+   // node in the stack is the parent of a leaf and k will be the
+   // index of the leaf int the array of children of the top node.
+   void updateLeafReach(int k)
+   {
+      int d = 0;
+      MenuNode node = root.last.children[k];
+      if (node.leafReach > 0) {
+         d = - node.leafCounter;
+         node.leafReach = 0;
+      } else {
+         d = node.leafCounter;
+         node.leafReach = node.leafCounter;
+      }
+
+      // d contains how much we have to increase or decrease the
+      // parent nodes.
+
+      for (int i = 0; i < root.length; ++i) {
+         int j = root.length - i - 1; // Index of the last element.
+      print('===> $j 3');
+         root[i].leafReach += d;
+      }
+   }
+
+   void updateLeafReachAll()
+   {
+      final int l = root.last.children.length;
+      for (int i = 0; i < l; ++i)
+         updateLeafReach(i);
+   }
 
    bool isFilterLeaf()
    {
@@ -241,15 +256,11 @@ class MenuItem {
 int accumulateLeafCounters(MenuNode node)
 {
    if (node.children.isEmpty)
-      return 0;
+      return 1;
 
    int c = 0;
-   for (int i = 0; i < node.children.length; ++i) {
-      if (node.children[i].children.isEmpty)
-         c += 1;
-      else
-         c += node.children[i].leafCounter;
-   }
+   for (int i = 0; i < node.children.length; ++i)
+      c += node.children[i].leafCounter;
 
    return c;
 }
@@ -348,7 +359,7 @@ List<List<int>> readHashCodes(MenuNode root, int depth)
    MenuNode current = iter.advanceToLeaf();
    List<List<int>> hashCodes = List<List<int>>();
    while (current != null) {
-      if (current.status)
+      if (current.leafReach > 0)
          hashCodes.add(current.code);
 
       current = iter.nextLeafNode();
@@ -410,9 +421,8 @@ String serializeMenuToStr(final MenuNode root)
    String menu = "";
    while (current != null) {
       final int depth = current.code.length;
-      final int status = current.status ? 1 : 0;
-      final String line = "${depth};${current.name};${status}=";
-      //print('===> $line');
+      final String line =
+         "${depth};${current.name};${current.leafReach}=";
       menu += line;
       current = iter.next();
    }
