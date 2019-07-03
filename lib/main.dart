@@ -765,6 +765,7 @@ makeChatScreen(BuildContext ctx,
           onWillPop: () async { return onWillPopScope();},
           child: Scaffold(
              appBar : AppBar(
+                titleSpacing: 0.0,
                 actions: actions,
                 title: title,
                 backgroundColor: Theme.of(ctx).primaryColor,
