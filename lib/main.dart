@@ -556,11 +556,10 @@ makeChatMsgListView(
    return ListView.builder(
       controller: scrollCtrl,
       reverse: false,
-      //padding: const EdgeInsets.all(6.0),
+      padding: const EdgeInsets.all(0.0),
       itemCount: nMsgs + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
-         List<ChatItem> items = ch.msgs;
          if (shift == 1) {
             if (i == nMsgs - ch.nUnreadMsgs)
                return makeUnreadMsgsInfoWidget(ch.nUnreadMsgs);
@@ -572,67 +571,65 @@ makeChatMsgListView(
          Alignment align = Alignment.bottomLeft;
          Color color = Color(0xFFFFFFFF);
          Color onSelectedMsgColor = Colors.grey[300];
-         if (items[i].thisApp) {
+         if (ch.msgs[i].thisApp) {
             align = Alignment.bottomRight;
             color = Colors.lightGreenAccent[100];
          }
 
-         if (items[i].isLongPressed) {
+         if (ch.msgs[i].isLongPressed)
             onSelectedMsgColor = Colors.blue[100];
-         }
 
-         double width = 300.0;
-         if (items[i].msg.length < 10)
-            width = 150.0;
-         else if (items[i].msg.length < 20)
-            width = 200.0;
-
-         Widget msgAndStatus;
-         if (items[i].thisApp) {
+         Row msgAndStatus;
+         if (ch.msgs[i].thisApp) {
             Align foo =
                Align(alignment: Alignment.bottomRight,
                      child: chooseMsgStatusIcon(ch, i));
 
-            msgAndStatus = Row(children: <Widget>
-            [ Expanded(child: Text(items[i].msg, 
-                                   style: cts.defaultTextStl))
+            msgAndStatus = Row(
+               mainAxisSize: MainAxisSize.min,
+               mainAxisAlignment: MainAxisAlignment.end,
+               children: <Widget>
+            [ Flexible(child: Padding(
+                  padding: EdgeInsets.all(5.0),
+                  child: Text(ch.msgs[i].msg,
+                   style: cts.defaultTextStl)))
             , foo]);
          } else {
-            msgAndStatus = Text(items[i].msg,
-                                style: cts.defaultTextStl);
+            Align timeWidget =
+               Align(alignment: Alignment.bottomRight,
+                     child: chooseMsgStatusIcon(ch, i));
+
+            msgAndStatus = Row(
+               mainAxisSize: MainAxisSize.min,
+               mainAxisAlignment: MainAxisAlignment.start,
+               children: <Widget>
+               [ Flexible(child: Padding(
+                  padding: EdgeInsets.all(5.0),
+                  child: Text(ch.msgs[i].msg,
+                      style: cts.defaultTextStl)))
+               , timeWidget]);
          }
 
-         final Radius rd = const Radius.circular(45.0);
-         Container cont = Container(
-             margin: const EdgeInsets.all(5.0),
-             padding: const EdgeInsets.all(5.0),
-             constraints: BoxConstraints(maxWidth: width),
-             decoration:
-                BoxDecoration(
-                   color: onSelectedMsgColor,
-                   borderRadius:
-                      BorderRadius.only(
-                         topLeft:  rd,
-                         topRight: rd,
-                         bottomLeft: rd,
-                         bottomRight: rd)),
-               child: Card(
-                  child: Padding(
-                     padding: const EdgeInsets.all(2.0),
-                        child: Center(widthFactor: 1.0, child: msgAndStatus)),
-                        elevation: 0.0,
-                        color: color,
-                     ));
+         Card w1 = Card(
+            elevation: 3.0,
+            color: color,
+            child: Center(
+               widthFactor: 1.0,
+               child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                     maxWidth: 290.0,
+                     minWidth: 35.0),
+                  child: msgAndStatus)));
 
          Row r = null;
-         if (items[i].thisApp) {
+         if (ch.msgs[i].thisApp) {
             r = Row(children: <Widget>
             [ Spacer()
-            , cont
+            , w1
             ]);
          } else {
             r = Row(children: <Widget>
-            [ cont
+            [ w1
             , Spacer()
             ]);
          }
@@ -641,7 +638,8 @@ makeChatMsgListView(
             onLongPress: () {onChatMsgLongPressed(i, false);},
             onTap: () {onChatMsgLongPressed(i, true);},
             onPanStart: (DragStartDetails d) {onDragChatMsg(ctx, i, d);},
-            child: Card(child: r, color: onSelectedMsgColor,
+            child: Card(child: r,
+               color: onSelectedMsgColor,
                elevation: 0.0,
                margin: const EdgeInsets.all(0.0),
                shape: RoundedRectangleBorder(
