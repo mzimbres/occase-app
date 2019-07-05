@@ -832,6 +832,20 @@ String makeStrAbbrev(final String str)
    return str.substring(0, 2);
 }
 
+RichText
+makeFilteListTileTitleWidget(String str1, String str2)
+{
+   return RichText(
+      text: TextSpan(
+         text: str1,
+         style: cts.listTileTitleStl,
+         children: <TextSpan>
+         [ TextSpan(
+             text: str2,
+             style: TextStyle(fontSize: cts.listTileSubtitleFontSize,
+                    color: Colors.grey))]));
+}
+
 /*
  *  To support the "select all" buttom in the menu checkbox we have to
  *  add some complex logic.  First we note that the "Todos" checkbox
@@ -881,9 +895,8 @@ ListView createFilterListView(BuildContext context,
 
             Widget subtitle = null;
             if (!child.isLeaf()) {
-               final int lc = child.leafCounter;
-               final String names = child.getChildrenNames();
-               subtitle =  Text('($lc) $names',
+               subtitle =  Text(
+                   child.getChildrenNames(),
                    style: cts.listTileSubtitleStl,
                    maxLines: 2,
                    overflow: TextOverflow.clip);
@@ -893,6 +906,10 @@ ListView createFilterListView(BuildContext context,
             if (child.leafReach > 0)
                cc = Theme.of(context).primaryColor;
 
+            RichText title = 
+               makeFilteListTileTitleWidget(
+                  child.name, ' (${child.leafCounter})');
+
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             final String abbrev = makeStrAbbrev(child.name);
@@ -901,7 +918,7 @@ ListView createFilterListView(BuildContext context,
                    makeCircleAvatar(
                       Text(abbrev, style: cts.abbrevStl),
                       cc),
-                title: Text(child.name, style: cts.listTileTitleStl),
+                title: title,
                 dense: true,
                 subtitle: subtitle,
                 trailing: icon,
@@ -909,24 +926,27 @@ ListView createFilterListView(BuildContext context,
                 onTap: () { onLeafPressed(i);},
                 enabled: true,
                 selected: child.leafReach > 0,
-                isThreeLine: !child.isLeaf()
-                );
+                isThreeLine: !child.isLeaf());
          }
 
          final int c = o.children[i].leafReach;
          final int cs = o.children[i].leafCounter;
 
-         final String names = o.children[i].getChildrenNames();
-         final String subtitle = '($c/$cs) $names';
+         final String subtitle = o.children[i].getChildrenNames();
+         final String titleStr = '${o.children[i].name}';
          Color cc = Colors.grey;
          if (c != 0)
             cc = Theme.of(context).primaryColor;
 
+         RichText title = 
+            makeFilteListTileTitleWidget(titleStr, ' ($c/$cs)');
+               
          return
             ListTile(
                 leading: makeCircleAvatar(
-                   Text(makeStrAbbrev(o.children[i].name), style: cts.abbrevStl), cc),
-                title: Text(o.children[i].name, style: cts.listTileTitleStl),
+                   Text(makeStrAbbrev(o.children[i].name),
+                        style: cts.abbrevStl), cc),
+                title: title,
                 dense: true,
                 subtitle: Text(
                    subtitle,
@@ -1307,7 +1327,6 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
          final int cs = o.children[i].leafCounter;
 
          final String names = o.children[i].getChildrenNames();
-         final String subtitle = '($c/$cs) $names';
 
          MenuNode child = o.children[i];
          if (child.isLeaf()) {
@@ -1334,7 +1353,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                 title: Text(o.children[i].name, style: cts.listTileTitleStl),
                 dense: true,
                 subtitle: Text(
-                   subtitle,
+                   names,
                    style: cts.listTileSubtitleStl,
                    maxLines: 2,
                    overflow: TextOverflow.clip),
@@ -2304,6 +2323,7 @@ class MenuChatState extends State<MenuChat>
                           conflictAlgorithm:
                              ConflictAlgorithm.replace);
 
+      print('What is this $dbId');
       post.dbId = dbId;
       _outPostsQueue.add(post);
 
@@ -2333,7 +2353,7 @@ class MenuChatState extends State<MenuChat>
          assert(!_outPostsQueue.isEmpty);
          Post post = _outPostsQueue.removeFirst();
          if (id == -1) {
-            // TODO: Consider removing the post from the db.
+            // FIXME: Remove the post from the db.
             print("Publish failed.");
             return;
          }
@@ -2353,6 +2373,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.add(post);
          _ownPosts.sort(CompPosts);
 
+         print('receiving a publish ack $id for ${post.dbId}.');
          await _db.execute(cts.updatePostOnAck,
                            [0, id, date, post.dbId]);
 
@@ -2372,6 +2393,7 @@ class MenuChatState extends State<MenuChat>
          _favPosts.removeAt(i);
       } else {
          await _db.execute(cts.deletePost, [_ownPosts[i].id]);
+         print('Deleting post ${_ownPosts[i].id}');
          _ownPosts.removeAt(i);
       }
 
@@ -2708,7 +2730,6 @@ class MenuChatState extends State<MenuChat>
          // TODO: Put an indicator that a new message has arrived
          // if it out of the field of view.
       } else {
-         print('=====> Sending ack received');
          ++posts[i].chats[j].nUnreadMsgs;
          ack = 'app_ack_received';
       }

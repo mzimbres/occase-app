@@ -277,7 +277,6 @@ class Post {
 
    int createChatEntryForPeer(String peer, String nick)
    {
-      print('Creating chat entry for: $peer');
       final int now = DateTime.now().millisecondsSinceEpoch;
       Chat history =
          Chat(peer, nick, now, 0, -1, -1, -1, 0, ChatItem(true, '', 0));
@@ -399,7 +398,7 @@ Future<List<Post>> loadPosts(Database db, String tableName) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'];
-
+     print('====> Loading post ${post.id} ---- ${post.dbId}');
      return post;
   });
 }

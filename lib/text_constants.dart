@@ -182,8 +182,9 @@ final TextStyle listTileTitleStl =
              fontWeight: FontWeight.bold,
              color: Colors.black);
 
+final double listTileSubtitleFontSize = 13.0;
 final TextStyle listTileSubtitleStl =
-   TextStyle(fontSize: 14.0);
+   TextStyle(fontSize: listTileSubtitleFontSize);
 
 final TextStyle defaultTextStl =
           TextStyle(fontSize: mainFontSize,
