@@ -565,6 +565,122 @@ Card makeUnreadMsgsInfoWidget(int n)
                       style: TextStyle(fontSize: 17.0))));
 }
 
+Card
+makeChatMsgWidget(
+   Chat ch,
+   int i,
+   onChatSendPressed,
+   onChatMsgLongPressed,
+   onDragChatMsg)
+{
+   Alignment align = Alignment.bottomLeft;
+   Color color = Color(0xFFFFFFFF);
+   Color onSelectedMsgColor = Colors.grey[300];
+   if (ch.msgs[i].isFromThisApp()) {
+      align = Alignment.bottomRight;
+      color = Colors.lightGreenAccent[100];
+   }
+
+   if (ch.msgs[i].isLongPressed)
+      onSelectedMsgColor = Colors.blue[100];
+
+   RichText msgAndDate = 
+      makeFilteListTileTitleWidget(
+         ch.msgs[i].msg,
+         '  ${makeDateString(ch.msgs[i].date)}',
+         cts.defaultTextStl,
+         TextStyle(
+            fontSize: cts.listTileSubtitleFontSize,
+            color: Colors.grey));
+
+   // Unfoutunately TextSpan sill does not support general
+   // widgets so I have to put the msg status in a row instead
+   // of simply appending it to the richtext as I do for the
+   // date. Hopefully this will be fixed this later.
+   Widget msgAndStatus;
+   if (ch.msgs[i].isFromThisApp()) {
+      msgAndStatus = Row(
+         mainAxisSize: MainAxisSize.min,
+         mainAxisAlignment: MainAxisAlignment.end,
+         children: <Widget>
+      [ Flexible(child: Padding(
+            padding: EdgeInsets.all(cts.chatMsgPadding),
+            child: msgAndDate))
+      , Padding(
+            padding: EdgeInsets.all(2.0),
+            child: chooseMsgStatusIcon(ch, i))
+      ]);
+   } else {
+      msgAndStatus = Padding(
+            padding: EdgeInsets.all(cts.chatMsgPadding),
+            child: msgAndDate);
+   }
+
+   Widget ww = msgAndStatus;
+   if (ch.msgs[i].isRedirected()) {
+      print('This is a redirected msg');
+      Row redirWidget = Row(
+         mainAxisSize: MainAxisSize.min,
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: <Widget>
+         [ Icon(Icons.forward, color: Colors.grey)
+         , Text('Redirecionada',
+                style: TextStyle(color: Colors.grey,
+                  fontSize: cts.listTileSubtitleFontSize))
+         ]);
+
+      ww = Column( children: <Widget>
+         [ redirWidget
+         , msgAndStatus
+         ]);
+   }
+
+   double marginLeft = 10.0;
+   double marginRight = 0.0;
+   if (ch.msgs[i].isFromThisApp()) {
+      double tmp = marginLeft;
+      marginLeft = marginRight;
+      marginRight = tmp;
+   }
+
+   Card w1 = Card(
+      margin: EdgeInsets.only(
+            left: marginLeft,
+            top: 2.0,
+            right: marginRight,
+            bottom: 0.0),
+      elevation: 3.0,
+      color: color,
+      child: Center(
+         widthFactor: 1.0,
+         child: ConstrainedBox(
+            constraints: BoxConstraints(
+               maxWidth: 290.0,
+               minWidth: 35.0),
+            child: ww)));
+
+   Row r = null;
+   if (ch.msgs[i].isFromThisApp()) {
+      r = Row(children: <Widget>
+      [ Spacer()
+      , w1
+      ]);
+   } else {
+      r = Row(children: <Widget>
+      [ w1
+      , Spacer()
+      ]);
+   }
+
+   return Card(
+      child: r,
+      color: onSelectedMsgColor,
+      elevation: 0.0,
+      margin: const EdgeInsets.all(0.0),
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(0.0))));
+}
+
 ListView
 makeChatMsgListView(
    BuildContext ctx,
@@ -592,97 +708,17 @@ makeChatMsgListView(
                i -= 1; // For the shift
          }
 
-         Alignment align = Alignment.bottomLeft;
-         Color color = Color(0xFFFFFFFF);
-         Color onSelectedMsgColor = Colors.grey[300];
-         if (ch.msgs[i].isFromThisApp()) {
-            align = Alignment.bottomRight;
-            color = Colors.lightGreenAccent[100];
-         }
-
-         if (ch.msgs[i].isLongPressed)
-            onSelectedMsgColor = Colors.blue[100];
-
-         RichText msgAndDate = 
-            makeFilteListTileTitleWidget(
-               ch.msgs[i].msg,
-               '  ${makeDateString(ch.msgs[i].date)}',
-               cts.defaultTextStl,
-               TextStyle(
-                  fontSize: cts.listTileSubtitleFontSize,
-                  color: Colors.grey));
-
-         // Unfoutunately TextSpan sill does not support general
-         // widgets so I have to put the msg status in a row instead
-         // of simply appending it to the richtext as I do for the
-         // date. Perhaps they will fix this later.
-         Widget msgAndStatus;
-         if (ch.msgs[i].isFromThisApp()) {
-            msgAndStatus = Row(
-               mainAxisSize: MainAxisSize.min,
-               mainAxisAlignment: MainAxisAlignment.end,
-               children: <Widget>
-            [ Flexible(child: Padding(
-                  padding: EdgeInsets.all(cts.chatMsgPadding),
-                  child: msgAndDate))
-            , Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: chooseMsgStatusIcon(ch, i))
-            ]);
-         } else {
-            msgAndStatus = Padding(
-                  padding: EdgeInsets.all(cts.chatMsgPadding),
-                  child: msgAndDate);
-         }
-
-         double marginLeft = 10.0;
-         double marginRight = 0.0;
-         if (ch.msgs[i].isFromThisApp()) {
-            double tmp = marginLeft;
-            marginLeft = marginRight;
-            marginRight = tmp;
-         }
-
-         Card w1 = Card(
-            margin: EdgeInsets.only(
-                  left: marginLeft,
-                  top: 2.0,
-                  right: marginRight,
-                  bottom: 0.0),
-            elevation: 3.0,
-            color: color,
-            child: Center(
-               widthFactor: 1.0,
-               child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                     maxWidth: 290.0,
-                     minWidth: 35.0),
-                  child: msgAndStatus)));
-
-         Row r = null;
-         if (ch.msgs[i].isFromThisApp()) {
-            r = Row(children: <Widget>
-            [ Spacer()
-            , w1
-            ]);
-         } else {
-            r = Row(children: <Widget>
-            [ w1
-            , Spacer()
-            ]);
-         }
+         Card chatMsgWidget =
+            makeChatMsgWidget(
+               ch, i, onChatSendPressed,
+               onChatMsgLongPressed,
+               onDragChatMsg);
 
          return GestureDetector(
             onLongPress: () {onChatMsgLongPressed(i, false);},
             onTap: () {onChatMsgLongPressed(i, true);},
             onPanStart: (DragStartDetails d) {onDragChatMsg(ctx, i, d);},
-            child: Card(child: r,
-               color: onSelectedMsgColor,
-               elevation: 0.0,
-               margin: const EdgeInsets.all(0.0),
-               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(0.0))))
-            );
+            child: chatMsgWidget);
       },
    );
 }

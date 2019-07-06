@@ -40,6 +40,11 @@ class ChatItem {
 
    ChatItem(this.type, this.msg, this.date);
 
+   bool isRedirected()
+   {
+      return type == 1 || type == 3;
+   }
+
    bool isFromThisApp()
    {
       return type == 2 || type == 3;
