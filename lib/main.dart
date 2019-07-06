@@ -267,6 +267,14 @@ makeNewPostScreens( BuildContext ctx
                   , Function onNewPostBotBarTapped)
 {
    Widget wid;
+   Widget appBarTitle = Text(
+         cts.filterTabNames[screen],
+         style: TextStyle(
+            color: Colors.white,
+            fontSize: 19.0));
+
+   Widget appBarTitleWidget = appBarTitle;
+
    if (screen == 3) {
       wid = makeNewPostFinalScreenWidget(
          ctx,
@@ -276,22 +284,25 @@ makeNewPostScreens( BuildContext ctx
          onSendNewPostPressed);
 
    } else if (screen == 2) {
-      wid = makePostDetailScreen(
-         ctx,
-         onNewPostDetail,
-         postInput.filter,
-         1);
+      wid = makePostDetailScreen(ctx, onNewPostDetail, postInput.filter, 1);
    } else {
       wid = createPostMenuListView(
          ctx,
          menu[screen].root.last,
          onPostLeafPressed,
          onPostNodePressed);
+
+      appBarTitleWidget = ListTile(
+         title: appBarTitle,
+         dense: true,
+         subtitle: Text(menu[screen].getStackNames(),
+                     style: TextStyle(
+                         color: Colors.white,
+                         fontSize: 14.0)));
    }
 
    AppBar appBar = AppBar(
-         title: Text(cts.postAppBarMsg[screen],
-                     style: TextStyle(color: Colors.white)),
+         title: appBarTitleWidget,
          elevation: 0.7,
          toolbarOpacity : 1.0,
          leading: IconButton( icon: Icon( Icons.arrow_back
@@ -300,16 +311,16 @@ makeNewPostScreens( BuildContext ctx
    );
 
    return WillPopScope(
-             onWillPop: () async { return onWillPopMenu();},
-             child: Scaffold(
-                       appBar: appBar,
-                       body: wid,
-                       bottomNavigationBar:
-                          makeBottomBarItems(
-                             cts.newPostTabIcons,
-                             cts.newPostTabNames,
-                             onNewPostBotBarTapped,
-                             screen)));
+       onWillPop: () async { return onWillPopMenu();},
+       child: Scaffold(
+           appBar: appBar,
+           body: wid,
+           bottomNavigationBar:
+              makeBottomBarItems(
+                 cts.newPostTabIcons,
+                 cts.newPostTabNames,
+                 onNewPostBotBarTapped,
+                 screen)));
 }
 
 Widget
@@ -323,10 +334,14 @@ makeNewFiltersEndWidget( Function onSendNewFilters
       children: <Widget>
       [ Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(onSendNewFilters, 'Enviar'))
+          child: createSendButton(onCancelNewFilters,
+                                  'Cancelar',
+                                  Colors.red))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(onCancelNewFilters, 'Cancelar'))]);
+          child: createSendButton(onSendNewFilters,
+                                  'Enviar',
+                                  cts.postFrameColor))]);
 }
 
 WillPopScope
@@ -343,31 +358,38 @@ makeNewFiltersScreens( BuildContext ctx
                      , Function onCancelNewFilters)
 {
    Widget wid;
-   String appBarTitle = cts.filterTabNames[screen];
+   Widget appBarTitle = Text(
+      cts.filterTabNames[screen],
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      style: cts.appBarTitleStl);
+
+   Widget appBarTitleWidget = appBarTitle;
+
    if (screen == 3) {
       wid = makeNewFiltersEndWidget((){onSendFilters(ctx);},
                                     onCancelNewFilters);
    } else if (screen == 2) {
-      wid = makePostDetailScreen(
-               ctx,
-               onFilterDetail,
-               filter,
-               0);
+      wid = makePostDetailScreen(ctx, onFilterDetail, filter, 0);
    } else {
-      if (menu[screen].root.length > 1)
-         appBarTitle = menu[screen].root.last.name;
-
       wid = createFilterListView(
                ctx,
                menu[screen].root.last,
                onFilterLeafNodePressed,
                onFilterNodePressed,
                menu[screen].isFilterLeaf());
+
+      appBarTitleWidget = ListTile(
+         title: appBarTitle,
+         dense: true,
+         subtitle: Text(menu[screen].getStackNames(),
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: cts.appBarSubtitleStl));
    }
 
    AppBar appBar = AppBar(
-         title: Text(appBarTitle,
-                     style: TextStyle(color: Colors.white)),
+         title: appBarTitleWidget,
          elevation: 0.7,
          toolbarOpacity : 1.0,
          leading: IconButton( icon: Icon( Icons.arrow_back
@@ -399,7 +421,9 @@ makePostDetailScreen( BuildContext ctx
       itemBuilder: (BuildContext ctx, int i)
       {
          if (i == cts.postDetails.length)
-            return createSendButton((){proceed(i);}, 'Continuar');
+            return createSendButton((){proceed(i);},
+                                    'Continuar',
+                                    cts.postFrameColor);
 
          bool v = ((filter & (1 << i)) != 0);
          Color color = cts.selectedMenuColor;
@@ -675,7 +699,8 @@ makeChatScreen(BuildContext ctx,
                Function onFwdChatMsg,
                Function onDragChatMsg,
                FocusNode chatFocusNode,
-               Function onChatMsgReply)
+               Function onChatMsgReply,
+               String postSummary)
 {
    IconButton sendButCol =
       IconButton(
@@ -742,10 +767,6 @@ makeChatScreen(BuildContext ctx,
 
    List<Widget> actions = List<Widget>();
    Widget title = null;
-   TextStyle ts = TextStyle(
-       fontWeight: FontWeight.bold,
-       fontSize: cts.mainFontSize,
-       color: Color(0xFFFFFFFF));
 
    if (nLongPressed == 1) {
       IconButton reply = IconButton(
@@ -762,15 +783,25 @@ makeChatScreen(BuildContext ctx,
 
       actions.add(forward);
 
-      title = Text('$nLongPressed', style: ts);
+      title = Text('$nLongPressed',
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: cts.appBarTitleStl);
    } else {
       title = ListTile(
           leading: CircleAvatar(
               child: cts.unknownPersonIcon,
               backgroundColor: Colors.grey),
-          title: Text(ch.getChatDisplayName(), style: ts),
+          title: Text(ch.getChatDisplayName(),
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                style: cts.appBarTitleStl),
           dense: true,
-          //subtitle: subtitle
+          subtitle:
+             Text(postSummary,
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                style: cts.appBarSubtitleStl)
        );
    }
 
@@ -991,7 +1022,10 @@ ListView createFilterListView(BuildContext context,
    );
 }
 
-Widget createSendButton(Function onPressed, final String txt)
+Widget
+createSendButton(Function onPressed,
+                 final String txt,
+                 Color color)
 {
    RaisedButton but =
       RaisedButton(
@@ -999,7 +1033,7 @@ Widget createSendButton(Function onPressed, final String txt)
             style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: cts.mainFontSize)),
-         color: cts.postFrameColor,
+         color: color,
          onPressed: onPressed);
 
    return Center(child: ButtonTheme(minWidth: 100.0, child: but));
@@ -1008,7 +1042,11 @@ Widget createSendButton(Function onPressed, final String txt)
 // Study how to convert this into an elipsis like whatsapp.
 Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
 {
-   final Text txt = Text("${n}", style: TextStyle(color: textColor));
+   final Text txt =
+      Text("${n}",
+           style: TextStyle(
+              color: textColor,
+              fontSize: cts.listTileSubtitleFontSize));
    final Radius rd = const Radius.circular(45.0);
    return Container(
        margin: const EdgeInsets.all(2.0),
@@ -1186,7 +1224,6 @@ Card createChatEntry(BuildContext context,
    IconButton leading = IconButton(icon: Icon(Icons.delete_forever),
                 onPressed: () {onDelPost(i);});
 
-   // For the summary I use the second MenuItem.
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
 
@@ -1440,7 +1477,7 @@ makeChatListTileTrailingWidget(
       return null;
 
    Text dateText = Text(makeDateString(date),
-         style: TextStyle(color: Colors.black));
+         style: cts.listTileSubtitleStl);
 
    if (nUnreadMsgs != 0 && pinDate != 0) {
       Row row = Row(
@@ -1543,7 +1580,7 @@ Widget makePostChatCol(
             onLongPress: () { onLongPressed(i); });
 
       list[i] = Container(
-         margin: const EdgeInsets.only(bottom: 5.0),
+         margin: const EdgeInsets.only(bottom: 3.0),
          decoration: BoxDecoration(
             //border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -1611,6 +1648,7 @@ Widget makeChatTab(
          },
    );
 }
+
 //_____________________________________________________________________
 
 class DialogWithOp extends StatefulWidget {
@@ -3303,6 +3341,8 @@ class MenuChatState extends State<MenuChat>
                _onCancelNewFilter);
 
       if (isOnFavChat() || isOnOwnChat()) {
+         String postSummary =
+            makePostSummaryStr(_menus[1].root.first, _post);
          return makeChatScreen(
             ctx,
             _onPopChat,
@@ -3315,7 +3355,8 @@ class MenuChatState extends State<MenuChat>
             _onFwdChatMsg,
             _onDragChatMsg,
             _chatFocusNode,
-            _onChatMsgReply);
+            _onChatMsgReply,
+            postSummary);
       }
 
       List<Function> onWillPops = List<Function>(cts.tabNames.length);

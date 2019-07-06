@@ -45,7 +45,7 @@ final List<String> tabNames = <String>
 // navigation bar.
 final List<String> newPostTabNames = <String>
 [ 'Localizacao'
-, 'Modelos'
+, 'Produto'
 , 'Detalhes'
 , 'Publicar'
 ];
@@ -78,8 +78,8 @@ final String userInfo = 'Informacoes do usuário';
 final List<String> filterTabNames = <String>
 [ 'Localizacao'
 , 'Modelos'
-, 'Detalhes'
-, 'Aplicar'
+, 'Adicionais'
+, 'Enviar'
 ];
 
 List<IconData> filterTabIcons = <IconData>
@@ -110,7 +110,7 @@ final Icon favIcon = Icon(Icons.star, color: Colors.amber);
 // postertisement screen.*
 final List<String> postAppBarMsg = <String>
 [ "Escolha uma localizacao"
-, "Escolha um modelo"
+, "Escolha um produto"
 , "Adicione detalhes"
 , "Verificacao e envio"
 ];
@@ -185,7 +185,7 @@ final TextStyle listTileTitleStl =
              fontWeight: FontWeight.bold,
              color: Colors.black);
 
-final double listTileSubtitleFontSize = 13.0;
+final double listTileSubtitleFontSize = 14.0;
 final TextStyle listTileSubtitleStl =
    TextStyle(fontSize: listTileSubtitleFontSize);
 
@@ -198,6 +198,14 @@ final TextStyle expTileStl =
           TextStyle(fontSize: mainFontSize,
                     fontWeight: FontWeight.normal,
                     color: Colors.white);
+
+final TextStyle appBarTitleStl = TextStyle(
+      color: Colors.white,
+      fontSize: 18.0);
+
+final TextStyle appBarSubtitleStl = TextStyle(
+    color: Colors.white,
+    fontSize: 14.0);
 
 final String chatFilePrefix = 'chat';
 

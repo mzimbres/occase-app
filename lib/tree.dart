@@ -12,6 +12,12 @@ class MenuNode {
 
    MenuNode([this.name, this.leafReach, this.code]);
 
+   @override
+   String toString()
+   {
+      return name;
+   }
+
    String getChildrenNames()
    {
       if (children.isEmpty)
@@ -183,6 +189,12 @@ class MenuItem {
    // menu root node. When a menu entries is selected it is pushed on
    // the stack and the element is treated a the root of the subtree.
    List<MenuNode> root = List<MenuNode>();
+
+   // Returns the name of each node in the menu stack. 
+   String getStackNames()
+   {
+      return root.join('/');
+   }
 
    // It is assumed that this function will be called when the last
    // node in the stack is the parent of a leaf and k will be the
