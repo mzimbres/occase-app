@@ -1550,15 +1550,17 @@ Widget makePostChatCol(
             onTap: () { onPressed(i); },
             onLongPress: () { onLongPressed(i); });
 
-      list[i] = Container(decoration: BoxDecoration(color: bgColor),
-                  child: lt);
+      list[i] = Container(
+         margin: const EdgeInsets.only(bottom: 5.0),
+         decoration: BoxDecoration(
+            //border: Border.all(color: Colors.black),
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            color: bgColor),
+         child: lt);
    }
 
   if (list.length == 1)
-     return Column(children: ListTile.divideTiles(
-                      context: ctx,
-                      tiles: list,
-                      color: Colors.grey).toList());
+     return Column(children: list);
 
    final TextStyle stl =
              TextStyle(fontSize: 15.0,
@@ -1572,13 +1574,10 @@ Widget makePostChatCol(
    final bool expState = ch.length <= 5 || nUnredChats != 0;
    return ExpansionTile(
              initiallyExpanded: expState,
-             leading: Icon(Icons.chat),
+             //leading: Icon(Icons.chat),
              key: PageStorageKey<int>(2 * postId + 1),
              title: Text(str, style: cts.expTileStl),
-             children: ListTile.divideTiles(
-                        context: ctx,
-                        tiles: list,
-                        color: Colors.grey).toList());
+             children: list);
 }
 
 Widget makeChatTab(
