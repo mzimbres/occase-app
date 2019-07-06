@@ -165,6 +165,7 @@ final int nickMaxLength = 10;
 final IconData newPostIcon = Icons.add;
 
 final String hintTextChat = "Digite sua mensagem";
+final String chatMsgRedirectText = 'Redirecionando ...';
 
 // The padding used for the text inside the post element.
 final double postElemTextPadding = 7.0;

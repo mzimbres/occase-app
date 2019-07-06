@@ -10,31 +10,44 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-int chatStatusStrToInt(final String cmd)
+String convertChatMsgTypeToString(int type)
 {
-   if (cmd == 'chat')
-      return 0;
-   if (cmd == 'server_ack')
-      return 1;
-   if (cmd == 'app_ack_received')
-      return 2;
-   if (cmd == 'app_ack_read')
-      return 3;
+   if (type == 2)
+      return 'chat';
+
+   if (type == 3)
+      return 'chat_redirected';
 
    assert(false);
 }
 
 class ChatItem {
-   bool thisApp; 
+   // We use the following convension for type
+   // 0: Message sent by another app.
+   // 1: Message redirected from another app.
+   // 2: Message from this app.
+   // 3: Message redirected from this app.
+   // 4: The ack sent by the server indicating the message has been
+   //    delivered.
+   // 5: The ack sent by the other app indicating the message has been
+   //    received.
+   // 6: As 5. but indicating the message has been read by the peer.
+   int type; 
+
    String msg = '';
    int date = 0;
    bool isLongPressed = false;
 
-   ChatItem(this.thisApp, this.msg, this.date);
+   ChatItem(this.type, this.msg, this.date);
+
+   bool isFromThisApp()
+   {
+      return type == 2 || type == 3;
+   }
 
    ChatItem.fromJson(Map<String, dynamic> map)
    {
-      thisApp = map["this_app"];
+      type = map["this_app"];
       msg = map['msg'];
       date = map['date'];
    }
@@ -43,7 +56,7 @@ class ChatItem {
    {
       return
       {
-         'this_app': thisApp,
+         'this_app': type,
          'msg': msg,
          'date': date,
       };
@@ -59,7 +72,7 @@ class Chat {
    int lastAppReceivedIdx = -1;
    int lastServerAckedIdx = -1;
    int nUnreadMsgs = 0;
-   ChatItem lastChatItem = ChatItem(true, '', 0);
+   ChatItem lastChatItem = ChatItem(2, '', 0);
 
    bool isLongPressed = false;
    List<ChatItem> msgs = null;
@@ -279,7 +292,7 @@ class Post {
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       Chat history =
-         Chat(peer, nick, now, 0, -1, -1, -1, 0, ChatItem(true, '', 0));
+         Chat(peer, nick, now, 0, -1, -1, -1, 0, ChatItem(2, '', 0));
       final int l = chats.length;
       chats.add(history);
       return l;
@@ -398,7 +411,6 @@ Future<List<Post>> loadPosts(Database db, String tableName) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'];
-     print('====> Loading post ${post.id} ---- ${post.dbId}');
      return post;
   });
 }
@@ -495,13 +507,13 @@ findAndMarkChatApp( final List<Post> posts
       return;
    }
 
-   final int l = posts[i].chats[j].msgs.length;
+   final int l = 1 + posts[i].chats[j].lastServerAckedIdx;
 
    if (status == 1) {
       print('1 Writing $peer $postId $status $l');
-      posts[i].chats[j].lastServerAckedIdx = l - 1;
+      posts[i].chats[j].lastServerAckedIdx = l;
       batch.rawUpdate(cts.updateLastServerAckedIdx,
-                      [l - 1, postId, peer]);
+                      [l, postId, peer]);
       return;
    }
 
@@ -626,7 +638,7 @@ Future<List<Chat>> loadChats(Database db, int postId) async
 
      print('$peer $postId $date $pinDate $lastAppReadIdx $lastAppReceivedIdx $lastServerAckedIdx $nUnreadMsgs $lastChatItemStr');
 
-     ChatItem lastChatItem = ChatItem(true, '', 0);
+     ChatItem lastChatItem = ChatItem(2, '', 0);
      if (!lastChatItemStr.isEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(lastChatItemStr));
 

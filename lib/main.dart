@@ -595,7 +595,7 @@ makeChatMsgListView(
          Alignment align = Alignment.bottomLeft;
          Color color = Color(0xFFFFFFFF);
          Color onSelectedMsgColor = Colors.grey[300];
-         if (ch.msgs[i].thisApp) {
+         if (ch.msgs[i].isFromThisApp()) {
             align = Alignment.bottomRight;
             color = Colors.lightGreenAccent[100];
          }
@@ -617,7 +617,7 @@ makeChatMsgListView(
          // of simply appending it to the richtext as I do for the
          // date. Perhaps they will fix this later.
          Widget msgAndStatus;
-         if (ch.msgs[i].thisApp) {
+         if (ch.msgs[i].isFromThisApp()) {
             msgAndStatus = Row(
                mainAxisSize: MainAxisSize.min,
                mainAxisAlignment: MainAxisAlignment.end,
@@ -637,7 +637,7 @@ makeChatMsgListView(
 
          double marginLeft = 10.0;
          double marginRight = 0.0;
-         if (ch.msgs[i].thisApp) {
+         if (ch.msgs[i].isFromThisApp()) {
             double tmp = marginLeft;
             marginLeft = marginRight;
             marginRight = tmp;
@@ -660,7 +660,7 @@ makeChatMsgListView(
                   child: msgAndStatus)));
 
          Row r = null;
-         if (ch.msgs[i].thisApp) {
+         if (ch.msgs[i].isFromThisApp()) {
             r = Row(children: <Widget>
             [ Spacer()
             , w1
@@ -1447,7 +1447,7 @@ Widget makeChatTileSubStr(final Chat ch)
 
    if (ch.nUnreadMsgs > 0 ||
        ch.lastChatItem.msg.isEmpty ||
-       !ch.lastChatItem.thisApp)
+       !ch.lastChatItem.isFromThisApp())
       return createMenuItemSubStrWidget(str);
 
    // FIXME: Here we have to pass the biggest index in Chat class.
@@ -2174,18 +2174,17 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onFwdSendButton() async
    {
+      final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
-         myprint(c1, '');
          for (Coord c2 in _lpChatMsgs) {
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
-                  _favPosts, c1.post.id, c1.chat.peer,
-                   false, c2.chat.msgs[c2.msgIdx].msg);
+                  _favPosts, c1.post.id, c1.chat.peer, false,
+                   ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now));
             } else {
-               myprint(c2, '   ');
                await _onSendChatMsgImpl(
-                  _ownPosts, c1.post.id, c1.chat.peer,
-                  true, c2.chat.msgs[c2.msgIdx].msg);
+                  _ownPosts, c1.post.id, c1.chat.peer, true,
+                  ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now));
             }
          }
       }
@@ -2223,14 +2222,15 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
+      final int now = DateTime.now().millisecondsSinceEpoch;
       if (_isOnFav()) {
-         await _onSendChatMsgImpl(_favPosts, _post.id,
-                                 _chat.peer, false,
-                                 _txtCtrl.text);
+         await _onSendChatMsgImpl(
+            _favPosts, _post.id, _chat.peer, false,
+            ChatItem(2, _txtCtrl.text, now));
       } else {
-         await _onSendChatMsgImpl(_ownPosts, _post.id,
-                                  _chat.peer, true,
-                                  _txtCtrl.text);
+         await _onSendChatMsgImpl(
+            _ownPosts, _post.id, _chat.peer, true,
+            ChatItem(2, _txtCtrl.text, now));
       }
 
       _txtCtrl.text = "";
@@ -2648,10 +2648,10 @@ class MenuChatState extends State<MenuChat>
                       int postId,
                       String peer,
                       bool isSenderPost,
-                      String msg) async
+                      ChatItem chatItem) async
    {
       try {
-         if (msg.isEmpty)
+         if (chatItem.msg.isEmpty)
             return;
 
          final int i = posts.indexWhere((e) { return e.id == postId;});
@@ -2662,12 +2662,10 @@ class MenuChatState extends State<MenuChat>
          final int j = posts[i].getChatHistIdx(peer);
          assert(j != -1);
 
-         final int now = DateTime.now().millisecondsSinceEpoch;
-         final ChatItem item = ChatItem(true, msg, now);
-         posts[i].chats[j].lastChatItem = item;
+         posts[i].chats[j].lastChatItem = chatItem;
          assert(posts[i].chats[j].isLoaded());
-         posts[i].chats[j].msgs.add(item);
-         posts[i].chats[j].persistChatMsg(item, postId);
+         posts[i].chats[j].msgs.add(chatItem);
+         posts[i].chats[j].persistChatMsg(chatItem, postId);
 
          await _db.transaction((txn) async {
             Batch batch = txn.batch();
@@ -2676,18 +2674,22 @@ class MenuChatState extends State<MenuChat>
             // for performance?
             batch.rawInsert(cts.insertOrReplaceChatOnPost,
                makeChatUpdateSql(posts[i].chats[j], postId));
-            batch.rawInsert(cts.insertChatMsg, [postId, peer, 1, now, msg]);
+            batch.rawInsert(cts.insertChatMsg,
+                [postId, peer, 1, chatItem.date, chatItem.msg]);
             await batch.commit(noResult: true, continueOnError: true);
          });
 
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
 
+         final String type =
+               convertChatMsgTypeToString(chatItem.type);
+         print('=======> Sending type: $type');
          var msgMap = {
             'cmd': 'message',
-            'type': 'chat',
+            'type': type,
             'to': peer,
-            'msg': msg,
+            'msg': chatItem.msg,
             'post_id': postId,
             'is_sender_post': isSenderPost,
             'nick': cfg.nick
@@ -2725,7 +2727,8 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _chatMsgHandler(Map<String, dynamic> ack) async
+   Future<void>
+   _chatMsgHandler(Map<String, dynamic> ack, int type) async
    {
       final int postId = ack['post_id'];
       final bool isSenderPost = ack['is_sender_post'];
@@ -2746,7 +2749,8 @@ class MenuChatState extends State<MenuChat>
          posts = _ownPosts;
 
       await _chatMsgHandlerImpl(to, postId, msg, peer,
-                                nick, isSenderPost, posts);
+                                nick, isSenderPost, posts,
+                                type);
    }
 
    Future<void>
@@ -2756,7 +2760,8 @@ class MenuChatState extends State<MenuChat>
                        String peer,
                        String nick,
                        bool isSenderPost,
-                       List<Post> posts) async
+                       List<Post> posts,
+                       int type) async
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -2771,7 +2776,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      final ChatItem item = ChatItem(false, msg, now);
+      final ChatItem item = ChatItem(type, msg, now);
       posts[i].chats[j].lastChatItem = item;
       if (posts[i].chats[j].isLoaded())
          posts[i].chats[j].msgs.add(item);
@@ -2842,10 +2847,13 @@ class MenuChatState extends State<MenuChat>
       Batch batch = _db.batch();
 
       final String type = ack['type'];
+      print('=======> Receiving type: $type');
       if (type == 'server_ack') {
          _chatServerAckHandler(ack, batch);
       } else if (type == 'chat') {
-         _chatMsgHandler(ack);
+         _chatMsgHandler(ack, 0);
+      }  else if (type == 'chat_redirected') {
+         _chatMsgHandler(ack, 1);
       } else if (type == 'app_ack_received') {
          _chatAppAckHandler(ack, 2, batch);
       } else if (type == 'app_ack_read') {
@@ -3417,7 +3425,7 @@ class MenuChatState extends State<MenuChat>
       Widget appBarLeading = null;
       if (_isOnFav() || _isOnOwn()) {
          if (_hasLPChatMsgs()) {
-            appBarTitle = 'Redirecionando ...';
+            appBarTitle = cts.chatMsgRedirectText;
             appBarLeading = IconButton(
                icon: Icon(Icons.arrow_back , color: Colors.white),
                   onPressed: _onBackFromChatMsgRedirect);
