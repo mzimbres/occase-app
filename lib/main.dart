@@ -646,9 +646,9 @@ makeChatMsgListView(
          Card w1 = Card(
             margin: EdgeInsets.only(
                   left: marginLeft,
-                  top: 0.0,
+                  top: 2.0,
                   right: marginRight,
-                  bottom: 2.0),
+                  bottom: 0.0),
             elevation: 3.0,
             color: color,
             child: Center(
@@ -1232,7 +1232,7 @@ Card createChatEntry(BuildContext context,
           leading: leading,
           key: PageStorageKey<int>(2 * post.id),
           title: Text(postSummaryStr,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.clip,
                       style: cts.expTileStl),
           children: ListTile.divideTiles(

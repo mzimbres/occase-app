@@ -24,7 +24,7 @@ final Color newMsgCircleColor = Colors.grey;
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
-final double postMarging = 7.0;
+final double postMarging = 4.0;
 
 // Marging user to separate the post element cards from the
 // outermost cards.
