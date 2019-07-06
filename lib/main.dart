@@ -1178,22 +1178,13 @@ Card createChatEntry(BuildContext context,
                      List<MenuItem> menus,
                      Widget chats,
                      Function onDelPost,
-                     Function onPinPost,
                      int i)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        cts.postFrameColor);
 
-   IconData pinIcon = post.pinDate == 0 ? Icons.place : Icons.pin_drop;
-   Row leading = Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>
-   [ IconButton(icon: Icon(Icons.delete_forever),
-                onPressed: () async {await onDelPost(i);})
-   , IconButton(icon: Icon(pinIcon),
-                onPressed: () async {await onPinPost(i);})
-   ]);
+   IconButton leading = IconButton(icon: Icon(Icons.delete_forever),
+                onPressed: () {onDelPost(i);});
 
    // For the summary I use the second MenuItem.
    final String postSummaryStr =
@@ -1504,10 +1495,11 @@ Widget makePostChatCol(
    List<Chat> ch,
    Function onPressed,
    Function onLongPressed,
-   int postId,
+   Post post,
    bool isFwdChatMsgs,
    Function onLeadingPressed,
-   int now)
+   int now,
+   Function onPinPost)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -1539,7 +1531,7 @@ Widget makePostChatCol(
             leading: makeChatListTileLeading(
                widget,
                selectColor(ch[i].nick.length),
-               (){onLeadingPressed(ctx, postId, i);}),
+               (){onLeadingPressed(ctx, post.id, i);}),
             trailing: trailing,
             title: Text(ch[i].getChatDisplayName(),
                maxLines: 1,
@@ -1571,18 +1563,21 @@ Widget makePostChatCol(
    if (nUnredChats != 0)
       str = '${ch.length} conversas / $nUnredChats nao lidas';
 
+   IconData pinIcon =
+      post.pinDate == 0 ? Icons.place : Icons.pin_drop;
+
    final bool expState = ch.length <= 5 || nUnredChats != 0;
    return ExpansionTile(
-             initiallyExpanded: expState,
-             //leading: Icon(Icons.chat),
-             key: PageStorageKey<int>(2 * postId + 1),
-             title: Text(str, style: cts.expTileStl),
-             children: list);
+       initiallyExpanded: expState,
+       leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
+       key: PageStorageKey<int>(2 * post.id + 1),
+       title: Text(str, style: cts.expTileStl),
+       children: list);
 }
 
 Widget makeChatTab(
    BuildContext context,
-   List<Post> data,
+   List<Post> posts,
    Function onPressed,
    Function onLongPressed,
    List<MenuItem> menus,
@@ -1593,26 +1588,26 @@ Widget makeChatTab(
 {
    return ListView.builder(
          padding: const EdgeInsets.all(0.0),
-         itemCount: data.length,
+         itemCount: posts.length,
          itemBuilder: (BuildContext context, int i)
          {
             final int now = DateTime.now().millisecondsSinceEpoch;
             return createChatEntry(
-                      context,
-                      data[i],
-                      menus,
-                      makePostChatCol(
-                         context,
-                         data[i].chats,
-                         (j) {onPressed(i, j);},
-                         (j) {onLongPressed(i, j);},
-                         data[i].id,
-                         isFwdChatMsgs,
-                         onLeadingPressed,
-                         now),
-                      onDelPost,
-                      onPinPost,
-                      i);
+                context,
+                posts[i],
+                menus,
+                makePostChatCol(
+                   context,
+                   posts[i].chats,
+                   (j) {onPressed(i, j);},
+                   (j) {onLongPressed(i, j);},
+                   posts[i],
+                   isFwdChatMsgs,
+                   onLeadingPressed,
+                   now,
+                   () {onPinPost(i);}),
+                onDelPost,
+                i);
          },
    );
 }
