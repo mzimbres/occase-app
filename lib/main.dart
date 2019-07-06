@@ -216,7 +216,7 @@ makeNickRegisterScreen( TextEditingController txtCtrl
    return Scaffold(body: Center(child: col));
 }
 
-ListView
+Card
 makeNewPostFinalScreenWidget( BuildContext ctx
                             , Post post
                             , final List<MenuItem> menu
@@ -236,21 +236,12 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                hintText: cts.newPostTextFieldHistStr)),
          cts.postLocHeaderColor));
 
-   Widget widget_tmp =
+   return
       makePostWidget( ctx
                     , cards
                     , (final int add) { onSendNewPostPressed(ctx, add); }
                     , Icon(Icons.publish, color: Colors.white)
                     , cts.postFrameColor);
-
-   // FIXME: I added this ListView to prevent widget_tmp from
-   // extending the whole screen. Inside the ListView it appears
-   // compact. Remove this later.
-   return ListView(
-      shrinkWrap: true,
-      //padding: const EdgeInsets.all(20.0),
-      children: <Widget>[widget_tmp]
-   );
 }
 
 WillPopScope
@@ -2213,14 +2204,13 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
          for (Coord c2 in _lpChatMsgs) {
+            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now);
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
-                  _favPosts, c1.post.id, c1.chat.peer, false,
-                   ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now));
+                  _favPosts, c1.post.id, c1.chat.peer, false, ci);
             } else {
                await _onSendChatMsgImpl(
-                  _ownPosts, c1.post.id, c1.chat.peer, true,
-                  ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now));
+                  _ownPosts, c1.post.id, c1.chat.peer, true, ci);
             }
          }
       }
@@ -2259,17 +2249,18 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onSendChatMsg() async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
+      List<Post> posts = _ownPosts;
+      bool isSenderPost = true;
+      ChatItem ci = ChatItem(2, _txtCtrl.text, now);
       if (_isOnFav()) {
-         await _onSendChatMsgImpl(
-            _favPosts, _post.id, _chat.peer, false,
-            ChatItem(2, _txtCtrl.text, now));
-      } else {
-         await _onSendChatMsgImpl(
-            _ownPosts, _post.id, _chat.peer, true,
-            ChatItem(2, _txtCtrl.text, now));
+         posts = _favPosts;
+         isSenderPost = false;
       }
 
-      _txtCtrl.text = "";
+      await _onSendChatMsgImpl(
+         posts, _post.id, _chat.peer, isSenderPost, ci);
+
+      _txtCtrl.text = '';
 
       setState(()
       {
@@ -3287,7 +3278,6 @@ class MenuChatState extends State<MenuChat>
    {
       assert(!_lpChatMsgs.isEmpty);
 
-      // Unmark any long pressed chats.
       _unmarkLPChats();
 
       // All items int _lpChatMsgs should have the same post id and

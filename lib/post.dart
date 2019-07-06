@@ -21,17 +21,14 @@ String convertChatMsgTypeToString(int type)
    assert(false);
 }
 
+enum MsgType
+{ fromPeer
+, fromPeerFwd
+, own
+, ownFwd
+}
+
 class ChatItem {
-   // We use the following convension for type
-   // 0: Message sent by another app.
-   // 1: Message redirected from another app.
-   // 2: Message from this app.
-   // 3: Message redirected from this app.
-   // 4: The ack sent by the server indicating the message has been
-   //    delivered.
-   // 5: The ack sent by the other app indicating the message has been
-   //    received.
-   // 6: As 5. but indicating the message has been read by the peer.
    int type; 
 
    String msg = '';
