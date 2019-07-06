@@ -171,6 +171,9 @@ final double postElemTextPadding = 7.0;
 
 final double outerPostCardPadding = 1.0;
 
+// The padding of chat messages inside ist box.
+final double chatMsgPadding = 5.0;
+
 final String deleteChatStr = "Remover conversa";
 final String blockUserChatStr = "Bloquear usuário";
 final String pinChatStr = "Fixar conversa";

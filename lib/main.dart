@@ -579,38 +579,52 @@ makeChatMsgListView(
          if (ch.msgs[i].isLongPressed)
             onSelectedMsgColor = Colors.blue[100];
 
-         Row msgAndStatus;
-         if (ch.msgs[i].thisApp) {
-            Align foo =
-               Align(alignment: Alignment.bottomRight,
-                     child: chooseMsgStatusIcon(ch, i));
+         RichText msgAndDate = 
+            makeFilteListTileTitleWidget(
+               ch.msgs[i].msg,
+               '  ${makeDateString(ch.msgs[i].date)}',
+               cts.defaultTextStl,
+               TextStyle(
+                  fontSize: cts.listTileSubtitleFontSize,
+                  color: Colors.grey));
 
+         // Unfoutunately TextSpan sill does not support general
+         // widgets so I have to put the msg status in a row instead
+         // of simply appending it to the richtext as I do for the
+         // date. Perhaps they will fix this later.
+         Widget msgAndStatus;
+         if (ch.msgs[i].thisApp) {
             msgAndStatus = Row(
                mainAxisSize: MainAxisSize.min,
                mainAxisAlignment: MainAxisAlignment.end,
                children: <Widget>
             [ Flexible(child: Padding(
-                  padding: EdgeInsets.all(5.0),
-                  child: Text(ch.msgs[i].msg,
-                   style: cts.defaultTextStl)))
-            , foo]);
+                  padding: EdgeInsets.all(cts.chatMsgPadding),
+                  child: msgAndDate))
+            , Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: chooseMsgStatusIcon(ch, i))
+            ]);
          } else {
-            Align timeWidget =
-               Align(alignment: Alignment.bottomRight,
-                     child: chooseMsgStatusIcon(ch, i));
+            msgAndStatus = Padding(
+                  padding: EdgeInsets.all(cts.chatMsgPadding),
+                  child: msgAndDate);
+         }
 
-            msgAndStatus = Row(
-               mainAxisSize: MainAxisSize.min,
-               mainAxisAlignment: MainAxisAlignment.start,
-               children: <Widget>
-               [ Flexible(child: Padding(
-                  padding: EdgeInsets.all(5.0),
-                  child: Text(ch.msgs[i].msg,
-                      style: cts.defaultTextStl)))
-               , timeWidget]);
+         double marginLeft = 10.0;
+         double marginRight = 0.0;
+         if (ch.msgs[i].thisApp) {
+            double tmp = marginLeft;
+            marginLeft = marginRight;
+            marginRight = tmp;
          }
 
          Card w1 = Card(
+            margin: EdgeInsets.only(
+                  left: marginLeft,
+                  top: 0.0,
+                  right: marginRight,
+                  bottom: 2.0),
             elevation: 3.0,
             color: color,
             child: Center(
@@ -670,6 +684,7 @@ makeChatScreen(BuildContext ctx,
          color: Theme.of(ctx).primaryColor);
 
    TextField tf = TextField(
+       style: cts.defaultTextStl,
        controller: ctrl,
        //textInputAction: TextInputAction.go,
        //onSubmitted: onTextFieldPressed,
@@ -833,17 +848,18 @@ String makeStrAbbrev(final String str)
 }
 
 RichText
-makeFilteListTileTitleWidget(String str1, String str2)
+makeFilteListTileTitleWidget(
+   String str1,
+   String str2,
+   TextStyle stl1,
+   TextStyle stl2)
 {
    return RichText(
       text: TextSpan(
          text: str1,
-         style: cts.listTileTitleStl,
+         style: stl1,
          children: <TextSpan>
-         [ TextSpan(
-             text: str2,
-             style: TextStyle(fontSize: cts.listTileSubtitleFontSize,
-                    color: Colors.grey))]));
+         [TextSpan(text: str2, style: stl2)]));
 }
 
 /*
@@ -908,7 +924,12 @@ ListView createFilterListView(BuildContext context,
 
             RichText title = 
                makeFilteListTileTitleWidget(
-                  child.name, ' (${child.leafCounter})');
+                  child.name,
+                  ' (${child.leafCounter})',
+                  cts.listTileTitleStl,
+                  TextStyle(
+                     fontSize: cts.listTileSubtitleFontSize,
+                     color: Colors.grey));
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
@@ -939,7 +960,13 @@ ListView createFilterListView(BuildContext context,
             cc = Theme.of(context).primaryColor;
 
          RichText title = 
-            makeFilteListTileTitleWidget(titleStr, ' ($c/$cs)');
+            makeFilteListTileTitleWidget(
+               titleStr,
+               ' ($c/$cs)',
+               cts.listTileTitleStl,
+               TextStyle(
+                  fontSize: cts.listTileSubtitleFontSize,
+                  color: Colors.grey));
                
          return
             ListTile(
@@ -1403,7 +1430,7 @@ Widget makeChatTileSubStr(final Chat ch)
    , Expanded(child: createMenuItemSubStrWidget(str))]);
 }
 
-String makeDateString(int date, int now)
+String makeDateString(int date)
 {
    DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
    DateFormat format = DateFormat.Hm();
@@ -1421,8 +1448,8 @@ makeChatListTileTrailingWidget(
    if (isFwdChatMsgs)
       return null;
 
-   Text dateText = Text(makeDateString(date, now),
-         style: TextStyle(color: cts.primaryColor));
+   Text dateText = Text(makeDateString(date),
+         style: TextStyle(color: Colors.black));
 
    if (nUnreadMsgs != 0 && pinDate != 0) {
       Row row = Row(
