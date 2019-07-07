@@ -216,7 +216,7 @@ makeNickRegisterScreen( TextEditingController txtCtrl
    return Scaffold(body: Center(child: col));
 }
 
-Card
+ListView
 makeNewPostFinalScreenWidget( BuildContext ctx
                             , Post post
                             , final List<MenuItem> menu
@@ -236,12 +236,18 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                hintText: cts.newPostTextFieldHistStr)),
          cts.postLocHeaderColor));
 
-   return
+
+   Card card = 
       makePostWidget( ctx
                     , cards
                     , (final int add) { onSendNewPostPressed(ctx, add); }
                     , Icon(Icons.publish, color: Colors.white)
                     , cts.postFrameColor);
+
+   return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(0.0),
+      children: <Widget>[card]);
 }
 
 WillPopScope
@@ -259,7 +265,8 @@ makeNewPostScreens( BuildContext ctx
 {
    Widget wid;
    Widget appBarTitle = Text(
-         cts.filterTabNames[screen],
+         //cts.filterTabNames[screen],
+         cts.newPostAppBarTitle,
          style: TextStyle(
             color: Colors.white,
             fontSize: 19.0));
@@ -350,7 +357,8 @@ makeNewFiltersScreens( BuildContext ctx
 {
    Widget wid;
    Widget appBarTitle = Text(
-      cts.filterTabNames[screen],
+      //cts.filterTabNames[screen],
+      cts.filterAppBarTitle,
       maxLines: 1,
       overflow: TextOverflow.clip,
       style: cts.appBarTitleStl);

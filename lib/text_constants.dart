@@ -75,6 +75,9 @@ final String userInfo = 'Informacoes do usuário';
 
 //______________
 
+final String newPostAppBarTitle = 'Publicar novo post';
+final String filterAppBarTitle = 'Escolha seus filtros';
+
 final List<String> filterTabNames = <String>
 [ 'Localizacao'
 , 'Modelos'
