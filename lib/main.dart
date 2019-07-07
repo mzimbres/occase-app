@@ -1277,14 +1277,14 @@ Card createChatEntry(BuildContext context,
                      Post post,
                      List<MenuItem> menus,
                      Widget chats,
-                     Function onDelPost,
-                     int i)
+                     Function onLeadingPressed,
+                     IconData ic)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
                                        cts.postFrameColor);
 
-   IconButton leading = IconButton(icon: Icon(Icons.delete_forever),
-                onPressed: () {onDelPost(i);});
+   IconButton leading =
+      IconButton(icon: Icon(ic), onPressed: onLeadingPressed);
 
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
@@ -1597,7 +1597,8 @@ Widget makePostChatCol(
    bool isFwdChatMsgs,
    Function onLeadingPressed,
    int now,
-   Function onPinPost)
+   Function onPinPost,
+   bool isFav)
 {
    List<Widget> list = List<Widget>(ch.length);
 
@@ -1618,8 +1619,8 @@ Widget makePostChatCol(
       }
 
       Widget trailing = makeChatListTileTrailingWidget(
-            n, ch[i].lastChatItem.date,
-            ch[i].pinDate, now, isFwdChatMsgs);
+         n, ch[i].lastChatItem.date, ch[i].pinDate, now,
+         isFwdChatMsgs);
 
       ListTile lt =
          ListTile(
@@ -1648,8 +1649,8 @@ Widget makePostChatCol(
          child: lt);
    }
 
-  //if (list.length == 1)
-  //   return Column(children: list);
+  if (isFav)
+     return Column(children: list);
 
    final TextStyle stl =
              TextStyle(fontSize: 15.0,
@@ -1681,31 +1682,44 @@ Widget makeChatTab(
    Function onDelPost,
    Function onPinPost,
    bool isFwdChatMsgs,
-   Function onLeadingPressed)
+   Function onLeadingPressed,
+   bool isFav)
 {
    return ListView.builder(
-         padding: const EdgeInsets.all(0.0),
-         itemCount: posts.length,
-         itemBuilder: (BuildContext context, int i)
-         {
-            final int now = DateTime.now().millisecondsSinceEpoch;
-            return createChatEntry(
+      padding: const EdgeInsets.all(0.0),
+      itemCount: posts.length,
+      itemBuilder: (BuildContext context, int i)
+      {
+         Function onPinPost2 = () {onPinPost(i);};
+
+         Function onLeadingPressed = () {onDelPost(i);};
+         IconData ic = Icons.delete_forever;
+         if (isFav) {
+            onLeadingPressed = onPinPost2;
+            if (posts[i].pinDate == 0)
+               ic = Icons.place;
+            else
+               ic = Icons.pin_drop;
+         }
+
+         final int now = DateTime.now().millisecondsSinceEpoch;
+         return createChatEntry(
+             context,
+             posts[i],
+             menus,
+             makePostChatCol(
                 context,
+                posts[i].chats,
+                (j) {onPressed(i, j);},
+                (j) {onLongPressed(i, j);},
                 posts[i],
-                menus,
-                makePostChatCol(
-                   context,
-                   posts[i].chats,
-                   (j) {onPressed(i, j);},
-                   (j) {onLongPressed(i, j);},
-                   posts[i],
-                   isFwdChatMsgs,
-                   onLeadingPressed,
-                   now,
-                   () {onPinPost(i);}),
-                onDelPost,
-                i);
-         },
+                isFwdChatMsgs,
+                onLeadingPressed,
+                now,
+                onPinPost2,
+                isFav),
+             onLeadingPressed, ic);
+      },
    );
 }
 
@@ -3476,7 +3490,8 @@ class MenuChatState extends State<MenuChat>
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,
-         _onLeadingPressed);
+         _onLeadingPressed,
+         false);
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -3494,7 +3509,8 @@ class MenuChatState extends State<MenuChat>
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,
-         _onLeadingPressed);
+         _onLeadingPressed,
+         true);
 
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
