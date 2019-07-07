@@ -1114,13 +1114,11 @@ Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
          child: Center(widthFactor: 1.0, child: txt));
 }
 
-Card makePostElemSimple(Icon ic, List<Column> cols)
+Card makePostElemSimple(Icon ic, Widget cols)
 {
    List<Widget> r = List<Widget>();
    r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
-
-   Row row = Row(children: cols);
-   r.add(row);
+   r.add(cols);
 
    // Padding needed to show the text inside the post element with some
    // distance from the border.
@@ -1142,35 +1140,43 @@ Card makePostElemSimple(Icon ic, List<Column> cols)
    );
 }
 
-Card makePostElem( BuildContext context
-                 , List<String> values
-                 , List<String> keys
-                 , Icon ic)
+Card makePostElem2( BuildContext context
+                  , List<String> values
+                  , List<String> keys
+                  , Icon ic)
 {
-   List<Widget> leftList = List<Widget>();
-   List<Widget> rightList = List<Widget>();
+   List<Widget> list = List<Widget>();
 
    for (int i = 0; i < values.length; ++i) {
       RichText left =
          RichText(text: TextSpan( text: keys[i] + ': '
                                 , style: cts.listTileTitleStl));
-      leftList.add(left);
 
       RichText right =
          RichText(text: TextSpan( text: values[i]
                                 , style: cts.defaultTextStl));
-      rightList.add(right);
+      Row row = Row(
+         mainAxisSize: MainAxisSize.min,
+         mainAxisAlignment: MainAxisAlignment.start,
+         children: <Widget>
+         [ ConstrainedBox(
+            constraints: BoxConstraints(
+               maxWidth: 100.0,
+               minWidth: 100.0),
+            child: left)
+         ,  ConstrainedBox(
+            constraints: BoxConstraints(
+               maxWidth: 250.0,
+               minWidth: 250.0),
+            child: right)
+         ]);
+
+      list.add(row);
    }
 
-   Column leftCol =
-      Column( children: leftList
-            , crossAxisAlignment: CrossAxisAlignment.start);
+   Column col = Column(children: list);
 
-   Column rightCol =
-      Column( children: rightList
-            , crossAxisAlignment: CrossAxisAlignment.start);
-
-   return makePostElemSimple(ic, <Column>[leftCol, rightCol]);
+   return makePostElemSimple(ic, col);
 }
 
 Card makePostDetailElem(int filter)
@@ -1194,7 +1200,7 @@ Card makePostDetailElem(int filter)
             , crossAxisAlignment: CrossAxisAlignment.start);
 
    Icon ic = Icon(Icons.details, color: cts.postFrameColor);
-   return makePostElemSimple(ic, <Column>[col]);
+   return makePostElemSimple(ic, col);
 }
 
 List<Card>
@@ -1209,7 +1215,7 @@ makeMenuInfoCards(BuildContext context,
       List<String> names =
             loadNames(menus[i].root.first, data.channel[i][0]);
 
-      Card card = makePostElem(
+      Card card = makePostElem2(
                      context,
                      names,
                      cts.menuDepthNames[i],
@@ -1233,19 +1239,29 @@ List<Card> postTextAssembler(BuildContext context,
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
 
-   List<String> values = List<String>();
-   values.add(post.nick);
-   values.add('${post.from}');
-   values.add('${post.id}');
-   values.add(dateString);
-   values.add(post.description);
+   List<String> values1 = List<String>();
+   values1.add(post.nick);
+   values1.add('${post.from}');
+   values1.add('${post.id}');
+   values1.add(dateString);
 
-   Card dc1 =
-      makePostElem( context, values, cts.descList
-                  , Icon( Icons.description
-                        , color: cts.postFrameColor));
+   Card dc1 = makePostElem2(
+      context, values1, cts.descList,
+      Icon(Icons.description,
+           color: cts.postFrameColor));
 
    list.add(dc1);
+
+   if (!post.description.isEmpty) {
+      ConstrainedBox t = ConstrainedBox(
+            constraints: BoxConstraints(
+               maxWidth: 300.0,
+               minWidth: 300.0),
+            child: Text(post.description));
+
+      list.add(makePostElemSimple(Icon(Icons.clear), t));
+   }
+
    list.add(makePostDetailElem(post.filter));
 
    return list;
