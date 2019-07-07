@@ -980,11 +980,13 @@ ListView createFilterListView(BuildContext context,
             if (child.leafReach > 0)
                cc = Theme.of(context).primaryColor;
 
+            String s = '';
+            if (child.leafCounter > 1)
+               s = ' (${child.leafCounter})';
+
             RichText title = 
                makeFilteListTileTitleWidget(
-                  child.name,
-                  ' (${child.leafCounter})',
-                  cts.listTileTitleStl,
+                  child.name, s, cts.listTileTitleStl,
                   TextStyle(
                      fontSize: cts.listTileSubtitleFontSize,
                      color: Colors.grey));
