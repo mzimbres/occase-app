@@ -1294,7 +1294,7 @@ Card createChatEntry(BuildContext context,
           leading: leading,
           key: PageStorageKey<int>(2 * post.id),
           title: Text(postSummaryStr,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.clip,
                       style: cts.expTileStl),
           children: ListTile.divideTiles(
@@ -1648,8 +1648,8 @@ Widget makePostChatCol(
          child: lt);
    }
 
-  if (list.length == 1)
-     return Column(children: list);
+  //if (list.length == 1)
+  //   return Column(children: list);
 
    final TextStyle stl =
              TextStyle(fontSize: 15.0,
