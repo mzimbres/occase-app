@@ -687,7 +687,7 @@ makeChatMsgListView(
    return ListView.builder(
       controller: scrollCtrl,
       reverse: false,
-      padding: const EdgeInsets.all(0.0),
+      padding: const EdgeInsets.only(bottom: 3.0, top: 3.0),
       itemCount: nMsgs + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
