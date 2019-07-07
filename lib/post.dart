@@ -68,11 +68,12 @@ class ChatItem {
 class Chat {
    String peer = '';
    String nick = '';
-   int date = 0;
+   int date = 0; // I think we do not need this, we can use from ChatItem.
    int pinDate = 0;
-   int lastAppReadIdx = -1;
-   int lastAppReceivedIdx = -1;
-   int lastServerAckedIdx = -1;
+   int appAckReadEnd = 0;
+   int appAckReceivedEnd = 0;
+   int serverAckEnd = 0;
+   int chatLength = 0;
    int nUnreadMsgs = 0;
    ChatItem lastChatItem = ChatItem(2, '', 0);
 
@@ -81,8 +82,8 @@ class Chat {
    File _msgsFile = null;
 
    Chat(this.peer, this.nick, this.date, this.pinDate,
-        this.lastAppReadIdx, this.lastAppReceivedIdx,
-        this.lastServerAckedIdx, this.nUnreadMsgs,
+        this.appAckReadEnd, this.appAckReceivedEnd,
+        this.serverAckEnd, this.chatLength, this.nUnreadMsgs,
         this.lastChatItem);
 
    String getChatDisplayName()
@@ -294,7 +295,7 @@ class Post {
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       Chat history =
-         Chat(peer, nick, now, 0, -1, -1, -1, 0, ChatItem(2, '', 0));
+         Chat(peer, nick, now, 0, 0, 0, 0, 0, 0, ChatItem(2, '', now));
       final int l = chats.length;
       chats.add(history);
       return l;
@@ -497,7 +498,6 @@ findAndMarkChatApp( final List<Post> posts
                   , Batch batch)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
-
    if (i == -1) {
       print('====> findAndMarkChatApp: Cannot find post id.');
       return;
@@ -509,29 +509,27 @@ findAndMarkChatApp( final List<Post> posts
       return;
    }
 
-   final int l = 1 + posts[i].chats[j].lastServerAckedIdx;
-
    if (status == 1) {
-      print('1 Writing $peer $postId $status $l');
-      posts[i].chats[j].lastServerAckedIdx = l;
-      batch.rawUpdate(cts.updateLastServerAckedIdx,
-                      [l, postId, peer]);
+      final int idx = posts[i].chats[j].chatLength;
+      posts[i].chats[j].serverAckEnd = idx;
+      batch.rawUpdate(cts.updateServerAckEnd,
+                     [idx, postId, peer]);
       return;
    }
 
    if (status == 2) {
-      print('2 Writing $peer $postId $status $l');
-      posts[i].chats[j].lastAppReceivedIdx = l - 1;
-      batch.rawUpdate(cts.updateLastAppReceivedIdx,
-                      [l - 1, postId, peer]);
+      final int idx = posts[i].chats[j].serverAckEnd;
+      posts[i].chats[j].appAckReceivedEnd = idx;
+      batch.rawUpdate(cts.updateAppAckReceivedEnd,
+                     [idx, postId, peer]);
       return;
    }
 
    if (status == 3) {
-      print('3 Writing $peer $postId $status $l');
-      posts[i].chats[j].lastAppReadIdx = l - 1;
-      batch.rawUpdate(cts.updateLastAppReadIdx,
-                      [l - 1, postId, peer]);
+      final int idx = posts[i].chats[j].appAckReceivedEnd;
+      posts[i].chats[j].appAckReadEnd = idx;
+      batch.rawUpdate(cts.updateAppAckReadEnd,
+                      [idx, postId, peer]);
       return;
    }
 
@@ -632,20 +630,19 @@ Future<List<Chat>> loadChats(Database db, int postId) async
      final int date = maps[i]['date'];
      final int pinDate = maps[i]['pin_date'];
      final String nick = maps[i]['nick'];
-     final int lastAppReadIdx = maps[i]['last_app_read_idx'];
-     final int lastAppReceivedIdx = maps[i]['last_app_received_idx'];
-     final int lastServerAckedIdx = maps[i]['last_server_acked_idx'];
+     final int appAckReadEnd = maps[i]['app_ack_read_end'];
+     final int appAckReceivedEnd = maps[i]['app_ack_received_end'];
+     final int serverAckEnd = maps[i]['server_ack_end'];
+     final int chatLength = maps[i]['chat_length'];
      final int nUnreadMsgs = maps[i]['n_unread_msgs'];
      final String lastChatItemStr = maps[i]['last_chat_item'];
-
-     print('$peer $postId $date $pinDate $lastAppReadIdx $lastAppReceivedIdx $lastServerAckedIdx $nUnreadMsgs $lastChatItemStr');
 
      ChatItem lastChatItem = ChatItem(2, '', 0);
      if (!lastChatItemStr.isEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(lastChatItemStr));
 
-     return Chat(peer, nick, date, pinDate, lastAppReadIdx,
-                 lastAppReceivedIdx, lastServerAckedIdx,
+     return Chat(peer, nick, date, pinDate, appAckReadEnd,
+                 appAckReceivedEnd, serverAckEnd, chatLength,
                  nUnreadMsgs, lastChatItem);
   });
 }
@@ -660,9 +657,10 @@ List<dynamic> makeChatUpdateSql(Chat chat, int postId)
    , chat.date
    , chat.pinDate
    , chat.nick
-   , chat.lastAppReadIdx
-   , chat.lastAppReceivedIdx
-   , chat.lastServerAckedIdx
+   , chat.appAckReadEnd
+   , chat.appAckReceivedEnd
+   , chat.serverAckEnd
+   , chat.chatLength
    , chat.nUnreadMsgs
    , payload
    ];

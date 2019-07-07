@@ -336,9 +336,10 @@ CREATE TABLE chat_status
 , date INTEGER
 , pin_date INTEGER
 , nick TEXT
-, last_app_read_idx INTEGER
-, last_app_received_idx INTEGER
-, last_server_acked_idx INTEGER
+, app_ack_read_end INTEGER
+, app_ack_received_end INTEGER
+, server_ack_end INTEGER
+, chat_length INTEGER
 , n_unread_msgs INTEGER
 , last_chat_item TEXT
 , FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
@@ -348,12 +349,12 @@ CREATE TABLE chat_status
 
 final String insertChatStOnPost =
 '''
-INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String insertOrReplaceChatOnPost =
 '''
-INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String selectChatStatusItem =
@@ -366,21 +367,27 @@ final String deleteChatStElem =
 DELETE FROM chat_status WHERE post_id = ? AND user_id == ?
 ''';
 
-final String updateLastServerAckedIdx =
+final String updateServerAckEnd =
 '''
-UPDATE chat_status SET last_server_acked_idx = ?
+UPDATE chat_status SET server_ack_end = ?
 WHERE post_id = ? AND user_id == ?
 ''';
 
-final String updateLastAppReceivedIdx =
+final String updateAppAckReceivedEnd =
 '''
-UPDATE chat_status SET last_app_received_idx = ?
+UPDATE chat_status SET app_ack_received_end = ?
 WHERE post_id = ? AND user_id == ?
 ''';
 
-final String updateLastAppReadIdx =
+final String updateAppAckReadEnd =
 '''
-UPDATE chat_status SET last_server_acked_idx = ?
+UPDATE chat_status SET app_ack_read_end = ?
+WHERE post_id = ? AND user_id == ?
+''';
+
+final String updateChatLength =
+'''
+UPDATE chat_status SET chat_length = ?
 WHERE post_id = ? AND user_id == ?
 ''';
 

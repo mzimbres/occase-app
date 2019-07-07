@@ -1321,7 +1321,9 @@ Card makePostWidget(BuildContext context,
 
    cards.add(c4);
 
-   Column col = Column(children: cards);
+   Column col = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: cards);
 
    final double padding = cts.outerPostCardPadding;
    return Card(
@@ -1455,11 +1457,11 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
 
    Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
 
-   if (i <= ch.lastAppReadIdx)
+   if (i < ch.appAckReadEnd)
       icon = Icon(Icons.done_all, color: Colors.green, size: s);
-   else if (i <= ch.lastAppReceivedIdx) {
+   else if (i < ch.appAckReceivedEnd) {
       icon = Icon(Icons.done_all, color: Colors.grey, size: s);
-   } else if (i <= ch.lastServerAckedIdx) {
+   } else if (i < ch.serverAckEnd) {
       icon = Icon(Icons.check, color: Colors.grey, size: s);
    }
 
@@ -1477,11 +1479,8 @@ Widget makeChatTileSubStr(final Chat ch)
        !ch.lastChatItem.isFromThisApp())
       return createMenuItemSubStrWidget(str);
 
-   // FIXME: Here we have to pass the biggest index in Chat class.
-   // However it is necessary to incomporate one more index, the last
-   // index.
    return Row(children: <Widget>
-   [ chooseMsgStatusIcon(ch, 0)
+   [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
    , Expanded(child: createMenuItemSubStrWidget(str))]);
 }
 
@@ -1583,8 +1582,7 @@ Widget makePostChatCol(
          bgColor = Colors.white;
       }
 
-      Widget trailing =
-         makeChatListTileTrailingWidget(
+      Widget trailing = makeChatListTileTrailingWidget(
             n, ch[i].lastChatItem.date,
             ch[i].pinDate, now, isFwdChatMsgs);
 
@@ -2123,7 +2121,8 @@ class MenuChatState extends State<MenuChat>
 
          Batch batch = _db.batch();
          batch.rawInsert(cts.insertChatStOnPost,
-            makeChatUpdateSql(_posts[i].chats[j], _posts[i].id));
+            makeChatUpdateSql(_posts[i].chats[j],
+                              _posts[i].id));
 
          batch.execute(cts.updatePostStatus, [2, _posts[i].id]);
 
@@ -2229,7 +2228,8 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopChat() async
    {
-      await _db.rawUpdate(cts.updateNUnreadMsgs, [0, _post.id, _chat.peer]);
+      await _db.rawUpdate(cts.updateNUnreadMsgs,
+                         [0, _post.id, _chat.peer]);
 
       _chat.nUnreadMsgs = 0;
       _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
@@ -2692,6 +2692,8 @@ class MenuChatState extends State<MenuChat>
          posts[i].chats[j].lastChatItem = chatItem;
          assert(posts[i].chats[j].isLoaded());
          posts[i].chats[j].msgs.add(chatItem);
+         posts[i].chats[j].chatLength = 
+            posts[i].chats[j].msgs.length;
          posts[i].chats[j].persistChatMsg(chatItem, postId);
 
          await _db.transaction((txn) async {
@@ -2741,8 +2743,10 @@ class MenuChatState extends State<MenuChat>
          final bool isChat = _outChatMsgsQueue.first.isChat == 1;
          _outChatMsgsQueue.removeFirst();
 
-         if (res == 'ok' && isChat)
+         if (res == 'ok' && isChat) {
             _chatAppAckHandler(ack, 1, batch);
+            setState(() { });
+         }
 
          if (!_outChatMsgsQueue.isEmpty) {
             assert(!_outChatMsgsQueue.first.sent);
@@ -2805,8 +2809,13 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       final ChatItem item = ChatItem(type, msg, now);
       posts[i].chats[j].lastChatItem = item;
-      if (posts[i].chats[j].isLoaded())
+      if (posts[i].chats[j].isLoaded()) {
          posts[i].chats[j].msgs.add(item);
+         posts[i].chats[j].chatLength = posts[i].chats[j].msgs.length;
+      } else {
+         ++posts[i].chats[j].chatLength;
+      }
+
       posts[i].chats[j].persistChatMsg(item, postId);
 
       // If we are in the screen having chat with the user we can ack
@@ -2846,7 +2855,8 @@ class MenuChatState extends State<MenuChat>
          Batch batch = txn.batch();
          batch.rawInsert(cts.insertOrReplaceChatOnPost,
             makeChatUpdateSql(chat, postId));
-         batch.rawInsert(cts.insertChatMsg, [postId, peer, 0, now, msg]);
+         batch.rawInsert(cts.insertChatMsg,
+                        [postId, peer, 0, now, msg]);
          await batch.commit(noResult: true, continueOnError: true);
       });
 
@@ -2874,7 +2884,6 @@ class MenuChatState extends State<MenuChat>
       Batch batch = _db.batch();
 
       final String type = ack['type'];
-      print('=======> Receiving type: $type');
       if (type == 'server_ack') {
          _chatServerAckHandler(ack, batch);
       } else if (type == 'chat') {
