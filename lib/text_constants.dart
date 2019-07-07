@@ -282,6 +282,11 @@ final String deletePost =
 DELETE FROM posts WHERE id = ?
 ''';
 
+final String loadPosts =
+'''
+SELECT rowid, * FROM posts
+''';
+
 //___________________________________________________________
 final String createConfig =
 '''
@@ -434,5 +439,10 @@ DELETE FROM out_chat_msg_queue WHERE rowid = ?
 final String insertOutChatMsg =
 '''
 INSERT INTO out_chat_msg_queue VALUES (?, ?)
+''';
+
+final String loadOutChats =
+'''
+SELECT rowid, * FROM out_chat_msg_queue
 ''';
 

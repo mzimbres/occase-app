@@ -396,10 +396,10 @@ Map<String, dynamic> postToMap(Post post)
     };
 }
 
-Future<List<Post>> loadPosts(Database db, String tableName) async
+Future<List<Post>> loadPosts(Database db) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.query(tableName);
+     await db.rawQuery(cts.loadPosts);
 
   return List.generate(maps.length, (i)
   {
@@ -414,6 +414,7 @@ Future<List<Post>> loadPosts(Database db, String tableName) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'];
+     print('===========> post ${post.dbId}');
      return post;
   });
 }

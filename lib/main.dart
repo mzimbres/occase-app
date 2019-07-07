@@ -119,11 +119,10 @@ class ChatMsgOutQueueElem {
    ChatMsgOutQueueElem(this.rowid, this.isChat, this.payload, this.sent);
 }
 
-Future<List<ChatMsgOutQueueElem>>
-loadOutChatMsg(Database db, String tableName) async
+Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.query(tableName);
+     await db.rawQuery(cts.loadOutChats);
 
   return List.generate(maps.length, (i)
   {
@@ -131,6 +130,7 @@ loadOutChatMsg(Database db, String tableName) async
      final int isChat = maps[i]['is_chat'];
      final String payload = maps[i]['payload'];
 
+     print('Loading: $rowid');
      return ChatMsgOutQueueElem(rowid, isChat, payload, false);
   });
 }
@@ -2001,7 +2001,7 @@ class MenuChatState extends State<MenuChat>
       List<String> lines = List<String>();
 
       try {
-         final List<Post> posts = await loadPosts(_db, 'posts');
+         final List<Post> posts = await loadPosts(_db);
          for (Post p in posts) {
             if (p.status == 0) {
                _ownPosts.add(p);
@@ -2035,10 +2035,10 @@ class MenuChatState extends State<MenuChat>
       if (i != -1)
          _lastSeenPostIdx = i;
 
-      List<ChatMsgOutQueueElem> tmp =
-         await loadOutChatMsg(_db, 'out_chat_msg_queue');
+      List<ChatMsgOutQueueElem> tmp = await loadOutChatMsg(_db);
 
       _outChatMsgsQueue = Queue<ChatMsgOutQueueElem>.from(tmp.reversed);
+      print('====> load: ${_outChatMsgsQueue.length}');
 
       channel = IOWebSocketChannel.connect(cts.host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
@@ -2634,10 +2634,12 @@ class MenuChatState extends State<MenuChat>
 
       final int rowid =
          await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
+      print('====> rowid: $rowid');
 
       tmp.rowid = rowid;
 
       if (isEmpty) {
+         print('1 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
          assert(!_outChatMsgsQueue.first.sent);
          _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2647,6 +2649,7 @@ class MenuChatState extends State<MenuChat>
    void sendOfflineChatMsgs()
    {
       if (!_outChatMsgsQueue.isEmpty) {
+         print('2 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
          assert(!_outChatMsgsQueue.first.sent);
          _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2737,6 +2740,7 @@ class MenuChatState extends State<MenuChat>
          assert(!_outChatMsgsQueue.isEmpty);
          final String res = ack['result'];
 
+         print('3 ====> Deleting: ${_outChatMsgsQueue.first.rowid}');
          batch.rawDelete(cts.deleteOutChatMsg,
                          [_outChatMsgsQueue.first.rowid]);
 
@@ -2749,6 +2753,7 @@ class MenuChatState extends State<MenuChat>
          }
 
          if (!_outChatMsgsQueue.isEmpty) {
+            print('4 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
             assert(!_outChatMsgsQueue.first.sent);
             _outChatMsgsQueue.first.sent = true;
             channel.sink.add(_outChatMsgsQueue.first.payload);
