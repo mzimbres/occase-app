@@ -227,15 +227,24 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       makeMenuInfoCards(ctx, post, menu, Theme.of(ctx).primaryColor);
 
    cards.add(makePostDetailElem(post.filter));
-   cards.add(
-      makeCard(
-         makeTextInputFieldCard(
-            txtCtrl,
-            null,
-            InputDecoration.collapsed(
-               hintText: cts.newPostTextFieldHistStr)),
-         cts.postLocHeaderColor));
 
+   TextField tf = TextField(
+      controller: txtCtrl,
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      maxLength: 500,
+      decoration:
+         InputDecoration.collapsed(
+            hintText: cts.newPostTextFieldHistStr));
+
+   Card tfc = Card(
+      child: Padding(child: Center(child: tf),
+         padding: EdgeInsets.all(cts.postElemTextPadding)),
+      color: cts.postLocHeaderColor,
+      margin: EdgeInsets.all(cts.postInnerMargin),
+      elevation: 0.0);
+
+   cards.add(tfc);
 
    Card card = 
       makePostWidget( ctx
