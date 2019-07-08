@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
+import 'package:image_picker_modern/image_picker_modern.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -276,9 +277,7 @@ makeNewPostScreens( BuildContext ctx
    Widget appBarTitle = Text(
          //cts.filterTabNames[screen],
          cts.newPostAppBarTitle,
-         style: TextStyle(
-            color: Colors.white,
-            fontSize: 19.0));
+         style: cts.appBarTitleStl);
 
    Widget appBarTitleWidget = appBarTitle;
 
@@ -303,9 +302,7 @@ makeNewPostScreens( BuildContext ctx
          title: appBarTitle,
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
-                     style: TextStyle(
-                         color: Colors.white,
-                         fontSize: 14.0)));
+                     style: cts.appBarSubtitleStl));
    }
 
    AppBar appBar = AppBar(
@@ -626,15 +623,15 @@ makeChatMsgWidget(
 
    Widget ww = msgAndStatus;
    if (ch.msgs[i].isRedirected()) {
-      print('This is a redirected msg');
       Row redirWidget = Row(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
          children: <Widget>
-         [ Icon(Icons.forward, color: Colors.grey)
-         , Text('Redirecionada',
+         [ //Icon(Icons.forward, color: Colors.grey)
+          Text(cts.chatMsgRedirectedText,
                 style: TextStyle(color: Colors.grey,
-                  fontSize: cts.listTileSubtitleFontSize))
+                  fontSize: cts.listTileSubtitleFontSize,
+                 fontStyle: FontStyle.italic ))
          ]);
 
       ww = Column( children: <Widget>
@@ -744,13 +741,27 @@ makeChatScreen(BuildContext ctx,
                Function onDragChatMsg,
                FocusNode chatFocusNode,
                Function onChatMsgReply,
-               String postSummary)
+               String postSummary,
+               Function onAttachment)
 {
-   IconButton sendButCol =
+   IconButton sendButton =
       IconButton(
          icon: Icon(Icons.send),
          onPressed: onChatSendPressed,
-         color: Theme.of(ctx).primaryColor);
+         color: Colors.grey);
+
+   // Either Icons.attachment or Icons.add_a_photo
+   IconButton attachmentButton =
+      IconButton(icon: Icon(Icons.add_a_photo),
+                 onPressed: onAttachment,
+                 color: Colors.grey);
+
+   Row buttons = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ attachmentButton
+      , sendButton
+      ]);
 
    TextField tf = TextField(
        style: cts.defaultTextStl,
@@ -775,6 +786,7 @@ makeChatScreen(BuildContext ctx,
           scrollDirection: Axis.vertical,
           reverse: true,
           child: tf)))
+   , placeholder
    , placeholder
    ]);
 
@@ -804,7 +816,7 @@ makeChatScreen(BuildContext ctx,
    [ Column(children: <Widget>
      [Expanded(child: list), card])
    , Positioned(
-      child: sendButCol,
+      child: buttons,
       bottom: 4.0,
       right: 4.0)
    ]);
@@ -835,7 +847,7 @@ makeChatScreen(BuildContext ctx,
       title = ListTile(
           leading: CircleAvatar(
               child: cts.unknownPersonIcon,
-              backgroundColor: Colors.grey),
+              backgroundColor: selectColor(ch.nick.length)),
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
@@ -2340,6 +2352,15 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   Future<void> _onChatAttachment() async
+   {
+      print('_onChatAttachment.');
+      var image =
+         await ImagePicker.pickImage(source: ImageSource.gallery);
+
+       setState(() { });
+   }
+
    void _onChatMsgReply(BuildContext ctx)
    {
       print('Reply requested.');
@@ -3453,7 +3474,8 @@ class MenuChatState extends State<MenuChat>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            postSummary);
+            postSummary,
+            _onChatAttachment);
       }
 
       List<Function> onWillPops = List<Function>(cts.tabNames.length);

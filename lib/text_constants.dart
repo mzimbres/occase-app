@@ -169,6 +169,7 @@ final IconData newPostIcon = Icons.add;
 
 final String hintTextChat = "Digite sua mensagem";
 final String chatMsgRedirectText = 'Redirecionando ...';
+final String chatMsgRedirectedText = 'Redirecionada';
 
 // The padding used for the text inside the post element.
 final double postElemTextPadding = 7.0;
@@ -205,11 +206,11 @@ final TextStyle expTileStl =
 
 final TextStyle appBarTitleStl = TextStyle(
       color: Colors.white,
-      fontSize: 18.0);
+      fontSize: 17.0);
 
 final TextStyle appBarSubtitleStl = TextStyle(
-    color: Colors.white,
-    fontSize: 14.0);
+    color: Colors.grey[200],
+    fontSize: 13.5);
 
 final String chatFilePrefix = 'chat';
 
