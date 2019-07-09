@@ -20,18 +20,11 @@ class MenuNode {
 
    String getChildrenNames()
    {
-      if (children.isEmpty)
-         return '';
+      String res = children.join(', ');
+      if (!children.isEmpty)
+         return res + '.';
 
-      if (children.length == 1)
-         return children.first.name;
-
-      String ret = '';
-      for (int i = 0; i < min(20, children.length - 1); ++i)
-         ret += children[i].name + ', ';
-
-      ret += children.last.name + '.';
-      return ret;
+      return res;
    }
 
    bool isLeaf()
