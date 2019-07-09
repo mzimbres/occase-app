@@ -2661,7 +2661,7 @@ class MenuChatState extends State<MenuChat>
          await _onChatPressedImpl(_ownPosts, true, i, j);
    }
 
-   void _onLeadingPressed(BuildContext ctx, int postId, int j)
+   void _onUserInfoPressed(BuildContext ctx, int postId, int j)
    {
       List<Post> posts;
       if (_isOnFav()) {
@@ -3519,7 +3519,7 @@ class MenuChatState extends State<MenuChat>
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,
-         _onLeadingPressed,
+         _onUserInfoPressed,
          false);
 
       bodies[1] = makePostTabListView(
@@ -3538,7 +3538,7 @@ class MenuChatState extends State<MenuChat>
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,
-         _onLeadingPressed,
+         _onUserInfoPressed,
          true);
 
       List<Widget> actions = List<Widget>();
