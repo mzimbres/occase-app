@@ -3253,7 +3253,16 @@ class MenuChatState extends State<MenuChat>
 
    bool _onChatsBackPressed()
    {
-      _unmarkLPChats();
+      if (_hasLPChatMsgs()) {
+         _onBackFromChatMsgRedirect();
+         return false;
+      }
+
+      if (_hasLPChats()) {
+         _unmarkLPChats();
+         setState(() { });
+         return false;
+      }
 
       if (_post != null) {
          _post = null;
@@ -3369,12 +3378,14 @@ class MenuChatState extends State<MenuChat>
    {
       assert(!_lpChatMsgs.isEmpty);
 
-      _unmarkLPChats();
-
-      // All items int _lpChatMsgs should have the same post id and
-      // peer so we can use the first.
-      _post = _lpChatMsgs.first.post;
-      _chat = _lpChatMsgs.first.chat;
+      if (_lpChats.isEmpty) {
+         // All items int _lpChatMsgs should have the same post id and
+         // peer so we can use the first.
+         _post = _lpChatMsgs.first.post;
+         _chat = _lpChatMsgs.first.chat;
+      } else {
+         _unmarkLPChats();
+      }
 
       setState(() { });
    }
