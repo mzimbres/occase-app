@@ -1694,7 +1694,7 @@ Widget makeChatTab(
    Function onDelPost,
    Function onPinPost,
    bool isFwdChatMsgs,
-   Function onLeadingPressed,
+   Function onUserInfoPressed,
    bool isFav)
 {
    return ListView.builder(
@@ -1704,14 +1704,21 @@ Widget makeChatTab(
       {
          Function onPinPost2 = () {onPinPost(i);};
 
-         Function onLeadingPressed = () {onDelPost(i);};
+         Function onDelPost2 = () {onDelPost(i);};
          IconData ic = Icons.delete_forever;
          if (isFav) {
-            onLeadingPressed = onPinPost2;
+            onDelPost2 = onPinPost2;
             if (posts[i].pinDate == 0)
                ic = Icons.place;
             else
                ic = Icons.pin_drop;
+         }
+
+         if (isFwdChatMsgs) {
+            print('Setting ....');
+            onUserInfoPressed = (var a, var b, var c){};
+            onPinPost2 = (){};
+            onDelPost2 = (){};
          }
 
          final int now = DateTime.now().millisecondsSinceEpoch;
@@ -1726,11 +1733,11 @@ Widget makeChatTab(
                 (j) {onLongPressed(i, j);},
                 posts[i],
                 isFwdChatMsgs,
-                onLeadingPressed,
+                onUserInfoPressed,
                 now,
                 onPinPost2,
                 isFav),
-             onLeadingPressed, ic);
+             onDelPost2, ic);
       },
    );
 }
