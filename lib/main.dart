@@ -574,9 +574,8 @@ Card
 makeChatMsgWidget(
    Chat ch,
    int i,
-   onChatSendPressed,
-   onChatMsgLongPressed,
-   onDragChatMsg)
+   Function onChatMsgLongPressed,
+   Function onDragChatMsg)
 {
    Alignment align = Alignment.bottomLeft;
    Color color = Color(0xFFFFFFFF);
@@ -587,10 +586,10 @@ makeChatMsgWidget(
    }
 
    if (ch.msgs[i].isLongPressed)
-      onSelectedMsgColor = Colors.blue[100];
+      onSelectedMsgColor = Colors.blue[200];
 
    RichText msgAndDate = 
-      makeFilteListTileTitleWidget(
+      makeFilterListTileTitleWidget(
          ch.msgs[i].msg,
          '  ${makeDateString(ch.msgs[i].date)}',
          cts.defaultTextStl,
@@ -691,9 +690,9 @@ makeChatMsgListView(
    BuildContext ctx,
    ScrollController scrollCtrl,
    Chat ch,
-   onChatSendPressed,
-   onChatMsgLongPressed,
-   onDragChatMsg)
+   Function onChatSendPressed,
+   Function onChatMsgLongPressed,
+   Function onDragChatMsg)
 {
    final int nMsgs = ch.msgs.length;
    final int shift = ch.nUnreadMsgs == 0 ? 0 : 1;
@@ -715,8 +714,7 @@ makeChatMsgListView(
 
          Card chatMsgWidget =
             makeChatMsgWidget(
-               ch, i, onChatSendPressed,
-               onChatMsgLongPressed,
+               ch, i, onChatMsgLongPressed,
                onDragChatMsg);
 
          return GestureDetector(
@@ -726,6 +724,59 @@ makeChatMsgListView(
             child: chatMsgWidget);
       },
    );
+}
+
+Card makeChatScreenBotCard(Widget w1, Widget w2, Widget w3, Widget w4)
+{
+   const double padding = 2.0;
+   Padding placeholder = Padding(
+      child: Icon(Icons.send, color: Colors.white),
+         padding: EdgeInsets.all(padding));
+
+   Widget w1Tmp = null;
+   if (w1 == null) {
+      w1Tmp = placeholder;
+   } else {
+      w1Tmp = Padding(child: w1, padding: EdgeInsets.all(padding));
+   }
+
+   Widget w2Tmp = Padding(child: w2, padding: EdgeInsets.all(padding));
+
+   Widget w3Tmp = null;
+   if (w3 == null) {
+      w3Tmp = placeholder;
+   } else {
+      w3Tmp = Padding(child: w3, padding: EdgeInsets.all(padding));
+   }
+
+   Widget w4Tmp = null;
+   if (w4 == null) {
+      w4Tmp = placeholder;
+   } else {
+      w4Tmp = Padding(child: w4, padding: EdgeInsets.all(padding));
+   }
+
+   // FIXME: Whoudl we also pad w2?
+   Row rr = Row(children: <Widget>
+   [ w1Tmp
+   , Expanded(child: w2Tmp)
+   , w3Tmp
+   , w4Tmp
+   ]);
+
+   return Card(
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(0.0))),
+      margin: EdgeInsets.all(0.0),
+      color: Colors.white,
+      child: Padding(
+         padding: EdgeInsets.all(4.0),
+         child: ConstrainedBox(
+            constraints: BoxConstraints(
+            maxHeight: 140.0,
+            minHeight: 45.0),
+            child: rr)));
 }
 
 Widget
@@ -742,7 +793,9 @@ makeChatScreen(BuildContext ctx,
                FocusNode chatFocusNode,
                Function onChatMsgReply,
                String postSummary,
-               Function onAttachment)
+               Function onAttachment,
+               int dragedIdx,
+               Function onCancelFwdLPChatMsg)
 {
    IconButton sendButton =
       IconButton(
@@ -775,34 +828,13 @@ makeChatScreen(BuildContext ctx,
        decoration:
           InputDecoration.collapsed(hintText: cts.chatTextFieldHintStr));
 
-   Padding placeholder = Padding(
-      child: Icon(Icons.send, color: Colors.white),
-         padding: EdgeInsets.all(10.0));
-
-   Row rr = Row(children: <Widget>
-   [ placeholder
-   , Expanded(child:
-       Scrollbar( child: SingleChildScrollView(
+   Scrollbar sb = Scrollbar(
+       child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
           reverse: true,
-          child: tf)))
-   , placeholder
-   , placeholder
-   ]);
+          child: tf));
 
-   Card card = Card(
-      elevation: 0.0,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0))),
-      margin: EdgeInsets.all(0.0),
-      color: Colors.white,
-      child: Padding(
-         padding: EdgeInsets.all(4.0),
-         child: ConstrainedBox(
-   constraints: BoxConstraints(
-         maxHeight: 140.0,
-         minHeight: 45.0),
-   child: rr)));
+   Card card = makeChatScreenBotCard(null, sb, null, null);
 
    ListView list = makeChatMsgListView(
          ctx,
@@ -812,13 +844,33 @@ makeChatScreen(BuildContext ctx,
          onChatMsgLongPressed,
          onDragChatMsg);
 
+   List<Widget> cols = List<Widget>();
+   cols.add(Expanded(child: list));
+   if (dragedIdx != -1) {
+      Icon w1 = Icon(Icons.forward, color: Colors.blue);
+
+      // It looks like there is not maxlines option on TextSpan, so
+      // for now I wont be able to show the date at the end.
+      Text w2 = Text(ch.msgs[dragedIdx].msg,
+         maxLines: 2, overflow: TextOverflow.clip,
+         style: TextStyle(
+            fontSize: cts.listTileSubtitleFontSize,
+            color: Colors.grey));
+
+      IconButton w4 = IconButton(
+         icon: Icon(Icons.clear, color: Colors.grey),
+         onPressed: onCancelFwdLPChatMsg);
+
+      Card c1 = makeChatScreenBotCard(w1, w2, null, w4);
+      cols.add(c1);
+      cols.add(Divider(color: Colors.deepOrange, height: 0.0));
+   }
+
+   cols.add(card);
+
    Stack mainCol = Stack(children: <Widget>
-   [ Column(children: <Widget>
-     [Expanded(child: list), card])
-   , Positioned(
-      child: buttons,
-      bottom: 4.0,
-      right: 4.0)
+   [ Column(children: cols)
+   , Positioned(child: buttons, bottom: 1.0, right: 1.0)
    ]);
 
    List<Widget> actions = List<Widget>();
@@ -935,7 +987,7 @@ String makeStrAbbrev(final String str)
 }
 
 RichText
-makeFilteListTileTitleWidget(
+makeFilterListTileTitleWidget(
    String str1,
    String str2,
    TextStyle stl1,
@@ -1014,7 +1066,7 @@ ListView createFilterListView(BuildContext context,
                s = ' (${child.leafCounter})';
 
             RichText title = 
-               makeFilteListTileTitleWidget(
+               makeFilterListTileTitleWidget(
                   child.name, s, cts.listTileTitleStl,
                   TextStyle(
                      fontSize: cts.listTileSubtitleFontSize,
@@ -1049,7 +1101,7 @@ ListView createFilterListView(BuildContext context,
             cc = Theme.of(context).primaryColor;
 
          RichText title = 
-            makeFilteListTileTitleWidget(
+            makeFilterListTileTitleWidget(
                titleStr,
                ' ($c/$cs)',
                cts.listTileTitleStl,
@@ -1517,13 +1569,13 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
       padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
-Widget makeChatTileSubStr(final Chat ch)
+Widget makeChatTileSubtitle(final Chat ch)
 {
    final String str = ch.lastChatItem.msg;
+   if (str.isEmpty)
+      return null;
 
-   if (ch.nUnreadMsgs > 0 ||
-       ch.lastChatItem.msg.isEmpty ||
-       !ch.lastChatItem.isFromThisApp())
+   if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
       return createMenuItemSubStrWidget(str);
 
    return Row(children: <Widget>
@@ -1647,7 +1699,7 @@ Widget makePostChatCol(
                maxLines: 1,
                overflow: TextOverflow.clip,
                style: cts.listTileTitleStl),
-            subtitle: makeChatTileSubStr(ch[i]),
+            subtitle: makeChatTileSubtitle(ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
             onLongPress: () { onLongPressed(i); });
@@ -1933,6 +1985,16 @@ class MenuChatState extends State<MenuChat>
    List<Coord> _lpChatMsgs = List<Coord>();
 
    Queue<dynamic> _wsMsgQueue = Queue<dynamic>();
+
+   // When the user is on a chat screen and dragged a message or
+   // clicked reply on a long-pressed message this index will be set
+   // to the index that leads to the message. It will be set back to
+   // -1 when
+   //
+   // 1. The message is sent
+   // 2. The user cancels the operation.
+   // 3. The user leaves the chat screen.
+   int _dragedIdx = -1;
 
    TabController _tabCtrl;
    ScrollController _scrollCtrl = ScrollController();
@@ -2299,6 +2361,7 @@ class MenuChatState extends State<MenuChat>
       await _db.rawUpdate(cts.updateNUnreadMsgs,
                          [0, _post.id, _chat.peer]);
 
+      _dragedIdx = -1;
       _chat.nUnreadMsgs = 0;
       _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
 
@@ -2314,8 +2377,15 @@ class MenuChatState extends State<MenuChat>
       return false;
    }
 
+   void _onCancelFwdLPChatMsg()
+   {
+      _dragedIdx = -1;
+      setState(() { });
+   }
+
    Future<void> _onSendChatMsg() async
    {
+      _dragedIdx = -1;
       final int now = DateTime.now().millisecondsSinceEpoch;
       List<Post> posts = _ownPosts;
       bool isSenderPost = true;
@@ -2354,7 +2424,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onDragChatMsg(BuildContext ctx, int k, DragStartDetails d)
    {
-      print('Message $k has been dragged.');
+      _dragedIdx = k;
       FocusScope.of(ctx).requestFocus(_chatFocusNode);
       setState(() { });
    }
@@ -3493,7 +3563,9 @@ class MenuChatState extends State<MenuChat>
             _chatFocusNode,
             _onChatMsgReply,
             postSummary,
-            _onChatAttachment);
+            _onChatAttachment,
+            _dragedIdx,
+            _onCancelFwdLPChatMsg);
       }
 
       List<Function> onWillPops = List<Function>(cts.tabNames.length);
