@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 final Color whatsAppPrimaryColor = Color(0xff075E54);
 final Color whatsAppAccentColor = Color(0xff25D366);
 
-final Color coral = Color(0xFFE18A07);
+const Color coral = const Color(0xFFE18A07);
 final Color darkYellow = Color(0xFF999900);
 final Color fireBrick = Color(0xFFB22222);
 final Color seaGreen = Color(0xFF2E8B57);
@@ -12,7 +12,7 @@ final Color oliveDrab = Color(0xFF6B8E23);
 final Color primaryColor = whatsAppPrimaryColor;
 //final Color accentColor = Colors.grey;
 //final Color accentColor = whatsAppAccentColor;
-final Color accentColor = coral;
+const Color accentColor = coral;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
@@ -161,7 +161,7 @@ final List<String> postDetails = <String>
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";
 final String chatTextFieldHintStr = "Mensagem";
-final String nichTextFieldHintStr = "Digite seu nome";
+final String nickTextFieldHintStr = "Digite seu nome";
 
 final int nickMaxLength = 10;
 
@@ -170,6 +170,7 @@ final IconData newPostIcon = Icons.add;
 final String hintTextChat = "Digite sua mensagem";
 final String chatMsgRedirectText = 'Redirecionando ...';
 final String chatMsgRedirectedText = 'Redirecionada';
+final String defaultChatTileSubtile = 'Conversa ainda nao iniciada ...';
 
 // The padding used for the text inside the post element.
 final double postElemTextPadding = 7.0;
@@ -192,7 +193,8 @@ final TextStyle listTileTitleStl =
 
 final double listTileSubtitleFontSize = 14.0;
 final TextStyle listTileSubtitleStl =
-   TextStyle(fontSize: listTileSubtitleFontSize);
+   TextStyle(fontSize: listTileSubtitleFontSize,
+             color: Colors.grey);
 
 final TextStyle defaultTextStl =
           TextStyle(fontSize: mainFontSize,

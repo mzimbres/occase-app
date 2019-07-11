@@ -187,7 +187,7 @@ makeNickRegisterScreen( TextEditingController txtCtrl
          txtCtrl,
          null,
          InputDecoration(
-            hintText: cts.nichTextFieldHintStr,
+            hintText: cts.nickTextFieldHintStr,
             hintStyle: TextStyle(fontSize: 25.0,
               fontWeight: FontWeight.normal)));
 
@@ -726,43 +726,41 @@ makeChatMsgListView(
    );
 }
 
-Card makeChatScreenBotCard(Widget w1, Widget w2, Widget w3, Widget w4)
+Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
+                           Widget w3, Widget w4)
 {
-   const double padding = 2.0;
+   const double padding = 10.0;
+   const EdgeInsets ei = const EdgeInsets.symmetric(horizontal: padding);
    Padding placeholder = Padding(
       child: Icon(Icons.send, color: Colors.white),
-         padding: EdgeInsets.all(padding));
+         padding: ei);
 
-   Widget w1Tmp = null;
+   List<Widget> widgets = List<Widget>();
    if (w1 == null) {
-      w1Tmp = placeholder;
+      widgets.add(placeholder);
    } else {
-      w1Tmp = Padding(child: w1, padding: EdgeInsets.all(padding));
+      widgets.add(Padding(child: w1, padding: ei));
    }
 
-   Widget w2Tmp = Padding(child: w2, padding: EdgeInsets.all(padding));
+   if (w1a != null)
+      widgets.add(w1a);
 
-   Widget w3Tmp = null;
+   widgets.add(Expanded(
+      child: Padding(child: w2, padding: ei)));
+
    if (w3 == null) {
-      w3Tmp = placeholder;
+      widgets.add(placeholder);
    } else {
-      w3Tmp = Padding(child: w3, padding: EdgeInsets.all(padding));
+      widgets.add(Padding(child: w3, padding: ei));
    }
 
-   Widget w4Tmp = null;
    if (w4 == null) {
-      w4Tmp = placeholder;
+      widgets.add(placeholder);
    } else {
-      w4Tmp = Padding(child: w4, padding: EdgeInsets.all(padding));
+      widgets.add(Padding(child: w4, padding: ei));
    }
 
-   // FIXME: Whoudl we also pad w2?
-   Row rr = Row(children: <Widget>
-   [ w1Tmp
-   , Expanded(child: w2Tmp)
-   , w3Tmp
-   , w4Tmp
-   ]);
+   Row rr = Row(children: widgets);
 
    return Card(
       elevation: 0.0,
@@ -777,6 +775,34 @@ Card makeChatScreenBotCard(Widget w1, Widget w2, Widget w3, Widget w4)
             maxHeight: 140.0,
             minHeight: 45.0),
             child: rr)));
+}
+
+Widget makeRefChatMsgWidget(Chat ch, int dragedIdx, Color cc)
+{
+   Text body = Text(ch.msgs[dragedIdx].msg,
+      maxLines: 3,
+      overflow: TextOverflow.clip,
+      style: cts.listTileSubtitleStl);
+
+   Text title = Text(ch.nick,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      style: TextStyle(fontSize: cts.mainFontSize,
+             fontWeight: FontWeight.bold,
+             color: cc));
+
+   Column col = Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>
+      [ Padding(
+           child: title,
+           padding: const EdgeInsets.symmetric(vertical: 3.0))
+      , body
+      ]);
+
+   return col;
 }
 
 Widget
@@ -834,7 +860,7 @@ makeChatScreen(BuildContext ctx,
           reverse: true,
           child: tf));
 
-   Card card = makeChatScreenBotCard(null, sb, null, null);
+   Card card = makeChatScreenBotCard(null, null, sb, null, null);
 
    ListView list = makeChatMsgListView(
          ctx,
@@ -847,21 +873,29 @@ makeChatScreen(BuildContext ctx,
    List<Widget> cols = List<Widget>();
    cols.add(Expanded(child: list));
    if (dragedIdx != -1) {
-      Icon w1 = Icon(Icons.forward, color: Colors.blue);
+      Color co1 = selectColor(ch.nick.length);
+      Icon w1 = Icon(Icons.forward, color: Colors.grey);
 
       // It looks like there is not maxlines option on TextSpan, so
       // for now I wont be able to show the date at the end.
-      Text w2 = Text(ch.msgs[dragedIdx].msg,
-         maxLines: 2, overflow: TextOverflow.clip,
-         style: TextStyle(
-            fontSize: cts.listTileSubtitleFontSize,
-            color: Colors.grey));
+      Widget w2Tmp = makeRefChatMsgWidget(ch, dragedIdx, co1);
+      Widget w2 = Padding(
+         child: w2Tmp,
+         padding: const EdgeInsets.symmetric(horizontal: 5.0));
 
       IconButton w4 = IconButton(
          icon: Icon(Icons.clear, color: Colors.grey),
          onPressed: onCancelFwdLPChatMsg);
 
-      Card c1 = makeChatScreenBotCard(w1, w2, null, w4);
+      // FIXME: Use select color.
+      SizedBox sb = SizedBox(
+         width: 4.0,
+         height: 60.0,
+         child: DecoratedBox(
+           decoration: BoxDecoration(
+             color: co1)));
+
+      Card c1 = makeChatScreenBotCard(w1, sb, w2, null, w4);
       cols.add(c1);
       cols.add(Divider(color: Colors.deepOrange, height: 0.0));
    }
@@ -948,15 +982,6 @@ Widget makeTabWidget(int n, String title, double opacity)
              , opacity: opacity);
 
    return Row(children: widgets);
-}
-
-Text createMenuItemSubStrWidget(String str)
-{
-   if (str == null)
-      return null;
-
-   return Text(str, style: cts.listTileSubtitleStl,
-               maxLines: 1, overflow: TextOverflow.clip);
 }
 
 CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
@@ -1571,16 +1596,26 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
 
 Widget makeChatTileSubtitle(final Chat ch)
 {
-   final String str = ch.lastChatItem.msg;
-   if (str.isEmpty)
-      return null;
+   String str = ch.lastChatItem.msg;
+   if (str.isEmpty) {
+      return Text(
+         cts.defaultChatTileSubtile,
+         maxLines: 1,
+         overflow: TextOverflow.clip,
+         style: TextStyle(
+            color: cts.accentColor,
+            fontStyle: FontStyle.italic,
+            fontSize: cts.listTileSubtitleFontSize));
+   }
 
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
-      return createMenuItemSubStrWidget(str);
+      return Text(str, style: cts.listTileSubtitleStl,
+                  maxLines: 1, overflow: TextOverflow.clip);
 
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
-   , Expanded(child: createMenuItemSubStrWidget(str))]);
+   , Expanded(child: Text(str, style: cts.listTileSubtitleStl,
+              maxLines: 1, overflow: TextOverflow.clip))]);
 }
 
 String makeDateString(int date)
