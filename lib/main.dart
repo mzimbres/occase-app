@@ -21,6 +21,7 @@ import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:menu_chat/sql.dart' as sql;
+import 'package:menu_chat/stl.dart' as stl;
 
 class Coord {
    Post post = null;
@@ -241,9 +242,9 @@ makeNewPostFinalScreenWidget( BuildContext ctx
 
    Card tfc = Card(
       child: Padding(child: Center(child: tf),
-         padding: EdgeInsets.all(cts.postElemTextPadding)),
-      color: cts.postLocHeaderColor,
-      margin: EdgeInsets.all(cts.postInnerMargin),
+         padding: EdgeInsets.all(stl.postElemTextPadding)),
+      color: stl.postLocHeaderColor,
+      margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0);
 
    cards.add(tfc);
@@ -253,7 +254,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                     , cards
                     , (final int add) { onSendNewPostPressed(ctx, add); }
                     , Icon(Icons.publish, color: Colors.white)
-                    , cts.postFrameColor);
+                    , stl.postFrameColor);
 
    return ListView(
       shrinkWrap: true,
@@ -278,7 +279,7 @@ makeNewPostScreens( BuildContext ctx
    Widget appBarTitle = Text(
          //cts.filterTabNames[screen],
          cts.newPostAppBarTitle,
-         style: cts.appBarTitleStl);
+         style: stl.appBarTitleStl);
 
    Widget appBarTitleWidget = appBarTitle;
 
@@ -303,7 +304,7 @@ makeNewPostScreens( BuildContext ctx
          title: appBarTitle,
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
-                     style: cts.appBarSubtitleStl));
+                     style: stl.appBarSubtitleStl));
    }
 
    AppBar appBar = AppBar(
@@ -346,7 +347,7 @@ makeNewFiltersEndWidget( Function onSendNewFilters
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createSendButton(onSendNewFilters,
                                   'Enviar',
-                                  cts.postFrameColor))]);
+                                  stl.postFrameColor))]);
 }
 
 WillPopScope
@@ -368,7 +369,7 @@ makeNewFiltersScreens( BuildContext ctx
       cts.filterAppBarTitle,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: cts.appBarTitleStl);
+      style: stl.appBarTitleStl);
 
    Widget appBarTitleWidget = appBarTitle;
 
@@ -391,7 +392,7 @@ makeNewFiltersScreens( BuildContext ctx
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: cts.appBarSubtitleStl));
+            style: stl.appBarSubtitleStl));
    }
 
    AppBar appBar = AppBar(
@@ -429,10 +430,10 @@ makePostDetailScreen( BuildContext ctx
          if (i == cts.postDetails.length)
             return createSendButton((){proceed(i);},
                                     'Continuar',
-                                    cts.postFrameColor);
+                                    stl.postFrameColor);
 
          bool v = ((filter & (1 << i)) != 0);
-         Color color = cts.selectedMenuColor;
+         Color color = stl.selectedMenuColor;
          if (v)
             color = Theme.of(ctx).primaryColor;
 
@@ -441,9 +442,9 @@ makePostDetailScreen( BuildContext ctx
             secondary:
                makeCircleAvatar(
                   Text( cts.postDetails[i].substring(0, 2)
-                      , style: cts.abbrevStl),
+                      , style: stl.abbrevStl),
                   color),
-            title: Text(cts.postDetails[i], style: cts.listTileTitleStl),
+            title: Text(cts.postDetails[i], style: stl.listTileTitleStl),
             value: v,
             onChanged: (bool v) { proceed(i); },
             activeColor: color,
@@ -459,8 +460,8 @@ class MyApp extends StatelessWidget {
       title: cts.appName,
       theme: ThemeData(
                 brightness: Brightness.light,
-                primaryColor: cts.primaryColor,
-                accentColor: cts.accentColor,
+                primaryColor: stl.primaryColor,
+                accentColor: stl.accentColor,
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
@@ -519,7 +520,7 @@ FloatingActionButton
 makeFiltersFaButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
-             backgroundColor: cts.coral,
+             backgroundColor: stl.accentColor,
              child: Icon(id, color: Colors.white),
              onPressed: onNewPost);
 }
@@ -536,7 +537,7 @@ makeFaButton(Function onNewPost,
    IconData id = cts.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: cts.coral,
+         backgroundColor: stl.accentColor,
          child: Icon(Icons.send, color: Colors.white),
          onPressed: onFwdChatMsg);
    }
@@ -548,7 +549,7 @@ makeFaButton(Function onNewPost,
       return null;
 
    return FloatingActionButton(
-      backgroundColor: cts.darkYellow,
+      backgroundColor: stl.darkYellow,
       child: Icon(id, color: Colors.white),
       onPressed: onNewPost);
 }
@@ -564,7 +565,7 @@ int postIndexHelper(int i)
 Card makeUnreadMsgsInfoWidget(int n)
 {
    return Card(
-      color: cts.postFrameColor,
+      color: stl.postFrameColor,
       margin: const EdgeInsets.all(12.0),
       child: Center(
           child: Text('$n nao lidas.',
@@ -593,9 +594,9 @@ makeChatMsgWidget(
       makeFilterListTileTitleWidget(
          ch.msgs[i].msg,
          '  ${makeDateString(ch.msgs[i].date)}',
-         cts.defaultTextStl,
+         stl.defaultTextStl,
          TextStyle(
-            fontSize: cts.listTileSubtitleFontSize,
+            fontSize: stl.listTileSubtitleFontSize,
             color: Colors.grey));
 
    // Unfourtunately TextSpan still does not support general
@@ -609,7 +610,7 @@ makeChatMsgWidget(
          mainAxisAlignment: MainAxisAlignment.end,
          children: <Widget>
       [ Flexible(child: Padding(
-            padding: EdgeInsets.all(cts.chatMsgPadding),
+            padding: EdgeInsets.all(stl.chatMsgPadding),
             child: msgAndDate))
       , Padding(
             padding: EdgeInsets.all(2.0),
@@ -617,7 +618,7 @@ makeChatMsgWidget(
       ]);
    } else {
       msgAndStatus = Padding(
-            padding: EdgeInsets.all(cts.chatMsgPadding),
+            padding: EdgeInsets.all(stl.chatMsgPadding),
             child: msgAndDate);
    }
 
@@ -630,7 +631,7 @@ makeChatMsgWidget(
          [ //Icon(Icons.forward, color: Colors.grey)
           Text(cts.chatMsgRedirectedText,
                 style: TextStyle(color: Colors.grey,
-                  fontSize: cts.listTileSubtitleFontSize,
+                  fontSize: stl.listTileSubtitleFontSize,
                  fontStyle: FontStyle.italic ))
          ]);
 
@@ -809,12 +810,12 @@ Widget makeRefChatMsgWidget(Chat ch, int i, Color cc)
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
-      style: cts.listTileSubtitleStl);
+      style: stl.listTileSubtitleStl);
 
    Text title = Text(ch.nick,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: TextStyle(fontSize: cts.mainFontSize,
+      style: TextStyle(fontSize: stl.mainFontSize,
              fontWeight: FontWeight.bold,
              color: cc));
 
@@ -872,7 +873,7 @@ makeChatScreen(BuildContext ctx,
       children: editButtons);
 
    TextField tf = TextField(
-       style: cts.defaultTextStl,
+       style: stl.defaultTextStl,
        controller: ctrl,
        //textInputAction: TextInputAction.go,
        //onSubmitted: onTextFieldPressed,
@@ -956,7 +957,7 @@ makeChatScreen(BuildContext ctx,
       title = Text('$nLongPressed',
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: cts.appBarTitleStl);
+            style: stl.appBarTitleStl);
    } else {
       title = ListTile(
           leading: CircleAvatar(
@@ -965,13 +966,13 @@ makeChatScreen(BuildContext ctx,
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: cts.appBarTitleStl),
+                style: stl.appBarTitleStl),
           dense: true,
           subtitle:
              Text(postSummary,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: cts.appBarSubtitleStl)
+                style: stl.appBarSubtitleStl)
        );
    }
 
@@ -1006,7 +1007,7 @@ Widget makeTabWidget(int n, String title, double opacity)
    // for opacity values.
    widgets[1] =
       Opacity( child: makeCircleUnreadMsgs(n, Colors.white,
-                      cts.primaryColor)
+                      stl.primaryColor)
              , opacity: opacity);
 
    return Row(children: widgets);
@@ -1089,7 +1090,7 @@ ListView createFilterListView(BuildContext context,
                    size: 35.0,
                    color: Theme.of(context).primaryColor),
                 title: Text(cts.menuSelectAllStr,
-                            style: cts.listTileTitleStl),
+                            style: stl.listTileTitleStl),
                 dense: true,
                 onTap: () { onLeafPressed(0); },
                 enabled: true,);
@@ -1106,7 +1107,7 @@ ListView createFilterListView(BuildContext context,
                subtitle =  Text(
                    child.getChildrenNames(),
                    style: TextStyle(
-                      fontSize: cts.listTileSubtitleFontSize),
+                      fontSize: stl.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip);
             }
@@ -1121,9 +1122,9 @@ ListView createFilterListView(BuildContext context,
 
             RichText title = 
                makeFilterListTileTitleWidget(
-                  child.name, s, cts.listTileTitleStl,
+                  child.name, s, stl.listTileTitleStl,
                   TextStyle(
-                     fontSize: cts.listTileSubtitleFontSize,
+                     fontSize: stl.listTileSubtitleFontSize,
                      color: Colors.grey));
 
             // Notice we do not subtract -1 on onLeafPressed so that
@@ -1132,7 +1133,7 @@ ListView createFilterListView(BuildContext context,
             return ListTile(
                 leading: 
                    makeCircleAvatar(
-                      Text(abbrev, style: cts.abbrevStl),
+                      Text(abbrev, style: stl.abbrevStl),
                       cc),
                 title: title,
                 dense: true,
@@ -1158,21 +1159,21 @@ ListView createFilterListView(BuildContext context,
             makeFilterListTileTitleWidget(
                titleStr,
                ' ($c/$cs)',
-               cts.listTileTitleStl,
+               stl.listTileTitleStl,
                TextStyle(
-                  fontSize: cts.listTileSubtitleFontSize,
+                  fontSize: stl.listTileSubtitleFontSize,
                   color: Colors.grey));
                
          return
             ListTile(
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(o.children[i].name),
-                        style: cts.abbrevStl), cc),
+                        style: stl.abbrevStl), cc),
                 title: title,
                 dense: true,
                 subtitle: Text(
                    subtitle,
-                   style: TextStyle(fontSize: cts.listTileSubtitleFontSize),
+                   style: TextStyle(fontSize: stl.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -1196,7 +1197,7 @@ createSendButton(Function onPressed,
          child: Text(txt,
             style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: cts.mainFontSize)),
+                  fontSize: stl.mainFontSize)),
          color: color,
          onPressed: onPressed);
 
@@ -1210,7 +1211,7 @@ Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
       Text("${n}",
            style: TextStyle(
               color: textColor,
-              fontSize: cts.listTileSubtitleFontSize));
+              fontSize: stl.listTileSubtitleFontSize));
    final Radius rd = const Radius.circular(45.0);
    return Container(
        margin: const EdgeInsets.all(2.0),
@@ -1241,7 +1242,7 @@ Card makePostElemSimple(Icon ic, Widget cols)
    // Padding needed to show the text inside the post element with some
    // distance from the border.
    Padding leftWidget = Padding(
-         padding: EdgeInsets.all(cts.postElemTextPadding),
+         padding: EdgeInsets.all(stl.postElemTextPadding),
          child: Column(
                crossAxisAlignment: CrossAxisAlignment.stretch,
                children: r,
@@ -1253,7 +1254,7 @@ Card makePostElemSimple(Icon ic, Widget cols)
    return Card(
             child: leftWidget,
             color: Colors.white,
-            margin: EdgeInsets.all(cts.postInnerMargin),
+            margin: EdgeInsets.all(stl.postInnerMargin),
             elevation: 0.0,
    );
 }
@@ -1268,11 +1269,11 @@ Card makePostElem2( BuildContext context
    for (int i = 0; i < values.length; ++i) {
       RichText left =
          RichText(text: TextSpan( text: keys[i] + ': '
-                                , style: cts.listTileTitleStl));
+                                , style: stl.listTileTitleStl));
 
       RichText right =
          RichText(text: TextSpan( text: values[i]
-                                , style: cts.defaultTextStl));
+                                , style: stl.defaultTextStl));
       Row row = Row(
          mainAxisSize: MainAxisSize.min,
          mainAxisAlignment: MainAxisAlignment.start,
@@ -1306,9 +1307,9 @@ Card makePostDetailElem(int filter)
       if (b)
          continue;
 
-      Icon icTmp = Icon(Icons.check, color: cts.postFrameColor);
+      Icon icTmp = Icon(Icons.check, color: stl.postFrameColor);
       Text txt = Text( ' ${cts.postDetails[i]}'
-                     , style: cts.defaultTextStl);
+                     , style: stl.defaultTextStl);
       Row row = Row(children: <Widget>[icTmp, txt]); 
       leftList.add(row);
    }
@@ -1317,7 +1318,7 @@ Card makePostDetailElem(int filter)
       Column( children: leftList
             , crossAxisAlignment: CrossAxisAlignment.start);
 
-   Icon ic = Icon(Icons.details, color: cts.postFrameColor);
+   Icon ic = Icon(Icons.details, color: stl.postFrameColor);
    return makePostElemSimple(ic, col);
 }
 
@@ -1338,7 +1339,7 @@ makeMenuInfoCards(BuildContext context,
                      names,
                      cts.menuDepthNames[i],
                      Icon( cts.newPostTabIcons[i]
-                         , color: cts.postFrameColor));
+                         , color: stl.postFrameColor));
 
       list.add(card);
    }
@@ -1366,7 +1367,7 @@ List<Card> postTextAssembler(BuildContext context,
    Card dc1 = makePostElem2(
       context, values1, cts.descList,
       Icon(Icons.description,
-           color: cts.postFrameColor));
+           color: stl.postFrameColor));
 
    list.add(dc1);
 
@@ -1399,7 +1400,7 @@ Card createChatEntry(BuildContext context,
                      IconData ic)
 {
    List<Card> textCards = postTextAssembler(context, post, menus,
-                                       cts.postFrameColor);
+                                       stl.postFrameColor);
 
    IconButton leading =
       IconButton(icon: Icon(ic), onPressed: onLeadingPressed);
@@ -1414,7 +1415,7 @@ Card createChatEntry(BuildContext context,
           title: Text(postSummaryStr,
                       maxLines: 1,
                       overflow: TextOverflow.clip,
-                      style: cts.expTileStl),
+                      style: stl.expTileStl),
           children: ListTile.divideTiles(
                      context: context,
                      tiles: textCards,
@@ -1422,24 +1423,24 @@ Card createChatEntry(BuildContext context,
 
    List<Widget> cards = List<Card>();
    cards.add(Card(child: et,
-                  color: cts.postFrameColor,
+                  color: stl.postFrameColor,
                   margin: EdgeInsets.all(0.0),
                   elevation: 0.0));
 
    Card chatCard = Card(child: chats,
-                        color: cts.postFrameColor,
-                        margin: EdgeInsets.all(cts.postInnerMargin),
+                        color: stl.postFrameColor,
+                        margin: EdgeInsets.all(stl.postInnerMargin),
                         elevation: 0.0);
 
    cards.add(chatCard);
 
    Column col = Column(children: cards);
 
-   final double padding = cts.outerPostCardPadding;
+   final double padding = stl.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: cts.postFrameColor,
-      margin: EdgeInsets.all(cts.postMarging),
+      color: stl.postFrameColor,
+      margin: EdgeInsets.all(stl.postMarging),
       elevation: 0.0,
    );
 }
@@ -1468,7 +1469,7 @@ Card makePostWidget(BuildContext context,
    Card c4 = Card(
       child: row,
       color: color,
-      margin: EdgeInsets.all(cts.postInnerMargin),
+      margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0,
    );
 
@@ -1478,11 +1479,11 @@ Card makePostWidget(BuildContext context,
       mainAxisSize: MainAxisSize.min,
       children: cards);
 
-   final double padding = cts.outerPostCardPadding;
+   final double padding = stl.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
-      margin: EdgeInsets.all(cts.postMarging),
+      margin: EdgeInsets.all(stl.postMarging),
       elevation: 5.0,
    );
 }
@@ -1490,12 +1491,11 @@ Card makePostWidget(BuildContext context,
 Card makeCard(Widget widget, Color color)
 {
    return Card(
-         child:
-            Padding(child: widget,
-                    padding: EdgeInsets.all( cts.postElemTextPadding)),
-         color: color,
-         margin: EdgeInsets.all(cts.postInnerMargin),
-         elevation: 0.0,
+      child: Padding(child: widget,
+         padding: EdgeInsets.all(stl.postElemTextPadding)),
+      color: color,
+      margin: EdgeInsets.all(stl.postInnerMargin),
+      elevation: 0.0,
    );
 }
 
@@ -1506,13 +1506,13 @@ makeTextInputFieldCard( TextEditingController ctrl
 {
    // TODO: Set a max length.
    return TextField(
-             controller: ctrl,
-             //textInputAction: TextInputAction.go,
-             //onSubmitted: onTextFieldPressed,
-             keyboardType: TextInputType.multiline,
-             maxLines: null,
-             maxLength: maxLength,
-             decoration: deco);
+      controller: ctrl,
+      //textInputAction: TextInputAction.go,
+      //onSubmitted: onTextFieldPressed,
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      maxLength: maxLength,
+      decoration: deco);
 }
 
 ListView
@@ -1532,7 +1532,7 @@ makePostTabListView(BuildContext ctx,
                 updateLasSeenPostIdx(i);
 
                 // New posts are shown with a different color.
-                Color color = cts.postFrameColor;
+                Color color = stl.postFrameColor;
                 //if (i > lastSeenPostIdx)
                 //   color = cts.newReceivedPostColor; 
 
@@ -1570,9 +1570,9 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
             return ListTile(
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(child.name),
-                        style: cts.abbrevStl),
+                        style: stl.abbrevStl),
                    Colors.grey),
-                title: Text(child.name, style: cts.listTileTitleStl),
+                title: Text(child.name, style: stl.listTileTitleStl),
                 dense: true,
                 onTap: () { onLeafPressed(i);},
                 enabled: true,
@@ -1585,13 +1585,13 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                    Text(
                       makeStrAbbrev(
                          o.children[i].name),
-                         style: cts.abbrevStl),
+                         style: stl.abbrevStl),
                    Colors.grey),
-                title: Text(o.children[i].name, style: cts.listTileTitleStl),
+                title: Text(o.children[i].name, style: stl.listTileTitleStl),
                 dense: true,
                 subtitle: Text(
                    names,
-                   style: TextStyle(fontSize: cts.listTileSubtitleFontSize),
+                   style: TextStyle(fontSize: stl.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -1632,18 +1632,18 @@ Widget makeChatTileSubtitle(final Chat ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: TextStyle(
-            color: cts.accentColor,
+            color: stl.accentColor,
             fontStyle: FontStyle.italic,
-            fontSize: cts.listTileSubtitleFontSize));
+            fontSize: stl.listTileSubtitleFontSize));
    }
 
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
-      return Text(str, style: cts.listTileSubtitleStl,
+      return Text(str, style: stl.listTileSubtitleStl,
                   maxLines: 1, overflow: TextOverflow.clip);
 
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
-   , Expanded(child: Text(str, style: cts.listTileSubtitleStl,
+   , Expanded(child: Text(str, style: stl.listTileSubtitleStl,
               maxLines: 1, overflow: TextOverflow.clip))]);
 }
 
@@ -1666,14 +1666,14 @@ makeChatListTileTrailingWidget(
       return null;
 
    Text dateText = Text(makeDateString(date),
-         style: cts.listTileSubtitleStl);
+         style: stl.listTileSubtitleStl);
 
    if (nUnreadMsgs != 0 && pinDate != 0) {
       Row row = Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>
       [ Icon(Icons.place)
-      , makeCircleUnreadMsgs(nUnreadMsgs, cts.newMsgCircleColor,
+      , makeCircleUnreadMsgs(nUnreadMsgs, stl.newMsgCircleColor,
                              Colors.white)]);
       
       return Column(
@@ -1692,7 +1692,7 @@ makeChatListTileTrailingWidget(
          mainAxisSize: MainAxisSize.min,
          children: <Widget>
          [ dateText
-         , makeCircleUnreadMsgs(nUnreadMsgs, cts.newMsgCircleColor,
+         , makeCircleUnreadMsgs(nUnreadMsgs, stl.newMsgCircleColor,
                                 Colors.white)
          ]);
    }
@@ -1740,7 +1740,7 @@ Widget makePostChatCol(
       Color bgColor;
       if (ch[i].isLongPressed) {
          widget = Icon(Icons.check);
-         bgColor = cts.chatLongPressendColor;
+         bgColor = stl.chatLongPressendColor;
       } else {
          widget = cts.unknownPersonIcon;
          bgColor = Colors.white;
@@ -1762,7 +1762,7 @@ Widget makePostChatCol(
             title: Text(ch[i].getChatDisplayName(),
                maxLines: 1,
                overflow: TextOverflow.clip,
-               style: cts.listTileTitleStl),
+               style: stl.listTileTitleStl),
             subtitle: makeChatTileSubtitle(ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
@@ -1780,11 +1780,11 @@ Widget makePostChatCol(
   if (isFav)
      return Column(children: list);
 
-   final TextStyle stl =
-             TextStyle(fontSize: 15.0,
-                       fontWeight: FontWeight.normal,
-                       color: Colors.white);
-
+//   final TextStyle stl =
+//             TextStyle(fontSize: 15.0,
+//                       fontWeight: FontWeight.normal,
+//                       color: Colors.white);
+//
    String str = '${ch.length} conversas';
    if (nUnredChats != 0)
       str = '${ch.length} conversas / $nUnredChats nao lidas';
@@ -1797,7 +1797,7 @@ Widget makePostChatCol(
        initiallyExpanded: expState,
        leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
        key: PageStorageKey<int>(2 * post.id + 1),
-       title: Text(str, style: cts.expTileStl),
+       title: Text(str, style: stl.expTileStl),
        children: list);
 }
 
@@ -3481,7 +3481,9 @@ class MenuChatState extends State<MenuChat>
          builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
-                     child: cts.deleteChatOkText,
+                     child: Text(
+                        cts.devChatOkStr,
+                        style: TextStyle(color: stl.accentColor)),
                      onPressed: () async
                      {
                         await _removeLPChats();
@@ -3489,19 +3491,26 @@ class MenuChatState extends State<MenuChat>
                      });
 
             final FlatButton cancel = FlatButton(
-                     child: cts.deleteChatCancelText,
-                     onPressed: ()
-                     {
-                        Navigator.of(ctx).pop();
-                     });
+               child: Text(
+                  cts.delChatCancelStr,
+                  style: TextStyle(color: stl.accentColor)),
+               onPressed: ()
+               {
+                  Navigator.of(ctx).pop();
+               });
 
             List<FlatButton> actions = List<FlatButton>(2);
             actions[0] = cancel;
             actions[1] = ok;
 
-            Text txt = cts.delOwnChatTitleText;
+            Text txt = Text(
+               cts.delOwnChatTitleStr,
+               style: TextStyle(color: Colors.black));
+
             if (_isOnFav()) {
-               txt = cts.delFavChatTitleText;
+               txt = Text(
+                  cts.delFavChatTitleStr,
+                  style: TextStyle(color: Colors.black));
             }
 
             return AlertDialog(

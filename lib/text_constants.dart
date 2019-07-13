@@ -1,35 +1,5 @@
 import 'package:flutter/material.dart';
 
-final Color whatsAppPrimaryColor = Color(0xff075E54);
-final Color whatsAppAccentColor = Color(0xff25D366);
-
-const Color coral = const Color(0xFFE18A07);
-final Color darkYellow = Color(0xFF999900);
-final Color fireBrick = Color(0xFFB22222);
-final Color seaGreen = Color(0xFF2E8B57);
-final Color oliveDrab = Color(0xFF6B8E23);
-//final Color primaryColor = Colors.blueGrey;
-final Color primaryColor = whatsAppPrimaryColor;
-//final Color accentColor = Colors.grey;
-//final Color accentColor = whatsAppAccentColor;
-const Color accentColor = coral;
-final Color newReceivedPostColor = Colors.brown[200]; 
-final Color chatLongPressendColor = Colors.grey[400]; 
-
-final double mainFontSize = 16.0;
-final Color postLocHeaderColor = Color(0xFFFFFFFF);
-final Color selectedMenuColor = Colors.blueGrey[400];
-final Color postFrameColor = Colors.blueGrey[300];
-final Color newMsgCircleColor = Colors.grey;
-
-// Margin used so that the post card boarder has some distance from
-// the screen border or whatever widget it happens to be inside of.
-final double postMarging = 4.0;
-
-// Marging user to separate the post element cards from the
-// outermost cards.
-final double postInnerMargin = 3.0;
-
 final String appName = "CarMenu";
 
 // Text used for the main tabs.
@@ -59,18 +29,10 @@ List<IconData> newPostTabIcons = <IconData>
 
 //______________
 
-final Text delOwnChatTitleText =
-   Text("Remover conversas?", style: TextStyle(color: Colors.black));
-
-final Text delFavChatTitleText =
-   Text("Remover de Favoritos?", style: TextStyle(color: Colors.black));
-
-final Text deleteChatOkText =
-   Text("Remover", style: TextStyle(color: coral));
-
-final Text deleteChatCancelText =
-   Text("Cancelar", style: TextStyle(color: coral));
-
+final String delOwnChatTitleStr = 'Remover conversas?';
+final String delFavChatTitleStr = 'Remover de Favoritos?';
+final String devChatOkStr = 'Remover';
+final String delChatCancelStr = 'Cancelar';
 final String userInfo = 'Informacoes do usuário';
 
 //______________
@@ -172,47 +134,9 @@ final String chatMsgRedirectText = 'Redirecionando ...';
 final String chatMsgRedirectedText = 'Redirecionada';
 final String defaultChatTileSubtile = 'Conversa ainda nao iniciada ...';
 
-// The padding used for the text inside the post element.
-final double postElemTextPadding = 7.0;
-
-final double outerPostCardPadding = 1.0;
-
-// The padding of chat messages inside ist box.
-final double chatMsgPadding = 5.0;
-
 final String deleteChatStr = "Remover conversa";
 final String blockUserChatStr = "Bloquear usuário";
 final String pinChatStr = "Fixar conversa";
-
-final TextStyle abbrevStl = TextStyle(color: Colors.white);
-
-final TextStyle listTileTitleStl =
-   TextStyle(fontSize: mainFontSize,
-             fontWeight: FontWeight.bold,
-             color: Colors.black);
-
-final double listTileSubtitleFontSize = 14.0;
-final TextStyle listTileSubtitleStl =
-   TextStyle(fontSize: listTileSubtitleFontSize,
-             color: Colors.grey);
-
-final TextStyle defaultTextStl =
-          TextStyle(fontSize: mainFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black);
-
-final TextStyle expTileStl =
-          TextStyle(fontSize: mainFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white);
-
-final TextStyle appBarTitleStl = TextStyle(
-      color: Colors.white,
-      fontSize: 17.0);
-
-final TextStyle appBarSubtitleStl = TextStyle(
-    color: Colors.grey[200],
-    fontSize: 13.5);
 
 final String chatFilePrefix = 'chat';
 
