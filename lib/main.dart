@@ -384,11 +384,11 @@ makeNewFiltersScreens( BuildContext ctx
       wid = makePostDetailScreen(ctx, onFilterDetail, filter, 0);
    } else {
       wid = createFilterListView(
-               ctx,
-               menu[screen].root.last,
-               onFilterLeafNodePressed,
-               onFilterNodePressed,
-               menu[screen].isFilterLeaf());
+         ctx,
+         menu[screen].root.last,
+         onFilterLeafNodePressed,
+         onFilterNodePressed,
+         menu[screen].isFilterLeaf());
 
       appBarTitleWidget = ListTile(
          title: appBarTitle,
@@ -482,11 +482,11 @@ class MyApp extends StatelessWidget {
                 title: TextStyle(
                    fontWeight: FontWeight.normal,
                    color: Colors.white,
-                   fontSize: 17.0
+                   fontSize: 16.0
                 ),
                 subtitle: TextStyle(
-                   color: Colors.grey[200],
-                   fontSize: 13.5
+                   color: Colors.grey[300],
+                   fontSize: 14.0
                 ),
              ),
              iconTheme: IconThemeData(
@@ -561,7 +561,7 @@ FloatingActionButton
 makeFiltersFaButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
-             backgroundColor: stl.accentColor,
+             backgroundColor: stl.darkYellow,
              child: Icon(id, color: Colors.white),
              onPressed: onNewPost);
 }
@@ -578,7 +578,7 @@ makeFaButton(Function onNewPost,
    IconData id = cts.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: stl.accentColor,
+         backgroundColor: stl.darkYellow,
          child: Icon(Icons.send, color: Colors.white),
          onPressed: onFwdChatMsg);
    }
@@ -626,7 +626,7 @@ makeChatMsgWidget(
    Color onSelectedMsgColor = Colors.grey[300];
    if (ch.msgs[i].isFromThisApp()) {
       align = Alignment.bottomRight;
-      color = Colors.lightGreenAccent[100];
+      color = Colors.lime[100];
    }
 
    if (ch.msgs[i].isLongPressed)
@@ -683,7 +683,7 @@ makeChatMsgWidget(
          ]);
    } else if (ch.msgs[i].refersToOther()) {
       final int refersTo = ch.msgs[i].refersTo;
-      final Color c1 = selectColor(ch.nick.length);
+      final Color c1 = selectColor(int.parse(ch.peer));
       SizedBox sb = SizedBox(
          width: 4.0,
          height: 60.0,
@@ -691,18 +691,26 @@ makeChatMsgWidget(
            decoration: BoxDecoration(
              color: c1)));
 
-      Widget w2Tmp = makeRefChatMsgWidget(ctx, ch, refersTo, c1);
       Row refMsg = Row(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
          children: <Widget>
-         [ sb
-         , w2Tmp
-         ]);
+         [ Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: sb,
+           )
+         , Expanded(
+              child: Padding(
+                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                 child: makeRefChatMsgWidget(ctx, ch, refersTo, c1),
+              )
+           )
+         ]
+      );
 
       ww = Column(
          mainAxisSize: MainAxisSize.min,
-         crossAxisAlignment: CrossAxisAlignment.center,
+         crossAxisAlignment: CrossAxisAlignment.start,
          children: <Widget>
          [ refMsg
          , msgAndStatus
@@ -847,8 +855,12 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
             child: rr)));
 }
 
-Widget makeRefChatMsgWidget(
-   BuildContext ctx, Chat ch, int i, Color cc)
+Widget
+makeRefChatMsgWidget(
+   BuildContext ctx,
+   Chat ch,
+   int i,
+   Color cc)
 {
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
@@ -946,15 +958,15 @@ makeChatScreen(BuildContext ctx,
    List<Widget> cols = List<Widget>();
    cols.add(Expanded(child: list));
    if (dragedIdx != -1) {
-      Color co1 = selectColor(ch.nick.length);
+      Color co1 = selectColor(int.parse(ch.peer));
       Icon w1 = Icon(Icons.forward, color: Colors.grey);
 
       // It looks like there is not maxlines option on TextSpan, so
       // for now I wont be able to show the date at the end.
-      Widget w2Tmp = makeRefChatMsgWidget(ctx, ch, dragedIdx, co1);
       Widget w2 = Padding(
-         child: w2Tmp,
-         padding: const EdgeInsets.symmetric(horizontal: 5.0));
+         padding: const EdgeInsets.symmetric(horizontal: 5.0),
+         child: makeRefChatMsgWidget(ctx, ch, dragedIdx, co1),
+      );
 
       IconButton w4 = IconButton(
          icon: Icon(Icons.clear, color: Colors.grey),
@@ -1005,7 +1017,7 @@ makeChatScreen(BuildContext ctx,
       title = ListTile(
           leading: CircleAvatar(
               child: cts.unknownPersonIcon,
-              backgroundColor: selectColor(ch.nick.length)),
+              backgroundColor: selectColor(int.parse(ch.peer))),
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
@@ -1455,40 +1467,60 @@ String makePostSummaryStr(MenuNode root, Post post)
    return names.join('/');
 }
 
-Card createChatEntry(BuildContext ctx,
-                     Post post,
-                     List<MenuItem> menus,
-                     Widget chats,
-                     Function onLeadingPressed,
-                     IconData ic)
+ThemeData makeExpTileThemeData()
+{
+   return ThemeData(
+      accentColor: Colors.white,
+      unselectedWidgetColor: Colors.grey[400],
+      textTheme: TextTheme(
+         subhead: TextStyle(
+            color: Colors.grey[400],
+         ),
+      ),
+   );
+}
+
+Card makeChatEntry(BuildContext ctx,
+                   Post post,
+                   List<MenuItem> menus,
+                   Widget chats,
+                   Function onLeadingPressed,
+                   IconData ic)
 {
    List<Card> textCards = postTextAssembler(ctx, post, menus,
                                        stl.postFrameColor);
 
-   IconButton leading =
-      IconButton(icon: Icon(ic), onPressed: onLeadingPressed);
 
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
 
-   ExpansionTile et =
-      ExpansionTile(
-          leading: leading,
-          key: PageStorageKey<int>(2 * post.id),
-          title: Text(postSummaryStr,
-                      maxLines: 1,
-                      overflow: TextOverflow.clip,
-                      style: Theme.of(ctx).appBarTheme.textTheme.title),
-          children: ListTile.divideTiles(
-                     context: ctx,
-                     tiles: textCards,
-                     color: Colors.grey).toList());
+   Card card = Card(
+      color: stl.postFrameColor,
+      margin: EdgeInsets.all(0.0),
+      elevation: 0.0,
+      child: Theme(
+         data: makeExpTileThemeData(),
+         child: ExpansionTile(
+             leading: IconButton(
+                icon: Icon(ic),
+                onPressed: onLeadingPressed,
+             ),
+             key: PageStorageKey<int>(2 * post.id),
+             title: Text(
+                postSummaryStr,
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+             ),
+             children: ListTile.divideTiles(
+                        context: ctx,
+                        tiles: textCards,
+                        color: Colors.grey).toList()
+          ),
+      ),
+   );
 
    List<Widget> cards = List<Card>();
-   cards.add(Card(child: et,
-                  color: stl.postFrameColor,
-                  margin: EdgeInsets.all(0.0),
-                  elevation: 0.0));
+   cards.add(card);
 
    Card chatCard = Card(child: chats,
                         color: stl.postFrameColor,
@@ -1701,9 +1733,11 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: TextStyle(
-            color: stl.accentColor,
+            color: stl.postFrameColor,
             fontStyle: FontStyle.italic,
-            fontSize: stl.listTileSubtitleFontSize));
+            fontSize: Theme.of(ctx).textTheme.subtitle.fontSize
+         ),
+      );
    }
 
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
@@ -1781,7 +1815,10 @@ makeChatListTileTrailingWidget(
 
 Color selectColor(int n)
 {
-   switch (n) {
+   final int v = n % 14;
+   switch (v) {
+      case 0: return Colors.yellow[500];
+      case 1: return Colors.pink;
       case 2: return Colors.pink;
       case 3: return Colors.pinkAccent;
       case 4: return Colors.redAccent;
@@ -1791,6 +1828,10 @@ Color selectColor(int n)
       case 8: return Colors.orangeAccent;
       case 9: return Colors.amberAccent;
       case 10: return Colors.lightGreen;
+      case 11: return Colors.deepOrange[300];
+      case 12: return Colors.teal[100];
+      case 13: return Colors.green[500];
+      case 14: return Colors.green[400];
       default: return Colors.grey;
    }
 }
@@ -1829,13 +1870,17 @@ Widget makePostChatCol(
          ctx, n, ch[i].lastChatItem.date, ch[i].pinDate, now,
          isFwdChatMsgs);
 
-      ListTile lt =
-         ListTile(
+      list[i] = Container(
+         margin: const EdgeInsets.only(bottom: 3.0),
+         decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+            color: bgColor),
+         child: ListTile(
             dense: false,
             enabled: true,
             leading: makeChatListTileLeading(
                widget,
-               selectColor(ch[i].nick.length),
+               selectColor(int.parse(ch[i].peer)),
                (){onLeadingPressed(ctx, post.id, i);}),
             trailing: trailing,
             title: Text(
@@ -1847,15 +1892,9 @@ Widget makePostChatCol(
             subtitle: makeChatTileSubtitle(ctx, ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
-            onLongPress: () { onLongPressed(i); });
-
-      list[i] = Container(
-         margin: const EdgeInsets.only(bottom: 3.0),
-         decoration: BoxDecoration(
-            //border: Border.all(color: Colors.black),
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-            color: bgColor),
-         child: lt);
+            onLongPress: () { onLongPressed(i); }
+         ),
+      );
    }
 
   if (isFav)
@@ -1869,14 +1908,16 @@ Widget makePostChatCol(
       post.pinDate == 0 ? Icons.place : Icons.pin_drop;
 
    final bool expState = ch.length <= 5 || nUnredChats != 0;
-   return ExpansionTile(
-       initiallyExpanded: expState,
-       leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
-       key: PageStorageKey<int>(2 * post.id + 1),
-       title: Text( str,
-          style: Theme.of(ctx).appBarTheme.textTheme.title,
-       ),
-       children: list);
+   return Theme(
+      data: makeExpTileThemeData(),
+      child: ExpansionTile(
+         initiallyExpanded: expState,
+         leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
+         key: PageStorageKey<int>(2 * post.id + 1),
+         title: Text(str),
+         children: list
+      ),
+   );
 }
 
 Widget makeChatTab(
@@ -1916,7 +1957,7 @@ Widget makeChatTab(
          }
 
          final int now = DateTime.now().millisecondsSinceEpoch;
-         return createChatEntry(
+         return makeChatEntry(
              ctx,
              posts[i],
              menus,
