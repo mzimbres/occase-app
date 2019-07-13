@@ -597,7 +597,7 @@ makeChatMsgWidget(
             fontSize: cts.listTileSubtitleFontSize,
             color: Colors.grey));
 
-   // Unfoutunately TextSpan sill does not support general
+   // Unfourtunately TextSpan sill does not support general
    // widgets so I have to put the msg status in a row instead
    // of simply appending it to the richtext as I do for the
    // date. Hopefully this will be fixed this later.
@@ -887,7 +887,6 @@ makeChatScreen(BuildContext ctx,
          icon: Icon(Icons.clear, color: Colors.grey),
          onPressed: onCancelFwdLPChatMsg);
 
-      // FIXME: Use select color.
       SizedBox sb = SizedBox(
          width: 4.0,
          height: 60.0,
@@ -2464,6 +2463,20 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
+   void _onChatMsgReply(BuildContext ctx)
+   {
+      assert(_lpChatMsgs.length == 1);
+
+      _dragedIdx = _lpChatMsgs.first.msgIdx;
+
+      assert(_dragedIdx != -1);
+
+      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
+      _lpChatMsgs.clear();
+      FocusScope.of(ctx).requestFocus(_chatFocusNode);
+      setState(() { });
+   }
+
    Future<void> _onChatAttachment() async
    {
       print('_onChatAttachment.');
@@ -2471,14 +2484,6 @@ class MenuChatState extends State<MenuChat>
          await ImagePicker.pickImage(source: ImageSource.gallery);
 
        setState(() { });
-   }
-
-   void _onChatMsgReply(BuildContext ctx)
-   {
-      print('Reply requested.');
-      //_toggleLPChatMsgs(int k, false)
-      FocusScope.of(ctx).requestFocus(_chatFocusNode);
-      setState(() { });
    }
 
    void _onBotBarTapped(int i)
