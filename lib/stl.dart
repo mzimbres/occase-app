@@ -30,35 +30,7 @@ final double postMarging = 4.0;
 // outermost cards.
 final double postInnerMargin = 3.0;
 
-final TextStyle abbrevStl = TextStyle(color: Colors.white);
-
-final TextStyle listTileTitleStl =
-   TextStyle(fontSize: mainFontSize,
-             fontWeight: FontWeight.bold,
-             color: Colors.black);
-
 final double listTileSubtitleFontSize = 14.0;
-final TextStyle listTileSubtitleStl =
-   TextStyle(fontSize: listTileSubtitleFontSize,
-             color: Colors.grey);
-
-final TextStyle defaultTextStl =
-          TextStyle(fontSize: mainFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black);
-
-final TextStyle expTileStl =
-          TextStyle(fontSize: mainFontSize,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white);
-
-final TextStyle appBarTitleStl = TextStyle(
-      color: Colors.white,
-      fontSize: 17.0);
-
-final TextStyle appBarSubtitleStl = TextStyle(
-    color: Colors.grey[200],
-    fontSize: 13.5);
 
 // The padding used for the text inside the post element.
 final double postElemTextPadding = 7.0;

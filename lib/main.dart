@@ -229,7 +229,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
    List<Card> cards =
       makeMenuInfoCards(ctx, post, menu, Theme.of(ctx).primaryColor);
 
-   cards.add(makePostDetailElem(post.filter));
+   cards.add(makePostDetailElem(ctx, post.filter));
 
    TextField tf = TextField(
       controller: txtCtrl,
@@ -279,7 +279,7 @@ makeNewPostScreens( BuildContext ctx
    Widget appBarTitle = Text(
          //cts.filterTabNames[screen],
          cts.newPostAppBarTitle,
-         style: stl.appBarTitleStl);
+         style: Theme.of(ctx).appBarTheme.textTheme.title);
 
    Widget appBarTitleWidget = appBarTitle;
 
@@ -304,16 +304,20 @@ makeNewPostScreens( BuildContext ctx
          title: appBarTitle,
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
-                     style: stl.appBarSubtitleStl));
+                     style: Theme.of(ctx).appBarTheme.textTheme.subtitle));
    }
 
    AppBar appBar = AppBar(
-         title: appBarTitleWidget,
-         elevation: 0.7,
-         toolbarOpacity : 1.0,
-         leading: IconButton( icon: Icon( Icons.arrow_back
-                                        , color: Colors.white)
-                            , onPressed: onWillPopMenu)
+      title: appBarTitleWidget,
+      elevation: 0.7,
+      toolbarOpacity : 1.0,
+      leading: IconButton(
+         icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(ctx).appBarTheme.iconTheme.color,
+         ),
+         onPressed: onWillPopMenu
+      )
    );
 
    return WillPopScope(
@@ -369,7 +373,7 @@ makeNewFiltersScreens( BuildContext ctx
       cts.filterAppBarTitle,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: stl.appBarTitleStl);
+      style: Theme.of(ctx).appBarTheme.textTheme.title);
 
    Widget appBarTitleWidget = appBarTitle;
 
@@ -392,16 +396,20 @@ makeNewFiltersScreens( BuildContext ctx
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.appBarSubtitleStl));
+            style: Theme.of(ctx).appBarTheme.textTheme.subtitle));
    }
 
    AppBar appBar = AppBar(
-         title: appBarTitleWidget,
-         elevation: 0.7,
-         toolbarOpacity : 1.0,
-         leading: IconButton( icon: Icon( Icons.arrow_back
-                                        , color: Colors.white)
-                            , onPressed: onWillPopMenu)
+      title: appBarTitleWidget,
+      elevation: 0.7,
+      toolbarOpacity : 1.0,
+      leading: IconButton(
+         icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(ctx).appBarTheme.iconTheme.color,
+         ),
+         onPressed: onWillPopMenu
+      )
    );
 
    return WillPopScope(
@@ -442,9 +450,14 @@ makePostDetailScreen( BuildContext ctx
             secondary:
                makeCircleAvatar(
                   Text( cts.postDetails[i].substring(0, 2)
-                      , style: stl.abbrevStl),
-                  color),
-            title: Text(cts.postDetails[i], style: stl.listTileTitleStl),
+                      , style: TextStyle(color: Colors.white)
+                  ),
+                  color
+               ),
+            title: Text(
+               cts.postDetails[i],
+               style: Theme.of(ctx).textTheme.subhead,
+            ),
             value: v,
             onChanged: (bool v) { proceed(i); },
             activeColor: color,
@@ -458,10 +471,37 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext ctx) {
     return MaterialApp(
       title: cts.appName,
+      //theme: ThemeData.dark(),
       theme: ThemeData(
-                brightness: Brightness.light,
-                primaryColor: stl.primaryColor,
-                accentColor: stl.accentColor,
+          fontFamily: 'Montserrat',
+          brightness: Brightness.light,
+          primaryColor: stl.primaryColor,
+          accentColor: stl.accentColor,
+          appBarTheme: AppBarTheme(
+             textTheme: TextTheme(
+                title: TextStyle(
+                   fontWeight: FontWeight.normal,
+                   color: Colors.white,
+                   fontSize: 17.0
+                ),
+                subtitle: TextStyle(
+                   color: Colors.grey[200],
+                   fontSize: 13.5
+                ),
+             ),
+             iconTheme: IconThemeData(
+                color: Colors.white,
+             ),
+          ),
+          textTheme: TextTheme(
+             subtitle: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: Colors.grey[600]
+             ),
+             subhead: TextStyle(
+                fontWeight: FontWeight.w500,
+             ),
+          ),
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
@@ -470,7 +510,8 @@ class MyApp extends StatelessWidget {
 }
 
 TabBar
-makeTabBar(List<int> counters,
+makeTabBar(BuildContext ctx,
+           List<int> counters,
            TabController tabCtrl,
            List<double> opacity,
            bool isFwd)
@@ -482,7 +523,7 @@ makeTabBar(List<int> counters,
 
    for (int i = 0; i < tabs.length; ++i) {
       tabs[i] = Tab(
-         child: makeTabWidget(
+         child: makeTabWidget( ctx,
             counters[i], cts.tabNames[i], opacity[i]));
    }
 
@@ -574,6 +615,7 @@ Card makeUnreadMsgsInfoWidget(int n)
 
 Card
 makeChatMsgWidget(
+   BuildContext ctx,
    Chat ch,
    int i,
    Function onChatMsgLongPressed,
@@ -590,14 +632,14 @@ makeChatMsgWidget(
    if (ch.msgs[i].isLongPressed)
       onSelectedMsgColor = Colors.blue[200];
 
-   RichText msgAndDate = 
-      makeFilterListTileTitleWidget(
-         ch.msgs[i].msg,
-         '  ${makeDateString(ch.msgs[i].date)}',
-         stl.defaultTextStl,
-         TextStyle(
-            fontSize: stl.listTileSubtitleFontSize,
-            color: Colors.grey));
+   RichText msgAndDate = RichText(
+      text: TextSpan(
+         text: ch.msgs[i].msg,
+         style: Theme.of(ctx).textTheme.body1,
+         children: <TextSpan>
+         [TextSpan(
+            text: '  ${makeDateString(ch.msgs[i].date)}',
+            style: Theme.of(ctx).textTheme.caption)]));
 
    // Unfourtunately TextSpan still does not support general
    // widgets so I have to put the msg status in a row instead
@@ -649,7 +691,7 @@ makeChatMsgWidget(
            decoration: BoxDecoration(
              color: c1)));
 
-      Widget w2Tmp = makeRefChatMsgWidget(ch, refersTo, c1);
+      Widget w2Tmp = makeRefChatMsgWidget(ctx, ch, refersTo, c1);
       Row refMsg = Row(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
@@ -741,7 +783,7 @@ makeChatMsgListView(
          }
 
          Card chatMsgWidget =
-            makeChatMsgWidget(
+            makeChatMsgWidget( ctx,
                ch, i, onChatMsgLongPressed,
                onDragChatMsg);
 
@@ -805,12 +847,13 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
             child: rr)));
 }
 
-Widget makeRefChatMsgWidget(Chat ch, int i, Color cc)
+Widget makeRefChatMsgWidget(
+   BuildContext ctx, Chat ch, int i, Color cc)
 {
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
-      style: stl.listTileSubtitleStl);
+      style: Theme.of(ctx).textTheme.caption);
 
    Text title = Text(ch.nick,
       maxLines: 1,
@@ -864,16 +907,16 @@ makeChatScreen(BuildContext ctx,
                  color: Colors.grey);
 
    List<Widget> editButtons = List<Widget>();
-   editButtons.add(sendButton);
    //if (ctrl.text.isEmpty) // Let this for later.
    editButtons.add(attachmentButton);
+   editButtons.add(sendButton);
 
    Row buttons = Row(
       mainAxisSize: MainAxisSize.min,
       children: editButtons);
 
    TextField tf = TextField(
-       style: stl.defaultTextStl,
+       style: Theme.of(ctx).textTheme.body1,
        controller: ctrl,
        //textInputAction: TextInputAction.go,
        //onSubmitted: onTextFieldPressed,
@@ -908,7 +951,7 @@ makeChatScreen(BuildContext ctx,
 
       // It looks like there is not maxlines option on TextSpan, so
       // for now I wont be able to show the date at the end.
-      Widget w2Tmp = makeRefChatMsgWidget(ch, dragedIdx, co1);
+      Widget w2Tmp = makeRefChatMsgWidget(ctx, ch, dragedIdx, co1);
       Widget w2 = Padding(
          child: w2Tmp,
          padding: const EdgeInsets.symmetric(horizontal: 5.0));
@@ -957,7 +1000,7 @@ makeChatScreen(BuildContext ctx,
       title = Text('$nLongPressed',
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.appBarTitleStl);
+            style: Theme.of(ctx).appBarTheme.textTheme.title);
    } else {
       title = ListTile(
           leading: CircleAvatar(
@@ -966,13 +1009,13 @@ makeChatScreen(BuildContext ctx,
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: stl.appBarTitleStl),
+                style: Theme.of(ctx).appBarTheme.textTheme.title),
           dense: true,
           subtitle:
              Text(postSummary,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: stl.appBarSubtitleStl)
+                style: Theme.of(ctx).appBarTheme.textTheme.subtitle)
        );
    }
 
@@ -985,8 +1028,9 @@ makeChatScreen(BuildContext ctx,
                 title: title,
                 backgroundColor: Theme.of(ctx).primaryColor,
                 leading: IconButton(
-                   icon: Icon(Icons.arrow_back,
-                              color: Colors.white),
+                   icon: Icon(
+                      Icons.arrow_back,
+                      color: Theme.of(ctx).appBarTheme.iconTheme.color),
                  onPressed: onWillPopScope)
              ),
           body: mainCol,
@@ -995,7 +1039,7 @@ makeChatScreen(BuildContext ctx,
     );
 }
 
-Widget makeTabWidget(int n, String title, double opacity)
+Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
 {
    if (n == 0)
       return Text(title);
@@ -1006,7 +1050,7 @@ Widget makeTabWidget(int n, String title, double opacity)
    // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
    // for opacity values.
    widgets[1] =
-      Opacity( child: makeCircleUnreadMsgs(n, Colors.white,
+      Opacity( child: makeCircleUnreadMsgs(ctx, n, Colors.white,
                       stl.primaryColor)
              , opacity: opacity);
 
@@ -1066,7 +1110,7 @@ makeFilterListTileTitleWidget(
  *  In those cases the builder will go through all node children
  *  otherwise the first should be skipped.
  */
-ListView createFilterListView(BuildContext context,
+ListView createFilterListView(BuildContext ctx,
                               MenuNode o,
                               Function onLeafPressed,
                               Function onNodePressed,
@@ -1080,7 +1124,7 @@ ListView createFilterListView(BuildContext context,
    return ListView.builder(
       //padding: const EdgeInsets.all(8.0),
       itemCount: o.children.length + shift,
-      itemBuilder: (BuildContext context, int i)
+      itemBuilder: (BuildContext ctx, int i)
       {
          if (shift == 1 && i == 0) {
             // Handles the *select all* button.
@@ -1088,9 +1132,11 @@ ListView createFilterListView(BuildContext context,
                 leading: Icon(
                    Icons.select_all,
                    size: 35.0,
-                   color: Theme.of(context).primaryColor),
-                title: Text(cts.menuSelectAllStr,
-                            style: stl.listTileTitleStl),
+                   color: Theme.of(ctx).primaryColor),
+                title: Text(
+                   cts.menuSelectAllStr,
+                   style: Theme.of(ctx).textTheme.subhead,
+                ),
                 dense: true,
                 onTap: () { onLeafPressed(0); },
                 enabled: true,);
@@ -1106,35 +1152,40 @@ ListView createFilterListView(BuildContext context,
             if (!child.isLeaf()) {
                subtitle =  Text(
                    child.getChildrenNames(),
-                   style: TextStyle(
-                      fontSize: stl.listTileSubtitleFontSize),
+                   style: Theme.of(ctx).textTheme.subtitle,
                    maxLines: 2,
                    overflow: TextOverflow.clip);
             }
 
             Color cc = Colors.grey;
             if (child.leafReach > 0)
-               cc = Theme.of(context).primaryColor;
+               cc = Theme.of(ctx).primaryColor;
 
             String s = '';
             if (child.leafCounter > 1)
                s = ' (${child.leafCounter})';
 
-            RichText title = 
-               makeFilterListTileTitleWidget(
-                  child.name, s, stl.listTileTitleStl,
-                  TextStyle(
-                     fontSize: stl.listTileSubtitleFontSize,
-                     color: Colors.grey));
+            RichText title = RichText(
+               text: TextSpan(
+                  text: child.name,
+                  style: Theme.of(ctx).textTheme.subhead,
+                  children: <TextSpan>
+                  [ TextSpan(
+                       text: s,
+                       style: Theme.of(ctx).textTheme.caption,
+                    ),
+                  ]
+               )
+            );
 
             // Notice we do not subtract -1 on onLeafPressed so that
             // this function can diferentiate the Todos button case.
             final String abbrev = makeStrAbbrev(child.name);
             return ListTile(
-                leading: 
-                   makeCircleAvatar(
-                      Text(abbrev, style: stl.abbrevStl),
-                      cc),
+                leading: makeCircleAvatar(
+                   Text(abbrev, style: TextStyle(color: Colors.white)),
+                   cc
+                ),
                 title: title,
                 dense: true,
                 subtitle: subtitle,
@@ -1153,27 +1204,30 @@ ListView createFilterListView(BuildContext context,
          final String titleStr = '${o.children[i].name}';
          Color cc = Colors.grey;
          if (c != 0)
-            cc = Theme.of(context).primaryColor;
+            cc = Theme.of(ctx).primaryColor;
 
-         RichText title = 
-            makeFilterListTileTitleWidget(
-               titleStr,
-               ' ($c/$cs)',
-               stl.listTileTitleStl,
-               TextStyle(
-                  fontSize: stl.listTileSubtitleFontSize,
-                  color: Colors.grey));
+         RichText title = RichText(
+            text: TextSpan(
+               text: titleStr,
+               style: Theme.of(ctx).textTheme.subhead,
+               children: <TextSpan>
+               [TextSpan(
+                  text: ' ($c/$cs)',
+                  style: Theme.of(ctx).textTheme.caption),
+               ]
+            )
+         );
                
          return
             ListTile(
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(o.children[i].name),
-                        style: stl.abbrevStl), cc),
+                        style: TextStyle(color: Colors.white)), cc),
                 title: title,
                 dense: true,
                 subtitle: Text(
                    subtitle,
-                   style: TextStyle(fontSize: stl.listTileSubtitleFontSize),
+                   style: Theme.of(ctx).textTheme.subtitle,
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -1205,13 +1259,14 @@ createSendButton(Function onPressed,
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-Container makeCircleUnreadMsgs(int n, Color bgColor, Color textColor)
+Container makeCircleUnreadMsgs(BuildContext ctx,
+      int n, Color bgColor, Color textColor)
 {
    final Text txt =
       Text("${n}",
            style: TextStyle(
               color: textColor,
-              fontSize: stl.listTileSubtitleFontSize));
+              fontSize: Theme.of(ctx).textTheme.caption.fontSize));
    final Radius rd = const Radius.circular(45.0);
    return Container(
        margin: const EdgeInsets.all(2.0),
@@ -1259,7 +1314,7 @@ Card makePostElemSimple(Icon ic, Widget cols)
    );
 }
 
-Card makePostElem2( BuildContext context
+Card makePostElem2( BuildContext ctx
                   , List<String> values
                   , List<String> keys
                   , Icon ic)
@@ -1267,13 +1322,19 @@ Card makePostElem2( BuildContext context
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < values.length; ++i) {
-      RichText left =
-         RichText(text: TextSpan( text: keys[i] + ': '
-                                , style: stl.listTileTitleStl));
+      RichText left = RichText(
+         text: TextSpan(
+            text: keys[i] + ': ',
+            style: Theme.of(ctx).textTheme.subhead,
+         )
+      );
 
-      RichText right =
-         RichText(text: TextSpan( text: values[i]
-                                , style: stl.defaultTextStl));
+      RichText right = RichText(
+         text: TextSpan(
+            text: values[i],
+            style: Theme.of(ctx).textTheme.body1
+         ),
+      );
       Row row = Row(
          mainAxisSize: MainAxisSize.min,
          mainAxisAlignment: MainAxisAlignment.start,
@@ -1298,7 +1359,7 @@ Card makePostElem2( BuildContext context
    return makePostElemSimple(ic, col);
 }
 
-Card makePostDetailElem(int filter)
+Card makePostDetailElem(BuildContext ctx, int filter)
 {
    List<Widget> leftList = List<Widget>();
 
@@ -1308,8 +1369,10 @@ Card makePostDetailElem(int filter)
          continue;
 
       Icon icTmp = Icon(Icons.check, color: stl.postFrameColor);
-      Text txt = Text( ' ${cts.postDetails[i]}'
-                     , style: stl.defaultTextStl);
+      Text txt = Text(
+         ' ${cts.postDetails[i]}',
+         style: Theme.of(ctx).textTheme.body1,
+      );
       Row row = Row(children: <Widget>[icTmp, txt]); 
       leftList.add(row);
    }
@@ -1323,7 +1386,7 @@ Card makePostDetailElem(int filter)
 }
 
 List<Card>
-makeMenuInfoCards(BuildContext context,
+makeMenuInfoCards(BuildContext ctx,
                   Post data,
                   List<MenuItem> menus,
                   Color color)
@@ -1335,7 +1398,7 @@ makeMenuInfoCards(BuildContext context,
             loadNames(menus[i].root.first, data.channel[i][0]);
 
       Card card = makePostElem2(
-                     context,
+                     ctx,
                      names,
                      cts.menuDepthNames[i],
                      Icon( cts.newPostTabIcons[i]
@@ -1348,12 +1411,12 @@ makeMenuInfoCards(BuildContext context,
 }
 
 // Will assemble menu information and the description in cards
-List<Card> postTextAssembler(BuildContext context,
+List<Card> postTextAssembler(BuildContext ctx,
                             Post post,
                             List<MenuItem> menus,
                             Color color)
 {
-   List<Card> list = makeMenuInfoCards(context, post, menus, color);
+   List<Card> list = makeMenuInfoCards(ctx, post, menus, color);
    DateTime date = DateTime.fromMillisecondsSinceEpoch(post.date);
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
@@ -1365,7 +1428,7 @@ List<Card> postTextAssembler(BuildContext context,
    values1.add(dateString);
 
    Card dc1 = makePostElem2(
-      context, values1, cts.descList,
+      ctx, values1, cts.descList,
       Icon(Icons.description,
            color: stl.postFrameColor));
 
@@ -1381,7 +1444,7 @@ List<Card> postTextAssembler(BuildContext context,
       list.add(makePostElemSimple(Icon(Icons.clear), t));
    }
 
-   list.add(makePostDetailElem(post.filter));
+   list.add(makePostDetailElem(ctx, post.filter));
 
    return list;
 }
@@ -1392,14 +1455,14 @@ String makePostSummaryStr(MenuNode root, Post post)
    return names.join('/');
 }
 
-Card createChatEntry(BuildContext context,
+Card createChatEntry(BuildContext ctx,
                      Post post,
                      List<MenuItem> menus,
                      Widget chats,
                      Function onLeadingPressed,
                      IconData ic)
 {
-   List<Card> textCards = postTextAssembler(context, post, menus,
+   List<Card> textCards = postTextAssembler(ctx, post, menus,
                                        stl.postFrameColor);
 
    IconButton leading =
@@ -1415,9 +1478,9 @@ Card createChatEntry(BuildContext context,
           title: Text(postSummaryStr,
                       maxLines: 1,
                       overflow: TextOverflow.clip,
-                      style: stl.expTileStl),
+                      style: Theme.of(ctx).appBarTheme.textTheme.title),
           children: ListTile.divideTiles(
-                     context: context,
+                     context: ctx,
                      tiles: textCards,
                      color: Colors.grey).toList());
 
@@ -1445,7 +1508,7 @@ Card createChatEntry(BuildContext context,
    );
 }
 
-Card makePostWidget(BuildContext context,
+Card makePostWidget(BuildContext ctx,
                     List<Card> cards,
                     Function onPressed,
                     Icon icon,
@@ -1459,7 +1522,7 @@ Card makePostWidget(BuildContext context,
    IconButton icon2 = IconButton(
                          icon: icon,
                          onPressed: () {onPressed(1);},
-                         color: Theme.of(context).primaryColor,
+                         color: Theme.of(ctx).primaryColor,
                          iconSize: 30.0);
 
    Row row = Row(children: <Widget>[
@@ -1553,12 +1616,12 @@ makePostTabListView(BuildContext ctx,
              });
 }
 
-ListView createPostMenuListView(BuildContext context, MenuNode o,
+ListView createPostMenuListView(BuildContext ctx, MenuNode o,
       Function onLeafPressed, Function onNodePressed)
 {
    return ListView.builder(
       itemCount: o.children.length,
-      itemBuilder: (BuildContext context, int i)
+      itemBuilder: (BuildContext ctx, int i)
       {
          final int c = o.children[i].leafReach;
          final int cs = o.children[i].leafCounter;
@@ -1570,9 +1633,12 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
             return ListTile(
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(child.name),
-                        style: stl.abbrevStl),
+                        style: TextStyle(color: Colors.white)),
                    Colors.grey),
-                title: Text(child.name, style: stl.listTileTitleStl),
+                title: Text(
+                   child.name,
+                   style: Theme.of(ctx).textTheme.subhead
+                ),
                 dense: true,
                 onTap: () { onLeafPressed(i);},
                 enabled: true,
@@ -1585,13 +1651,16 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                    Text(
                       makeStrAbbrev(
                          o.children[i].name),
-                         style: stl.abbrevStl),
+                         style: TextStyle(color: Colors.white)),
                    Colors.grey),
-                title: Text(o.children[i].name, style: stl.listTileTitleStl),
+                title: Text(
+                   o.children[i].name,
+                   style: Theme.of(ctx).textTheme.subhead,
+                ),
                 dense: true,
                 subtitle: Text(
                    names,
-                   style: TextStyle(fontSize: stl.listTileSubtitleFontSize),
+                   style: Theme.of(ctx).textTheme.subtitle,
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -1623,7 +1692,7 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
       padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
-Widget makeChatTileSubtitle(final Chat ch)
+Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
 {
    String str = ch.lastChatItem.msg;
    if (str.isEmpty) {
@@ -1638,13 +1707,19 @@ Widget makeChatTileSubtitle(final Chat ch)
    }
 
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
-      return Text(str, style: stl.listTileSubtitleStl,
-                  maxLines: 1, overflow: TextOverflow.clip);
+      return Text(
+         str,
+         style: Theme.of(ctx).textTheme.subtitle,
+         maxLines: 1,
+         overflow: TextOverflow.clip);
 
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
-   , Expanded(child: Text(str, style: stl.listTileSubtitleStl,
-              maxLines: 1, overflow: TextOverflow.clip))]);
+   , Expanded(
+      child: Text(
+         str,
+         style: Theme.of(ctx).textTheme.subtitle,
+         maxLines: 1, overflow: TextOverflow.clip))]);
 }
 
 String makeDateString(int date)
@@ -1656,6 +1731,7 @@ String makeDateString(int date)
 
 Widget
 makeChatListTileTrailingWidget(
+   BuildContext ctx,
    int nUnreadMsgs,
    int date,
    int pinDate,
@@ -1665,15 +1741,18 @@ makeChatListTileTrailingWidget(
    if (isFwdChatMsgs)
       return null;
 
-   Text dateText = Text(makeDateString(date),
-         style: stl.listTileSubtitleStl);
+   Text dateText = Text(
+      makeDateString(date),
+      style: Theme.of(ctx).textTheme.caption,
+   );
 
    if (nUnreadMsgs != 0 && pinDate != 0) {
       Row row = Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>
       [ Icon(Icons.place)
-      , makeCircleUnreadMsgs(nUnreadMsgs, stl.newMsgCircleColor,
+      , makeCircleUnreadMsgs(
+          ctx, nUnreadMsgs, stl.newMsgCircleColor,
                              Colors.white)]);
       
       return Column(
@@ -1692,7 +1771,7 @@ makeChatListTileTrailingWidget(
          mainAxisSize: MainAxisSize.min,
          children: <Widget>
          [ dateText
-         , makeCircleUnreadMsgs(nUnreadMsgs, stl.newMsgCircleColor,
+         , makeCircleUnreadMsgs(ctx, nUnreadMsgs, stl.newMsgCircleColor,
                                 Colors.white)
          ]);
    }
@@ -1747,7 +1826,7 @@ Widget makePostChatCol(
       }
 
       Widget trailing = makeChatListTileTrailingWidget(
-         n, ch[i].lastChatItem.date, ch[i].pinDate, now,
+         ctx, n, ch[i].lastChatItem.date, ch[i].pinDate, now,
          isFwdChatMsgs);
 
       ListTile lt =
@@ -1759,11 +1838,13 @@ Widget makePostChatCol(
                selectColor(ch[i].nick.length),
                (){onLeadingPressed(ctx, post.id, i);}),
             trailing: trailing,
-            title: Text(ch[i].getChatDisplayName(),
+            title: Text(
+               ch[i].getChatDisplayName(),
                maxLines: 1,
                overflow: TextOverflow.clip,
-               style: stl.listTileTitleStl),
-            subtitle: makeChatTileSubtitle(ch[i]),
+               style: Theme.of(ctx).textTheme.subhead,
+            ),
+            subtitle: makeChatTileSubtitle(ctx, ch[i]),
             //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
             onTap: () { onPressed(i); },
             onLongPress: () { onLongPressed(i); });
@@ -1780,12 +1861,7 @@ Widget makePostChatCol(
   if (isFav)
      return Column(children: list);
 
-//   final TextStyle stl =
-//             TextStyle(fontSize: 15.0,
-//                       fontWeight: FontWeight.normal,
-//                       color: Colors.white);
-//
-   String str = '${ch.length} conversas';
+   String str = '${ch.length} conversa(s)';
    if (nUnredChats != 0)
       str = '${ch.length} conversas / $nUnredChats nao lidas';
 
@@ -1797,12 +1873,14 @@ Widget makePostChatCol(
        initiallyExpanded: expState,
        leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
        key: PageStorageKey<int>(2 * post.id + 1),
-       title: Text(str, style: stl.expTileStl),
+       title: Text( str,
+          style: Theme.of(ctx).appBarTheme.textTheme.title,
+       ),
        children: list);
 }
 
 Widget makeChatTab(
-   BuildContext context,
+   BuildContext ctx,
    List<Post> posts,
    Function onPressed,
    Function onLongPressed,
@@ -1816,7 +1894,7 @@ Widget makeChatTab(
    return ListView.builder(
       padding: const EdgeInsets.all(0.0),
       itemCount: posts.length,
-      itemBuilder: (BuildContext context, int i)
+      itemBuilder: (BuildContext ctx, int i)
       {
          Function onPinPost2 = () {onPinPost(i);};
 
@@ -1839,11 +1917,11 @@ Widget makeChatTab(
 
          final int now = DateTime.now().millisecondsSinceEpoch;
          return createChatEntry(
-             context,
+             ctx,
              posts[i],
              menus,
              makePostChatCol(
-                context,
+                ctx,
                 posts[i].chats,
                 (j) {onPressed(i, j);},
                 (j) {onLongPressed(i, j);},
@@ -3707,8 +3785,10 @@ class MenuChatState extends State<MenuChat>
          if (_hasLPChatMsgs()) {
             appBarTitle = cts.chatMsgRedirectText;
             appBarLeading = IconButton(
-               icon: Icon(Icons.arrow_back , color: Colors.white),
-                  onPressed: _onBackFromChatMsgRedirect);
+               icon: Icon(
+                  Icons.arrow_back,
+                  color: Theme.of(ctx).appBarTheme.iconTheme.color),
+               onPressed: _onBackFromChatMsgRedirect);
          }
 
          if (_hasLPChats() && !_hasLPChatMsgs()) {
@@ -3737,11 +3817,13 @@ class MenuChatState extends State<MenuChat>
                  headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
                    return <Widget>[
                      SliverAppBar(
-                       title: Text(appBarTitle, style: TextStyle(color: Colors.white)),
+                       title: Text(
+                          appBarTitle,
+                          style: Theme.of(ctx).appBarTheme.textTheme.title),
                        pinned: true,
                        floating: true,
                        forceElevated: innerBoxIsScrolled,
-                       bottom: makeTabBar(newMsgsCounters,
+                       bottom: makeTabBar(ctx, newMsgsCounters,
                                          _tabCtrl,
                                          opacities,
                                          _hasLPChatMsgs()),
