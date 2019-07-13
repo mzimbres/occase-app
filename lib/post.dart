@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/tree.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
+import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -411,7 +412,7 @@ Map<String, dynamic> postToMap(Post post)
 Future<List<Post>> loadPosts(Database db) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.rawQuery(cts.loadPosts);
+     await db.rawQuery(sql.loadPosts);
 
   return List.generate(maps.length, (i)
   {
@@ -524,7 +525,7 @@ findAndMarkChatApp( final List<Post> posts
    if (status == 1) {
       final int idx = posts[i].chats[j].chatLength;
       posts[i].chats[j].serverAckEnd = idx;
-      batch.rawUpdate(cts.updateServerAckEnd,
+      batch.rawUpdate(sql.updateServerAckEnd,
                      [idx, postId, peer]);
       return;
    }
@@ -532,7 +533,7 @@ findAndMarkChatApp( final List<Post> posts
    if (status == 2) {
       final int idx = posts[i].chats[j].serverAckEnd;
       posts[i].chats[j].appAckReceivedEnd = idx;
-      batch.rawUpdate(cts.updateAppAckReceivedEnd,
+      batch.rawUpdate(sql.updateAppAckReceivedEnd,
                      [idx, postId, peer]);
       return;
    }
@@ -540,7 +541,7 @@ findAndMarkChatApp( final List<Post> posts
    if (status == 3) {
       final int idx = posts[i].chats[j].appAckReceivedEnd;
       posts[i].chats[j].appAckReadEnd = idx;
-      batch.rawUpdate(cts.updateAppAckReadEnd,
+      batch.rawUpdate(sql.updateAppAckReadEnd,
                       [idx, postId, peer]);
       return;
    }
@@ -633,7 +634,7 @@ Future<List<Config>> loadConfig(Database db, String tableName) async
 Future<List<Chat>> loadChats(Database db, int postId) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.rawQuery(cts.selectChatStatusItem, [postId]);
+     await db.rawQuery(sql.selectChatStatusItem, [postId]);
 
   return List.generate(maps.length, (i)
   {

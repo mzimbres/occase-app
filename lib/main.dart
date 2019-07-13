@@ -20,6 +20,7 @@ import 'package:menu_chat/tree.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/text_constants.dart' as cts;
 import 'package:menu_chat/globals.dart' as glob;
+import 'package:menu_chat/sql.dart' as sql;
 
 class Coord {
    Post post = null;
@@ -70,9 +71,10 @@ Future<void> removeLpChat(Coord c, Database db) async
    assert(ret);
 
    final int n =
-      await db.rawDelete(cts.deleteChatStElem,
+      await db.rawDelete(sql.deleteChatStElem,
          [c.post.id, c.chat.peer]);
 
+   print('====> $n');
    assert(n == 1);
 }
 
@@ -85,7 +87,7 @@ onPinPost(List<Post> posts, int i, Database db) async
       posts[i].pinDate = 0;
    }
 
-   await db.execute(cts.updatePostPinDate,
+   await db.execute(sql.updatePostPinDate,
                     [posts[i].pinDate, posts[i].id]);
 
    posts.sort(CompPosts);
@@ -94,17 +96,17 @@ onPinPost(List<Post> posts, int i, Database db) async
 Future<void> onCreateDb(Database db, int version) async
 {
    print('====> Creating posts table.');
-   await db.execute(cts.createPostsTable);
+   await db.execute(sql.createPostsTable);
    print('====> Creating config table.');
-   await db.execute(cts.createConfig);
+   await db.execute(sql.createConfig);
    print('====> Inserting the default menu.');
-   await db.execute(cts.updateMenu, [Consts.menus]);
+   await db.execute(sql.updateMenu, [Consts.menus]);
    print('====> Creating chats table.');
-   await db.execute(cts.createChats);
+   await db.execute(sql.createChats);
    print('====> Creating chat-status table.');
-   await db.execute(cts.createChatStatus);
+   await db.execute(sql.createChatStatus);
    print('====> Creating out-chat table.');
-   await db.execute(cts.creatOutChatTable);
+   await db.execute(sql.creatOutChatTable);
 }
 
 Future<Null> main() async
@@ -123,7 +125,7 @@ class ChatMsgOutQueueElem {
 Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.rawQuery(cts.loadOutChats);
+     await db.rawQuery(sql.loadOutChats);
 
   return List.generate(maps.length, (i)
   {
@@ -2272,9 +2274,9 @@ class MenuChatState extends State<MenuChat>
       final String str = v ? 'yes' : 'no';
 
       if (i == 0)
-         await _db.execute(cts.updateShowDialogOnDelPost, [str]);
+         await _db.execute(sql.updateShowDialogOnDelPost, [str]);
       else
-         await _db.execute(cts.updateShowDialogOnSelectPost, [str]);
+         await _db.execute(sql.updateShowDialogOnSelectPost, [str]);
    }
 
    Future<void>
@@ -2312,11 +2314,11 @@ class MenuChatState extends State<MenuChat>
                                              _posts[i].nick);
 
          Batch batch = _db.batch();
-         batch.rawInsert(cts.insertChatStOnPost,
+         batch.rawInsert(sql.insertChatStOnPost,
             makeChatUpdateSql(_posts[i].chats[j],
                               _posts[i].id));
 
-         batch.execute(cts.updatePostStatus, [2, _posts[i].id]);
+         batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
 
          await batch.commit(noResult: true, continueOnError: true);
 
@@ -2324,7 +2326,7 @@ class MenuChatState extends State<MenuChat>
          _favPosts.sort(CompPosts);
 
       } else {
-         await _db.execute(cts.deletePost, [_posts[i].id]);
+         await _db.execute(sql.deletePost, [_posts[i].id]);
       }
 
       _posts.removeAt(i);
@@ -2421,7 +2423,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<bool> _onPopChat() async
    {
-      await _db.rawUpdate(cts.updateNUnreadMsgs,
+      await _db.rawUpdate(sql.updateNUnreadMsgs,
                          [0, _post.id, _chat.peer]);
 
       _dragedIdx = -1;
@@ -2676,7 +2678,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.sort(CompPosts);
 
          print('receiving a publish ack $id for ${post.dbId}.');
-         await _db.execute(cts.updatePostOnAck,
+         await _db.execute(sql.updatePostOnAck,
                            [0, id, date, post.dbId]);
 
          if (_outPostsQueue.isEmpty)
@@ -2691,10 +2693,10 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         await _db.execute(cts.deletePost, [_favPosts[i].id]);
+         await _db.execute(sql.deletePost, [_favPosts[i].id]);
          _favPosts.removeAt(i);
       } else {
-         await _db.execute(cts.deletePost, [_ownPosts[i].id]);
+         await _db.execute(sql.deletePost, [_ownPosts[i].id]);
          print('Deleting post ${_ownPosts[i].id}');
          _ownPosts.removeAt(i);
       }
@@ -2849,7 +2851,7 @@ class MenuChatState extends State<MenuChat>
       _outChatMsgsQueue.add(tmp);
 
       final int rowid =
-         await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
+         await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
 
       tmp.rowid = rowid;
 
@@ -2917,9 +2919,9 @@ class MenuChatState extends State<MenuChat>
 
             // Perhaps we should update only the last chat item here
             // for performance?
-            batch.rawInsert(cts.insertOrReplaceChatOnPost,
+            batch.rawInsert(sql.insertOrReplaceChatOnPost,
                makeChatUpdateSql(posts[i].chats[j], postId));
-            batch.rawInsert(cts.insertChatMsg,
+            batch.rawInsert(sql.insertChatMsg,
                 [postId, peer, 1, chatItem.date, chatItem.msg]);
             await batch.commit(noResult: true, continueOnError: true);
          });
@@ -2953,7 +2955,7 @@ class MenuChatState extends State<MenuChat>
          assert(!_outChatMsgsQueue.isEmpty);
          final String res = ack['result'];
 
-         batch.rawDelete(cts.deleteOutChatMsg,
+         batch.rawDelete(sql.deleteOutChatMsg,
                          [_outChatMsgsQueue.first.rowid]);
 
          final bool isChat = _outChatMsgsQueue.first.isChat == 1;
@@ -3071,9 +3073,9 @@ class MenuChatState extends State<MenuChat>
 
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
-         batch.rawInsert(cts.insertOrReplaceChatOnPost,
+         batch.rawInsert(sql.insertOrReplaceChatOnPost,
             makeChatUpdateSql(chat, postId));
-         batch.rawInsert(cts.insertChatMsg,
+         batch.rawInsert(sql.insertChatMsg,
                         [postId, peer, 0, now, msg]);
          await batch.commit(noResult: true, continueOnError: true);
       });
@@ -3210,7 +3212,7 @@ class MenuChatState extends State<MenuChat>
          _posts.add(post);
       }
 
-      batch.execute(cts.updateLastPostId, [cfg.lastPostId]);
+      batch.execute(sql.updateLastPostId, [cfg.lastPostId]);
       await batch.commit(noResult: true, continueOnError: true);
 
       setState(() { });
@@ -3310,7 +3312,7 @@ class MenuChatState extends State<MenuChat>
       try {
          var foo = {'menus': _menus};
          final String str = jsonEncode(foo);
-         await _db.execute(cts.updateMenu, [str]);
+         await _db.execute(sql.updateMenu, [str]);
       } catch (e) {
          print(e);
       }
@@ -3461,7 +3463,7 @@ class MenuChatState extends State<MenuChat>
       if (_isOnFav()) {
          for (Post o in _favPosts)
             if (o.chats.isEmpty)
-               await _db.execute(cts.deletePost, [o.id]);
+               await _db.execute(sql.deletePost, [o.id]);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       } else {
@@ -3530,7 +3532,7 @@ class MenuChatState extends State<MenuChat>
    {
       cfg.nick = _txtCtrl.text;;
       _txtCtrl.text = '';
-      await _db.execute(cts.updateNick, [cfg.nick]);
+      await _db.execute(sql.updateNick, [cfg.nick]);
       setState(() { });
    }
 
@@ -3541,7 +3543,7 @@ class MenuChatState extends State<MenuChat>
 
       _lastSeenPostIdx = i;
 
-      await _db.execute(cts.updateLastSeenPostId,
+      await _db.execute(sql.updateLastSeenPostId,
                         [_posts[i].id]);
 
       SchedulerBinding.instance.addPostFrameCallback((_)
