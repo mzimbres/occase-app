@@ -35,7 +35,11 @@ class ChatItem {
    int date = 0;
    bool isLongPressed = false;
 
-   ChatItem(this.type, this.msg, this.date);
+   // A value different from -1 means this message refers to another
+   // message.
+   int refersTo = -1;
+
+   ChatItem(this.type, this.msg, this.date, this.refersTo);
 
    bool isRedirected()
    {
@@ -47,11 +51,17 @@ class ChatItem {
       return type == 2 || type == 3;
    }
 
+   bool refersToOther()
+   {
+      return refersTo != -1;
+   }
+
    ChatItem.fromJson(Map<String, dynamic> map)
    {
       type = map["this_app"];
       msg = map['msg'];
       date = map['date'];
+      refersTo = map['refers_to'];
    }
 
    Map<String, dynamic> toJson()
@@ -61,6 +71,7 @@ class ChatItem {
          'this_app': type,
          'msg': msg,
          'date': date,
+         'refers_to': refersTo,
       };
    }
 }
@@ -68,14 +79,14 @@ class ChatItem {
 class Chat {
    String peer = '';
    String nick = '';
-   int date = 0; // I think we do not need this, we can use from ChatItem.
+   int date = 0;
    int pinDate = 0;
    int appAckReadEnd = 0;
    int appAckReceivedEnd = 0;
    int serverAckEnd = 0;
    int chatLength = 0;
    int nUnreadMsgs = 0;
-   ChatItem lastChatItem = ChatItem(2, '', 0);
+   ChatItem lastChatItem = ChatItem(2, '', 0, -1);
 
    bool isLongPressed = false;
    List<ChatItem> msgs = null;
@@ -295,7 +306,8 @@ class Post {
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       Chat history =
-         Chat(peer, nick, now, 0, 0, 0, 0, 0, 0, ChatItem(2, '', now));
+         Chat(peer, nick, now, 0, 0, 0, 0, 0, 0,
+              ChatItem(2, '', now, -1));
       final int l = chats.length;
       chats.add(history);
       return l;
@@ -414,7 +426,6 @@ Future<List<Post>> loadPosts(Database db) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'];
-     print('===========> post ${post.dbId}');
      return post;
   });
 }
@@ -638,7 +649,8 @@ Future<List<Chat>> loadChats(Database db, int postId) async
      final int nUnreadMsgs = maps[i]['n_unread_msgs'];
      final String lastChatItemStr = maps[i]['last_chat_item'];
 
-     ChatItem lastChatItem = ChatItem(2, '', 0);
+     // Notice we do not need the refersTo index here.
+     ChatItem lastChatItem = ChatItem(2, '', 0, -1);
      if (!lastChatItemStr.isEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(lastChatItemStr));
 

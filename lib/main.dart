@@ -131,7 +131,6 @@ Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
      final int isChat = maps[i]['is_chat'];
      final String payload = maps[i]['payload'];
 
-     print('Loading: $rowid');
      return ChatMsgOutQueueElem(rowid, isChat, payload, false);
   });
 }
@@ -597,7 +596,7 @@ makeChatMsgWidget(
             fontSize: cts.listTileSubtitleFontSize,
             color: Colors.grey));
 
-   // Unfourtunately TextSpan sill does not support general
+   // Unfourtunately TextSpan still does not support general
    // widgets so I have to put the msg status in a row instead
    // of simply appending it to the richtext as I do for the
    // date. Hopefully this will be fixed this later.
@@ -635,6 +634,32 @@ makeChatMsgWidget(
 
       ww = Column( children: <Widget>
          [ redirWidget
+         , msgAndStatus
+         ]);
+   } else if (ch.msgs[i].refersToOther()) {
+      final int refersTo = ch.msgs[i].refersTo;
+      final Color c1 = selectColor(ch.nick.length);
+      SizedBox sb = SizedBox(
+         width: 4.0,
+         height: 60.0,
+         child: DecoratedBox(
+           decoration: BoxDecoration(
+             color: c1)));
+
+      Widget w2Tmp = makeRefChatMsgWidget(ch, refersTo, c1);
+      Row refMsg = Row(
+         mainAxisSize: MainAxisSize.min,
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: <Widget>
+         [ sb
+         , w2Tmp
+         ]);
+
+      ww = Column(
+         mainAxisSize: MainAxisSize.min,
+         crossAxisAlignment: CrossAxisAlignment.center,
+         children: <Widget>
+         [ refMsg
          , msgAndStatus
          ]);
    }
@@ -720,7 +745,7 @@ makeChatMsgListView(
          return GestureDetector(
             onLongPress: () {onChatMsgLongPressed(i, false);},
             onTap: () {onChatMsgLongPressed(i, true);},
-            onPanStart: (DragStartDetails d) {onDragChatMsg(ctx, i, d);},
+            onHorizontalDragStart: (DragStartDetails d) {onDragChatMsg(ctx, i, d);},
             child: chatMsgWidget);
       },
    );
@@ -777,9 +802,9 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
             child: rr)));
 }
 
-Widget makeRefChatMsgWidget(Chat ch, int dragedIdx, Color cc)
+Widget makeRefChatMsgWidget(Chat ch, int i, Color cc)
 {
-   Text body = Text(ch.msgs[dragedIdx].msg,
+   Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
       style: cts.listTileSubtitleStl);
@@ -835,12 +860,14 @@ makeChatScreen(BuildContext ctx,
                  onPressed: onAttachment,
                  color: Colors.grey);
 
+   List<Widget> editButtons = List<Widget>();
+   editButtons.add(sendButton);
+   //if (ctrl.text.isEmpty) // Let this for later.
+   editButtons.add(attachmentButton);
+
    Row buttons = Row(
       mainAxisSize: MainAxisSize.min,
-      children: <Widget>
-      [ attachmentButton
-      , sendButton
-      ]);
+      children: editButtons);
 
    TextField tf = TextField(
        style: cts.defaultTextStl,
@@ -1076,7 +1103,8 @@ ListView createFilterListView(BuildContext context,
             if (!child.isLeaf()) {
                subtitle =  Text(
                    child.getChildrenNames(),
-                   style: cts.listTileSubtitleStl,
+                   style: TextStyle(
+                      fontSize: cts.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip);
             }
@@ -1142,7 +1170,7 @@ ListView createFilterListView(BuildContext context,
                 dense: true,
                 subtitle: Text(
                    subtitle,
-                   style: cts.listTileSubtitleStl,
+                   style: TextStyle(fontSize: cts.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -1561,7 +1589,7 @@ ListView createPostMenuListView(BuildContext context, MenuNode o,
                 dense: true,
                 subtitle: Text(
                    names,
-                   style: cts.listTileSubtitleStl,
+                   style: TextStyle(fontSize: cts.listTileSubtitleFontSize),
                    maxLines: 2,
                    overflow: TextOverflow.clip),
                 trailing: Icon(Icons.keyboard_arrow_right),
@@ -2367,7 +2395,8 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
          for (Coord c2 in _lpChatMsgs) {
-            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now);
+            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg,
+                  now, -1);
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
                   _favPosts, c1.post.id, c1.chat.peer, false, ci);
@@ -2419,11 +2448,11 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendChatMsg() async
    {
-      _dragedIdx = -1;
       final int now = DateTime.now().millisecondsSinceEpoch;
       List<Post> posts = _ownPosts;
       bool isSenderPost = true;
-      ChatItem ci = ChatItem(2, _txtCtrl.text, now);
+      ChatItem ci = ChatItem(2, _txtCtrl.text, now, _dragedIdx);
+      _dragedIdx = -1;
       if (_isOnFav()) {
          posts = _favPosts;
          isSenderPost = false;
@@ -2821,12 +2850,10 @@ class MenuChatState extends State<MenuChat>
 
       final int rowid =
          await _db.rawInsert(cts.insertOutChatMsg, [isChat, payload]);
-      print('====> rowid: $rowid');
 
       tmp.rowid = rowid;
 
       if (isEmpty) {
-         print('1 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
          assert(!_outChatMsgsQueue.first.sent);
          _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2836,7 +2863,6 @@ class MenuChatState extends State<MenuChat>
    void sendOfflineChatMsgs()
    {
       if (!_outChatMsgsQueue.isEmpty) {
-         print('2 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
          assert(!_outChatMsgsQueue.first.sent);
          _outChatMsgsQueue.first.sent = true;
          channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2927,7 +2953,6 @@ class MenuChatState extends State<MenuChat>
          assert(!_outChatMsgsQueue.isEmpty);
          final String res = ack['result'];
 
-         print('3 ====> Deleting: ${_outChatMsgsQueue.first.rowid}');
          batch.rawDelete(cts.deleteOutChatMsg,
                          [_outChatMsgsQueue.first.rowid]);
 
@@ -2940,7 +2965,6 @@ class MenuChatState extends State<MenuChat>
          }
 
          if (!_outChatMsgsQueue.isEmpty) {
-            print('4 ====> Sending: ${_outChatMsgsQueue.first.rowid}');
             assert(!_outChatMsgsQueue.first.sent);
             _outChatMsgsQueue.first.sent = true;
             channel.sink.add(_outChatMsgsQueue.first.payload);
@@ -2959,6 +2983,7 @@ class MenuChatState extends State<MenuChat>
       final String msg = ack['msg'];
       final String peer = ack['from'];
       final String nick = ack['nick'];
+      final int refersTo = ack['refers_to'];
 
       if (to != cfg.appId) {
          print("Server bug caught. Please report.");
@@ -2973,7 +2998,7 @@ class MenuChatState extends State<MenuChat>
 
       await _chatMsgHandlerImpl(to, postId, msg, peer,
                                 nick, isSenderPost, posts,
-                                type);
+                                type, refersTo);
    }
 
    Future<void>
@@ -2984,7 +3009,8 @@ class MenuChatState extends State<MenuChat>
                        String nick,
                        bool isSenderPost,
                        List<Post> posts,
-                       int type) async
+                       int type,
+                       int refersTo) async
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -2999,7 +3025,7 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      final ChatItem item = ChatItem(type, msg, now);
+      final ChatItem item = ChatItem(type, msg, now, refersTo);
       posts[i].chats[j].lastChatItem = item;
       if (posts[i].chats[j].isLoaded()) {
          posts[i].chats[j].msgs.add(item);
