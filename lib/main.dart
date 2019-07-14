@@ -669,17 +669,21 @@ makeChatMsgWidget(
    if (ch.msgs[i].isRedirected()) {
       Row redirWidget = Row(
          mainAxisSize: MainAxisSize.min,
-         crossAxisAlignment: CrossAxisAlignment.start,
+         mainAxisAlignment: MainAxisAlignment.start,
+         crossAxisAlignment: CrossAxisAlignment.center,
+         textBaseline: TextBaseline.alphabetic,
          children: <Widget>
-         [ //Icon(Icons.forward, color: Colors.grey)
-          Text(cts.chatMsgRedirectedText,
-                style: TextStyle(color: Colors.grey,
+         [ Icon(Icons.forward, color: Colors.blueGrey)
+         , Text(cts.chatMsgRedirectedText,
+                style: TextStyle(color: Colors.blueGrey,
                   fontSize: stl.listTileSubtitleFontSize,
-                 fontStyle: FontStyle.italic ))
+                 fontStyle: FontStyle.italic))
          ]);
 
       ww = Column( children: <Widget>
-         [ redirWidget
+         [ Padding(
+              padding: EdgeInsets.all(3.0),
+              child: redirWidget)
          , msgAndStatus
          ]);
    } else if (ch.msgs[i].refersToOther()) {
