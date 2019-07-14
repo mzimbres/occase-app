@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
 import 'package:menu_chat/tree.dart';
 import 'package:menu_chat/constants.dart';
-import 'package:menu_chat/text_constants.dart' as cts;
+import 'package:menu_chat/txt_pt.dart' as txt;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/stl.dart' as stl;
@@ -158,14 +158,14 @@ makeOnLongPressedActions(BuildContext ctx,
 
    IconButton pinChatBut = IconButton(
       icon: Icon(Icons.place, color: Colors.white),
-      tooltip: cts.pinChatStr,
+      tooltip: txt.pinChatStr,
       onPressed: pinChat);
 
    actions.add(pinChatBut);
 
    IconButton delChatBut = IconButton(
       icon: Icon(Icons.delete_forever, color: Colors.white),
-      tooltip: cts.deleteChatStr,
+      tooltip: txt.deleteChatStr,
       onPressed: () { deleteChatEntryDialog(ctx); });
 
    actions.add(delChatBut);
@@ -173,7 +173,7 @@ makeOnLongPressedActions(BuildContext ctx,
    // Block user button.
    //IconButton blockUserBut = IconButton(
    //   icon: Icon(Icons.block, color: Colors.white),
-   //   tooltip: cts.blockUserChatStr,
+   //   tooltip: txt.blockUserChatStr,
    //   onPressed: () { print('Kabuff'); });
 
    //actions.add(blockUserBut);
@@ -191,7 +191,7 @@ makeNickRegisterScreen( BuildContext ctx
       maxLines: 1,
       maxLength: 20,
       decoration: InputDecoration(
-         hintText: cts.nickTextFieldHintStr,
+         hintText: txt.nickTextFieldHintStr,
          suffixIcon: IconButton(
             icon: Icon(Icons.send),
             onPressed: onNickPressed,
@@ -203,7 +203,7 @@ makeNickRegisterScreen( BuildContext ctx
    return Scaffold(
       appBar: AppBar(
          title: Text(
-            cts.appName,
+            txt.appName,
             style: Theme.of(ctx).appBarTheme.textTheme.title
          ),
          elevation: Theme.of(ctx).appBarTheme.elevation,
@@ -236,7 +236,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       maxLength: 500,
       decoration:
          InputDecoration.collapsed(
-            hintText: cts.newPostTextFieldHistStr));
+            hintText: txt.newPostTextFieldHistStr));
 
    Card tfc = Card(
       child: Padding(child: Center(child: tf),
@@ -275,8 +275,8 @@ makeNewPostScreens( BuildContext ctx
 {
    Widget wid;
    Widget appBarTitle = Text(
-         //cts.filterTabNames[screen],
-         cts.newPostAppBarTitle,
+         //txt.filterTabNames[screen],
+         txt.newPostAppBarTitle,
          style: Theme.of(ctx).appBarTheme.textTheme.title);
 
    Widget appBarTitleWidget = appBarTitle;
@@ -324,8 +324,8 @@ makeNewPostScreens( BuildContext ctx
            body: wid,
            bottomNavigationBar:
               makeBottomBarItems(
-                 cts.newPostTabIcons,
-                 cts.newPostTabNames,
+                 txt.newPostTabIcons,
+                 txt.newPostTabNames,
                  onNewPostBotBarTapped,
                  screen)));
 }
@@ -366,8 +366,8 @@ makeNewFiltersScreens( BuildContext ctx
 {
    Widget wid;
    Widget appBarTitle = Text(
-      //cts.filterTabNames[screen],
-      cts.filterAppBarTitle,
+      //txt.filterTabNames[screen],
+      txt.filterAppBarTitle,
       maxLines: 1,
       overflow: TextOverflow.clip,
       style: Theme.of(ctx).appBarTheme.textTheme.title);
@@ -414,8 +414,8 @@ makeNewFiltersScreens( BuildContext ctx
            appBar: appBar,
            body: wid,
            bottomNavigationBar: makeBottomBarItems(
-              cts.filterTabIcons,
-              cts.filterTabNames,
+              txt.filterTabIcons,
+              txt.filterTabNames,
               onBotBarTaped,
               screen)));
 }
@@ -428,10 +428,10 @@ makePostDetailScreen( BuildContext ctx
 {
    return ListView.builder(
       padding: const EdgeInsets.all(3.0),
-      itemCount: cts.postDetails.length + shift,
+      itemCount: txt.postDetails.length + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
-         if (i == cts.postDetails.length)
+         if (i == txt.postDetails.length)
             return createSendButton((){proceed(i);},
                                     'Continuar',
                                     stl.postFrameColor);
@@ -445,13 +445,13 @@ makePostDetailScreen( BuildContext ctx
             dense: true,
             secondary:
                makeCircleAvatar(
-                  Text( cts.postDetails[i].substring(0, 2)
+                  Text( txt.postDetails[i].substring(0, 2)
                       , style: TextStyle(color: Colors.white)
                   ),
                   color
                ),
             title: Text(
-               cts.postDetails[i],
+               txt.postDetails[i],
                style: Theme.of(ctx).textTheme.subhead,
             ),
             value: v,
@@ -466,7 +466,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     return MaterialApp(
-      title: cts.appName,
+      title: txt.appName,
       //theme: ThemeData.dark(),
       theme: ThemeData(
           fontFamily: 'Montserrat',
@@ -515,12 +515,12 @@ makeTabBar(BuildContext ctx,
    if (isFwd)
       return null;
 
-   List<Widget> tabs = List<Widget>(cts.tabNames.length);
+   List<Widget> tabs = List<Widget>(txt.tabNames.length);
 
    for (int i = 0; i < tabs.length; ++i) {
       tabs[i] = Tab(
          child: makeTabWidget( ctx,
-            counters[i], cts.tabNames[i], opacity[i]));
+            counters[i], txt.tabNames[i], opacity[i]));
    }
 
    return TabBar(controller: tabCtrl,
@@ -571,7 +571,7 @@ makeFaButton(Function onNewPost,
    if (lpChats == 0 && lpChatMsgs != 0)
       return null;
 
-   IconData id = cts.newPostIcon;
+   IconData id = txt.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
          backgroundColor: stl.darkYellow,
@@ -659,7 +659,7 @@ makeChatMsgWidget(
          textBaseline: TextBaseline.alphabetic,
          children: <Widget>
          [ Icon(Icons.forward, color: Colors.blueGrey)
-         , Text(cts.chatMsgRedirectedText,
+         , Text(txt.chatMsgRedirectedText,
                 style: TextStyle(color: Colors.blueGrey,
                   fontSize: stl.listTileSubtitleFontSize,
                  fontStyle: FontStyle.italic))
@@ -949,7 +949,7 @@ makeChatScreen(BuildContext ctx,
        maxLength: null,
        focusNode: chatFocusNode,
        decoration:
-          InputDecoration.collapsed(hintText: cts.chatTextFieldHintStr));
+          InputDecoration.collapsed(hintText: txt.chatTextFieldHintStr));
 
    Scrollbar sb = Scrollbar(
        child: SingleChildScrollView(
@@ -1028,7 +1028,7 @@ makeChatScreen(BuildContext ctx,
    } else {
       title = ListTile(
           leading: CircleAvatar(
-              child: cts.unknownPersonIcon,
+              child: txt.unknownPersonIcon,
               backgroundColor: selectColor(int.parse(ch.peer))),
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
@@ -1158,7 +1158,7 @@ ListView createFilterListView(BuildContext ctx,
                    size: 35.0,
                    color: Theme.of(ctx).primaryColor),
                 title: Text(
-                   cts.menuSelectAllStr,
+                   txt.menuSelectAllStr,
                    style: Theme.of(ctx).textTheme.subhead,
                 ),
                 dense: true,
@@ -1387,17 +1387,17 @@ Card makePostDetailElem(BuildContext ctx, int filter)
 {
    List<Widget> leftList = List<Widget>();
 
-   for (int i = 0; i < cts.postDetails.length; ++i) {
+   for (int i = 0; i < txt.postDetails.length; ++i) {
       final bool b = (filter & (1 << i)) == 0;
       if (b)
          continue;
 
       Icon icTmp = Icon(Icons.check, color: stl.postFrameColor);
-      Text txt = Text(
-         ' ${cts.postDetails[i]}',
+      Text text = Text(
+         ' ${txt.postDetails[i]}',
          style: Theme.of(ctx).textTheme.body1,
       );
-      Row row = Row(children: <Widget>[icTmp, txt]); 
+      Row row = Row(children: <Widget>[icTmp, text]); 
       leftList.add(row);
    }
 
@@ -1424,8 +1424,8 @@ makeMenuInfoCards(BuildContext ctx,
       Card card = makePostElem2(
                      ctx,
                      names,
-                     cts.menuDepthNames[i],
-                     Icon( cts.newPostTabIcons[i]
+                     txt.menuDepthNames[i],
+                     Icon( txt.newPostTabIcons[i]
                          , color: stl.postFrameColor));
 
       list.add(card);
@@ -1452,7 +1452,7 @@ List<Card> postTextAssembler(BuildContext ctx,
    values1.add(dateString);
 
    Card dc1 = makePostElem2(
-      ctx, values1, cts.descList,
+      ctx, values1, txt.descList,
       Icon(Icons.description,
            color: stl.postFrameColor));
 
@@ -1625,7 +1625,7 @@ makePostTabListView(BuildContext ctx,
          // New posts are shown with a different color.
          Color color = stl.postFrameColor;
          //if (i > lastSeenPostIdx)
-         //   color = cts.newReceivedPostColor; 
+         //   color = txt.newReceivedPostColor; 
 
          List<Card> cards =
             postTextAssembler(
@@ -1639,7 +1639,7 @@ makePostTabListView(BuildContext ctx,
              cards,
              (int fav) async
                 {await onPostSelection(ctx, i, fav);},
-             cts.favIcon,
+             txt.favIcon,
              color);
       });
 }
@@ -1725,7 +1725,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
    String str = ch.lastChatItem.msg;
    if (str.isEmpty) {
       return Text(
-         cts.defaultChatTileSubtile,
+         txt.defaultChatTileSubtile,
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: TextStyle(
@@ -1858,7 +1858,7 @@ Widget makePostChatCol(
          widget = Icon(Icons.check);
          bgColor = stl.chatLongPressendColor;
       } else {
-         widget = cts.unknownPersonIcon;
+         widget = txt.unknownPersonIcon;
          bgColor = Colors.white;
       }
 
@@ -2348,7 +2348,15 @@ class MenuChatState extends State<MenuChat>
       _outChatMsgsQueue = Queue<ChatMsgOutQueueElem>.from(tmp.reversed);
       print('====> load: ${_outChatMsgsQueue.length}');
 
-      channel = IOWebSocketChannel.connect(cts.host);
+      // WARNING: localhost or 127.0.0.1 is the emulator or the phone
+      // address. If the phone is connected (via USB) to a computer
+      // the computer can be found on 10.0.2.2.
+      //final String host = 'ws://10.0.2.2:80';
+
+      // My public ip.
+      final String host = 'ws://37.24.165.216:80';
+
+      channel = IOWebSocketChannel.connect(host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
       final List<int> versions = makeMenuVersions(_menus);
@@ -2410,8 +2418,8 @@ class MenuChatState extends State<MenuChat>
                () {return _dialogPrefs[fav];},
                (bool v) async {await _setDialogPref(fav, v);},
                () async {await _onPostSelection(i, fav);},
-               cts.dialTitleStrs[fav],
-               cts.dialBodyStrs[fav]);
+               txt.dialTitleStrs[fav],
+               txt.dialBodyStrs[fav]);
             
          },
       );
@@ -2852,15 +2860,15 @@ class MenuChatState extends State<MenuChat>
       // If the user cancels the operation we do not show the dialog.
       if (i == 1)
          _showSimpleDial(ctx, (){},
-                         cts.dialTitleStrs[3],
-                         cts.dialBodyStrs[3]);
+                         txt.dialTitleStrs[3],
+                         txt.dialBodyStrs[3]);
    }
 
    void _removePostDialog(BuildContext ctx, int i)
    {
       _showSimpleDial(ctx, () async { await _onRemovePost(i);},
-                      cts.dialTitleStrs[4],
-                      cts.dialBodyStrs[4]);
+                      txt.dialTitleStrs[4],
+                      txt.dialBodyStrs[4]);
    }
 
    void _onCancelNewFilter()
@@ -2931,7 +2939,7 @@ class MenuChatState extends State<MenuChat>
       print('=====> $postId $i');
 
       final String content = 'Id: ${posts[i].chats[j].peer}';
-      _showSimpleDial(ctx, (){}, cts.userInfo, content);
+      _showSimpleDial(ctx, (){}, txt.userInfo, content);
    }
 
    void _onChatLPImpl(List<Post> posts, int i, int j)
@@ -3429,8 +3437,8 @@ class MenuChatState extends State<MenuChat>
 
       _showSimpleDial(ctx,
                       _onOkDialAfterSendFilters,
-                      cts.dialTitleStrs[2],
-                      cts.dialBodyStrs[2]);
+                      txt.dialTitleStrs[2],
+                      txt.dialBodyStrs[2]);
 
       // We also have to persist the menu on file here since we may
       // not receive a subscribe_ack if the app is offline.
@@ -3584,7 +3592,7 @@ class MenuChatState extends State<MenuChat>
          {
             final FlatButton ok = FlatButton(
                      child: Text(
-                        cts.devChatOkStr,
+                        txt.devChatOkStr,
                         style: TextStyle(color: stl.accentColor)),
                      onPressed: () async
                      {
@@ -3594,7 +3602,7 @@ class MenuChatState extends State<MenuChat>
 
             final FlatButton cancel = FlatButton(
                child: Text(
-                  cts.delChatCancelStr,
+                  txt.delChatCancelStr,
                   style: TextStyle(color: stl.accentColor)),
                onPressed: ()
                {
@@ -3605,18 +3613,18 @@ class MenuChatState extends State<MenuChat>
             actions[0] = cancel;
             actions[1] = ok;
 
-            Text txt = Text(
-               cts.delOwnChatTitleStr,
+            Text text = Text(
+               txt.delOwnChatTitleStr,
                style: TextStyle(color: Colors.black));
 
             if (_isOnFav()) {
-               txt = Text(
-                  cts.delFavChatTitleStr,
+               text = Text(
+                  txt.delFavChatTitleStr,
                   style: TextStyle(color: Colors.black));
             }
 
             return AlertDialog(
-                  title: txt,
+                  title: text,
                   content: Text(""),
                   actions: actions);
          },
@@ -3665,7 +3673,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPostDetail(int i)
    {
-      if (i == cts.postDetails.length) {
+      if (i == txt.postDetails.length) {
          _botBarIdx = 3;
          setState(() { });
          return;
@@ -3751,15 +3759,15 @@ class MenuChatState extends State<MenuChat>
             _onCancelFwdLPChatMsg);
       }
 
-      List<Function> onWillPops = List<Function>(cts.tabNames.length);
+      List<Function> onWillPops = List<Function>(txt.tabNames.length);
       onWillPops[0] = _onChatsBackPressed;
       onWillPops[1] = (){return false;};
       onWillPops[2] = _onChatsBackPressed;
 
-      String appBarTitle = cts.appName;
+      String appBarTitle = txt.appName;
 
       List<FloatingActionButton> fltButtons =
-            List<FloatingActionButton>(cts.tabNames.length);
+            List<FloatingActionButton>(txt.tabNames.length);
 
       fltButtons[0] = makeFaButton(
          _onNewPost,
@@ -3775,7 +3783,7 @@ class MenuChatState extends State<MenuChat>
          _lpChats.length,
          _lpChatMsgs.length);
 
-      List<Widget> bodies = List<Widget>(cts.tabNames.length);
+      List<Widget> bodies = List<Widget>(txt.tabNames.length);
       bodies[0] = makeChatTab(
          ctx,
          _ownPosts,
@@ -3811,7 +3819,7 @@ class MenuChatState extends State<MenuChat>
       Widget appBarLeading = null;
       if (_isOnFav() || _isOnOwn()) {
          if (_hasLPChatMsgs()) {
-            appBarTitle = cts.chatMsgRedirectText;
+            appBarTitle = txt.chatMsgRedirectText;
             appBarLeading = IconButton(
                icon: Icon(
                   Icons.arrow_back,
@@ -3830,7 +3838,7 @@ class MenuChatState extends State<MenuChat>
 
       actions.add(Icon(Icons.more_vert, color: Colors.white));
 
-      List<int> newMsgsCounters = List<int>(cts.tabNames.length);
+      List<int> newMsgsCounters = List<int>(txt.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
       newMsgsCounters[1] = _posts.length - _lastSeenPostIdx - 1;
       newMsgsCounters[2] = _getNUnreadFavChats();

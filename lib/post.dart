@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/constants.dart';
 import 'package:menu_chat/tree.dart';
-import 'package:menu_chat/text_constants.dart' as cts;
+import 'package:menu_chat/txt_pt.dart' as txt;
 import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:intl/intl.dart';
@@ -151,7 +151,7 @@ class Chat {
 
    void _openFile(int postId)
    {
-      _msgsFile = File(makeFullPath(cts.chatFilePrefix, postId));
+      _msgsFile = File(makeFullPath(txt.chatFilePrefix, postId));
    }
 
    void loadMsgs(final int postId)
@@ -266,7 +266,7 @@ class Post {
    String from = '';
 
    // The publisher nick name.
-   String nick = cts.unknownNick;
+   String nick = txt.unknownNick;
 
    // Contains the channel this post was published in.
    //
@@ -296,7 +296,7 @@ class Post {
 
    Post()
    {
-      channel = makeEmptyMenuCodesContainer(cts.menuDepthNames.length);
+      channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
    }
 
    Post clone()

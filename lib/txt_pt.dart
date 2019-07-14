@@ -11,8 +11,7 @@ final List<String> tabNames = <String>
 
 //______________
 
-// Text used in the *new postertisement screens* on the bottom
-// navigation bar.
+// Text used in the *new post screens* on the bottom navigation bar.
 final List<String> newPostTabNames = <String>
 [ 'Localizacao'
 , 'Produto'
@@ -160,14 +159,6 @@ final List<String> dialBodyStrs = <String>
 final String unknownNick = 'Desconhecido';
 
 final String menuSelectAllStr = 'Selecionar todos';
-
-// WARNING: localhost or 127.0.0.1 is the emulator or the phone
-// address. If the phone is connected (via USB) to a computer
-// the computer can be found on 10.0.2.2.
-//final String host = 'ws://10.0.2.2:80';
-
-// My public ip.
-final String host = 'ws://37.24.165.216:80';
 
 final Icon unknownPersonIcon =
    Icon(Icons.person, color: Colors.white, size: 30.0);
