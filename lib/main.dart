@@ -182,42 +182,39 @@ makeOnLongPressedActions(BuildContext ctx,
 }
 
 Scaffold
-makeNickRegisterScreen( TextEditingController txtCtrl
+makeNickRegisterScreen( BuildContext ctx
+                      , TextEditingController txtCtrl
                       , Function onNickPressed)
 {
-   TextField tf =
-      makeTextInputFieldCard(
-         txtCtrl,
-         null,
-         InputDecoration(
-            hintText: cts.nickTextFieldHintStr,
-            hintStyle: TextStyle(fontSize: 25.0,
-              fontWeight: FontWeight.normal)));
+   TextField tf = TextField(
+      controller: txtCtrl,
+      maxLines: 1,
+      maxLength: 20,
+      decoration: InputDecoration(
+         hintText: cts.nickTextFieldHintStr,
+         suffixIcon: IconButton(
+            icon: Icon(Icons.send),
+            onPressed: onNickPressed,
+            color: stl.postFrameColor,
+         ),
+      ),
+   );
 
-   Padding padd =
-      Padding( child: tf
-             , padding: EdgeInsets.all(20.0));
-
-   RaisedButton but =
-      RaisedButton(
-         child: Text( 'Continuar'
-                    , style: TextStyle(
-                         color: Colors.white,
-                         fontWeight: FontWeight.bold,
-                         fontSize: 18.0)),
-         color: Colors.blue,
-         onPressed: onNickPressed
-         );
-
-   Column col =
-      Column( mainAxisAlignment: MainAxisAlignment.center
-            , crossAxisAlignment: CrossAxisAlignment.center
-            , children: <Widget>
-              [ padd
-              , but
-              ]);
-
-   return Scaffold(body: Center(child: col));
+   return Scaffold(
+      appBar: AppBar(
+         title: Text(
+            cts.appName,
+            style: Theme.of(ctx).appBarTheme.textTheme.title
+         ),
+         elevation: Theme.of(ctx).appBarTheme.elevation,
+      ),
+      body: Center(
+         child: Padding(
+            child: tf,
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+         ),
+      ),
+   );
 }
 
 ListView
@@ -311,7 +308,6 @@ makeNewPostScreens( BuildContext ctx
    AppBar appBar = AppBar(
       title: appBarTitleWidget,
       elevation: 0.7,
-      toolbarOpacity : 1.0,
       leading: IconButton(
          icon: Icon(
             Icons.arrow_back,
@@ -403,7 +399,6 @@ makeNewFiltersScreens( BuildContext ctx
    AppBar appBar = AppBar(
       title: appBarTitleWidget,
       elevation: 0.7,
-      toolbarOpacity : 1.0,
       leading: IconButton(
          icon: Icon(
             Icons.arrow_back,
@@ -783,7 +778,7 @@ makeChatMsgListView(
             if (i == nMsgs - ch.nUnreadMsgs) {
                return Card(
                   color: stl.postFrameColor,
-                  margin: const EdgeInsets.all(0.0),
+                  margin: const EdgeInsets.symmetric(vertical: 10.0),
                   shape: RoundedRectangleBorder(
                      borderRadius: BorderRadius.all(Radius.circular(0.0)),
                   ),
@@ -1611,22 +1606,6 @@ Card makeCard(Widget widget, Color color)
    );
 }
 
-TextField
-makeTextInputFieldCard( TextEditingController ctrl
-                      , int maxLength
-                      , InputDecoration deco)
-{
-   // TODO: Set a max length.
-   return TextField(
-      controller: ctrl,
-      //textInputAction: TextInputAction.go,
-      //onSubmitted: onTextFieldPressed,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      maxLength: maxLength,
-      decoration: deco);
-}
-
 ListView
 makePostTabListView(BuildContext ctx,
                     List<Post> posts,
@@ -1637,32 +1616,32 @@ makePostTabListView(BuildContext ctx,
    final int postsLength = posts.length;
 
    return ListView.builder(
-             padding: const EdgeInsets.all(0.0),
-             itemCount: posts.length,
-             itemBuilder: (BuildContext ctx, int i)
-             {
-                updateLasSeenPostIdx(i);
+      padding: const EdgeInsets.all(0.0),
+      itemCount: posts.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+         updateLasSeenPostIdx(i);
 
-                // New posts are shown with a different color.
-                Color color = stl.postFrameColor;
-                //if (i > lastSeenPostIdx)
-                //   color = cts.newReceivedPostColor; 
+         // New posts are shown with a different color.
+         Color color = stl.postFrameColor;
+         //if (i > lastSeenPostIdx)
+         //   color = cts.newReceivedPostColor; 
 
-                List<Card> cards =
-                   postTextAssembler(
-                      ctx,
-                      posts[i],
-                      menus,
-                      color);
-   
-                return makePostWidget(
-                    ctx,
-                    cards,
-                    (int fav) async
-                       {await onPostSelection(ctx, i, fav);},
-                    cts.favIcon,
-                    color);
-             });
+         List<Card> cards =
+            postTextAssembler(
+               ctx,
+               posts[i],
+               menus,
+               color);
+
+         return makePostWidget(
+             ctx,
+             cards,
+             (int fav) async
+                {await onPostSelection(ctx, i, fav);},
+             cts.favIcon,
+             color);
+      });
 }
 
 ListView createPostMenuListView(BuildContext ctx, MenuNode o,
@@ -3709,8 +3688,12 @@ class MenuChatState extends State<MenuChat>
       if (_menus.isEmpty)
          return Scaffold();
 
-      if (cfg.nick.isEmpty)
-         return makeNickRegisterScreen(_txtCtrl, _onNickPressed);
+      if (cfg.nick.isEmpty) {
+         return makeNickRegisterScreen(
+            ctx,
+            _txtCtrl,
+            _onNickPressed);
+      }
 
       if (hasSwitchedTab())
          _cleanUpLpOnSwitchTab();
@@ -3868,10 +3851,13 @@ class MenuChatState extends State<MenuChat>
                        pinned: true,
                        floating: true,
                        forceElevated: innerBoxIsScrolled,
-                       bottom: makeTabBar(ctx, newMsgsCounters,
-                                         _tabCtrl,
-                                         opacities,
-                                         _hasLPChatMsgs()),
+                       bottom: makeTabBar(
+                          ctx,
+                          newMsgsCounters,
+                          _tabCtrl,
+                          opacities,
+                          _hasLPChatMsgs(),
+                       ),
                        actions: actions,
                        leading: appBarLeading
                      ),
