@@ -894,6 +894,7 @@ makeRefChatMsgWidget(
    int i,
    Color cc)
 {
+   print('===> ${ch.msgs.length} $i');
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
@@ -2213,6 +2214,7 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
       _tabCtrl.addListener(_tabCtrlChangeHandler);
       _chatFocusNode = FocusNode();
+      _dragedIdx = -1;
    }
 
    @override
@@ -3037,12 +3039,9 @@ class MenuChatState extends State<MenuChat>
                       bool isSenderPost,
                       ChatItem ci) async
    {
-      print('Sending ===> ${ci.msg}');
       try {
          if (ci.msg.isEmpty)
             return;
-
-         print('Here??');
 
          final int i = posts.indexWhere((e) { return e.id == postId;});
          assert(i != -1);
@@ -3075,6 +3074,7 @@ class MenuChatState extends State<MenuChat>
             'type': type,
             'to': peer,
             'msg': ci.msg,
+            'refers_to': ci.refersTo,
             'post_id': postId,
             'is_sender_post': isSenderPost,
             'nick': cfg.nick
@@ -3125,6 +3125,7 @@ class MenuChatState extends State<MenuChat>
       final String peer = ack['from'];
       final String nick = ack['nick'];
       final int refersTo = ack['refers_to'];
+      print('======> 2 $refersTo');
 
       if (to != cfg.appId) {
          print("Server bug caught. Please report.");
