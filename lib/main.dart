@@ -1951,7 +1951,6 @@ Widget makeChatTab(
          }
 
          if (isFwdChatMsgs) {
-            print('Setting ....');
             onUserInfoPressed = (var a, var b, var c){};
             onPinPost2 = (){};
             onDelPost2 = (){};
@@ -2517,8 +2516,7 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
          for (Coord c2 in _lpChatMsgs) {
-            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg,
-                  now, -1);
+            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now, -1);
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
                   _favPosts, c1.post.id, c1.chat.peer, false, ci);
@@ -3013,11 +3011,14 @@ class MenuChatState extends State<MenuChat>
                       int postId,
                       String peer,
                       bool isSenderPost,
-                      ChatItem chatItem) async
+                      ChatItem ci) async
    {
+      print('Sending ===> ${ci.msg}');
       try {
-         if (chatItem.msg.isEmpty)
+         if (ci.msg.isEmpty)
             return;
+
+         print('Here??');
 
          final int i = posts.indexWhere((e) { return e.id == postId;});
          assert(i != -1);
@@ -3027,12 +3028,7 @@ class MenuChatState extends State<MenuChat>
          final int j = posts[i].getChatHistIdx(peer);
          assert(j != -1);
 
-         posts[i].chats[j].lastChatItem = chatItem;
-         assert(posts[i].chats[j].isLoaded());
-         posts[i].chats[j].msgs.add(chatItem);
-         posts[i].chats[j].chatLength = 
-            posts[i].chats[j].msgs.length;
-         posts[i].chats[j].persistChatMsg(chatItem, postId);
+         posts[i].chats[j].addChatItem(ci, postId);
 
          await _db.transaction((txn) async {
             Batch batch = txn.batch();
@@ -3042,21 +3038,19 @@ class MenuChatState extends State<MenuChat>
             batch.rawInsert(sql.insertOrReplaceChatOnPost,
                makeChatUpdateSql(posts[i].chats[j], postId));
             batch.rawInsert(sql.insertChatMsg,
-                [postId, peer, 1, chatItem.date, chatItem.msg]);
+                [postId, peer, 1, ci.date, ci.msg]);
             await batch.commit(noResult: true, continueOnError: true);
          });
 
          posts[i].chats.sort(CompChats);
          posts.sort(CompPosts);
 
-         final String type =
-               convertChatMsgTypeToString(chatItem.type);
-         print('=======> Sending type: $type');
+         final String type = convertChatMsgTypeToString(ci.type);
          var msgMap = {
             'cmd': 'message',
             'type': type,
             'to': peer,
-            'msg': chatItem.msg,
+            'msg': ci.msg,
             'post_id': postId,
             'is_sender_post': isSenderPost,
             'nick': cfg.nick
@@ -3065,6 +3059,7 @@ class MenuChatState extends State<MenuChat>
          await sendChatMsg(jsonEncode(msgMap), 1);
 
       } catch(e) {
+         print(e);
       }
    }
 
@@ -3147,16 +3142,8 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      final ChatItem item = ChatItem(type, msg, now, refersTo);
-      posts[i].chats[j].lastChatItem = item;
-      if (posts[i].chats[j].isLoaded()) {
-         posts[i].chats[j].msgs.add(item);
-         posts[i].chats[j].chatLength = posts[i].chats[j].msgs.length;
-      } else {
-         ++posts[i].chats[j].chatLength;
-      }
-
-      posts[i].chats[j].persistChatMsg(item, postId);
+      posts[i].chats[j].addChatItem(
+         ChatItem(type, msg, now, refersTo), postId);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
@@ -3168,7 +3155,7 @@ class MenuChatState extends State<MenuChat>
          posts[i].chats[j].nUnreadMsgs = 0;
          ack = 'app_ack_read';
          // TODO: Put an indicator that a new message has arrived
-         // if it out of the field of view.
+         // if it is out of the field of view.
       } else {
          ++posts[i].chats[j].nUnreadMsgs;
          ack = 'app_ack_received';

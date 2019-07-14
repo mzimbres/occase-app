@@ -98,6 +98,19 @@ class Chat {
         this.serverAckEnd, this.chatLength, this.nUnreadMsgs,
         this.lastChatItem);
 
+   void addChatItem(ChatItem ci, int postId)
+   {
+      lastChatItem = ci;
+      if (isLoaded()) {
+         msgs.add(ci);
+         chatLength = msgs.length;
+      } else {
+         ++chatLength;
+      }
+
+      persistChatMsg(ci, postId);
+   }
+
    String getChatDisplayName()
    {
       if (nick.isEmpty)
@@ -143,10 +156,8 @@ class Chat {
 
    void loadMsgs(final int postId)
    {
-      print('Loading msgs');
       try {
          if (!_isFileOpen()) {
-            print('Opening file');
             _openFile(postId);
          }
 
@@ -160,12 +171,13 @@ class Chat {
       }
    }
 
-   void persistChatMsg(ChatItem item, final int postId)
+   void persistChatMsg(ChatItem ci, final int postId)
    {
+      print('Persisting ${ci.msg}');
       if (!_isFileOpen())
          _openFile(postId);
 
-      String content = jsonEncode(item);
+      String content = jsonEncode(ci);
       content += '\n';
       _msgsFile.writeAsStringSync(content, mode: FileMode.append);
    }
