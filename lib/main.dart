@@ -111,6 +111,24 @@ Future<void> onCreateDb(Database db, int version) async
    await db.execute(sql.creatOutChatTable);
    print('====> Creating menu table.');
    await db.execute(sql.createMenuTable);
+   print('====> Filling the menu table.');
+
+   // FIXME: Make this a member function to avoid loading and parsing
+   // the menu twice on creation.
+   final List<MenuItem> menu = menuReader(jsonDecode(Consts.menus));
+
+   List<MenuElem> elems = List<MenuElem>();
+   for (int i = 0; i < menu.length; ++i)
+      elems.addAll(makeMenuElems(menu[i].root.first, i));
+
+   Batch batch = db.batch();
+
+   elems.forEach((MenuElem me)
+   {
+      batch.insert('menu', menuElemToMap(me));
+   });
+
+   await batch.commit(noResult: true, continueOnError: true);
 }
 
 Future<Null> main() async
@@ -2302,7 +2320,8 @@ class MenuChatState extends State<MenuChat>
 
       _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
-      _menus = menuReader(jsonDecode(cfg.menu));
+      if (_menus.isEmpty)
+         _menus = menuReader(jsonDecode(cfg.menu));
 
       // We do not need all fields from cfg.menu during runtime. The
       // menu field is big and we should release its memory.
@@ -3452,7 +3471,7 @@ class MenuChatState extends State<MenuChat>
       List<List<List<int>>> channels = List<List<List<int>>>();
       for (MenuItem item in _menus) {
          List<List<int>> hashCodes =
-               readHashCodes(item.root.first, item.filterDepth);
+            readHashCodes(item.root.first, item.filterDepth);
 
          if (hashCodes.isEmpty) {
             print("Menu channels hash is empty. Nothing to do ...");

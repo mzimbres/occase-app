@@ -20,7 +20,7 @@ Map<String, dynamic> menuElemToMap(MenuElem me)
       'depth': me.depth,
       'leaf_reach': me.leafReach,
       'name': me.name,
-      'index': me.index,
+      'idx': me.index,
    };
 }
 
@@ -35,7 +35,7 @@ Future<List<MenuElem>> loadMenu(Database db) async
         depth: maps[i]['depth'],
         leafReach: maps[i]['leaf_reach'],
         name: maps[i]['name'],
-        index: maps[i]['index'],
+        index: maps[i]['idx'],
      );
   });
 }
@@ -274,6 +274,7 @@ class MenuItem {
    {
       filterDepth = map["depth"];
       version = map["version"];
+
       final String rawMenu = map["data"];
       final int menuDepth = getMenuDepth(rawMenu);
       if (menuDepth != 0) {
@@ -476,6 +477,30 @@ String serializeMenuToStr(final MenuNode root)
    }
 
    return menu;
+}
+
+List<MenuElem> makeMenuElems(final MenuNode root, int index)
+{
+   // TODO: The depth is taken from the lenght of the code. Maybe we
+   // should consider removing the depth from sqlite to avoid
+   // redundancy. This may be difficult however if we do not use fixed
+   // size fields.
+   List<MenuElem> elems = List<MenuElem>();
+   MenuTraversal2 iter = MenuTraversal2(root);
+   MenuNode current = iter.advance();
+   while (current != null) {
+      MenuElem me = MenuElem(
+         code: current.code.join('.'),
+         name: current.name,
+         depth: current.code.length, 
+         leafReach: current.leafReach, 
+         index: index, 
+      );
+      elems.add(me);
+      current = iter.next();
+   }
+
+   return elems;
 }
 
 List<int> makeMenuVersions(final List<MenuItem> menus)

@@ -204,8 +204,7 @@ CREATE TABLE menu
 , depth INTEGER
 , leaf_reach INTEGER
 , name TEXT
-, index INTEGER
-)
+, idx INTEGER)
 ''';
 
 final String insertMenuElem =
