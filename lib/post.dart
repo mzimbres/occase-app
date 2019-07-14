@@ -622,10 +622,10 @@ Map<String, dynamic> configToMap(Config cfg)
     };
 }
 
-Future<List<Config>> loadConfig(Database db, String tableName) async
+Future<List<Config>> loadConfig(Database db) async
 {
   final List<Map<String, dynamic>> maps =
-     await db.query(tableName);
+     await db.query('config');
 
   return List.generate(maps.length, (i)
   {

@@ -109,6 +109,8 @@ Future<void> onCreateDb(Database db, int version) async
    await db.execute(sql.createChatStatus);
    print('====> Creating out-chat table.');
    await db.execute(sql.creatOutChatTable);
+   print('====> Creating menu table.');
+   await db.execute(sql.createMenuTable);
 }
 
 Future<Null> main() async
@@ -2291,7 +2293,7 @@ class MenuChatState extends State<MenuChat>
          version: 1);
 
       try {
-         final List<Config> configs = await loadConfig(_db, 'config');
+         final List<Config> configs = await loadConfig(_db);
          if (!configs.isEmpty)
             cfg = configs.first;
       } catch (e) {

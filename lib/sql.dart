@@ -194,3 +194,22 @@ final String loadOutChats =
 SELECT rowid, * FROM out_chat_msg_queue
 ''';
 
+//___________________________________________________________________
+// The menu table.
+
+final String createMenuTable =
+'''
+CREATE TABLE menu
+( code TEXT PRIMARY KEY
+, depth INTEGER
+, leaf_reach INTEGER
+, name TEXT
+, index INTEGER
+)
+''';
+
+final String insertMenuElem =
+'''
+INSERT INTO menu VALUES (?, ?, ?, ?, ?)
+''';
+

@@ -1,12 +1,50 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:menu_chat/constants.dart';
+import 'package:sqflite/sqflite.dart';
+
+class MenuElem {
+   String code = '';
+   String name = '';
+   int depth = -1;
+   int leafReach = -1;
+   int index = -1;
+
+   MenuElem({this.code, this.name, this.depth, this.leafReach, this.index});
+}
+
+Map<String, dynamic> menuElemToMap(MenuElem me)
+{
+   return {
+      'code': me.code,
+      'depth': me.depth,
+      'leaf_reach': me.leafReach,
+      'name': me.name,
+      'index': me.index,
+   };
+}
+
+Future<List<MenuElem>> loadMenu(Database db) async
+{
+  final List<Map<String, dynamic>> maps = await db.query('menu');
+
+  return List.generate(maps.length, (i)
+  {
+     return MenuElem(
+        code: maps[i]['code'],
+        depth: maps[i]['depth'],
+        leafReach: maps[i]['leaf_reach'],
+        name: maps[i]['name'],
+        index: maps[i]['index'],
+     );
+  });
+}
 
 class MenuNode {
    String name;
    List<int> code;
-   int leafCounter;
-   int leafReach;
+   int leafCounter = 0;
+   int leafReach = 0;
 
    List<MenuNode> children = List<MenuNode>();
 
@@ -92,41 +130,39 @@ String genCode(List<int> codes, int depth)
    return code;
 }
 
-MenuNode parseTree(String dataRaw)
+// This function does not fill all fields of menuElem.
+MenuElem parseFields(String line)
 {
-   final int maxDepth = getMenuDepth(dataRaw);
-   if (maxDepth == 0)
-      return null;
+   List<String> fields = line.split(";");
+   assert(fields.length == 3);
 
-   List<int> codes = List<int>(maxDepth);
+   return MenuElem(
+      name: fields[1],
+      depth: int.parse(fields.first),
+      leafReach: int.parse(fields[2]), // Remove this later.
+   );
+}
+
+MenuNode parseTree(List<MenuElem> elems, int menuDepth)
+{
+   List<int> codes = List<int>(menuDepth);
    for (int i = 0; i < codes.length; ++i)
       codes[i] = -1;
 
-   List<String> lines = dataRaw.split("=");
    List<MenuNode> st = List<MenuNode>();
    int lastDepth = 0;
    MenuNode root = MenuNode();
-   for (String line in lines) {
-      if (line.isEmpty)
-         continue;
-
-      List<String> fields = line.split(";");
-      assert(fields.length == 3);
-
-      int depth = int.parse(fields.first);
-      final String name = fields[1];
-      final int leafReach = int.parse(fields[2]);
-
+   for (MenuElem me in elems) {
       if (st.isEmpty) {
-         root.name = name;
-         root.leafReach = leafReach;
+         root.name = me.name;
          root.code = List<int>();
+         root.leafReach = 0;
          st.add(root);
          continue;
       }
 
-      codes[depth - 1] += 1;
-      for (int i = depth; i < codes.length; ++i)
+      codes[me.depth - 1] += 1;
+      for (int i = me.depth; i < codes.length; ++i)
          codes[i] = -1;
 
       List<int> code = List<int>.from(codes);
@@ -135,36 +171,36 @@ MenuNode parseTree(String dataRaw)
       // TODO: The implementation in C++ uses push_front in the deque.
       // We should do the same here, otherwise the nodes appear in the
       // wrong order.
-      if (depth > lastDepth) {
-         if (lastDepth + 1 != depth) {
-            print('Error on node: ${lastDepth} -- ${depth};${name};${leafReach}');
+      if (me.depth > lastDepth) {
+         if (lastDepth + 1 != me.depth) {
+            print('Error on node: ${lastDepth} -- ${me.depth};${me.name};${me.leafReach}');
             return MenuNode();
          }
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(name, leafReach, code);
+         MenuNode p = MenuNode(me.name, 0, code);
          st.last.children.add(p);
          st.add(p);
          ++lastDepth;
-      } else if (depth < lastDepth) {
+      } else if (me.depth < lastDepth) {
          // Now we have to pop that number of nodes from the stack
          // until we get to the node that should be the parent of the
          // current line.
-         int delta_depth = lastDepth - depth;
+         int delta_depth = lastDepth - me.depth;
          for (int i = 0; i < delta_depth; ++i)
             st.removeLast();
 
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(name, leafReach, code);
+         MenuNode p = MenuNode(me.name, 0, code);
          st.last.children.add(p);
          st.add(p);
 
-         lastDepth = depth;
+         lastDepth = me.depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(name, leafReach, code);
+         MenuNode p = MenuNode(me.name, 0, code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -209,7 +245,6 @@ class MenuItem {
 
       for (int i = 0; i < root.length; ++i) {
          int j = root.length - i - 1; // Index of the last element.
-      print('===> $j 3');
          root[i].leafReach += d;
       }
    }
@@ -239,9 +274,17 @@ class MenuItem {
    {
       filterDepth = map["depth"];
       version = map["version"];
-      MenuNode node = parseTree(map["data"]);
-      loadLeafCounters(node);
-      root.add(node);
+      final String rawMenu = map["data"];
+      final int menuDepth = getMenuDepth(rawMenu);
+      if (menuDepth != 0) {
+         List<String> lines = rawMenu.split("=");
+         lines.removeWhere((String o) {return o.isEmpty;});
+         final List<MenuElem> elems = List.generate(lines.length,
+            (int i) { return parseFields(lines[i]); });
+         MenuNode node = parseTree(elems, menuDepth);
+         loadLeafCounters(node);
+         root.add(node);
+      }
    }
 
    Map<String, dynamic> toJson()
