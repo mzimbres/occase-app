@@ -10,10 +10,10 @@ final Color seaGreen = Color(0xFF2E8B57);
 final Color oliveDrab = Color(0xFF6B8E23);
 //final Color primaryColor = Colors.blueGrey;
 //final Color primaryColor = whatsAppPrimaryColor;
-final Color primaryColor = Colors.teal[900];
+final Color primaryColor = Colors.teal[600];
 //final Color accentColor = Colors.grey;
 //final Color accentColor = whatsAppAccentColor;
-const Color accentColor = Colors.tealAccent;
+const Color accentColor = Colors.blue;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
@@ -21,7 +21,7 @@ final double mainFontSize = 16.0;
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
 final Color selectedMenuColor = Colors.blueGrey[400];
 //final Color postFrameColor = Colors.blueGrey[300];
-final Color postFrameColor = Colors.blueGrey[700];
+final Color postFrameColor = Colors.blueGrey;
 final Color newMsgCircleColor = Colors.grey;
 
 // Margin used so that the post card boarder has some distance from

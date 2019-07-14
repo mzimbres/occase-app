@@ -71,6 +71,7 @@ Future<void> removeLpChat(Coord c, Database db) async
    final bool ret = c.post.chats.remove(c.chat);
    assert(ret);
 
+   print('${sql.deleteChatStElem} ${c.post.id} ${c.chat.peer}');
    final int n =
       await db.rawDelete(sql.deleteChatStElem,
          [c.post.id, c.chat.peer]);
@@ -482,7 +483,7 @@ class MyApp extends StatelessWidget {
                 title: TextStyle(
                    fontWeight: FontWeight.normal,
                    color: Colors.white,
-                   fontSize: 16.0
+                   fontSize: 20.0
                 ),
                 subtitle: TextStyle(
                    color: Colors.grey[300],
@@ -699,7 +700,7 @@ makeChatMsgWidget(
               padding: const EdgeInsets.all(5.0),
               child: sb,
            )
-         , Expanded(
+         , Flexible(
               child: Padding(
                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
                  child: makeRefChatMsgWidget(ctx, ch, refersTo, c1),
@@ -1471,10 +1472,10 @@ ThemeData makeExpTileThemeData()
 {
    return ThemeData(
       accentColor: Colors.white,
-      unselectedWidgetColor: Colors.grey[400],
+      unselectedWidgetColor: Colors.grey[300],
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: Colors.grey[400],
+            color: Colors.grey[300],
          ),
       ),
    );
@@ -1733,7 +1734,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: TextStyle(
-            color: stl.postFrameColor,
+            color: Colors.grey,
             fontStyle: FontStyle.italic,
             fontSize: Theme.of(ctx).textTheme.subtitle.fontSize
          ),
