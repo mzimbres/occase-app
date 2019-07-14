@@ -604,16 +604,6 @@ int postIndexHelper(int i)
    return 1;
 }
 
-Card makeUnreadMsgsInfoWidget(int n)
-{
-   return Card(
-      color: stl.postFrameColor,
-      margin: const EdgeInsets.all(12.0),
-      child: Center(
-          child: Text('$n nao lidas.',
-                      style: TextStyle(fontSize: 17.0))));
-}
-
 Card
 makeChatMsgWidget(
    BuildContext ctx,
@@ -765,7 +755,9 @@ makeChatMsgWidget(
       elevation: 0.0,
       margin: const EdgeInsets.all(0.0),
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0))));
+         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+      ),
+   );
 }
 
 ListView
@@ -788,8 +780,28 @@ makeChatMsgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (shift == 1) {
-            if (i == nMsgs - ch.nUnreadMsgs)
-               return makeUnreadMsgsInfoWidget(ch.nUnreadMsgs);
+            if (i == nMsgs - ch.nUnreadMsgs) {
+               return Card(
+                  color: stl.postFrameColor,
+                  margin: const EdgeInsets.all(0.0),
+                  shape: RoundedRectangleBorder(
+                     borderRadius: BorderRadius.all(Radius.circular(0.0)),
+                  ),
+                  child: Center(
+                      child: Padding(
+                         padding: EdgeInsets.all(3.0),
+                         child: Text(
+                            '${ch.nUnreadMsgs} nao lidas.',
+                            style: TextStyle(
+                               fontSize: 17.0,
+                               fontWeight: FontWeight.normal,
+                               color: Colors.white,
+                            ),
+                         )
+                      ),
+                   ),
+               );
+            }
 
             if (i > (nMsgs - ch.nUnreadMsgs))
                i -= 1; // For the shift
