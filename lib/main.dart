@@ -190,15 +190,24 @@ makeOnLongPressedActions(BuildContext ctx,
 
    actions.add(delChatBut);
 
-   // Block user button.
-   //IconButton blockUserBut = IconButton(
-   //   icon: Icon(Icons.block, color: Colors.white),
-   //   tooltip: txt.blockUserChatStr,
-   //   onPressed: () { print('Kabuff'); });
-
-   //actions.add(blockUserBut);
-
    return actions;
+}
+
+Scaffold
+makeWaitMenuScreen(BuildContext ctx)
+{
+   return Scaffold(
+      appBar: AppBar(
+         title: Text(
+            txt.appName,
+            style: Theme.of(ctx).appBarTheme.textTheme.title
+         ),
+         elevation: Theme.of(ctx).appBarTheme.elevation,
+      ),
+      body: Center(
+         child: CircularProgressIndicator(),
+      ),
+   );
 }
 
 Scaffold
@@ -1352,10 +1361,10 @@ Card makePostElemSimple(Icon ic, Widget cols)
    // Here we need another padding to make the post inner element have
    // some distance to the outermost card.
    return Card(
-            child: leftWidget,
-            color: Colors.white,
-            margin: EdgeInsets.all(stl.postInnerMargin),
-            elevation: 0.0,
+      child: leftWidget,
+      color: Colors.white,
+      margin: EdgeInsets.all(stl.postInnerMargin),
+      elevation: 0.0,
    );
 }
 
@@ -1527,13 +1536,10 @@ Card makeChatEntry(BuildContext ctx,
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
 
-   Card card = Card(
-      color: stl.postFrameColor,
-      margin: EdgeInsets.all(0.0),
-      elevation: 0.0,
-      child: Theme(
+   Widget card = Theme(
          data: makeExpTileThemeData(),
          child: ExpansionTile(
+             backgroundColor: stl.expTileExpColor,
              leading: IconButton(
                 icon: Icon(ic),
                 onPressed: onLeadingPressed,
@@ -1549,27 +1555,26 @@ Card makeChatEntry(BuildContext ctx,
                         tiles: textCards,
                         color: Colors.grey).toList()
           ),
+      );
+
+   List<Widget> cards = List<Widget>();
+   cards.add(card);
+
+   cards.add(
+      Padding(
+         padding: const EdgeInsets.only(bottom: 5.0),
+         child: chats,
       ),
    );
 
-   List<Widget> cards = List<Card>();
-   cards.add(card);
-
-   Card chatCard = Card(child: chats,
-                        color: stl.postFrameColor,
-                        margin: EdgeInsets.all(stl.postInnerMargin),
-                        elevation: 0.0);
-
-   cards.add(chatCard);
-
-   Column col = Column(children: cards);
-
-   final double padding = stl.outerPostCardPadding;
    return Card(
-      child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: stl.postFrameColor,
-      margin: EdgeInsets.all(stl.postMarging),
+      margin: const EdgeInsets.only(left: 1.5, right: 1.5, top: 4.0),
+      child: Column(children: cards),
+      color: Colors.blueGrey,
       elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
    );
 }
 
@@ -1887,31 +1892,40 @@ Widget makePostChatCol(
          ctx, n, ch[i].lastChatItem.date, ch[i].pinDate, now,
          isFwdChatMsgs);
 
-      list[i] = Container(
-         margin: const EdgeInsets.only(bottom: 3.0),
-         decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-            color: bgColor),
-         child: ListTile(
-            dense: false,
-            enabled: true,
-            leading: makeChatListTileLeading(
-               widget,
-               selectColor(int.parse(ch[i].peer)),
-               (){onLeadingPressed(ctx, post.id, i);}),
-            trailing: trailing,
-            title: Text(
-               ch[i].getChatDisplayName(),
-               maxLines: 1,
-               overflow: TextOverflow.clip,
-               style: Theme.of(ctx).textTheme.subhead,
-            ),
-            subtitle: makeChatTileSubtitle(ctx, ch[i]),
-            //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-            onTap: () { onPressed(i); },
-            onLongPress: () { onLongPressed(i); }
+      list[i] = Padding(
+         padding: EdgeInsets.only(
+            left: stl.postInnerMargin,
+            right: stl.postInnerMargin,
+            top: 1.5,
+            bottom: 0.0,
          ),
-      );
+         child: Container(
+            margin: const EdgeInsets.only(bottom: 3.0),
+            decoration: BoxDecoration(
+               borderRadius: BorderRadius.all(Radius.circular(10.0)),
+               color: bgColor),
+            child: ListTile(
+               dense: false,
+               enabled: true,
+               leading: makeChatListTileLeading(
+                  widget,
+                  selectColor(int.parse(ch[i].peer)),
+                  (){onLeadingPressed(ctx, post.id, i);}
+               ),
+               trailing: trailing,
+               title: Text(
+                  ch[i].getChatDisplayName(),
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                  style: Theme.of(ctx).textTheme.subhead,
+               ),
+               subtitle: makeChatTileSubtitle(ctx, ch[i]),
+               //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+               onTap: () { onPressed(i); },
+               onLongPress: () { onLongPressed(i); }
+            ),
+          )
+       );
    }
 
   if (isFav)
@@ -1928,11 +1942,12 @@ Widget makePostChatCol(
    return Theme(
       data: makeExpTileThemeData(),
       child: ExpansionTile(
+         backgroundColor: stl.expTileExpColor,
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
          key: PageStorageKey<int>(2 * post.id + 1),
          title: Text(str),
-         children: list
+         children: list,
       ),
    );
 }
@@ -3716,7 +3731,7 @@ class MenuChatState extends State<MenuChat>
    {
       // Just for safety if we did not load the menu fast enough.
       if (_menus.isEmpty)
-         return Scaffold();
+         return makeWaitMenuScreen(ctx);
 
       if (cfg.nick.isEmpty) {
          return makeNickRegisterScreen(
