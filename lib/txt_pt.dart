@@ -163,3 +163,5 @@ final String menuSelectAllStr = 'Selecionar todos';
 final Icon unknownPersonIcon =
    Icon(Icons.person, color: Colors.white, size: 30.0);
 
+const String changeNickStr = 'Alterar apelido';
+const String changePhoto = 'Alterar foto';

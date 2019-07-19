@@ -141,7 +141,7 @@ class ChatMsgOutQueueElem {
    int isChat = 0;
    String payload = '';
    bool sent = false; // Used for debugging.
-   ChatMsgOutQueueElem(this.rowid, this.isChat, this.payload, this.sent);
+   ChatMsgOutQueueElem({this.rowid, this.isChat, this.payload, this.sent});
 }
 
 Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
@@ -151,11 +151,11 @@ Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
 
   return List.generate(maps.length, (i)
   {
-     final int rowid = maps[i]['rowid'];
-     final int isChat = maps[i]['is_chat'];
-     final String payload = maps[i]['payload'];
-
-     return ChatMsgOutQueueElem(rowid, isChat, payload, false);
+     return ChatMsgOutQueueElem(
+        rowid: maps[i]['rowid'],
+        isChat: maps[i]['is_chat'],
+        payload: maps[i]['payload'],
+        sent: false);
   });
 }
 
@@ -167,6 +167,33 @@ String makePostPayload(final Post post)
    };
 
    return jsonEncode(pubMap);
+}
+
+enum ConfigActions
+{ ChangeNick
+, ChangeProfilePhoto
+}
+
+Widget makeAppBarVertAction(Function onSelected)
+{
+   return PopupMenuButton<ConfigActions>(
+     icon: Icon(Icons.more_vert, color: Colors.white),
+     onSelected: onSelected,
+     itemBuilder: (BuildContext ctx)
+     {
+        return <PopupMenuEntry<ConfigActions>>
+        [
+           const PopupMenuItem<ConfigActions>(
+             value: ConfigActions.ChangeNick,
+             child: Text(txt.changeNickStr),
+           ),
+           const PopupMenuItem<ConfigActions>(
+             value: ConfigActions.ChangeProfilePhoto,
+             child: Text(txt.changePhoto),
+           ),
+        ];
+     }
+   );
 }
 
 List<Widget>
@@ -213,7 +240,8 @@ makeWaitMenuScreen(BuildContext ctx)
 Scaffold
 makeNickRegisterScreen( BuildContext ctx
                       , TextEditingController txtCtrl
-                      , Function onNickPressed)
+                      , Function onNickPressed
+                      , String appBarTitle)
 {
    TextField tf = TextField(
       controller: txtCtrl,
@@ -221,6 +249,19 @@ makeNickRegisterScreen( BuildContext ctx
       maxLength: 20,
       decoration: InputDecoration(
          hintText: txt.nickTextFieldHintStr,
+         focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+            borderSide: BorderSide(
+               color: Theme.of(ctx).primaryColor,
+               width: 3.0),
+         ),
+         enabledBorder: OutlineInputBorder(
+           borderRadius: BorderRadius.all(Radius.circular(20.0)),
+           borderSide: BorderSide(
+              color: Colors.red[900],
+              width: 3.0
+           ),
+         ),
          suffixIcon: IconButton(
             icon: Icon(Icons.send),
             onPressed: onNickPressed,
@@ -232,7 +273,7 @@ makeNickRegisterScreen( BuildContext ctx
    return Scaffold(
       appBar: AppBar(
          title: Text(
-            txt.appName,
+            appBarTitle,
             style: Theme.of(ctx).appBarTheme.textTheme.title
          ),
          elevation: Theme.of(ctx).appBarTheme.elevation,
@@ -3004,8 +3045,12 @@ class MenuChatState extends State<MenuChat>
    Future<void> sendChatMsg(final String payload, int isChat) async
    {
       final bool isEmpty = _outChatMsgsQueue.isEmpty;
-      ChatMsgOutQueueElem tmp =
-         ChatMsgOutQueueElem(-1, isChat, payload, false);
+      ChatMsgOutQueueElem tmp = ChatMsgOutQueueElem(
+         rowid: -1,
+         isChat: isChat,
+         payload: payload,
+         sent: false
+      );
 
       _outChatMsgsQueue.add(tmp);
 
@@ -3575,6 +3620,14 @@ class MenuChatState extends State<MenuChat>
       _lpChats.clear();
    }
 
+   void _onAppBarVertPressed(ConfigActions ca)
+   {
+      if (ca == ConfigActions.ChangeNick)
+         cfg.nick = '';
+
+      setState(() {});
+   }
+
    Future<void> _pinChats() async
    {
       assert(_isOnFav() || _isOnOwn());
@@ -3737,7 +3790,8 @@ class MenuChatState extends State<MenuChat>
          return makeNickRegisterScreen(
             ctx,
             _txtCtrl,
-            _onNickPressed);
+            _onNickPressed,
+            txt.appName);
       }
 
       if (hasSwitchedTab())
@@ -3873,7 +3927,7 @@ class MenuChatState extends State<MenuChat>
          }
       }
 
-      actions.add(Icon(Icons.more_vert, color: Colors.white));
+      actions.add(makeAppBarVertAction(_onAppBarVertPressed));
 
       List<int> newMsgsCounters = List<int>(txt.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
