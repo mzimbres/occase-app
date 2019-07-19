@@ -3769,7 +3769,8 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      _post.filter ^= 1 << i;
+      //_post.filter ^= 1 << i;
+      _post.filter = 1 << i;
       setState(() { });
    }
 

@@ -95,9 +95,16 @@ final List<String> descList = <String>
 , "Descricao"
 ];
 
-// WARNING: These strings must have size at least two. I won't check
-// that in code.
+// WARNING: The strings in the array must have size at least two. I
+// won't check that in code.
 final List<String> postDetails = <String>
+[ 'Novo'
+, 'Usado'
+, 'Troca'
+, 'Repasse'
+];
+
+final List<String> fooBar = <String>
 [ 'Airbag'
 , 'Alarme'
 , 'Ar quente'
@@ -105,19 +112,19 @@ final List<String> postDetails = <String>
 , 'Banco com regulagem de altura'
 , 'Computador de bordo'
 , 'Desembacador traseiro'
-//, 'Encosto de cabeca trazeiro'
-//, 'Freio ABS'
-//, 'Controle automatico de velocidade'
-//, 'Rodas de liga leve'
-//, 'Sensor de chuva'
-//, 'Sensor de estacionamento'
-//, 'Teto solar'
-//, 'Retrovisor fotocrômico'
-//, 'Travas elétricas'
-//, 'Vidros elétricos'
-//, 'Volante com regulagen de altura'
-//, 'Farol de xenônio'
-//, 'Direcao hidráulica'
+, 'Encosto de cabeca trazeiro'
+, 'Freio ABS'
+, 'Controle automatico de velocidade'
+, 'Rodas de liga leve'
+, 'Sensor de chuva'
+, 'Sensor de estacionamento'
+, 'Teto solar'
+, 'Retrovisor fotocrômico'
+, 'Travas elétricas'
+, 'Vidros elétricos'
+, 'Volante com regulagen de altura'
+, 'Farol de xenônio'
+, 'Direcao hidráulica'
 ];
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";
