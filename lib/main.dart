@@ -2336,11 +2336,6 @@ class MenuChatState extends State<MenuChat>
    {
       await db.execute(sql.createPostsTable);
       await db.execute(sql.createConfig);
-
-      // TODO: This command will be removed soon, after the port to
-      // menu table is introduced.
-      await db.execute(sql.updateMenu, [Consts.menus]);
-
       await db.execute(sql.createChats);
       await db.execute(sql.createChatStatus);
       await db.execute(sql.creatOutChatTable);
@@ -2413,18 +2408,11 @@ class MenuChatState extends State<MenuChat>
             if (menuDepth != 0) {
                MenuNode node = parseTree(tmp[i], menuDepth);
                loadLeafCounters(node);
-               // FIXME: Load leaf reach counters.
+               loadLeafReaches(node, _menu[i].filterDepth);
                _menu[i].root.add(node);
             }
          }
-
-         // This is how we did earlier, remove laster.
-         //_menu = menuReader(jsonDecode(cfg.menu));
       }
-
-      // We do not need all fields from cfg.menu during runtime. The
-      // menu field is big and we should release its memory.
-      cfg.menu = '';
 
       try {
          final List<Post> posts = await loadPosts(_db);
@@ -2849,19 +2837,22 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onFilterLeafNodePressed(int k)
+   Future<void> _onFilterLeafNodePressed(int k) async
    {
       // k = 0 means the *check all fields*.
       if (k == 0) {
-         _menu[_botBarIdx].updateLeafReachAll();
+         Batch batch = _db.batch();
+         _menu[_botBarIdx].updateLeafReachAll(batch, _botBarIdx);
+         await batch.commit(noResult: true, continueOnError: true);
          setState(() { });
          return;
       }
 
       --k; // Accounts for the Todos index.
 
-      // FIXME: Update the database.
-      _menu[_botBarIdx].updateLeafReach(k);
+      Batch batch = _db.batch();
+      _menu[_botBarIdx].updateLeafReach(k, batch, _botBarIdx);
+      await batch.commit(noResult: true, continueOnError: true);
       setState(() { });
    }
 
@@ -3392,10 +3383,7 @@ class MenuChatState extends State<MenuChat>
          configToMap(cfg),
          conflictAlgorithm: ConflictAlgorithm.replace);
 
-      _menu = menuReader(ack);
-      assert(_menu != null);
-
-      await _persistMenu();
+      // TODO: Check for menu updates and apply them.
    }
 
    Future<void>
@@ -3422,14 +3410,7 @@ class MenuChatState extends State<MenuChat>
       // The same for posts.
       sendOfflinePosts();
 
-      if (ack.containsKey('menus')) {
-         // The server has sent us a menu, that means we have to
-         // update the current one keeping the status of each
-         // field. TODO: Keep the status field.
-         _menu = menuReader(ack);
-         assert(_menu != null);
-         await _persistMenu();
-      }
+      // TODO: Check for menu updates and apply them.
    }
 
    void _onSubscribeAck(Map<String, dynamic> ack)
@@ -3557,18 +3538,6 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   Future<void> _persistMenu() async
-   {
-      print('====> Updating the menu.');
-      try {
-         var foo = {'menus': _menu};
-         final String str = jsonEncode(foo);
-         await _db.execute(sql.updateMenu, [str]);
-      } catch (e) {
-         print(e);
-      }
-   }
-
    Future<void> _onSendFilters(BuildContext ctx) async
    {
       _newFiltersPressed = false;
@@ -3580,11 +3549,6 @@ class MenuChatState extends State<MenuChat>
                       _onOkDialAfterSendFilters,
                       txt.dialTitleStrs[2],
                       txt.dialBodyStrs[2]);
-
-      // We also have to persist the menu on file here since we may
-      // not receive a subscribe_ack if the app is offline.
-      // FIXME: This will also have to be removed.
-      await _persistMenu();
    }
 
    void _subscribeToChannels()

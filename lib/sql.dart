@@ -51,8 +51,7 @@ CREATE TABLE config
 , last_post_id INTEGER
 , last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
-, show_dialog_on_del_post TEXT
-, menu TEXT)
+, show_dialog_on_del_post TEXT)
 ''';
 
 final String updateNick =
@@ -78,11 +77,6 @@ UPDATE config SET show_dialog_on_select_post = ?
 final String updateShowDialogOnDelPost =
 '''
 UPDATE config SET show_dialog_on_del_post = ?
-''';
-
-final String updateMenu =
-'''
-UPDATE config SET menu = ?
 ''';
 
 //___________________________________________________________
@@ -204,11 +198,18 @@ CREATE TABLE menu
 , depth INTEGER
 , leaf_reach INTEGER
 , name TEXT
-, idx INTEGER)
+, idx INTEGER
+, PRIMARY KEY (code, idx)
+)
 ''';
 
 final String insertMenuElem =
 '''
 INSERT INTO menu VALUES (?, ?, ?, ?, ?)
+''';
+
+final String updateLeafReach =
+'''
+UPDATE menu SET leaf_reach = ? WHERE code = ? AND idx = ?
 ''';
 

@@ -620,7 +620,6 @@ class Config {
    int lastSeenPostId;
    String showDialogOnSelectPost;
    String showDialogOnDelPost;
-   String menu;
 
    Config({this.appId = '',
            this.appPwd = '',
@@ -629,7 +628,6 @@ class Config {
            this.lastSeenPostId = 0,
            this.showDialogOnSelectPost = 'yes',
            this.showDialogOnDelPost = 'yes',
-           this.menu = Consts.menus,
    });
 }
 
@@ -643,7 +641,6 @@ Map<String, dynamic> configToMap(Config cfg)
       'last_seen_post_id': cfg.lastSeenPostId,
       'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
       'show_dialog_on_del_post': cfg.showDialogOnDelPost,
-      'menu': cfg.menu,
     };
 }
 
@@ -662,7 +659,6 @@ Future<List<Config>> loadConfig(Database db) async
         lastSeenPostId: maps[i]['last_seen_post_id'],
         showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
         showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
-        menu: maps[i]['menu'],
      );
 
      return cfg;

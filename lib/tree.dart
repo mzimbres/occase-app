@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:menu_chat/constants.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:menu_chat/sql.dart' as sql;
 
 class MenuElem {
    String code;
@@ -35,13 +36,16 @@ Future<List<MenuElem>> loadMenu(Database db) async
 
   return List.generate(maps.length, (i)
   {
-     return MenuElem(
+     MenuElem me = MenuElem(
         code: maps[i]['code'],
         depth: maps[i]['depth'],
         leafReach: maps[i]['leaf_reach'],
         name: maps[i]['name'],
         index: maps[i]['idx'],
      );
+
+     return me;
+
   });
 }
 
@@ -182,7 +186,8 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          // We found the child of the last node pushed on the stack.
          MenuNode p = MenuNode(
             name: me.name,
-            code: code
+            code: code,
+            leafReach: me.leafReach,
          );
 
          st.last.children.add(p);
@@ -202,6 +207,7 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          MenuNode p = MenuNode(
             name: me.name,
             code: code,
+            leafReach: me.leafReach,
          );
 
          st.last.children.add(p);
@@ -213,6 +219,7 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          MenuNode p = MenuNode(
             name: me.name,
             code: code,
+            leafReach: me.leafReach,
          );
 
          st.last.children.add(p);
@@ -248,7 +255,7 @@ class MenuItem {
    // It is assumed that this function will be called when the last
    // node in the stack is the parent of a leaf and k will be the
    // index of the leaf int the array of children of the top node.
-   void updateLeafReach(int k)
+   void updateLeafReach(int k, Batch batch, int idx)
    {
       int d = 0;
       MenuNode node = root.last.children[k];
@@ -267,13 +274,17 @@ class MenuItem {
          int j = root.length - i - 1; // Index of the last element.
          root[i].leafReach += d;
       }
+
+      final String code = node.code.join('.');
+      batch.rawUpdate(sql.updateLeafReach,
+                      [node.leafReach, code, idx]);
    }
 
-   void updateLeafReachAll()
+   void updateLeafReachAll(Batch batch, int idx)
    {
       final int l = root.last.children.length;
       for (int i = 0; i < l; ++i)
-         updateLeafReach(i);
+         updateLeafReach(i, batch, idx);
    }
 
    bool isFilterLeaf()
@@ -346,6 +357,27 @@ void loadLeafCounters(MenuNode root)
    MenuNode current = iter.advanceToLeaf();
    while (current != null) {
       current.leafCounter = accumulateLeafCounters(current);
+      current = iter.nextNode();
+   }
+}
+
+int accumulateLeafReach(MenuNode node)
+{
+   int c = 0;
+   for (int i = 0; i < node.children.length; ++i)
+      c += node.children[i].leafReach;
+
+   return c;
+}
+
+/* Traverses the tree accumulating the leaf reaches.
+ */
+void loadLeafReaches(MenuNode root, int filterDepth)
+{
+   MenuTraversal iter = MenuTraversal(root, filterDepth - 1);
+   MenuNode current = iter.advanceToLeaf();
+   while (current != null) {
+      current.leafReach = accumulateLeafReach(current);
       current = iter.nextNode();
    }
 }
