@@ -598,9 +598,10 @@ FloatingActionButton
 makeFiltersFaButton(Function onNewPost, IconData id)
 {
    return FloatingActionButton(
-             backgroundColor: stl.darkYellow,
-             child: Icon(id, color: Colors.white),
-             onPressed: onNewPost);
+      backgroundColor: stl.faButtonColor,
+      child: Icon(id, color: Colors.white),
+      onPressed: onNewPost
+   );
 }
 
 FloatingActionButton
@@ -627,7 +628,7 @@ makeFaButton(Function onNewPost,
       return null;
 
    return FloatingActionButton(
-      backgroundColor: stl.darkYellow,
+      backgroundColor: stl.faButtonColor,
       child: Icon(id, color: Colors.white),
       onPressed: onNewPost);
 }
@@ -1524,11 +1525,11 @@ String makePostSummaryStr(MenuNode root, Post post)
 ThemeData makeExpTileThemeData()
 {
    return ThemeData(
-      accentColor: Colors.white,
-      unselectedWidgetColor: Colors.grey[300],
+      accentColor: stl.expTileSelectedColor,
+      unselectedWidgetColor: stl.expTileUnselectedColor,
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: Colors.grey[300],
+            color: stl.expTileUnselectedColor,
          ),
       ),
    );
@@ -1582,7 +1583,7 @@ Card makeChatEntry(BuildContext ctx,
    return Card(
       margin: const EdgeInsets.only(left: 1.5, right: 1.5, top: 4.0),
       child: Column(children: cards),
-      color: Colors.blueGrey,
+      color: stl.postFrameColor,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),

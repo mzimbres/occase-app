@@ -8,20 +8,30 @@ final Color darkYellow = Color(0xFF999900);
 final Color fireBrick = Color(0xFFB22222);
 final Color seaGreen = Color(0xFF2E8B57);
 final Color oliveDrab = Color(0xFF6B8E23);
-//final Color primaryColor = Colors.blueGrey;
-//final Color primaryColor = whatsAppPrimaryColor;
-final Color primaryColor = Colors.teal[700];
-//final Color accentColor = Colors.grey;
-//final Color accentColor = whatsAppAccentColor;
-const Color accentColor = Colors.blue;
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
+// Music app.
+//final Color primaryColor = Colors.brown;
+//final Color postFrameColor = Colors.orangeAccent[100];
+//const Color accentColor = Colors.blue;
+//final Color expTileExpColor = postFrameColor;
+//final Color expTileSelectedColor = Colors.grey[800];
+//final Color expTileUnselectedColor = Colors.grey[700];
+
+// Car app.
+final Color primaryColor = Colors.blueGrey[600];
+final Color postFrameColor = Colors.cyan[800];
+const Color accentColor = Colors.blue;
+final Color expTileExpColor = postFrameColor;
+final Color expTileSelectedColor = Colors.white;
+final Color expTileUnselectedColor = Colors.grey[200];
+final Color faButtonColor = primaryColor;
+
 final double mainFontSize = 16.0;
+
 final Color postLocHeaderColor = Color(0xFFFFFFFF);
 final Color selectedMenuColor = Colors.blueGrey[400];
-//final Color postFrameColor = Colors.blueGrey[300];
-final Color postFrameColor = Colors.blueGrey;
 final Color newMsgCircleColor = Colors.grey;
 
 // Margin used so that the post card boarder has some distance from
@@ -41,6 +51,4 @@ final double outerPostCardPadding = 1.0;
 
 // The padding of chat messages inside ist box.
 final double chatMsgPadding = 5.0;
-
-final Color expTileExpColor = postFrameColor;
 
