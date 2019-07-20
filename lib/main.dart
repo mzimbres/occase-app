@@ -80,7 +80,6 @@ Future<void> removeLpChat(Coord c, Database db) async
       await db.rawDelete(sql.deleteChatStElem,
          [c.post.id, c.chat.peer]);
 
-   print('====> $n');
    assert(n == 1);
 }
 
@@ -2335,22 +2334,20 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onCreateDb(Database db, int version) async
    {
-      print('====> Creating posts table.');
       await db.execute(sql.createPostsTable);
-      print('====> Creating config table.');
       await db.execute(sql.createConfig);
-      print('====> Inserting the default menu.');
-      await db.execute(sql.updateMenu, [Consts.menus]);
-      print('====> Creating chats table.');
-      await db.execute(sql.createChats);
-      print('====> Creating chat-status table.');
-      await db.execute(sql.createChatStatus);
-      print('====> Creating out-chat table.');
-      await db.execute(sql.creatOutChatTable);
-      print('====> Creating menu table.');
-      await db.execute(sql.createMenuTable);
-      print('====> Filling the menu table.');
 
+      // TODO: This command will be removed soon, after the port to
+      // menu table is introduced.
+      await db.execute(sql.updateMenu, [Consts.menus]);
+
+      await db.execute(sql.createChats);
+      await db.execute(sql.createChatStatus);
+      await db.execute(sql.creatOutChatTable);
+      await db.execute(sql.createMenuTable);
+
+      // When the database is created, we also have to create the
+      // default menu table.
       _menu = menuReader(jsonDecode(Consts.menus));
 
       List<MenuElem> elems = List<MenuElem>();
@@ -2385,8 +2382,45 @@ class MenuChatState extends State<MenuChat>
 
       _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
-      if (_menu.isEmpty)
-         _menu = menuReader(jsonDecode(cfg.menu));
+
+      if (_menu.isEmpty) {
+         // Here we have to load the menu table, load all leaf
+         // counters and leaf reach. NOTE: When the user selects a
+         // specific menu item in the filters screen, we save only
+         // that specific item's leaf reach on the database, the
+         // corrections in the leaf reach of parent nodes are kept in
+         // memory, that is why we have to load them here.
+
+         final List<MenuElem> elems = await loadMenu(_db);
+
+         _menu = List<MenuItem>(2);
+         _menu[0] = MenuItem();
+         _menu[1] = MenuItem();
+
+         _menu[0].filterDepth = Consts.filterDepths[0];
+         _menu[1].filterDepth = Consts.filterDepths[1];
+
+         _menu[0].version = Consts.versions[0];
+         _menu[1].version = Consts.versions[1];
+
+         List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
+         tmp[0] = List<MenuElem>();
+         tmp[1] = List<MenuElem>();
+         elems.forEach((MenuElem me) {tmp[me.index].add(me);});
+
+         for (int i = 0; i < tmp.length; ++i) {
+            final int menuDepth = findMenuDepth(tmp[i]);
+            if (menuDepth != 0) {
+               MenuNode node = parseTree(tmp[i], menuDepth);
+               loadLeafCounters(node);
+               // FIXME: Load leaf reach counters.
+               _menu[i].root.add(node);
+            }
+         }
+
+         // This is how we did earlier, remove laster.
+         //_menu = menuReader(jsonDecode(cfg.menu));
+      }
 
       // We do not need all fields from cfg.menu during runtime. The
       // menu field is big and we should release its memory.
@@ -2408,7 +2442,6 @@ class MenuChatState extends State<MenuChat>
             } else if (p.status == 3) {
                _outPostsQueue.add(p);
             } else {
-               print('====> ${p.status}');
                assert(false);
             }
          }
@@ -2430,7 +2463,6 @@ class MenuChatState extends State<MenuChat>
       List<ChatMsgOutQueueElem> tmp = await loadOutChatMsg(_db);
 
       _outChatMsgsQueue = Queue<ChatMsgOutQueueElem>.from(tmp.reversed);
-      print('====> load: ${_outChatMsgsQueue.length}');
 
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. If the phone is connected (via USB) to a computer
@@ -2828,6 +2860,7 @@ class MenuChatState extends State<MenuChat>
 
       --k; // Accounts for the Todos index.
 
+      // FIXME: Update the database.
       _menu[_botBarIdx].updateLeafReach(k);
       setState(() { });
    }
@@ -3550,6 +3583,7 @@ class MenuChatState extends State<MenuChat>
 
       // We also have to persist the menu on file here since we may
       // not receive a subscribe_ack if the app is offline.
+      // FIXME: This will also have to be removed.
       await _persistMenu();
    }
 

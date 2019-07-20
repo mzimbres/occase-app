@@ -200,7 +200,7 @@ SELECT rowid, * FROM out_chat_msg_queue
 final String createMenuTable =
 '''
 CREATE TABLE menu
-( code TEXT PRIMARY KEY
+( code TEXT
 , depth INTEGER
 , leaf_reach INTEGER
 , name TEXT
