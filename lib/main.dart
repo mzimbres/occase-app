@@ -27,7 +27,7 @@ class Coord {
    Post post = null;
    Chat chat = null;
    int msgIdx = -1;
-   Coord(this.post, this.chat, this.msgIdx);
+   Coord({this.post, this.chat, this.msgIdx});
 }
 
 void myprint(Coord c, String prefix)
@@ -2598,7 +2598,11 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
          for (Coord c2 in _lpChatMsgs) {
-            ChatItem ci = ChatItem(3, c2.chat.msgs[c2.msgIdx].msg, now, -1);
+            ChatItem ci = ChatItem(
+               type: 3,
+               msg: c2.chat.msgs[c2.msgIdx].msg,
+               date: now,
+            );
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
                   _favPosts, c1.post.id, c1.chat.peer, false, ci);
@@ -2653,17 +2657,27 @@ class MenuChatState extends State<MenuChat>
       final int now = DateTime.now().millisecondsSinceEpoch;
       List<Post> posts = _ownPosts;
       bool isSenderPost = true;
-      ChatItem ci = ChatItem(2, _txtCtrl.text, now, _dragedIdx);
-      _dragedIdx = -1;
+
       if (_isOnFav()) {
          posts = _favPosts;
          isSenderPost = false;
       }
 
       await _onSendChatMsgImpl(
-         posts, _post.id, _chat.peer, isSenderPost, ci);
+         posts,
+         _post.id,
+         _chat.peer,
+         isSenderPost,
+         ChatItem(
+            type: 2,
+            msg: _txtCtrl.text,
+            date: now,
+            refersTo: _dragedIdx,
+         ),
+      );
 
       _txtCtrl.text = '';
+      _dragedIdx = -1;
 
       setState(()
       {
@@ -3023,12 +3037,13 @@ class MenuChatState extends State<MenuChat>
 
    void _onChatLPImpl(List<Post> posts, int i, int j)
    {
-      final Coord tmp = Coord(posts[i], posts[i].chats[j], -1);
+      final Coord tmp = Coord(post: posts[i], chat: posts[i].chats[j]);
 
       handleLPChats(
          _lpChats,
          toggleLPChat(posts[i].chats[j]),
-         tmp, CompPostIdAndPeer);
+         tmp, CompPostIdAndPeer
+      );
    }
 
    void _onChatLP(int i, int j)
@@ -3083,7 +3098,11 @@ class MenuChatState extends State<MenuChat>
       if (isTap && _lpChatMsgs.isEmpty)
          return;
 
-      final Coord tmp = Coord(_post, _chat, k);
+      final Coord tmp = Coord(
+         post: _post,
+         chat: _chat,
+         msgIdx: k
+      );
 
       handleLPChats(_lpChatMsgs,
                     toggleLPChatMsg(_chat.msgs[k]),
@@ -3228,7 +3247,12 @@ class MenuChatState extends State<MenuChat>
 
       final int now = DateTime.now().millisecondsSinceEpoch;
       posts[i].chats[j].addChatItem(
-         ChatItem(type, msg, now, refersTo), postId);
+         ChatItem(
+            type: type,
+            msg: msg,
+            date: now,
+            refersTo: refersTo),
+         postId);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.

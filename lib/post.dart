@@ -30,7 +30,7 @@ enum MsgType
 }
 
 class ChatItem {
-   int type; 
+   int type;
 
    String msg = '';
    int date = 0;
@@ -40,7 +40,7 @@ class ChatItem {
    // message.
    int refersTo = -1;
 
-   ChatItem(this.type, this.msg, this.date, this.refersTo);
+   ChatItem({this.type, this.msg, this.date, this.refersTo});
 
    bool isRedirected()
    {
@@ -88,16 +88,22 @@ class Chat {
    int serverAckEnd = 0;
    int chatLength = 0;
    int nUnreadMsgs = 0;
-   ChatItem lastChatItem = ChatItem(2, '', 0, -1);
+   ChatItem lastChatItem = ChatItem(type: 2);
 
    bool isLongPressed = false;
    List<ChatItem> msgs = null;
    File _msgsFile = null;
 
-   Chat(this.peer, this.nick, this.date, this.pinDate,
-        this.appAckReadEnd, this.appAckReceivedEnd,
-        this.serverAckEnd, this.chatLength, this.nUnreadMsgs,
-        this.lastChatItem);
+   Chat({this.peer,
+         this.nick,
+         this.date,
+         this.pinDate,
+         this.appAckReadEnd,
+         this.appAckReceivedEnd,
+         this.serverAckEnd,
+         this.chatLength,
+         this.nUnreadMsgs,
+         this.lastChatItem});
 
    void addChatItem(ChatItem ci, int postId)
    {
@@ -319,11 +325,14 @@ class Post {
    int createChatEntryForPeer(String peer, String nick)
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
-      Chat history =
-         Chat(peer, nick, now, 0, 0, 0, 0, 0, 0,
-              ChatItem(2, '', now, -1));
       final int l = chats.length;
-      chats.add(history);
+      chats.add(Chat(
+            peer: peer,
+            nick: nick,
+            date: now,
+            lastChatItem: ChatItem(type: 2, date: now),
+         ),
+      );
       return l;
    }
 
@@ -651,26 +660,23 @@ Future<List<Chat>> loadChats(Database db, int postId) async
 
   return List.generate(maps.length, (i)
   {
-     final int postId = maps[i]['post_id'];
-     final String peer = maps[i]['user_id'];
-     final int date = maps[i]['date'];
-     final int pinDate = maps[i]['pin_date'];
-     final String nick = maps[i]['nick'];
-     final int appAckReadEnd = maps[i]['app_ack_read_end'];
-     final int appAckReceivedEnd = maps[i]['app_ack_received_end'];
-     final int serverAckEnd = maps[i]['server_ack_end'];
-     final int chatLength = maps[i]['chat_length'];
-     final int nUnreadMsgs = maps[i]['n_unread_msgs'];
-     final String lastChatItemStr = maps[i]['last_chat_item'];
+     final String str = maps[i]['last_chat_item'];
+     ChatItem lastChatItem = ChatItem(type: 2);
+     if (!str.isEmpty)
+         lastChatItem = ChatItem.fromJson(jsonDecode(str));
 
-     // Notice we do not need the refersTo index here.
-     ChatItem lastChatItem = ChatItem(2, '', 0, -1);
-     if (!lastChatItemStr.isEmpty)
-         lastChatItem = ChatItem.fromJson(jsonDecode(lastChatItemStr));
-
-     return Chat(peer, nick, date, pinDate, appAckReadEnd,
-                 appAckReceivedEnd, serverAckEnd, chatLength,
-                 nUnreadMsgs, lastChatItem);
+     return Chat(
+        peer: maps[i]['user_id'],
+        nick: maps[i]['nick'],
+        date: maps[i]['date'],
+        pinDate: maps[i]['pin_date'],
+        appAckReadEnd: maps[i]['app_ack_read_end'],
+        appAckReceivedEnd: maps[i]['app_ack_received_end'],
+        serverAckEnd: maps[i]['server_ack_end'],
+        chatLength: maps[i]['chat_length'],
+        nUnreadMsgs: maps[i]['n_unread_msgs'],
+        lastChatItem: lastChatItem,
+     );
   });
 }
 
