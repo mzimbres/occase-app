@@ -24,10 +24,14 @@ import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/stl.dart' as stl;
 
 class Coord {
-   Post post = null;
-   Chat chat = null;
-   int msgIdx = -1;
-   Coord({this.post, this.chat, this.msgIdx});
+   Post post;
+   Chat chat;
+   int msgIdx;
+
+   Coord({this.post,
+          this.chat,
+          this.msgIdx = -1,
+   });
 }
 
 void myprint(Coord c, String prefix)
@@ -95,53 +99,21 @@ onPinPost(List<Post> posts, int i, Database db) async
    posts.sort(CompPosts);
 }
 
-Future<void> onCreateDb(Database db, int version) async
-{
-   print('====> Creating posts table.');
-   await db.execute(sql.createPostsTable);
-   print('====> Creating config table.');
-   await db.execute(sql.createConfig);
-   print('====> Inserting the default menu.');
-   await db.execute(sql.updateMenu, [Consts.menus]);
-   print('====> Creating chats table.');
-   await db.execute(sql.createChats);
-   print('====> Creating chat-status table.');
-   await db.execute(sql.createChatStatus);
-   print('====> Creating out-chat table.');
-   await db.execute(sql.creatOutChatTable);
-   print('====> Creating menu table.');
-   await db.execute(sql.createMenuTable);
-   print('====> Filling the menu table.');
-
-   // FIXME: Make this a member function to avoid loading and parsing
-   // the menu twice on creation.
-   final List<MenuItem> menu = menuReader(jsonDecode(Consts.menus));
-
-   List<MenuElem> elems = List<MenuElem>();
-   for (int i = 0; i < menu.length; ++i)
-      elems.addAll(makeMenuElems(menu[i].root.first, i));
-
-   Batch batch = db.batch();
-
-   elems.forEach((MenuElem me)
-   {
-      batch.insert('menu', menuElemToMap(me));
-   });
-
-   await batch.commit(noResult: true, continueOnError: true);
-}
-
 Future<Null> main() async
 {
   runApp(MyApp());
 }
 
 class ChatMsgOutQueueElem {
-   int rowid = 0;
-   int isChat = 0;
-   String payload = '';
-   bool sent = false; // Used for debugging.
-   ChatMsgOutQueueElem({this.rowid, this.isChat, this.payload, this.sent});
+   int rowid;
+   int isChat;
+   String payload;
+   bool sent; // Used for debugging.
+   ChatMsgOutQueueElem({this.rowid = 0,
+                        this.isChat = 0,
+                        this.payload = '',
+                        this.sent = false,
+   });
 }
 
 Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
@@ -2168,7 +2140,7 @@ class MenuChatState extends State<MenuChat>
 
    // Array with the length equal to the number of menus there
    // are. Used both on the filter and on the *new post* screens.
-   List<MenuItem> _menus = List<MenuItem>();
+   List<MenuItem> _menu = List<MenuItem>();
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
@@ -2256,7 +2228,7 @@ class MenuChatState extends State<MenuChat>
    ScrollController _chatScrollCtrl = ScrollController();
 
    // The *new post* text controler
-   TextEditingController _txtCtrl = TextEditingController();
+   TextEditingController _txtCtrl;
    FocusNode _chatFocusNode;
 
    IOWebSocketChannel channel;
@@ -2268,6 +2240,7 @@ class MenuChatState extends State<MenuChat>
    {
       super.initState();
       _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
+      _txtCtrl = TextEditingController();
       _tabCtrl.addListener(_tabCtrlChangeHandler);
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
@@ -2360,12 +2333,46 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
+   Future<void> _onCreateDb(Database db, int version) async
+   {
+      print('====> Creating posts table.');
+      await db.execute(sql.createPostsTable);
+      print('====> Creating config table.');
+      await db.execute(sql.createConfig);
+      print('====> Inserting the default menu.');
+      await db.execute(sql.updateMenu, [Consts.menus]);
+      print('====> Creating chats table.');
+      await db.execute(sql.createChats);
+      print('====> Creating chat-status table.');
+      await db.execute(sql.createChatStatus);
+      print('====> Creating out-chat table.');
+      await db.execute(sql.creatOutChatTable);
+      print('====> Creating menu table.');
+      await db.execute(sql.createMenuTable);
+      print('====> Filling the menu table.');
+
+      _menu = menuReader(jsonDecode(Consts.menus));
+
+      List<MenuElem> elems = List<MenuElem>();
+      for (int i = 0; i < _menu.length; ++i)
+         elems.addAll(makeMenuElems(_menu[i].root.first, i));
+
+      Batch batch = db.batch();
+
+      elems.forEach((MenuElem me)
+      {
+         batch.insert('menu', menuElemToMap(me));
+      });
+
+      await batch.commit(noResult: true, continueOnError: true);
+   }
+
    Future<void> _load(final String docDir) async
    {
       _db = await openDatabase(
          p.join(await getDatabasesPath(), 'main.db'),
          readOnly: false,
-         onCreate: onCreateDb,
+         onCreate: _onCreateDb,
          version: 1);
 
       try {
@@ -2378,14 +2385,12 @@ class MenuChatState extends State<MenuChat>
 
       _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
-      if (_menus.isEmpty)
-         _menus = menuReader(jsonDecode(cfg.menu));
+      if (_menu.isEmpty)
+         _menu = menuReader(jsonDecode(cfg.menu));
 
       // We do not need all fields from cfg.menu during runtime. The
       // menu field is big and we should release its memory.
       cfg.menu = '';
-
-      List<String> lines = List<String>();
 
       try {
          final List<Post> posts = await loadPosts(_db);
@@ -2438,7 +2443,7 @@ class MenuChatState extends State<MenuChat>
       channel = IOWebSocketChannel.connect(host);
       channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
 
-      final List<int> versions = makeMenuVersions(_menus);
+      final List<int> versions = makeMenuVersions(_menu);
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
 
@@ -2542,8 +2547,8 @@ class MenuChatState extends State<MenuChat>
    {
       _newPostPressed = true;
       _post = Post();
-      _menus[0].restoreMenuStack();
-      _menus[1].restoreMenuStack();
+      _menu[0].restoreMenuStack();
+      _menu[1].restoreMenuStack();
       _botBarIdx = 0;
       setState(() { });
    }
@@ -2551,8 +2556,8 @@ class MenuChatState extends State<MenuChat>
    void _onNewFilters()
    {
       _newFiltersPressed = true;
-      _menus[0].restoreMenuStack();
-      _menus[1].restoreMenuStack();
+      _menu[0].restoreMenuStack();
+      _menu[1].restoreMenuStack();
       _botBarIdx = 0;
       setState(() { });
    }
@@ -2561,13 +2566,13 @@ class MenuChatState extends State<MenuChat>
    {
       // We may want to  split this function in two: One for the
       // filters and one for the new post screen.
-      if (_botBarIdx >= _menus.length) {
+      if (_botBarIdx >= _menu.length) {
          --_botBarIdx;
          setState(() { });
          return false;
       }
 
-      if (_menus[_botBarIdx].root.length == 1) {
+      if (_menu[_botBarIdx].root.length == 1) {
          if (_botBarIdx == 0){
             _newPostPressed = false;
             _newFiltersPressed = false;
@@ -2579,7 +2584,7 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      _menus[_botBarIdx].root.removeLast();
+      _menu[_botBarIdx].root.removeLast();
       setState(() { });
       return false;
    }
@@ -2676,7 +2681,7 @@ class MenuChatState extends State<MenuChat>
          ),
       );
 
-      _txtCtrl.text = '';
+      _txtCtrl.clear();
       _dragedIdx = -1;
 
       setState(()
@@ -2733,8 +2738,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if (_botBarIdx < _menus.length)
-         _menus[_botBarIdx].restoreMenuStack();
+      if (_botBarIdx < _menu.length)
+         _menu[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -2762,7 +2767,7 @@ class MenuChatState extends State<MenuChat>
 
       do {
          --_botBarIdx;
-         _menus[_botBarIdx].restoreMenuStack();
+         _menu[_botBarIdx].restoreMenuStack();
       } while (_botBarIdx != i);
 
       setState(() { });
@@ -2770,16 +2775,16 @@ class MenuChatState extends State<MenuChat>
 
    void _onPostLeafPressed(int i)
    {
-      MenuNode o = _menus[_botBarIdx].root.last.children[i];
-      _menus[_botBarIdx].root.add(o);
+      MenuNode o = _menu[_botBarIdx].root.last.children[i];
+      _menu[_botBarIdx].root.add(o);
       _onPostLeafReached();
       setState(() { });
    }
 
    void _onPostLeafReached()
    {
-      _post.channel[_botBarIdx][0] = _menus[_botBarIdx].root.last.code;
-      _menus[_botBarIdx].restoreMenuStack();
+      _post.channel[_botBarIdx][0] = _menu[_botBarIdx].root.last.code;
+      _menu[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
@@ -2788,12 +2793,12 @@ class MenuChatState extends State<MenuChat>
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
-         MenuNode o = _menus[_botBarIdx].root.last.children[i];
-         _menus[_botBarIdx].root.add(o);
+         MenuNode o = _menu[_botBarIdx].root.last.children[i];
+         _menu[_botBarIdx].root.add(o);
          i = 0;
-      } while (_menus[_botBarIdx].root.last.children.length == 1);
+      } while (_menu[_botBarIdx].root.last.children.length == 1);
 
-      final int length = _menus[_botBarIdx].root.last.children.length;
+      final int length = _menu[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -2806,8 +2811,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onFilterNodePressed(int i)
    {
-      MenuNode o = _menus[_botBarIdx].root.last.children[i];
-      _menus[_botBarIdx].root.add(o);
+      MenuNode o = _menu[_botBarIdx].root.last.children[i];
+      _menu[_botBarIdx].root.add(o);
 
       setState(() { });
    }
@@ -2816,14 +2821,14 @@ class MenuChatState extends State<MenuChat>
    {
       // k = 0 means the *check all fields*.
       if (k == 0) {
-         _menus[_botBarIdx].updateLeafReachAll();
+         _menu[_botBarIdx].updateLeafReachAll();
          setState(() { });
          return;
       }
 
       --k; // Accounts for the Todos index.
 
-      _menus[_botBarIdx].updateLeafReach(k);
+      _menu[_botBarIdx].updateLeafReach(k);
       setState(() { });
    }
 
@@ -2941,7 +2946,7 @@ class MenuChatState extends State<MenuChat>
 
       _botBarIdx = 0;
       _post.description = _txtCtrl.text;
-      _txtCtrl.text = '';
+      _txtCtrl.clear();
 
       _post.from = cfg.appId;
       _post.nick = cfg.nick;
@@ -3028,8 +3033,6 @@ class MenuChatState extends State<MenuChat>
       final int i = posts.indexWhere((e) { return e.id == postId;});
       assert(i != -1);
       assert(j < posts[i].chats.length);
-
-      print('=====> $postId $i');
 
       final String content = 'Id: ${posts[i].chats[j].peer}';
       _showSimpleDial(ctx, (){}, txt.userInfo, content);
@@ -3204,7 +3207,6 @@ class MenuChatState extends State<MenuChat>
       final String peer = ack['from'];
       final String nick = ack['nick'];
       final int refersTo = ack['refers_to'];
-      print('======> 2 $refersTo');
 
       if (to != cfg.appId) {
          print("Server bug caught. Please report.");
@@ -3357,8 +3359,8 @@ class MenuChatState extends State<MenuChat>
          configToMap(cfg),
          conflictAlgorithm: ConflictAlgorithm.replace);
 
-      _menus = menuReader(ack);
-      assert(_menus != null);
+      _menu = menuReader(ack);
+      assert(_menu != null);
 
       await _persistMenu();
    }
@@ -3391,8 +3393,8 @@ class MenuChatState extends State<MenuChat>
          // The server has sent us a menu, that means we have to
          // update the current one keeping the status of each
          // field. TODO: Keep the status field.
-         _menus = menuReader(ack);
-         assert(_menus != null);
+         _menu = menuReader(ack);
+         assert(_menu != null);
          await _persistMenu();
       }
    }
@@ -3526,7 +3528,7 @@ class MenuChatState extends State<MenuChat>
    {
       print('====> Updating the menu.');
       try {
-         var foo = {'menus': _menus};
+         var foo = {'menus': _menu};
          final String str = jsonEncode(foo);
          await _db.execute(sql.updateMenu, [str]);
       } catch (e) {
@@ -3554,7 +3556,7 @@ class MenuChatState extends State<MenuChat>
    void _subscribeToChannels()
    {
       List<List<List<int>>> channels = List<List<List<int>>>();
-      for (MenuItem item in _menus) {
+      for (MenuItem item in _menu) {
          List<List<int>> hashCodes =
             readHashCodes(item.root.first, item.filterDepth);
 
@@ -3763,10 +3765,16 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onNickPressed() async
    {
-      cfg.nick = _txtCtrl.text;;
-      _txtCtrl.text = '';
-      await _db.execute(sql.updateNick, [cfg.nick]);
-      setState(() { });
+      try {
+         cfg.nick = _txtCtrl.text;
+         await _db.execute(sql.updateNick, [cfg.nick]);
+         setState(()
+         {
+            _txtCtrl.clear();
+         });
+      } catch (e) {
+         print(e);
+      }
    }
 
    Future<void> _updateLastSeenPostIdx(int i) async
@@ -3808,7 +3816,7 @@ class MenuChatState extends State<MenuChat>
    Widget build(BuildContext ctx)
    {
       // Just for safety if we did not load the menu fast enough.
-      if (_menus.isEmpty)
+      if (_menu.isEmpty)
          return makeWaitMenuScreen(ctx);
 
       if (cfg.nick.isEmpty) {
@@ -3816,7 +3824,8 @@ class MenuChatState extends State<MenuChat>
             ctx,
             _txtCtrl,
             _onNickPressed,
-            txt.appName);
+            txt.appName
+         );
       }
 
       if (hasSwitchedTab())
@@ -3827,7 +3836,7 @@ class MenuChatState extends State<MenuChat>
             makeNewPostScreens(
                ctx,
                _post,
-               _menus,
+               _menu,
                _txtCtrl,
                _onSendNewPostPressed,
                _botBarIdx,
@@ -3848,14 +3857,14 @@ class MenuChatState extends State<MenuChat>
                _onWillPopMenu,
                _onBotBarTapped,
                _onFilterLeafNodePressed,
-               _menus,
+               _menu,
                _filter,
                _botBarIdx,
                _onCancelNewFilter);
 
       if (isOnFavChat() || isOnOwnChat()) {
          String postSummary =
-            makePostSummaryStr(_menus[1].root.first, _post);
+            makePostSummaryStr(_menu[1].root.first, _post);
          return makeChatScreen(
             ctx,
             _onPopChat,
@@ -3905,7 +3914,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts,
          _onChatPressed,
          _onChatLP,
-         _menus,
+         _menu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,
@@ -3916,7 +3925,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _posts,
          _alertUserOnselectPost,
-         _menus,
+         _menu,
          _updateLastSeenPostIdx);
 
       bodies[2] = makeChatTab(
@@ -3924,7 +3933,7 @@ class MenuChatState extends State<MenuChat>
          _favPosts,
          _onChatPressed,
          _onChatLP,
-         _menus,
+         _menu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          !_lpChatMsgs.isEmpty,

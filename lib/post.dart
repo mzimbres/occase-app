@@ -32,15 +32,21 @@ enum MsgType
 class ChatItem {
    int type;
 
-   String msg = '';
-   int date = 0;
-   bool isLongPressed = false;
+   String msg;
+   int date;
 
    // A value different from -1 means this message refers to another
    // message.
-   int refersTo = -1;
+   int refersTo;
 
-   ChatItem({this.type, this.msg, this.date, this.refersTo});
+   bool isLongPressed;
+
+   ChatItem({this.type = 2,
+             this.msg = '',
+             this.date = 0,
+             this.refersTo = -1,
+             this.isLongPressed = false,
+   });
 
    bool isRedirected()
    {
@@ -63,7 +69,7 @@ class ChatItem {
       msg = map['msg'];
       date = map['date'];
       refersTo = map['refers_to'];
-      print('====> $refersTo');
+      isLongPressed = false;
    }
 
    Map<String, dynamic> toJson()
@@ -79,31 +85,33 @@ class ChatItem {
 }
 
 class Chat {
-   String peer = '';
-   String nick = '';
-   int date = 0;
-   int pinDate = 0;
-   int appAckReadEnd = 0;
-   int appAckReceivedEnd = 0;
-   int serverAckEnd = 0;
-   int chatLength = 0;
-   int nUnreadMsgs = 0;
-   ChatItem lastChatItem = ChatItem(type: 2);
+   String peer;
+   String nick;
+   int date;
+   int pinDate;
+   int appAckReadEnd;
+   int appAckReceivedEnd;
+   int serverAckEnd;
+   int chatLength;
+   int nUnreadMsgs;
+   ChatItem lastChatItem;
 
-   bool isLongPressed = false;
-   List<ChatItem> msgs = null;
-   File _msgsFile = null;
+   bool isLongPressed;
+   List<ChatItem> msgs;
+   File _msgsFile;
 
-   Chat({this.peer,
-         this.nick,
-         this.date,
-         this.pinDate,
-         this.appAckReadEnd,
-         this.appAckReceivedEnd,
-         this.serverAckEnd,
-         this.chatLength,
-         this.nUnreadMsgs,
-         this.lastChatItem});
+   Chat({this.peer = '',
+         this.nick = '',
+         this.date = 0,
+         this.pinDate = 0,
+         this.appAckReadEnd = 0,
+         this.appAckReceivedEnd = 0,
+         this.serverAckEnd = 0,
+         this.chatLength = 0,
+         this.nUnreadMsgs = 0,
+         this.lastChatItem,
+         this.isLongPressed = false,
+   });
 
    void addChatItem(ChatItem ci, int postId)
    {
@@ -180,7 +188,6 @@ class Chat {
 
    void persistChatMsg(ChatItem ci, final int postId)
    {
-      print('Persisting ${ci.msg}');
       if (!_isFileOpen())
          _openFile(postId);
 
@@ -330,7 +337,7 @@ class Post {
             peer: peer,
             nick: nick,
             date: now,
-            lastChatItem: ChatItem(type: 2, date: now),
+            lastChatItem: ChatItem(date: now),
          ),
       );
       return l;
@@ -606,16 +613,24 @@ Post readPostData(var item)
 }
 
 class Config {
-   String appId = '';
-   String appPwd = '';
-   String nick = '';
-   int lastPostId = 0;
-   int lastSeenPostId = 0;
-   String showDialogOnSelectPost = 'yes';
-   String showDialogOnDelPost = 'yes';
-   String menu = Consts.menus;
+   String appId;
+   String appPwd;
+   String nick;
+   int lastPostId;
+   int lastSeenPostId;
+   String showDialogOnSelectPost;
+   String showDialogOnDelPost;
+   String menu;
 
-   Config();
+   Config({this.appId = '',
+           this.appPwd = '',
+           this.nick = '',
+           this.lastPostId = 0,
+           this.lastSeenPostId = 0,
+           this.showDialogOnSelectPost = 'yes',
+           this.showDialogOnDelPost = 'yes',
+           this.menu = Consts.menus,
+   });
 }
 
 Map<String, dynamic> configToMap(Config cfg)
@@ -639,15 +654,16 @@ Future<List<Config>> loadConfig(Database db) async
 
   return List.generate(maps.length, (i)
   {
-     Config cfg = Config();
-     cfg.appId = maps[i]['app_id'];
-     cfg.appPwd = maps[i]['app_pwd'];
-     cfg.nick = maps[i]['nick'];
-     cfg.lastPostId = maps[i]['last_post_id'];
-     cfg.lastSeenPostId = maps[i]['last_seen_post_id'];
-     cfg.showDialogOnSelectPost = maps[i]['show_dialog_on_select_post'];
-     cfg.showDialogOnDelPost = maps[i]['show_dialog_on_del_post'];
-     cfg.menu = maps[i]['menu'];
+     Config cfg = Config(
+        appId: maps[i]['app_id'],
+        appPwd: maps[i]['app_pwd'],
+        nick: maps[i]['nick'],
+        lastPostId: maps[i]['last_post_id'],
+        lastSeenPostId: maps[i]['last_seen_post_id'],
+        showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
+        showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
+        menu: maps[i]['menu'],
+     );
 
      return cfg;
   });
@@ -661,7 +677,7 @@ Future<List<Chat>> loadChats(Database db, int postId) async
   return List.generate(maps.length, (i)
   {
      final String str = maps[i]['last_chat_item'];
-     ChatItem lastChatItem = ChatItem(type: 2);
+     ChatItem lastChatItem = ChatItem();
      if (!str.isEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(str));
 
