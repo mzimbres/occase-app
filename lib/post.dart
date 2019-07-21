@@ -568,8 +568,18 @@ findAndMarkChatApp( final List<Post> posts
    }
 
    if (status == 3) {
-      final int idx = posts[i].chats[j].appAckReceivedEnd;
+      // NOTE: To optimize the system, the app won't send an
+      // app_ack_received if the user is in the screen the
+      // app_ack_received belongs to, intead an app_ack_read will be
+      // sent directly. In such cases we have to update both the
+      // received and the read indexes.
+      final int idx = posts[i].chats[j].serverAckEnd;
+      posts[i].chats[j].appAckReceivedEnd = idx;
       posts[i].chats[j].appAckReadEnd = idx;
+
+      batch.rawUpdate(sql.updateAppAckReceivedEnd,
+                     [idx, postId, peer]);
+
       batch.rawUpdate(sql.updateAppAckReadEnd,
                       [idx, postId, peer]);
       return;

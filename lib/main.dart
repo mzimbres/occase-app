@@ -3290,8 +3290,6 @@ class MenuChatState extends State<MenuChat>
       if (isOnPost && isOnChat) {
          posts[i].chats[j].nUnreadMsgs = 0;
          ack = 'app_ack_read';
-         // TODO: Put an indicator that a new message has arrived
-         // if it is out of the field of view.
       } else {
          ++posts[i].chats[j].nUnreadMsgs;
          ack = 'app_ack_received';
@@ -3313,6 +3311,7 @@ class MenuChatState extends State<MenuChat>
       // Generating the payload before the async operation to avoid
       // problems.
       final String payload = jsonEncode(msgMap);
+      print(payload);
 
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
