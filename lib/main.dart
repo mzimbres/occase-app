@@ -819,7 +819,7 @@ makeChatMsgListView(
          if (shift == 1) {
             if (i == nMsgs - ch.nUnreadMsgs) {
                return Card(
-                  color: stl.postFrameColor,
+                  color: Colors.white,
                   margin: const EdgeInsets.symmetric(vertical: 10.0),
                   shape: RoundedRectangleBorder(
                      borderRadius: BorderRadius.all(Radius.circular(0.0)),
@@ -832,7 +832,7 @@ makeChatMsgListView(
                             style: TextStyle(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
-                               color: Colors.white,
+                               color: Theme.of(ctx).primaryColor,
                             ),
                          )
                       ),
