@@ -301,9 +301,71 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       children: <Widget>[card]);
 }
 
+List<Widget> makeNewPostDetailScreen(
+      BuildContext ctx,
+      Function onNewPostDetail,
+      Function onNewPostCheckOp,
+      Post post)
+{
+   List<Widget> widgets = List<Widget>();
+
+   List<Widget> foo =
+      makePostDetailScreen(
+         ctx,
+         onNewPostDetail,
+         post.filter,
+         txt.postDetails,
+         txt.newPostCheckOps);
+
+   widgets.addAll(foo);
+
+   List<Widget> bar =
+      makePostDetailScreen(
+         ctx,
+         onNewPostCheckOp,
+         post.checkOps,
+         txt.postCheckOps,
+         txt.addtionalFiltersTitle
+      );
+
+   Widget exp = Theme(
+         data: makeExpTileThemeData(),
+         child: ExpansionTile(
+             backgroundColor: stl.expTileExpColor,
+             title: Text(
+                'Características',
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+             ),
+             children: ListTile.divideTiles(
+                        context: ctx,
+                        tiles: bar,
+                        color: Colors.grey).toList()
+          ),
+      );
+
+   widgets.add(Card(
+         elevation: 0.0,
+         child: exp,
+         color: stl.postFrameColor,
+         shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+         ),
+      )
+   );
+
+   widgets.add(createSendButton(
+      (){onNewPostDetail(-1);},
+      'Continuar',
+      stl.postFrameColor)
+   );
+
+   return widgets;
+}
+
 WillPopScope
 makeNewPostScreens( BuildContext ctx
-                  , Post postInput
+                  , Post post
                   , final List<MenuItem> menu
                   , TextEditingController txtCtrl
                   , onSendNewPostPressed
@@ -326,40 +388,18 @@ makeNewPostScreens( BuildContext ctx
    if (screen == 3) {
       wid = makeNewPostFinalScreenWidget(
          ctx,
-         postInput,
+         post,
          menu,
          txtCtrl,
          onSendNewPostPressed);
 
    } else if (screen == 2) {
-      List<Widget> widgets = List<Widget>();
-
-      List<Widget> foo =
-         makePostDetailScreen(
+      final List<Widget> widgets =
+         makeNewPostDetailScreen(
             ctx,
             onNewPostDetail,
-            postInput.filter,
-            txt.postDetails,
-            txt.addtionalFiltersTitle);
-
-      widgets.addAll(foo);
-
-      List<Widget> bar =
-         makePostDetailScreen(
-            ctx,
             onNewPostCheckOp,
-            postInput.checkOps,
-            txt.postCheckOps,
-            txt.addtionalFiltersTitle
-         );
-
-      widgets.addAll(bar);
-
-      widgets.add(createSendButton(
-         (){onNewPostDetail(-1);},
-         'Continuar',
-         stl.postFrameColor)
-      );
+            post);
 
       wid = ListView.builder(
          padding: const EdgeInsets.all(3.0),
@@ -550,7 +590,17 @@ makePostDetailScreen( BuildContext ctx
          activeColor: color,
       );
 
-       widgets.add(cblt);
+       widgets.add(
+          Card(
+             margin: const EdgeInsets.only(left: 1.5, right: 1.5, top: 0.0),
+             color: Colors.white,
+             child:cblt,
+             elevation: 0.0,
+             shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(0.0)),
+             ),
+          ),
+       );
    }
 
    return widgets;
