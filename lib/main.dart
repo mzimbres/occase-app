@@ -312,7 +312,8 @@ makeNewPostScreens( BuildContext ctx
                   , Function onPostLeafPressed
                   , Function onPostNodePressed
                   , Function onWillPopMenu
-                  , Function onNewPostBotBarTapped)
+                  , Function onNewPostBotBarTapped
+                  , Function onNewPostCheckOp)
 {
    Widget wid;
    Widget appBarTitle = Text(
@@ -331,7 +332,43 @@ makeNewPostScreens( BuildContext ctx
          onSendNewPostPressed);
 
    } else if (screen == 2) {
-      wid = makePostDetailScreen(ctx, onNewPostDetail, postInput.filter, 1);
+      List<Widget> widgets = List<Widget>();
+
+      List<Widget> foo =
+         makePostDetailScreen(
+            ctx,
+            onNewPostDetail,
+            postInput.filter,
+            txt.postDetails,
+            txt.addtionalFiltersTitle);
+
+      widgets.addAll(foo);
+
+      List<Widget> bar =
+         makePostDetailScreen(
+            ctx,
+            onNewPostCheckOp,
+            postInput.checkOps,
+            txt.postCheckOps,
+            txt.addtionalFiltersTitle
+         );
+
+      widgets.addAll(bar);
+
+      widgets.add(createSendButton(
+         (){onNewPostDetail(-1);},
+         'Continuar',
+         stl.postFrameColor)
+      );
+
+      wid = ListView.builder(
+         padding: const EdgeInsets.all(3.0),
+         itemCount: widgets.length,
+         itemBuilder: (BuildContext ctx, int i)
+         {
+            return widgets[i];
+         },
+      );
    } else {
       wid = createPostMenuListView(
          ctx,
@@ -419,7 +456,19 @@ makeNewFiltersScreens( BuildContext ctx
       wid = makeNewFiltersEndWidget((){onSendFilters(ctx);},
                                     onCancelNewFilters);
    } else if (screen == 2) {
-      wid = makePostDetailScreen(ctx, onFilterDetail, filter, 0);
+      final List<Widget> widgets =
+         makePostDetailScreen(ctx, onFilterDetail,
+                              filter, txt.postDetails,
+                              txt.addtionalFiltersTitle);
+
+      wid = ListView.builder(
+         padding: const EdgeInsets.all(3.0),
+         itemCount: widgets.length,
+         itemBuilder: (BuildContext ctx, int i)
+         {
+            return widgets[i];
+         },
+      );
    } else {
       wid = createFilterListView(
          ctx,
@@ -461,46 +510,50 @@ makeNewFiltersScreens( BuildContext ctx
               screen)));
 }
 
-ListView
+List<Widget>
 makePostDetailScreen( BuildContext ctx
                     , Function proceed
                     , int filter
-                    , int shift)
+                    , List<String> list
+                    , String title)
 {
-   return ListView.builder(
-      padding: const EdgeInsets.all(3.0),
-      itemCount: txt.postDetails.length + shift,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-         if (i == txt.postDetails.length)
-            return createSendButton((){proceed(i);},
-                                    'Continuar',
-                                    stl.postFrameColor);
+   List<Widget> widgets = List<Widget>();
 
-         bool v = ((filter & (1 << i)) != 0);
-         Color color = stl.selectedMenuColor;
-         if (v)
-            color = Theme.of(ctx).primaryColor;
-
-         return CheckboxListTile(
-            dense: true,
-            secondary:
-               makeCircleAvatar(
-                  Text( txt.postDetails[i].substring(0, 2)
-                      , style: TextStyle(color: Colors.white)
-                  ),
-                  color
-               ),
-            title: Text(
-               txt.postDetails[i],
-               style: Theme.of(ctx).textTheme.subhead,
-            ),
-            value: v,
-            onChanged: (bool v) { proceed(i); },
-            activeColor: color,
-         );
-      },
+   Text t = Text(
+      title,
+      style: Theme.of(ctx).textTheme.title
    );
+
+   widgets.add(Center(child: t));
+
+   for (int i = 0; i < list.length; ++i) {
+      bool v = ((filter & (1 << i)) != 0);
+      Color color = stl.selectedMenuColor;
+      if (v)
+         color = Theme.of(ctx).primaryColor;
+
+       CheckboxListTile cblt = CheckboxListTile(
+         dense: true,
+         secondary:
+            makeCircleAvatar(
+               Text( list[i].substring(0, 2)
+                   , style: TextStyle(color: Colors.white)
+               ),
+               color
+            ),
+         title: Text(
+            list[i],
+            style: Theme.of(ctx).textTheme.subhead,
+         ),
+         value: v,
+         onChanged: (bool v) { proceed(i); },
+         activeColor: color,
+      );
+
+       widgets.add(cblt);
+   }
+
+   return widgets;
 }
 
 class MyApp extends StatelessWidget {
@@ -3793,7 +3846,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPostDetail(int i)
    {
-      if (i == txt.postDetails.length) {
+      if (i == -1) {
          _botBarIdx = 3;
          setState(() { });
          return;
@@ -3801,6 +3854,12 @@ class MenuChatState extends State<MenuChat>
 
       //_post.filter ^= 1 << i;
       _post.filter = 1 << i;
+      setState(() { });
+   }
+
+   void _onNewPostCheckOp(int i)
+   {
+      _post.checkOps ^= 1 << i;
       setState(() { });
    }
 
@@ -3842,7 +3901,8 @@ class MenuChatState extends State<MenuChat>
                _onPostLeafPressed,
                _onPostNodePressed,
                _onWillPopMenu,
-               _onNewPostBotBarTapped);
+               _onNewPostBotBarTapped,
+               _onNewPostCheckOp);
       }
 
       if (_newFiltersPressed)

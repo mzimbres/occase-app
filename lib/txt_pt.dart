@@ -97,6 +97,7 @@ final List<String> descList = <String>
 
 // WARNING: The strings in the array must have size at least two. I
 // won't check that in code.
+const String addtionalFiltersTitle = 'Filtros Adicionais';
 final List<String> postDetails = <String>
 [ 'Novo'
 , 'Usado'
@@ -104,7 +105,8 @@ final List<String> postDetails = <String>
 , 'Repasse'
 ];
 
-final List<String> fooBar = <String>
+const String newPostCheckOps = 'Informacoes';
+final List<String> postCheckOps = <String>
 [ 'Airbag'
 , 'Alarme'
 , 'Ar quente'

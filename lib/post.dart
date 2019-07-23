@@ -290,6 +290,8 @@ class Post {
 
    int filter = 0;
 
+   int checkOps = 0;
+
    // The publication date.
    int date = 0;
 
