@@ -98,15 +98,15 @@ final List<String> descList = <String>
 // WARNING: The strings in the array must have size at least two. I
 // won't check that in code.
 const String addtionalFiltersTitle = 'Filtros Adicionais';
-final List<String> postDetails = <String>
+final List<String> additionalFilters = <String>
 [ 'Novo'
 , 'Usado'
 , 'Troca'
 , 'Repasse'
 ];
 
-const String newPostCheckOps = 'Informacoes';
-final List<String> postCheckOps = <String>
+const String newPostCheckOpsTitle = 'Adicionais';
+final List<String> newPostCheckOps = <String>
 [ 'Airbag'
 , 'Alarme'
 , 'Ar quente'
@@ -127,6 +127,34 @@ final List<String> postCheckOps = <String>
 , 'Volante com regulagen de altura'
 , 'Farol de xenônio'
 , 'Direcao hidráulica'
+];
+
+const String newPostCheckOpsTitle2 = 'Combustível';
+final List<String> newPostCheckOps2 = <String>
+[ 'Alcool'
+, 'Gasolina'
+, 'Diesel'
+, 'Metanol'
+, 'Querozene'
+, 'Cachaca'
+, 'Gazolina e alcool'
+];
+
+const String newPostCheckOpsTitle3 = 'Câmbio';
+final List<String> newPostCheckOps3 = <String>
+[ 'Automático'
+, 'Automático sequêncial'
+, 'Automatizado'
+, 'Automatizado DTC(2)'
+, 'Manual'
+];
+
+const String newPostCheckOpsTitle4 = 'Portas';
+final List<String> newPostCheckOps4 = <String>
+[ '2 porta'
+, '4 Portas'
+, '5 Portas'
+, 'Nao especificado'
 ];
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";

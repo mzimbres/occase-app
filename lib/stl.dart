@@ -21,7 +21,7 @@ final Color chatLongPressendColor = Colors.grey[400];
 
 // Car app.
 final Color primaryColor = Colors.teal[700];
-final Color postFrameColor = Colors.grey;
+final Color postFrameColor = seaGreen;
 const Color accentColor = Colors.blue;
 final Color expTileExpColor = postFrameColor;
 final Color expTileSelectedColor = Colors.white;

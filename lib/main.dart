@@ -301,6 +301,48 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       children: <Widget>[card]);
 }
 
+Widget makeNewPostScreenElem(
+   BuildContext ctx,
+   Post post,
+   Function onNewPostCheckOp,
+   String title,
+   List<String> items,
+   int state)
+{
+   List<Widget> bar =
+      makeNewPostDetailElemList(
+         ctx,
+         onNewPostCheckOp,
+         state,
+         items,
+      );
+
+   Widget exp = Theme(
+      data: makeExpTileThemeData(),
+      child: ExpansionTile(
+          backgroundColor: stl.expTileExpColor,
+          title: Text(
+             title,
+             maxLines: 1,
+             overflow: TextOverflow.clip,
+          ),
+          children: ListTile.divideTiles(
+                     context: ctx,
+                     tiles: bar,
+                     color: Colors.grey).toList()
+      ),
+   );
+
+   return Card(
+      elevation: 0.0,
+      child: exp,
+      color: stl.postFrameColor,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+   );
+}
+
 List<Widget> makeNewPostDetailScreen(
       BuildContext ctx,
       Function onNewPostDetail,
@@ -309,55 +351,69 @@ List<Widget> makeNewPostDetailScreen(
 {
    List<Widget> widgets = List<Widget>();
 
-   List<Widget> foo =
-      makePostDetailScreen(
-         ctx,
-         onNewPostDetail,
-         post.filter,
-         txt.postDetails,
-         txt.newPostCheckOps);
-
-   widgets.addAll(foo);
-
-   List<Widget> bar =
-      makePostDetailScreen(
-         ctx,
-         onNewPostCheckOp,
-         post.checkOps,
-         txt.postCheckOps,
-         txt.addtionalFiltersTitle
-      );
-
-   Widget exp = Theme(
-         data: makeExpTileThemeData(),
-         child: ExpansionTile(
-             backgroundColor: stl.expTileExpColor,
-             title: Text(
-                'Características',
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-             ),
-             children: ListTile.divideTiles(
-                        context: ctx,
-                        tiles: bar,
-                        color: Colors.grey).toList()
-          ),
-      );
-
-   widgets.add(Card(
-         elevation: 0.0,
-         child: exp,
-         color: stl.postFrameColor,
-         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-         ),
-      )
+   Widget foo = makeNewPostScreenElem(
+      ctx,
+      post,
+      onNewPostDetail,
+      txt.addtionalFiltersTitle,
+      txt.additionalFilters,
+      post.filter,
    );
 
-   widgets.add(createSendButton(
-      (){onNewPostDetail(-1);},
-      'Continuar',
-      stl.postFrameColor)
+   widgets.add(foo);
+
+   Widget bar = makeNewPostScreenElem(
+      ctx,
+      post,
+      onNewPostCheckOp,
+      txt.newPostCheckOpsTitle,
+      txt.newPostCheckOps,
+      post.checkOps,
+   );
+
+   widgets.add(bar);
+
+   Widget foobar = makeNewPostScreenElem(
+      ctx,
+      post,
+      (int i){print('I do not like you');},
+      txt.newPostCheckOpsTitle2,
+      txt.newPostCheckOps2,
+      287,
+   );
+
+   widgets.add(foobar);
+
+   Widget foobar2 = makeNewPostScreenElem(
+      ctx,
+      post,
+      (int i){print('I do not like you');},
+      txt.newPostCheckOpsTitle3,
+      txt.newPostCheckOps3,
+      287,
+   );
+
+
+   widgets.add(foobar2);
+
+   Widget foobar3 = makeNewPostScreenElem(
+      ctx,
+      post,
+      (int i){print('I do not like you');},
+      txt.newPostCheckOpsTitle4,
+      txt.newPostCheckOps4,
+      287,
+   );
+
+
+   widgets.add(foobar3);
+
+   widgets.add(
+      createSendButton(
+         (){onNewPostDetail(-1);},
+         'Continuar',
+         Colors.blue,
+      ),
    );
 
    return widgets;
@@ -497,9 +553,13 @@ makeNewFiltersScreens( BuildContext ctx
                                     onCancelNewFilters);
    } else if (screen == 2) {
       final List<Widget> widgets =
-         makePostDetailScreen(ctx, onFilterDetail,
-                              filter, txt.postDetails,
-                              txt.addtionalFiltersTitle);
+         makeNewPostDetailElemList(
+            ctx,
+            onFilterDetail,
+            filter,
+            txt.additionalFilters,
+            //txt.addtionalFiltersTitle
+         );
 
       wid = ListView.builder(
          padding: const EdgeInsets.all(3.0),
@@ -551,20 +611,13 @@ makeNewFiltersScreens( BuildContext ctx
 }
 
 List<Widget>
-makePostDetailScreen( BuildContext ctx
-                    , Function proceed
-                    , int filter
-                    , List<String> list
-                    , String title)
+makeNewPostDetailElemList(
+   BuildContext ctx,
+   Function proceed,
+   int filter,
+   List<String> list)
 {
    List<Widget> widgets = List<Widget>();
-
-   Text t = Text(
-      title,
-      style: Theme.of(ctx).textTheme.title
-   );
-
-   widgets.add(Center(child: t));
 
    for (int i = 0; i < list.length; ++i) {
       bool v = ((filter & (1 << i)) != 0);
@@ -592,7 +645,9 @@ makePostDetailScreen( BuildContext ctx
 
        widgets.add(
           Card(
-             margin: const EdgeInsets.only(left: 1.5, right: 1.5, top: 0.0),
+             margin: const EdgeInsets.only(
+                left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
+             ),
              color: Colors.white,
              child:cblt,
              elevation: 0.0,
@@ -1533,14 +1588,14 @@ Card makePostDetailElem(BuildContext ctx, int filter)
 {
    List<Widget> leftList = List<Widget>();
 
-   for (int i = 0; i < txt.postDetails.length; ++i) {
+   for (int i = 0; i < txt.additionalFilters.length; ++i) {
       final bool b = (filter & (1 << i)) == 0;
       if (b)
          continue;
 
       Icon icTmp = Icon(Icons.check, color: stl.postFrameColor);
       Text text = Text(
-         ' ${txt.postDetails[i]}',
+         ' ${txt.additionalFilters[i]}',
          style: Theme.of(ctx).textTheme.body1,
       );
       Row row = Row(children: <Widget>[icTmp, text]); 
