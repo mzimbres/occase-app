@@ -558,7 +558,6 @@ makeNewFiltersScreens( BuildContext ctx
             onFilterDetail,
             filter,
             txt.additionalFilters,
-            //txt.addtionalFiltersTitle
          );
 
       wid = ListView.builder(
@@ -1324,6 +1323,132 @@ makeFilterListTileTitleWidget(
          [TextSpan(text: str2, style: stl2)]));
 }
 
+ListTile makeFilterSelectAllItem(
+   BuildContext ctx,
+   String title,
+   Function onTap)
+{
+   // Handles the *select all* button.
+   return ListTile(
+       leading: Icon(
+          Icons.select_all,
+          size: 35.0,
+          color: Theme.of(ctx).primaryColor),
+       title: Text(
+          title,
+          style: Theme.of(ctx).textTheme.subhead,
+       ),
+       dense: true,
+       onTap: onTap,
+       enabled: true,
+    );
+}
+
+ListTile makeFilterLeafListTile(
+   BuildContext ctx,
+   MenuNode child,
+   Function onTap)
+{
+   Widget icon = Icon(Icons.check_box_outline_blank);
+   if (child.leafReach > 0)
+      icon = Icon(Icons.check_box);
+
+   Widget subtitle = null;
+   if (!child.isLeaf()) {
+      subtitle =  Text(
+          child.getChildrenNames(),
+          style: Theme.of(ctx).textTheme.subtitle,
+          maxLines: 2,
+          overflow: TextOverflow.clip);
+   }
+
+   Color cc = Colors.grey;
+   if (child.leafReach > 0)
+      cc = Theme.of(ctx).primaryColor;
+
+   String s = '';
+   if (child.leafCounter > 1)
+      s = ' (${child.leafCounter})';
+
+   RichText title = RichText(
+      text: TextSpan(
+         text: child.name,
+         style: Theme.of(ctx).textTheme.subhead,
+         children: <TextSpan>
+         [ TextSpan(
+              text: s,
+              style: Theme.of(ctx).textTheme.caption,
+           ),
+         ]
+      )
+   );
+
+   // Notice we do not subtract -1 on onLeafPressed so that
+   // this function can diferentiate the Todos button case.
+   final String abbrev = makeStrAbbrev(child.name);
+   return ListTile(
+       leading: makeCircleAvatar(
+          Text(abbrev, style: TextStyle(color: Colors.white)),
+          cc
+       ),
+       title: title,
+       dense: true,
+       subtitle: subtitle,
+       trailing: icon,
+       contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+       onTap: onTap,
+       enabled: true,
+       selected: child.leafReach > 0,
+       isThreeLine: !child.isLeaf());
+}
+
+ListTile makeFilterListTitle(
+   BuildContext ctx,
+   MenuNode child,
+   Function onTap)
+{
+   final int c = child.leafReach;
+   final int cs = child.leafCounter;
+
+   final String subtitle = child.getChildrenNames();
+   final String titleStr = '${child.name}';
+   Color cc = Colors.grey;
+   if (c != 0)
+      cc = Theme.of(ctx).primaryColor;
+
+   RichText title = RichText(
+      text: TextSpan(
+         text: titleStr,
+         style: Theme.of(ctx).textTheme.subhead,
+         children: <TextSpan>
+         [TextSpan(
+            text: ' ($c/$cs)',
+            style: Theme.of(ctx).textTheme.caption),
+         ]
+      )
+   );
+         
+   return
+      ListTile(
+          leading: makeCircleAvatar(
+             Text(makeStrAbbrev(child.name),
+                  style: TextStyle(color: Colors.white)), cc),
+          title: title,
+          dense: true,
+          subtitle: Text(
+             subtitle,
+             //style: Theme.of(ctx).textTheme.subtitle,
+             maxLines: 2,
+             overflow: TextOverflow.clip),
+          trailing: Icon(Icons.keyboard_arrow_right),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+          onTap: onTap,
+          enabled: true,
+          selected: c != 0,
+          isThreeLine: true,
+       );
+}
+
 /*
  *  To support the "select all" buttom in the menu checkbox we have to
  *  add some complex logic.  First we note that the "Todos" checkbox
@@ -1341,7 +1466,6 @@ ListView createFilterListView(BuildContext ctx,
                               Function onNodePressed,
                               bool makeLeaf)
 {
-   // TODO: We should check all children and not only the last.
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
       shift = 1;
@@ -1351,117 +1475,24 @@ ListView createFilterListView(BuildContext ctx,
       itemCount: o.children.length + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
-         if (shift == 1 && i == 0) {
-            // Handles the *select all* button.
-            return ListTile(
-                leading: Icon(
-                   Icons.select_all,
-                   size: 35.0,
-                   color: Theme.of(ctx).primaryColor),
-                title: Text(
-                   txt.menuSelectAllStr,
-                   style: Theme.of(ctx).textTheme.subhead,
-                ),
-                dense: true,
-                onTap: () { onLeafPressed(0); },
-                enabled: true,);
-         }
-
-         if (shift == 1) {
-            MenuNode child = o.children[i - 1];
-            Widget icon = Icon(Icons.check_box_outline_blank);
-            if (child.leafReach > 0)
-               icon = Icon(Icons.check_box);
-
-            Widget subtitle = null;
-            if (!child.isLeaf()) {
-               subtitle =  Text(
-                   child.getChildrenNames(),
-                   style: Theme.of(ctx).textTheme.subtitle,
-                   maxLines: 2,
-                   overflow: TextOverflow.clip);
-            }
-
-            Color cc = Colors.grey;
-            if (child.leafReach > 0)
-               cc = Theme.of(ctx).primaryColor;
-
-            String s = '';
-            if (child.leafCounter > 1)
-               s = ' (${child.leafCounter})';
-
-            RichText title = RichText(
-               text: TextSpan(
-                  text: child.name,
-                  style: Theme.of(ctx).textTheme.subhead,
-                  children: <TextSpan>
-                  [ TextSpan(
-                       text: s,
-                       style: Theme.of(ctx).textTheme.caption,
-                    ),
-                  ]
-               )
+         if (shift == 1 && i == 0)
+            return makeFilterSelectAllItem(
+               ctx, txt.menuSelectAllStr,
+               () { onLeafPressed(0); },
             );
 
-            // Notice we do not subtract -1 on onLeafPressed so that
-            // this function can diferentiate the Todos button case.
-            final String abbrev = makeStrAbbrev(child.name);
-            return ListTile(
-                leading: makeCircleAvatar(
-                   Text(abbrev, style: TextStyle(color: Colors.white)),
-                   cc
-                ),
-                title: title,
-                dense: true,
-                subtitle: subtitle,
-                trailing: icon,
-                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-                onTap: () { onLeafPressed(i);},
-                enabled: true,
-                selected: child.leafReach > 0,
-                isThreeLine: !child.isLeaf());
-         }
+         if (shift == 1)
+            return makeFilterLeafListTile(
+               ctx,
+               o.children[i - 1],
+               () { onLeafPressed(i);}
+            );
 
-         final int c = o.children[i].leafReach;
-         final int cs = o.children[i].leafCounter;
-
-         final String subtitle = o.children[i].getChildrenNames();
-         final String titleStr = '${o.children[i].name}';
-         Color cc = Colors.grey;
-         if (c != 0)
-            cc = Theme.of(ctx).primaryColor;
-
-         RichText title = RichText(
-            text: TextSpan(
-               text: titleStr,
-               style: Theme.of(ctx).textTheme.subhead,
-               children: <TextSpan>
-               [TextSpan(
-                  text: ' ($c/$cs)',
-                  style: Theme.of(ctx).textTheme.caption),
-               ]
-            )
+         return makeFilterListTitle(
+            ctx,
+            o.children[i],
+            () { onNodePressed(i); },
          );
-               
-         return
-            ListTile(
-                leading: makeCircleAvatar(
-                   Text(makeStrAbbrev(o.children[i].name),
-                        style: TextStyle(color: Colors.white)), cc),
-                title: title,
-                dense: true,
-                subtitle: Text(
-                   subtitle,
-                   style: Theme.of(ctx).textTheme.subtitle,
-                   maxLines: 2,
-                   overflow: TextOverflow.clip),
-                trailing: Icon(Icons.keyboard_arrow_right),
-                contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-                onTap: () { onNodePressed(i); },
-                enabled: true,
-                selected: c != 0,
-                isThreeLine: true,
-                );
       },
    );
 }
@@ -1851,7 +1882,7 @@ ListView createPostMenuListView(BuildContext ctx, MenuNode o,
          final int c = o.children[i].leafReach;
          final int cs = o.children[i].leafCounter;
 
-         final String names = o.children[i].getChildrenNames();
+         final String subtitles = o.children[i].getChildrenNames();
 
          MenuNode child = o.children[i];
          if (child.isLeaf()) {
@@ -1884,7 +1915,7 @@ ListView createPostMenuListView(BuildContext ctx, MenuNode o,
                 ),
                 dense: true,
                 subtitle: Text(
-                   names,
+                   subtitles,
                    style: Theme.of(ctx).textTheme.subtitle,
                    maxLines: 2,
                    overflow: TextOverflow.clip),

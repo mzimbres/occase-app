@@ -11,22 +11,17 @@ final Color oliveDrab = Color(0xFF6B8E23);
 final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
-// Music app.
-//final Color primaryColor = Colors.brown;
-//final Color postFrameColor = Colors.orangeAccent[100];
-//const Color accentColor = Colors.blue;
-//final Color expTileExpColor = postFrameColor;
-//final Color expTileSelectedColor = Colors.grey[800];
-//final Color expTileUnselectedColor = Colors.grey[700];
+const Color pc = Color(0xFF445046);
+const Color ac = Color(0xFF93B873);
 
 // Car app.
-final Color primaryColor = Colors.teal[700];
-final Color postFrameColor = seaGreen;
-const Color accentColor = Colors.blue;
+final Color primaryColor = pc;
+const Color accentColor = ac;
+final Color postFrameColor = primaryColor;
 final Color expTileExpColor = postFrameColor;
 final Color expTileSelectedColor = Colors.white;
 final Color expTileUnselectedColor = Colors.grey[200];
-final Color faButtonColor = primaryColor;
+final Color faButtonColor = accentColor;
 
 final double mainFontSize = 16.0;
 
