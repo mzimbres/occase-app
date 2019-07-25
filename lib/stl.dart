@@ -14,6 +14,12 @@ final Color chatLongPressendColor = Colors.grey[400];
 const Color pc = Color(0xFF445046);
 const Color ac = Color(0xFF93B873);
 
+//const Color pc = Color(0xFFfd7c6e);
+//const Color ac = Color(0xFF006d99);
+
+//const Color pc = Color(0xFFf47216);
+//const Color ac = Color(0xFF0e88d3);
+
 // Car app.
 final Color primaryColor = pc;
 const Color accentColor = ac;

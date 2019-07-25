@@ -1760,22 +1760,33 @@ Card makeChatEntry(BuildContext ctx,
       );
 
    List<Widget> cards = List<Widget>();
-   cards.add(card);
+   cards.add(
+      Padding(
+         padding: const EdgeInsets.only(
+            left: 4.0, right: 4.0, bottom: 4.0
+         ),
+         child: card,
+      ),
+   );
 
    cards.add(
       Padding(
-         padding: const EdgeInsets.only(bottom: 5.0),
+         padding: const EdgeInsets.only(
+            left: 4.0, right: 4.0, bottom: 4.0
+         ),
          child: chats,
       ),
    );
 
    return Card(
-      margin: const EdgeInsets.only(left: 1.5, right: 1.5, top: 4.0),
+      margin: const EdgeInsets.only(
+         left: 4.0, right: 4.0, top: 8.0
+      ),
       child: Column(children: cards),
       color: stl.postFrameColor,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+         borderRadius: BorderRadius.all(Radius.circular(7.0)),
       ),
    );
 }
@@ -1819,7 +1830,7 @@ Card makePostWidget(BuildContext ctx,
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: color,
       margin: EdgeInsets.all(stl.postMarging),
-      elevation: 5.0,
+      elevation: 0.0,
    );
 }
 
