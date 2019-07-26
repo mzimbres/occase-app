@@ -223,7 +223,7 @@ makeNickRegisterScreen( BuildContext ctx
          focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(Radius.circular(20.0)),
             borderSide: BorderSide(
-               color: Theme.of(ctx).primaryColor,
+               color: Theme.of(ctx).colorScheme.primary,
                width: 3.0),
          ),
          enabledBorder: OutlineInputBorder(
@@ -236,7 +236,7 @@ makeNickRegisterScreen( BuildContext ctx
          suffixIcon: IconButton(
             icon: Icon(Icons.send),
             onPressed: onNickPressed,
-            color: stl.postFrameColor,
+            color: Theme.of(ctx).colorScheme.primary,
          ),
       ),
    );
@@ -266,7 +266,8 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                             , onSendNewPostPressed)
 {
    List<Card> cards =
-      makeMenuInfoCards(ctx, post, menu, Theme.of(ctx).primaryColor);
+      makeMenuInfoCards(ctx, post, menu,
+            Theme.of(ctx).colorScheme.primary);
 
    cards.add(makePostDetailElem(ctx, post.filter));
 
@@ -282,18 +283,22 @@ makeNewPostFinalScreenWidget( BuildContext ctx
    Card tfc = Card(
       child: Padding(child: Center(child: tf),
          padding: EdgeInsets.all(stl.postElemTextPadding)),
-      color: stl.postLocHeaderColor,
+      color: Theme.of(ctx).colorScheme.background,
       margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0);
 
    cards.add(tfc);
 
    Card card = 
-      makePostWidget( ctx
-                    , cards
-                    , (final int add) { onSendNewPostPressed(ctx, add); }
-                    , Icon(Icons.publish, color: Colors.white)
-                    , stl.postFrameColor);
+      makePostWidget(
+         ctx,
+         cards,
+         (final int add) { onSendNewPostPressed(ctx, add); },
+         Icon(
+            Icons.publish,
+            color: Theme.of(ctx).colorScheme.onPrimary
+         ),
+      );
 
    return ListView(
       shrinkWrap: true,
@@ -318,9 +323,9 @@ Widget makeNewPostScreenElem(
       );
 
    Widget exp = Theme(
-      data: makeExpTileThemeData(),
+      data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-          backgroundColor: stl.expTileExpColor,
+          backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
           title: Text(
              title,
              maxLines: 1,
@@ -336,7 +341,7 @@ Widget makeNewPostScreenElem(
    return Card(
       elevation: 0.0,
       child: exp,
-      color: stl.postFrameColor,
+      color: Theme.of(ctx).colorScheme.primary,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
@@ -410,9 +415,9 @@ List<Widget> makeNewPostDetailScreen(
 
    widgets.add(
       createSendButton(
+         ctx,
          (){onNewPostDetail(-1);},
          'Continuar',
-         Colors.blue,
       ),
    );
 
@@ -505,8 +510,10 @@ makeNewPostScreens( BuildContext ctx
 }
 
 Widget
-makeNewFiltersEndWidget( Function onSendNewFilters
-                       , Function onCancelNewFilters)
+makeNewFiltersEndWidget(
+   BuildContext ctx,
+   Function onSendNewFilters,
+   Function onCancelNewFilters)
 {
    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -515,14 +522,19 @@ makeNewFiltersEndWidget( Function onSendNewFilters
       children: <Widget>
       [ Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(onCancelNewFilters,
-                                  'Cancelar',
-                                  Colors.red))
+          child: createSendButton(
+             ctx,
+             onCancelNewFilters,
+             'Cancelar',
+          ))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(onSendNewFilters,
-                                  'Enviar',
-                                  stl.postFrameColor))]);
+          child: createSendButton(
+             ctx,
+             onSendNewFilters,
+             'Enviar',
+          ))
+      ]);
 }
 
 WillPopScope
@@ -549,8 +561,11 @@ makeNewFiltersScreens( BuildContext ctx
    Widget appBarTitleWidget = appBarTitle;
 
    if (screen == 3) {
-      wid = makeNewFiltersEndWidget((){onSendFilters(ctx);},
-                                    onCancelNewFilters);
+      wid = makeNewFiltersEndWidget(
+         ctx,
+         (){onSendFilters(ctx);},
+         onCancelNewFilters,
+      );
    } else if (screen == 2) {
       final List<Widget> widgets =
          makeNewPostDetailElemList(
@@ -620,9 +635,9 @@ makeNewPostDetailElemList(
 
    for (int i = 0; i < list.length; ++i) {
       bool v = ((filter & (1 << i)) != 0);
-      Color color = stl.selectedMenuColor;
+      Color color = Theme.of(ctx).colorScheme.secondaryVariant;
       if (v)
-         color = Theme.of(ctx).primaryColor;
+         color = Theme.of(ctx).colorScheme.primary;
 
        CheckboxListTile cblt = CheckboxListTile(
          dense: true,
@@ -667,10 +682,11 @@ class MyApp extends StatelessWidget {
       title: txt.appName,
       //theme: ThemeData.dark(),
       theme: ThemeData(
+          colorScheme: stl.colorScheme,
           fontFamily: 'Montserrat',
           brightness: Brightness.light,
-          primaryColor: stl.primaryColor,
-          accentColor: stl.accentColor,
+          primaryColor: stl.colorScheme.primary,
+          accentColor: stl.colorScheme.secondary,
           appBarTheme: AppBarTheme(
              textTheme: TextTheme(
                 title: TextStyle(
@@ -752,17 +768,23 @@ makeBottomBarItems(List<IconData> icons,
 }
 
 FloatingActionButton
-makeFiltersFaButton(Function onNewPost, IconData id)
+makeFiltersFaButton(
+   BuildContext ctx,
+   Function onNewPost,
+   IconData id)
 {
    return FloatingActionButton(
-      backgroundColor: stl.faButtonColor,
-      child: Icon(id, color: Colors.white),
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      child: Icon(id,
+         color: Theme.of(ctx).colorScheme.onSecondary,
+      ),
       onPressed: onNewPost
    );
 }
 
 FloatingActionButton
-makeFaButton(Function onNewPost,
+makeFaButton(BuildContext ctx,
+             Function onNewPost,
              Function onFwdChatMsg,
              int lpChats,
              int lpChatMsgs)
@@ -785,8 +807,10 @@ makeFaButton(Function onNewPost,
       return null;
 
    return FloatingActionButton(
-      backgroundColor: stl.faButtonColor,
-      child: Icon(id, color: Colors.white),
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      child: Icon(id,
+         color: Theme.of(ctx).colorScheme.onSecondary,
+      ),
       onPressed: onNewPost);
 }
 
@@ -989,7 +1013,8 @@ makeChatMsgListView(
                             style: TextStyle(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
-                               color: Theme.of(ctx).primaryColor,
+                               color:
+                               Theme.of(ctx).colorScheme.primary,
                             ),
                          )
                       ),
@@ -1250,7 +1275,7 @@ makeChatScreen(BuildContext ctx,
                 titleSpacing: 0.0,
                 actions: actions,
                 title: title,
-                backgroundColor: Theme.of(ctx).primaryColor,
+                backgroundColor: Theme.of(ctx).colorScheme.primary,
                 leading: IconButton(
                    icon: Icon(
                       Icons.arrow_back,
@@ -1275,7 +1300,7 @@ Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
    // for opacity values.
    widgets[1] =
       Opacity( child: makeCircleUnreadMsgs(ctx, n, Colors.white,
-                      stl.primaryColor)
+                      Theme.of(ctx).colorScheme.primary)
              , opacity: opacity);
 
    return Row(children: widgets);
@@ -1333,7 +1358,7 @@ ListTile makeFilterSelectAllItem(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
-          color: Theme.of(ctx).primaryColor),
+          color: Theme.of(ctx).colorScheme.primary),
        title: Text(
           title,
           style: Theme.of(ctx).textTheme.subhead,
@@ -1362,9 +1387,9 @@ ListTile makeFilterLeafListTile(
           overflow: TextOverflow.clip);
    }
 
-   Color cc = Colors.grey;
+   Color cc = Theme.of(ctx).colorScheme.secondaryVariant;
    if (child.leafReach > 0)
-      cc = Theme.of(ctx).primaryColor;
+      cc = Theme.of(ctx).colorScheme.primary;
 
    String s = '';
    if (child.leafCounter > 1)
@@ -1387,9 +1412,10 @@ ListTile makeFilterLeafListTile(
    // this function can diferentiate the Todos button case.
    final String abbrev = makeStrAbbrev(child.name);
    return ListTile(
-       leading: makeCircleAvatar(
-          Text(abbrev, style: TextStyle(color: Colors.white)),
-          cc
+       leading: CircleAvatar(
+          child: Text(abbrev,
+             style: TextStyle(color: Colors.white)),
+          backgroundColor: cc,
        ),
        title: title,
        dense: true,
@@ -1412,9 +1438,9 @@ ListTile makeFilterListTitle(
 
    final String subtitle = child.getChildrenNames();
    final String titleStr = '${child.name}';
-   Color cc = Colors.grey;
+   Color cc = Theme.of(ctx).colorScheme.secondaryVariant;
    if (c != 0)
-      cc = Theme.of(ctx).primaryColor;
+      cc = Theme.of(ctx).colorScheme.primary;
 
    RichText title = RichText(
       text: TextSpan(
@@ -1430,9 +1456,11 @@ ListTile makeFilterListTitle(
          
    return
       ListTile(
-          leading: makeCircleAvatar(
-             Text(makeStrAbbrev(child.name),
-                  style: TextStyle(color: Colors.white)), cc),
+          leading: CircleAvatar(
+             child: Text(makeStrAbbrev(child.name),
+                   style: TextStyle(color: Colors.white)),
+             backgroundColor: cc,
+          ),
           title: title,
           dense: true,
           subtitle: Text(
@@ -1498,18 +1526,21 @@ ListView createFilterListView(BuildContext ctx,
 }
 
 Widget
-createSendButton(Function onPressed,
-                 final String txt,
-                 Color color)
+createSendButton(BuildContext ctx,
+                 Function onPressed,
+                 final String txt)
 {
-   RaisedButton but =
-      RaisedButton(
-         child: Text(txt,
-            style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: stl.mainFontSize)),
-         color: color,
-         onPressed: onPressed);
+   RaisedButton but = RaisedButton(
+      child: Text(txt,
+         style: TextStyle(
+               fontWeight: FontWeight.bold,
+               fontSize: stl.mainFontSize,
+               color: Theme.of(ctx).colorScheme.onSecondary,
+         ),
+      ),
+      color: Theme.of(ctx).colorScheme.secondary,
+      onPressed: onPressed,
+   );
 
    return Center(child: ButtonTheme(minWidth: 100.0, child: but));
 }
@@ -1624,12 +1655,15 @@ Card makePostDetailElem(BuildContext ctx, int filter)
       if (b)
          continue;
 
-      Icon icTmp = Icon(Icons.check, color: stl.postFrameColor);
       Text text = Text(
          ' ${txt.additionalFilters[i]}',
          style: Theme.of(ctx).textTheme.body1,
       );
-      Row row = Row(children: <Widget>[icTmp, text]); 
+
+      Row row = Row(children: <Widget>
+      [ Icon(Icons.check)
+      , text
+      ]); 
       leftList.add(row);
    }
 
@@ -1637,8 +1671,7 @@ Card makePostDetailElem(BuildContext ctx, int filter)
       Column( children: leftList
             , crossAxisAlignment: CrossAxisAlignment.start);
 
-   Icon ic = Icon(Icons.details, color: stl.postFrameColor);
-   return makePostElemSimple(ic, col);
+   return makePostElemSimple(Icon(Icons.details), col);
 }
 
 List<Card>
@@ -1657,8 +1690,7 @@ makeMenuInfoCards(BuildContext ctx,
                      ctx,
                      names,
                      txt.menuDepthNames[i],
-                     Icon( txt.newPostTabIcons[i]
-                         , color: stl.postFrameColor));
+                     Icon(txt.newPostTabIcons[i]));
 
       list.add(card);
    }
@@ -1685,8 +1717,8 @@ List<Card> postTextAssembler(BuildContext ctx,
 
    Card dc1 = makePostElem2(
       ctx, values1, txt.descList,
-      Icon(Icons.description,
-           color: stl.postFrameColor));
+      Icon(Icons.description)
+   );
 
    list.add(dc1);
 
@@ -1711,14 +1743,14 @@ String makePostSummaryStr(MenuNode root, Post post)
    return names.join('/');
 }
 
-ThemeData makeExpTileThemeData()
+ThemeData makeExpTileThemeData(BuildContext ctx)
 {
    return ThemeData(
-      accentColor: stl.expTileSelectedColor,
-      unselectedWidgetColor: stl.expTileUnselectedColor,
+      accentColor: Theme.of(ctx).colorScheme.onPrimary,
+      unselectedWidgetColor: Theme.of(ctx).colorScheme.onPrimary,
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: stl.expTileUnselectedColor,
+            color: Theme.of(ctx).colorScheme.onPrimary,
          ),
       ),
    );
@@ -1731,17 +1763,18 @@ Card makeChatEntry(BuildContext ctx,
                    Function onLeadingPressed,
                    IconData ic)
 {
-   List<Card> textCards = postTextAssembler(ctx, post, menus,
-                                       stl.postFrameColor);
+   List<Card> textCards =
+      postTextAssembler(ctx, post, menus,
+                        Theme.of(ctx).colorScheme.primary);
 
 
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
 
    Widget card = Theme(
-         data: makeExpTileThemeData(),
+         data: makeExpTileThemeData(ctx),
          child: ExpansionTile(
-             backgroundColor: stl.expTileExpColor,
+             backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
              leading: IconButton(
                 icon: Icon(ic),
                 onPressed: onLeadingPressed,
@@ -1783,7 +1816,7 @@ Card makeChatEntry(BuildContext ctx,
          left: 4.0, right: 4.0, top: 8.0
       ),
       child: Column(children: cards),
-      color: stl.postFrameColor,
+      color: Theme.of(ctx).colorScheme.primaryVariant,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(7.0)),
@@ -1794,8 +1827,7 @@ Card makeChatEntry(BuildContext ctx,
 Card makePostWidget(BuildContext ctx,
                     List<Card> cards,
                     Function onPressed,
-                    Icon icon,
-                    Color color)
+                    Icon icon)
 {
    IconButton icon1 = IconButton(
                          icon: Icon(Icons.clear, color: Colors.white),
@@ -1805,7 +1837,7 @@ Card makePostWidget(BuildContext ctx,
    IconButton icon2 = IconButton(
                          icon: icon,
                          onPressed: () {onPressed(1);},
-                         color: Theme.of(ctx).primaryColor,
+                         color: Theme.of(ctx).colorScheme.primary,
                          iconSize: 30.0);
 
    Row row = Row(children: <Widget>[
@@ -1814,7 +1846,7 @@ Card makePostWidget(BuildContext ctx,
 
    Card c4 = Card(
       child: row,
-      color: color,
+      color: Theme.of(ctx).colorScheme.primaryVariant,
       margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0,
    );
@@ -1828,19 +1860,8 @@ Card makePostWidget(BuildContext ctx,
    final double padding = stl.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: color,
+      color: Theme.of(ctx).colorScheme.primaryVariant,
       margin: EdgeInsets.all(stl.postMarging),
-      elevation: 0.0,
-   );
-}
-
-Card makeCard(Widget widget, Color color)
-{
-   return Card(
-      child: Padding(child: widget,
-         padding: EdgeInsets.all(stl.postElemTextPadding)),
-      color: color,
-      margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0,
    );
 }
@@ -1861,10 +1882,7 @@ makePostTabListView(BuildContext ctx,
       {
          updateLasSeenPostIdx(i);
 
-         // New posts are shown with a different color.
-         Color color = stl.postFrameColor;
-         //if (i > lastSeenPostIdx)
-         //   color = txt.newReceivedPostColor; 
+         Color color = Theme.of(ctx).colorScheme.primary;
 
          List<Card> cards =
             postTextAssembler(
@@ -1876,10 +1894,9 @@ makePostTabListView(BuildContext ctx,
          return makePostWidget(
              ctx,
              cards,
-             (int fav) async
-                {await onPostSelection(ctx, i, fav);},
+             (int fav) {onPostSelection(ctx, i, fav);},
              txt.favIcon,
-             color);
+          );
       });
 }
 
@@ -1901,7 +1918,8 @@ ListView createPostMenuListView(BuildContext ctx, MenuNode o,
                 leading: makeCircleAvatar(
                    Text(makeStrAbbrev(child.name),
                         style: TextStyle(color: Colors.white)),
-                   Colors.grey),
+                   Theme.of(ctx).colorScheme.secondaryVariant
+                ),
                 title: Text(
                    child.name,
                    style: Theme.of(ctx).textTheme.subhead
@@ -1919,7 +1937,7 @@ ListView createPostMenuListView(BuildContext ctx, MenuNode o,
                       makeStrAbbrev(
                          o.children[i].name),
                          style: TextStyle(color: Colors.white)),
-                   Colors.grey),
+                   Theme.of(ctx).colorScheme.secondaryVariant),
                 title: Text(
                    o.children[i].name,
                    style: Theme.of(ctx).textTheme.subhead,
@@ -2153,9 +2171,9 @@ Widget makePostChatCol(
 
    final bool expState = ch.length <= 5 || nUnredChats != 0;
    return Theme(
-      data: makeExpTileThemeData(),
+      data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-         backgroundColor: stl.expTileExpColor,
+         backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
          key: PageStorageKey<int>(2 * post.id + 1),
@@ -4100,14 +4118,20 @@ class MenuChatState extends State<MenuChat>
             List<FloatingActionButton>(txt.tabNames.length);
 
       fltButtons[0] = makeFaButton(
+         ctx,
          _onNewPost,
          _onFwdSendButton,
          _lpChats.length,
          _lpChatMsgs.length);
 
-      fltButtons[1] = makeFiltersFaButton(_onNewFilters, Icons.filter_list);
+      fltButtons[1] = makeFiltersFaButton(
+         ctx,
+         _onNewFilters,
+         Icons.filter_list
+      );
 
       fltButtons[2] = makeFaButton(
+         ctx,
          null,
          _onFwdSendButton,
          _lpChats.length,

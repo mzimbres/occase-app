@@ -23,16 +23,9 @@ const Color ac = Color(0xFF93B873);
 // Car app.
 final Color primaryColor = pc;
 const Color accentColor = ac;
-final Color postFrameColor = primaryColor;
-final Color expTileExpColor = postFrameColor;
-final Color expTileSelectedColor = Colors.white;
-final Color expTileUnselectedColor = Colors.grey[200];
-final Color faButtonColor = accentColor;
 
 final double mainFontSize = 16.0;
 
-final Color postLocHeaderColor = Color(0xFFFFFFFF);
-final Color selectedMenuColor = Colors.blueGrey[400];
 final Color newMsgCircleColor = Colors.grey;
 
 // Margin used so that the post card boarder has some distance from
@@ -52,4 +45,6 @@ final double outerPostCardPadding = 1.0;
 
 // The padding of chat messages inside ist box.
 final double chatMsgPadding = 5.0;
+
+const ColorScheme colorScheme = ColorScheme.light();
 
