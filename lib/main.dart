@@ -291,14 +291,28 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       children: <Widget>[card]);
 }
 
+int searchBitOn(int o, int n)
+{
+   assert(n < 64);
+
+   while (--n > 0) {
+      if (o & (1 << n) != 0)
+         return n;
+   }
+
+   return 0;
+}
+
 Widget makeNewPostScreenElem(
    BuildContext ctx,
-   Post post,
    Function onNewPostCheckOp,
    String title,
    List<String> items,
    int state)
 {
+   final int i = searchBitOn(state, items.length);
+   final String str = items[i];
+
    List<Widget> bar =
       makeNewPostDetailElemList(
          ctx,
@@ -307,21 +321,37 @@ Widget makeNewPostScreenElem(
          items,
       );
 
+   RichText richTitle = RichText(
+      text: TextSpan(
+         text: title,
+         style: TextStyle(
+             fontWeight: FontWeight.w500,
+             color: Theme.of(ctx).colorScheme.onPrimary,
+             fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+         ),
+         children: <TextSpan>
+         [ TextSpan(
+              text: ': ${str}',
+              style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(ctx).colorScheme.secondary,
+                  fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+              ),
+           )
+         ]
+      ),
+   );
+
    Widget exp = Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
-          title: Text(
-             title,
-             maxLines: 1,
-             overflow: TextOverflow.clip,
-          ),
+          title: richTitle,
           children: bar
       ),
    );
 
    return Card(
-      elevation: 0.0,
       child: exp,
       color: Theme.of(ctx).colorScheme.primary,
       shape: RoundedRectangleBorder(
@@ -331,27 +361,29 @@ Widget makeNewPostScreenElem(
 }
 
 List<Widget> makeNewPostDetailScreen(
-      BuildContext ctx,
-      Function onNewPostDetail,
-      Function onNewPostCheckOp,
-      Post post)
+   BuildContext ctx,
+   Function onNewPostDetail,
+   Function onNewPostCheckOp,
+   Post post)
 {
    List<Widget> widgets = List<Widget>();
 
-   Widget foo = makeNewPostScreenElem(
-      ctx,
-      post,
-      onNewPostDetail,
-      txt.addtionalFiltersTitle,
-      txt.additionalFilters,
-      post.filter,
-   );
+   // First the exclusive options.
+   final int length = txt.exclusiveDetailTitles.length;
+   for (int i = 0; i < length; ++i) {
+      Widget foo = makeNewPostScreenElem(
+         ctx,
+         (int j) {onNewPostDetail(i, j);},
+         txt.exclusiveDetailTitles[i],
+         txt.exclusiveDetails[i],
+         post.exclusiveOps[i],
+      );
 
-   widgets.add(foo);
+      widgets.add(foo);
+   }
 
    Widget bar = makeNewPostScreenElem(
       ctx,
-      post,
       onNewPostCheckOp,
       txt.newPostCheckOpsTitle,
       txt.newPostCheckOps,
@@ -360,45 +392,10 @@ List<Widget> makeNewPostDetailScreen(
 
    widgets.add(bar);
 
-   Widget foobar = makeNewPostScreenElem(
-      ctx,
-      post,
-      (int i){print('I do not like you');},
-      txt.newPostCheckOpsTitle2,
-      txt.newPostCheckOps2,
-      287,
-   );
-
-   widgets.add(foobar);
-
-   Widget foobar2 = makeNewPostScreenElem(
-      ctx,
-      post,
-      (int i){print('I do not like you');},
-      txt.newPostCheckOpsTitle3,
-      txt.newPostCheckOps3,
-      287,
-   );
-
-
-   widgets.add(foobar2);
-
-   Widget foobar3 = makeNewPostScreenElem(
-      ctx,
-      post,
-      (int i){print('I do not like you');},
-      txt.newPostCheckOpsTitle4,
-      txt.newPostCheckOps4,
-      287,
-   );
-
-
-   widgets.add(foobar3);
-
    widgets.add(
       createSendButton(
          ctx,
-         (){onNewPostDetail(-1);},
+         (){onNewPostDetail(-1, -1);},
          'Continuar',
       ),
    );
@@ -551,7 +548,7 @@ makeNewFiltersScreens( BuildContext ctx
             ctx,
             onFilterDetail,
             filter,
-            txt.additionalFilters,
+            txt.exclusiveDetails[0],
          );
 
       wid = ListView.builder(
@@ -1578,13 +1575,13 @@ Card makePostDetailElem(BuildContext ctx, int filter)
 {
    List<Widget> leftList = List<Widget>();
 
-   for (int i = 0; i < txt.additionalFilters.length; ++i) {
+   for (int i = 0; i < txt.exclusiveDetails[0].length; ++i) {
       final bool b = (filter & (1 << i)) == 0;
       if (b)
          continue;
 
       Text text = Text(
-         ' ${txt.additionalFilters[i]}',
+         ' ${txt.exclusiveDetails[0][i]}',
          style: Theme.of(ctx).textTheme.body1,
       );
 
@@ -1882,7 +1879,7 @@ ListView makeNewPostMenuListView(
                   maxLines: 2,
                   overflow: TextOverflow.clip,
                   style: Theme.of(ctx).textTheme.subtitle.copyWith(
-                     fontWeight: FontWeight.w300,
+                     fontWeight: FontWeight.normal,
                      color: Colors.grey[700],
                   ),
                ),
@@ -3960,16 +3957,17 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _onNewPostDetail(int i)
+   void _onNewPostDetail(int i, int j)
    {
-      if (i == -1) {
+      if (j == -1) {
          _botBarIdx = 3;
          setState(() { });
          return;
       }
 
       //_post.filter ^= 1 << i;
-      _post.filter = 1 << i;
+      _post.exclusiveOps[i] = 1 << j;
+
       setState(() { });
    }
 

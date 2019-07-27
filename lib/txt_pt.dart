@@ -97,12 +97,48 @@ final List<String> descList = <String>
 
 // WARNING: The strings in the array must have size at least two. I
 // won't check that in code.
-const String addtionalFiltersTitle = 'Filtros Adicionais';
-final List<String> additionalFilters = <String>
-[ 'Novo'
-, 'Usado'
-, 'Troca'
-, 'Repasse'
+
+// In the following, the arrays with the detail options. There are two
+// main types of details, exclusive and inclusive.
+const List<String> exclusiveDetailTitles = <String>
+[ 'Filtros Adicionais'
+, 'Combustível'
+, 'Câmbio'
+, 'Portas'
+];
+
+const List<List<String>> exclusiveDetails = <List<String>>
+[ <String>
+  [ 'Novo'
+  , 'Usado'
+  , 'Troca'
+  , 'Repasse'
+  ] 
+, <String>
+  [ 'Nao informado'
+  , 'Alcool'
+  , 'Gasolina'
+  , 'Diesel'
+  , 'Metanol'
+  , 'Querozene'
+  , 'Cachaca'
+  , 'Gazolina e alcool'
+  ]
+, <String>
+  [ 'Nao informado'
+  , 'Automático'
+  , 'Automático sequêncial'
+  , 'Automatizado'
+  , 'Automatizado DTC(2)'
+  , 'Manual'
+  ]
+, <String>
+  [ 'Nao informado'
+  , '2 porta'
+  , '4 Portas'
+  , '5 Portas'
+  , 'Nao especificado'
+  ]
 ];
 
 const String newPostCheckOpsTitle = 'Adicionais';
@@ -127,34 +163,6 @@ final List<String> newPostCheckOps = <String>
 , 'Volante com regulagen de altura'
 , 'Farol de xenônio'
 , 'Direcao hidráulica'
-];
-
-const String newPostCheckOpsTitle2 = 'Combustível';
-final List<String> newPostCheckOps2 = <String>
-[ 'Alcool'
-, 'Gasolina'
-, 'Diesel'
-, 'Metanol'
-, 'Querozene'
-, 'Cachaca'
-, 'Gazolina e alcool'
-];
-
-const String newPostCheckOpsTitle3 = 'Câmbio';
-final List<String> newPostCheckOps3 = <String>
-[ 'Automático'
-, 'Automático sequêncial'
-, 'Automatizado'
-, 'Automatizado DTC(2)'
-, 'Manual'
-];
-
-const String newPostCheckOpsTitle4 = 'Portas';
-final List<String> newPostCheckOps4 = <String>
-[ '2 porta'
-, '4 Portas'
-, '5 Portas'
-, 'Nao especificado'
 ];
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";
@@ -194,7 +202,6 @@ final List<String> dialBodyStrs = <String>
 ];
 
 final String unknownNick = 'Desconhecido';
-
 final String menuSelectAllStr = 'Selecionar todos';
 
 final Icon unknownPersonIcon =
@@ -202,3 +209,4 @@ final Icon unknownPersonIcon =
 
 const String changeNickStr = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
+
