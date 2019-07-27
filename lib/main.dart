@@ -316,10 +316,7 @@ Widget makeNewPostScreenElem(
              maxLines: 1,
              overflow: TextOverflow.clip,
           ),
-          children: ListTile.divideTiles(
-                     context: ctx,
-                     tiles: bar,
-                     color: Colors.grey).toList()
+          children: bar
       ),
    );
 
@@ -442,8 +439,13 @@ makeNewPostScreens( BuildContext ctx
             onNewPostCheckOp,
             post);
 
+      // Consider changing this to column.
       wid = ListView.builder(
-         padding: const EdgeInsets.all(3.0),
+         padding: const EdgeInsets.only(
+            left: stl.postChatPadding,
+            right: stl.postChatPadding,
+            top: stl.postChatPadding,
+         ),
          itemCount: widgets.length,
          itemBuilder: (BuildContext ctx, int i)
          {
@@ -575,7 +577,7 @@ makeNewFiltersScreens( BuildContext ctx
             maxLines: 1,
             overflow: TextOverflow.clip,
             style: Theme.of(ctx).primaryTextTheme.title.copyWith(
-               fontWeight: FontWeight.normal
+               fontWeight: FontWeight.w500,
             ),
          ),
          subtitle: Text(menu[screen].getStackNames(),
@@ -617,26 +619,31 @@ makeNewPostDetailElemList(
 
    for (int i = 0; i < list.length; ++i) {
       bool v = ((filter & (1 << i)) != 0);
-      Color color = Theme.of(ctx).colorScheme.secondary;
-      if (v)
-         color = Theme.of(ctx).colorScheme.primary;
+
+      Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
+      Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+      if (v) {
+         avatarBgColor = Theme.of(ctx).colorScheme.primary;
+         avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
+      }
 
        CheckboxListTile cblt = CheckboxListTile(
          dense: true,
-         secondary:
-            makeCircleAvatar(
-               Text( list[i].substring(0, 2)
-                   , style: TextStyle(color: Colors.white)
-               ),
-               color
+         secondary: CircleAvatar(
+            child: Text(list[i].substring(0, 2),
+               style: TextStyle(color: avatarTxtColor)
             ),
+            backgroundColor: avatarBgColor
+         ),
          title: Text(
             list[i],
-            style: Theme.of(ctx).textTheme.subhead,
+            style: Theme.of(ctx).textTheme.subhead.copyWith(
+               fontWeight: FontWeight.w500,
+            ),
          ),
          value: v,
          onChanged: (bool v) { proceed(i); },
-         activeColor: color,
+         activeColor: Theme.of(ctx).colorScheme.primary,
       );
 
        widgets.add(
@@ -644,8 +651,8 @@ makeNewPostDetailElemList(
              margin: const EdgeInsets.only(
                 left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
              ),
-             color: Colors.white,
-             child:cblt,
+             color: Theme.of(ctx).colorScheme.background,
+             child: cblt,
              elevation: 0.0,
              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(0.0)),
@@ -1344,15 +1351,15 @@ ListTile makeFilterListTitle(
    Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
    Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
    TextStyle subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
-      fontWeight: FontWeight.w300,
-      color: Colors.grey[600],
+      fontWeight: FontWeight.normal,
+      color: Colors.grey[700],
    );
 
    if (c != 0) {
-      avatarBgColor = Theme.of(ctx).colorScheme.primaryVariant;
+      avatarBgColor = Theme.of(ctx).colorScheme.primary;
       avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
       subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
-         fontWeight: FontWeight.w300,
+         fontWeight: FontWeight.normal,
          color: avatarBgColor,
       );
    }
@@ -1733,9 +1740,6 @@ Card makeChatEntry(BuildContext ctx,
    );
 
    return Card(
-      margin: const EdgeInsets.only(
-         left: 4.0, right: 4.0, top: 8.0
-      ),
       child: Column(children: cards),
       color: Theme.of(ctx).colorScheme.primary,
       elevation: 0.0,
@@ -1879,7 +1883,7 @@ ListView makeNewPostMenuListView(
                   overflow: TextOverflow.clip,
                   style: Theme.of(ctx).textTheme.subtitle.copyWith(
                      fontWeight: FontWeight.w300,
-                     color: Colors.grey[600],
+                     color: Colors.grey[700],
                   ),
                ),
                trailing: Icon(Icons.keyboard_arrow_right),
@@ -1920,7 +1924,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: Colors.grey[600],
+            color: Colors.grey[700],
             fontStyle: FontStyle.italic,
          ),
       );
@@ -1930,7 +1934,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
       return Text(
          str,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: Colors.grey[600],
+            color: Colors.grey[700],
          ),
          maxLines: 1,
          overflow: TextOverflow.clip
@@ -2134,7 +2138,11 @@ Widget makeChatTab(
    bool isFav)
 {
    return ListView.builder(
-      padding: const EdgeInsets.all(0.0),
+      padding: const EdgeInsets.only(
+         left: stl.postChatPadding,
+         right: stl.postChatPadding,
+         top: stl.postChatPadding,
+      ),
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -3863,7 +3871,10 @@ class MenuChatState extends State<MenuChat>
             final FlatButton ok = FlatButton(
                      child: Text(
                         txt.devChatOkStr,
-                        style: TextStyle(color: stl.accentColor)),
+                        style: TextStyle(
+                           color: Theme.of(ctx).colorScheme.secondary,
+                        ),
+                     ),
                      onPressed: () async
                      {
                         await _removeLPChats();
@@ -3871,9 +3882,11 @@ class MenuChatState extends State<MenuChat>
                      });
 
             final FlatButton cancel = FlatButton(
-               child: Text(
-                  txt.delChatCancelStr,
-                  style: TextStyle(color: stl.accentColor)),
+               child: Text(txt.delChatCancelStr,
+                  style: TextStyle(
+                     color: Theme.of(ctx).colorScheme.secondary,
+                  ),
+               ),
                onPressed: ()
                {
                   Navigator.of(ctx).pop();

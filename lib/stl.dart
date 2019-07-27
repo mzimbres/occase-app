@@ -1,28 +1,6 @@
 import 'package:flutter/material.dart';
 
-final Color whatsAppPrimaryColor = Color(0xff075E54);
-final Color whatsAppAccentColor = Color(0xff25D366);
-
-const Color coral = const Color(0xFFE18A07);
-final Color darkYellow = Color(0xFF999900);
-final Color fireBrick = Color(0xFFB22222);
-final Color seaGreen = Color(0xFF2E8B57);
-final Color oliveDrab = Color(0xFF6B8E23);
-final Color newReceivedPostColor = Colors.brown[200]; 
 final Color chatLongPressendColor = Colors.grey[400]; 
-
-const Color pc = Color(0xFF445046);
-const Color ac = Color(0xFF93B873);
-
-//const Color pc = Color(0xFFfd7c6e);
-//const Color ac = Color(0xFF006d99);
-
-//const Color pc = Color(0xFFf47216);
-//const Color ac = Color(0xFF0e88d3);
-
-// Car app.
-final Color primaryColor = pc;
-const Color accentColor = ac;
 
 final double mainFontSize = 16.0;
 
@@ -46,5 +24,13 @@ final double outerPostCardPadding = 1.0;
 // The padding of chat messages inside ist box.
 final double chatMsgPadding = 5.0;
 
-const ColorScheme colorScheme = ColorScheme.light();
+const ColorScheme colorScheme = ColorScheme.light(
+      primary: Color(0xFF434b79),
+      primaryVariant: Color(0xFF434b79),
+      secondary: Color(0xFFffa32c),
+      secondaryVariant: Color(0xFFff5635),
+);
+
+// The padding used around the posts and likes screens.
+const double postChatPadding = 2.0;
 
