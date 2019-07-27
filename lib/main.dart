@@ -191,20 +191,11 @@ makeOnLongPressedActions(BuildContext ctx,
    return actions;
 }
 
-Scaffold
-makeWaitMenuScreen(BuildContext ctx)
+Scaffold makeWaitMenuScreen()
 {
    return Scaffold(
-      appBar: AppBar(
-         title: Text(
-            txt.appName,
-            style: Theme.of(ctx).appBarTheme.textTheme.title
-         ),
-         elevation: Theme.of(ctx).appBarTheme.elevation,
-      ),
-      body: Center(
-         child: CircularProgressIndicator(),
-      ),
+      appBar: AppBar(title: Text(txt.appName)),
+      body: Center(child: CircularProgressIndicator()),
    );
 }
 
@@ -242,13 +233,7 @@ makeNickRegisterScreen( BuildContext ctx
    );
 
    return Scaffold(
-      appBar: AppBar(
-         title: Text(
-            appBarTitle,
-            style: Theme.of(ctx).appBarTheme.textTheme.title
-         ),
-         elevation: Theme.of(ctx).appBarTheme.elevation,
-      ),
+      appBar: AppBar(title: Text(appBarTitle)),
       body: Center(
          child: Padding(
             child: tf,
@@ -325,7 +310,7 @@ Widget makeNewPostScreenElem(
    Widget exp = Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-          backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
+          backgroundColor: Theme.of(ctx).colorScheme.primary,
           title: Text(
              title,
              maxLines: 1,
@@ -439,12 +424,7 @@ makeNewPostScreens( BuildContext ctx
                   , Function onNewPostCheckOp)
 {
    Widget wid;
-   Widget appBarTitle = Text(
-         //txt.filterTabNames[screen],
-         txt.newPostAppBarTitle,
-         style: Theme.of(ctx).appBarTheme.textTheme.title);
-
-   Widget appBarTitleWidget = appBarTitle;
+   Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
 
    if (screen == 3) {
       wid = makeNewPostFinalScreenWidget(
@@ -471,29 +451,33 @@ makeNewPostScreens( BuildContext ctx
          },
       );
    } else {
-      wid = createPostMenuListView(
+      wid = makeNewPostMenuListView(
          ctx,
          menu[screen].root.last,
          onPostLeafPressed,
          onPostNodePressed);
 
       appBarTitleWidget = ListTile(
-         title: appBarTitle,
+         title: Text(
+            txt.newPostAppBarTitle,
+            style: Theme.of(ctx).primaryTextTheme.title.copyWith(
+               fontWeight: FontWeight.normal
+            ),
+         ),
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
-                     style: Theme.of(ctx).appBarTheme.textTheme.subtitle));
+            style: Theme.of(ctx).primaryTextTheme.subtitle,
+         ),
+      );
    }
 
    AppBar appBar = AppBar(
       title: appBarTitleWidget,
       elevation: 0.7,
       leading: IconButton(
-         icon: Icon(
-            Icons.arrow_back,
-            color: Theme.of(ctx).appBarTheme.iconTheme.color,
-         ),
+         icon: Icon(Icons.arrow_back),
          onPressed: onWillPopMenu
-      )
+      ),
    );
 
    return WillPopScope(
@@ -551,14 +535,7 @@ makeNewFiltersScreens( BuildContext ctx
                      , Function onCancelNewFilters)
 {
    Widget wid;
-   Widget appBarTitle = Text(
-      //txt.filterTabNames[screen],
-      txt.filterAppBarTitle,
-      maxLines: 1,
-      overflow: TextOverflow.clip,
-      style: Theme.of(ctx).appBarTheme.textTheme.title);
-
-   Widget appBarTitleWidget = appBarTitle;
+   Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
 
    if (screen == 3) {
       wid = makeNewFiltersEndWidget(
@@ -584,7 +561,7 @@ makeNewFiltersScreens( BuildContext ctx
          },
       );
    } else {
-      wid = createFilterListView(
+      wid = makeNewFilterListView(
          ctx,
          menu[screen].root.last,
          onFilterLeafNodePressed,
@@ -592,24 +569,29 @@ makeNewFiltersScreens( BuildContext ctx
          menu[screen].isFilterLeaf());
 
       appBarTitleWidget = ListTile(
-         title: appBarTitle,
          dense: true,
+         title: Text(
+            txt.filterAppBarTitle,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+            style: Theme.of(ctx).primaryTextTheme.title.copyWith(
+               fontWeight: FontWeight.normal
+            ),
+         ),
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).appBarTheme.textTheme.subtitle));
+            style: Theme.of(ctx).primaryTextTheme.subtitle,
+         ),
+      );
    }
 
    AppBar appBar = AppBar(
       title: appBarTitleWidget,
-      elevation: 0.7,
       leading: IconButton(
-         icon: Icon(
-            Icons.arrow_back,
-            color: Theme.of(ctx).appBarTheme.iconTheme.color,
-         ),
+         icon: Icon(Icons.arrow_back),
          onPressed: onWillPopMenu
-      )
+      ),
    );
 
    return WillPopScope(
@@ -635,7 +617,7 @@ makeNewPostDetailElemList(
 
    for (int i = 0; i < list.length; ++i) {
       bool v = ((filter & (1 << i)) != 0);
-      Color color = Theme.of(ctx).colorScheme.secondaryVariant;
+      Color color = Theme.of(ctx).colorScheme.secondary;
       if (v)
          color = Theme.of(ctx).colorScheme.primary;
 
@@ -680,38 +662,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext ctx) {
     return MaterialApp(
       title: txt.appName,
-      //theme: ThemeData.dark(),
       theme: ThemeData(
           colorScheme: stl.colorScheme,
-          fontFamily: 'Montserrat',
-          brightness: Brightness.light,
+          brightness: stl.colorScheme.brightness,
           primaryColor: stl.colorScheme.primary,
           accentColor: stl.colorScheme.secondary,
-          appBarTheme: AppBarTheme(
-             textTheme: TextTheme(
-                title: TextStyle(
-                   fontWeight: FontWeight.normal,
-                   color: Colors.white,
-                   fontSize: 20.0
-                ),
-                subtitle: TextStyle(
-                   color: Colors.grey[300],
-                   fontSize: 14.0
-                ),
-             ),
-             iconTheme: IconThemeData(
-                color: Colors.white,
-             ),
-          ),
-          textTheme: TextTheme(
-             subtitle: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: Colors.grey[600]
-             ),
-             subhead: TextStyle(
-                fontWeight: FontWeight.w500,
-             ),
-          ),
       ),
       debugShowCheckedModeBanner: false,
       home: MenuChat(),
@@ -767,27 +722,12 @@ makeBottomBarItems(List<IconData> icons,
              onTap: onBotBarTapped);
 }
 
-FloatingActionButton
-makeFiltersFaButton(
+FloatingActionButton makeFaButton(
    BuildContext ctx,
    Function onNewPost,
-   IconData id)
-{
-   return FloatingActionButton(
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
-      child: Icon(id,
-         color: Theme.of(ctx).colorScheme.onSecondary,
-      ),
-      onPressed: onNewPost
-   );
-}
-
-FloatingActionButton
-makeFaButton(BuildContext ctx,
-             Function onNewPost,
-             Function onFwdChatMsg,
-             int lpChats,
-             int lpChatMsgs)
+   Function onFwdChatMsg,
+   int lpChats,
+   int lpChatMsgs)
 {
    if (lpChats == 0 && lpChatMsgs != 0)
       return null;
@@ -795,8 +735,11 @@ makeFaButton(BuildContext ctx,
    IconData id = txt.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: stl.darkYellow,
-         child: Icon(Icons.send, color: Colors.white),
+         backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+         child: Icon(
+            Icons.send,
+            color: Theme.of(ctx).colorScheme.onSecondary,
+         ),
          onPressed: onFwdChatMsg);
    }
 
@@ -807,7 +750,7 @@ makeFaButton(BuildContext ctx,
       return null;
 
    return FloatingActionButton(
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
       child: Icon(id,
          color: Theme.of(ctx).colorScheme.onSecondary,
       ),
@@ -1249,7 +1192,7 @@ makeChatScreen(BuildContext ctx,
       title = Text('$nLongPressed',
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).appBarTheme.textTheme.title);
+      );
    } else {
       title = ListTile(
           leading: CircleAvatar(
@@ -1258,13 +1201,17 @@ makeChatScreen(BuildContext ctx,
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: Theme.of(ctx).appBarTheme.textTheme.title),
+                style: Theme.of(ctx).primaryTextTheme.title.copyWith(
+                   fontWeight: FontWeight.normal
+                ),
+          ),
           dense: true,
           subtitle:
              Text(postSummary,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: Theme.of(ctx).appBarTheme.textTheme.subtitle)
+                style: Theme.of(ctx).primaryTextTheme.subtitle
+             ),
        );
    }
 
@@ -1272,15 +1219,12 @@ makeChatScreen(BuildContext ctx,
           onWillPop: () async { return onWillPopScope();},
           child: Scaffold(
              appBar : AppBar(
-                titleSpacing: 0.0,
                 actions: actions,
                 title: title,
-                backgroundColor: Theme.of(ctx).colorScheme.primary,
                 leading: IconButton(
-                   icon: Icon(
-                      Icons.arrow_back,
-                      color: Theme.of(ctx).appBarTheme.iconTheme.color),
-                 onPressed: onWillPopScope)
+                   icon: Icon(Icons.arrow_back),
+                   onPressed: onWillPopScope
+                ),
              ),
           body: mainCol,
           backgroundColor: Colors.grey[300],
@@ -1358,7 +1302,7 @@ ListTile makeFilterSelectAllItem(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
-          color: Theme.of(ctx).colorScheme.primary),
+          color: Theme.of(ctx).colorScheme.onBackground),
        title: Text(
           title,
           style: Theme.of(ctx).textTheme.subhead,
@@ -1369,111 +1313,78 @@ ListTile makeFilterSelectAllItem(
     );
 }
 
-ListTile makeFilterLeafListTile(
+ListTile makeFilterListTitle(
    BuildContext ctx,
    MenuNode child,
-   Function onTap)
+   Function onTap,
+   Icon trailing)
 {
-   Widget icon = Icon(Icons.check_box_outline_blank);
-   if (child.leafReach > 0)
-      icon = Icon(Icons.check_box);
+   final int c = child.leafReach;
+   final int cs = child.leafCounter;
 
-   Widget subtitle = null;
-   if (!child.isLeaf()) {
-      subtitle =  Text(
-          child.getChildrenNames(),
-          style: Theme.of(ctx).textTheme.subtitle,
-          maxLines: 2,
-          overflow: TextOverflow.clip);
-   }
-
-   Color cc = Theme.of(ctx).colorScheme.secondaryVariant;
-   if (child.leafReach > 0)
-      cc = Theme.of(ctx).colorScheme.primary;
-
-   String s = '';
-   if (child.leafCounter > 1)
+   String s = ' ($c/$cs)';
+   if (child.isLeaf() && child.leafCounter > 1)
       s = ' (${child.leafCounter})';
 
    RichText title = RichText(
       text: TextSpan(
          text: child.name,
-         style: Theme.of(ctx).textTheme.subhead,
+         style: Theme.of(ctx).textTheme.subhead.copyWith(
+            fontWeight: FontWeight.w500,
+         ),
          children: <TextSpan>
          [ TextSpan(
-              text: s,
-              style: Theme.of(ctx).textTheme.caption,
+            text: s,
+            style: Theme.of(ctx).textTheme.caption
            ),
          ]
       )
    );
-
-   // Notice we do not subtract -1 on onLeafPressed so that
-   // this function can diferentiate the Todos button case.
-   final String abbrev = makeStrAbbrev(child.name);
-   return ListTile(
-       leading: CircleAvatar(
-          child: Text(abbrev,
-             style: TextStyle(color: Colors.white)),
-          backgroundColor: cc,
-       ),
-       title: title,
-       dense: true,
-       subtitle: subtitle,
-       trailing: icon,
-       contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-       onTap: onTap,
-       enabled: true,
-       selected: child.leafReach > 0,
-       isThreeLine: !child.isLeaf());
-}
-
-ListTile makeFilterListTitle(
-   BuildContext ctx,
-   MenuNode child,
-   Function onTap)
-{
-   final int c = child.leafReach;
-   final int cs = child.leafCounter;
-
-   final String subtitle = child.getChildrenNames();
-   final String titleStr = '${child.name}';
-   Color cc = Theme.of(ctx).colorScheme.secondaryVariant;
-   if (c != 0)
-      cc = Theme.of(ctx).colorScheme.primary;
-
-   RichText title = RichText(
-      text: TextSpan(
-         text: titleStr,
-         style: Theme.of(ctx).textTheme.subhead,
-         children: <TextSpan>
-         [TextSpan(
-            text: ' ($c/$cs)',
-            style: Theme.of(ctx).textTheme.caption),
-         ]
-      )
-   );
          
+   Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
+   Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+   TextStyle subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
+      fontWeight: FontWeight.w300,
+      color: Colors.grey[600],
+   );
+
+   if (c != 0) {
+      avatarBgColor = Theme.of(ctx).colorScheme.primaryVariant;
+      avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
+      subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
+         fontWeight: FontWeight.w300,
+         color: avatarBgColor,
+      );
+   }
+
+   Widget subtitle = null;
+   if (!child.isLeaf()) {
+      subtitle = Text(
+          child.getChildrenNames(),
+          style: subtitleTxtStl,
+          maxLines: 2,
+          overflow: TextOverflow.clip,
+       );
+   }
+
    return
       ListTile(
           leading: CircleAvatar(
-             child: Text(makeStrAbbrev(child.name),
-                   style: TextStyle(color: Colors.white)),
-             backgroundColor: cc,
+             child: Text(
+                makeStrAbbrev(child.name),
+                style: TextStyle(color: avatarTxtColor),
+             ),
+             backgroundColor: avatarBgColor,
           ),
           title: title,
           dense: true,
-          subtitle: Text(
-             subtitle,
-             //style: Theme.of(ctx).textTheme.subtitle,
-             maxLines: 2,
-             overflow: TextOverflow.clip),
-          trailing: Icon(Icons.keyboard_arrow_right),
+          subtitle: subtitle,
+          trailing: trailing,
           contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
           onTap: onTap,
           enabled: true,
           selected: c != 0,
-          isThreeLine: true,
+          isThreeLine: !child.isLeaf(),
        );
 }
 
@@ -1488,11 +1399,12 @@ ListTile makeFilterListTitle(
  *  In those cases the builder will go through all node children
  *  otherwise the first should be skipped.
  */
-ListView createFilterListView(BuildContext ctx,
-                              MenuNode o,
-                              Function onLeafPressed,
-                              Function onNodePressed,
-                              bool makeLeaf)
+ListView makeNewFilterListView(
+   BuildContext ctx,
+   MenuNode o,
+   Function onLeafPressed,
+   Function onNodePressed,
+   bool makeLeaf)
 {
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
@@ -1509,17 +1421,26 @@ ListView createFilterListView(BuildContext ctx,
                () { onLeafPressed(0); },
             );
 
-         if (shift == 1)
-            return makeFilterLeafListTile(
+         if (shift == 1) {
+            MenuNode child = o.children[i - 1];
+
+            Widget icon = Icon(Icons.check_box_outline_blank);
+            if (child.leafReach > 0)
+               icon = Icon(Icons.check_box);
+
+            return makeFilterListTitle(
                ctx,
-               o.children[i - 1],
-               () { onLeafPressed(i);}
+               child,
+               () { onLeafPressed(i);},
+               icon,
             );
+         }
 
          return makeFilterListTitle(
             ctx,
             o.children[i],
             () { onNodePressed(i); },
+            Icon(Icons.keyboard_arrow_right),
          );
       },
    );
@@ -1774,7 +1695,7 @@ Card makeChatEntry(BuildContext ctx,
    Widget card = Theme(
          data: makeExpTileThemeData(ctx),
          child: ExpansionTile(
-             backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
+             backgroundColor: Theme.of(ctx).colorScheme.primary,
              leading: IconButton(
                 icon: Icon(ic),
                 onPressed: onLeadingPressed,
@@ -1816,7 +1737,7 @@ Card makeChatEntry(BuildContext ctx,
          left: 4.0, right: 4.0, top: 8.0
       ),
       child: Column(children: cards),
-      color: Theme.of(ctx).colorScheme.primaryVariant,
+      color: Theme.of(ctx).colorScheme.primary,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(7.0)),
@@ -1846,7 +1767,7 @@ Card makePostWidget(BuildContext ctx,
 
    Card c4 = Card(
       child: row,
-      color: Theme.of(ctx).colorScheme.primaryVariant,
+      color: Theme.of(ctx).colorScheme.primary,
       margin: EdgeInsets.all(stl.postInnerMargin),
       elevation: 0.0,
    );
@@ -1860,7 +1781,7 @@ Card makePostWidget(BuildContext ctx,
    final double padding = stl.outerPostCardPadding;
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
-      color: Theme.of(ctx).colorScheme.primaryVariant,
+      color: Theme.of(ctx).colorScheme.primary,
       margin: EdgeInsets.all(stl.postMarging),
       elevation: 0.0,
    );
@@ -1900,59 +1821,72 @@ makePostTabListView(BuildContext ctx,
       });
 }
 
-ListView createPostMenuListView(BuildContext ctx, MenuNode o,
-      Function onLeafPressed, Function onNodePressed)
+ListView makeNewPostMenuListView(
+   BuildContext ctx,
+   MenuNode o,
+   Function onLeafPressed,
+   Function onNodePressed)
 {
    return ListView.builder(
       itemCount: o.children.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-         final int c = o.children[i].leafReach;
-         final int cs = o.children[i].leafCounter;
-
-         final String subtitles = o.children[i].getChildrenNames();
-
          MenuNode child = o.children[i];
+
          if (child.isLeaf()) {
             return ListTile(
-                leading: makeCircleAvatar(
-                   Text(makeStrAbbrev(child.name),
-                        style: TextStyle(color: Colors.white)),
-                   Theme.of(ctx).colorScheme.secondaryVariant
-                ),
-                title: Text(
-                   child.name,
-                   style: Theme.of(ctx).textTheme.subhead
-                ),
-                dense: true,
-                onTap: () { onLeafPressed(i);},
-                enabled: true,
-                onLongPress: (){});
+               leading: CircleAvatar(
+                  child: Text(makeStrAbbrev(child.name),
+                     style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.onSecondary
+                     ),
+                  ),
+                  backgroundColor:
+                     Theme.of(ctx).colorScheme.secondary,
+               ),
+               title: Text(
+                  child.name,
+                  style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     fontWeight: FontWeight.w500,
+                  ),
+               ),
+               dense: true,
+               onTap: () { onLeafPressed(i);},
+               enabled: true,
+               onLongPress: (){});
          }
          
          return
             ListTile(
-                leading: makeCircleAvatar(
-                   Text(
-                      makeStrAbbrev(
-                         o.children[i].name),
-                         style: TextStyle(color: Colors.white)),
-                   Theme.of(ctx).colorScheme.secondaryVariant),
-                title: Text(
-                   o.children[i].name,
-                   style: Theme.of(ctx).textTheme.subhead,
-                ),
-                dense: true,
-                subtitle: Text(
-                   subtitles,
-                   style: Theme.of(ctx).textTheme.subtitle,
-                   maxLines: 2,
-                   overflow: TextOverflow.clip),
-                trailing: Icon(Icons.keyboard_arrow_right),
-                onTap: () { onNodePressed(i); },
-                enabled: true,
-                selected: c != 0,
-                isThreeLine: true);
+               leading: CircleAvatar(
+                  child: Text(makeStrAbbrev(child.name),
+                     style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.onSecondary
+                     ),
+                  ),
+                  backgroundColor: Theme.of(ctx).colorScheme.secondary,
+               ),
+               title: Text(
+                  o.children[i].name,
+                  style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     fontWeight: FontWeight.w500,
+                  ),
+               ),
+               dense: true,
+               subtitle: Text(
+                  o.children[i].getChildrenNames(),
+                  maxLines: 2,
+                  overflow: TextOverflow.clip,
+                  style: Theme.of(ctx).textTheme.subtitle.copyWith(
+                     fontWeight: FontWeight.w300,
+                     color: Colors.grey[600],
+                  ),
+               ),
+               trailing: Icon(Icons.keyboard_arrow_right),
+               onTap: () { onNodePressed(i); },
+               enabled: true,
+               isThreeLine: true
+            );
       },
    );
 }
@@ -1985,10 +1919,9 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          txt.defaultChatTileSubtile,
          maxLines: 1,
          overflow: TextOverflow.clip,
-         style: TextStyle(
-            color: Colors.grey,
+         style: Theme.of(ctx).textTheme.subtitle.copyWith(
+            color: Colors.grey[600],
             fontStyle: FontStyle.italic,
-            fontSize: Theme.of(ctx).textTheme.subtitle.fontSize
          ),
       );
    }
@@ -1996,9 +1929,12 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
       return Text(
          str,
-         style: Theme.of(ctx).textTheme.subtitle,
+         style: Theme.of(ctx).textTheme.subtitle.copyWith(
+            color: Colors.grey[600],
+         ),
          maxLines: 1,
-         overflow: TextOverflow.clip);
+         overflow: TextOverflow.clip
+      );
 
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
@@ -2148,7 +2084,9 @@ Widget makePostChatCol(
                   ch[i].getChatDisplayName(),
                   maxLines: 1,
                   overflow: TextOverflow.clip,
-                  style: Theme.of(ctx).textTheme.subhead,
+                  style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     fontWeight: FontWeight.w500,
+                  ),
                ),
                subtitle: makeChatTileSubtitle(ctx, ch[i]),
                //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
@@ -2173,7 +2111,7 @@ Widget makePostChatCol(
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-         backgroundColor: Theme.of(ctx).colorScheme.primaryVariant,
+         backgroundColor: Theme.of(ctx).colorScheme.primary,
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
          key: PageStorageKey<int>(2 * post.id + 1),
@@ -4039,7 +3977,7 @@ class MenuChatState extends State<MenuChat>
    {
       // Just for safety if we did not load the menu fast enough.
       if (_menu.isEmpty)
-         return makeWaitMenuScreen(ctx);
+         return makeWaitMenuScreen();
 
       if (cfg.nick.isEmpty) {
          return makeNickRegisterScreen(
@@ -4124,10 +4062,13 @@ class MenuChatState extends State<MenuChat>
          _lpChats.length,
          _lpChatMsgs.length);
 
-      fltButtons[1] = makeFiltersFaButton(
-         ctx,
-         _onNewFilters,
-         Icons.filter_list
+      fltButtons[1] = FloatingActionButton(
+         onPressed: _onNewFilters,
+         backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+         child: Icon(
+            Icons.filter_list,
+            color: Theme.of(ctx).colorScheme.onSecondary,
+         ),
       );
 
       fltButtons[2] = makeFaButton(
@@ -4175,9 +4116,7 @@ class MenuChatState extends State<MenuChat>
          if (_hasLPChatMsgs()) {
             appBarTitle = txt.chatMsgRedirectText;
             appBarLeading = IconButton(
-               icon: Icon(
-                  Icons.arrow_back,
-                  color: Theme.of(ctx).appBarTheme.iconTheme.color),
+               icon: Icon(Icons.arrow_back),
                onPressed: _onBackFromChatMsgRedirect);
          }
 
@@ -4207,9 +4146,7 @@ class MenuChatState extends State<MenuChat>
                  headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
                    return <Widget>[
                      SliverAppBar(
-                       title: Text(
-                          appBarTitle,
-                          style: Theme.of(ctx).appBarTheme.textTheme.title),
+                       title: Text(appBarTitle),
                        pinned: true,
                        floating: true,
                        forceElevated: innerBoxIsScrolled,
