@@ -291,6 +291,7 @@ class Post {
    int filter = 0;
 
    int checkOps = 0;
+
    List<int> exclusiveOps =
       List<int>(txt.exclusiveDetailTitles.length);
 

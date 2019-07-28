@@ -101,10 +101,12 @@ final List<String> descList = <String>
 // In the following, the arrays with the detail options. There are two
 // main types of details, exclusive and inclusive.
 const List<String> exclusiveDetailTitles = <String>
-[ 'Filtros Adicionais'
+[ 'Adicionais'
 , 'Combustível'
 , 'Câmbio'
 , 'Portas'
+, 'Cor'
+, 'Anunciante'
 ];
 
 const List<List<String>> exclusiveDetails = <List<String>>
@@ -116,28 +118,58 @@ const List<List<String>> exclusiveDetails = <List<String>>
   ] 
 , <String>
   [ 'Nao informado'
-  , 'Alcool'
   , 'Gasolina'
+  , 'Alcool'
   , 'Diesel'
-  , 'Metanol'
-  , 'Querozene'
-  , 'Cachaca'
-  , 'Gazolina e alcool'
+  , 'Gás natural'
+  , 'Gazolina e álcool'
+  , 'Gazolina e gás natural'
+  , 'Álcool e gás natural'
+  , 'Gazolina álcool e gás natural'
+  , 'Gazolina álcool, gás natural e benzina'
+  , 'Gazolina e elétrico'
   ]
 , <String>
   [ 'Nao informado'
   , 'Automático'
-  , 'Automático sequêncial'
   , 'Automatizado'
-  , 'Automatizado DTC(2)'
+  , 'Automatizado DCT'
+  , 'Automático sequêncial'
+  , 'Cvt'
   , 'Manual'
+  , 'Semi automático'
   ]
 , <String>
   [ 'Nao informado'
-  , '2 porta'
+  , '0 porta'
+  , '2 Portas'
+  , '3 Portas'
   , '4 Portas'
-  , '5 Portas'
-  , 'Nao especificado'
+  ]
+, <String>
+  [ 'Nao informado'
+  , 'Amarelo'
+  , 'Azul'
+  , 'Bege'
+  , 'Branco'
+  , 'Bronze'
+  , 'Cinza'
+  , 'Dourado'
+  , 'Laranja'
+  , 'Marrom'
+  , 'Prata'
+  , 'Preto'
+  , 'Rosa'
+  , 'Roxo'
+  , 'Verde'
+  , 'Vermelho'
+  , 'Vinho'
+  ]
+, <String>
+  [ 'Nao informado'
+  , 'Concessionária'
+  , 'Loja'
+  , 'Pessoa física'
   ]
 ];
 
@@ -147,6 +179,11 @@ final List<String> newPostCheckOps = <String>
 , 'Alarme'
 , 'Ar quente'
 , 'Ar condicionado'
+, 'CD Player'
+, 'Direcao hidraulica'
+, 'Freio ABS'
+, 'Player'
+, 'CD Player'
 , 'Banco com regulagem de altura'
 , 'Computador de bordo'
 , 'Desembacador traseiro'
@@ -163,6 +200,20 @@ final List<String> newPostCheckOps = <String>
 , 'Volante com regulagen de altura'
 , 'Farol de xenônio'
 , 'Direcao hidráulica'
+];
+
+const String newPostCheckOpsTitle2 = 'Características';
+final List<String> newPostCheckOps2 = <String>
+[ 'Único dono'
+, 'IPVA pago'
+, 'Nao aceito troca'
+, 'Veículo financiado'
+, 'Licenciado'
+, 'Garantia de fábrica'
+, 'Veículo de colecionador'
+, 'Todas as revis~oes em concessionária'
+, 'Adaptada para pessoas com deficiência'
+, 'Blindado'
 ];
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";

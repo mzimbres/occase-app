@@ -250,11 +250,22 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                             , TextEditingController txtCtrl
                             , onSendNewPostPressed)
 {
-   List<Card> cards =
-      makeMenuInfoCards(ctx, post, menu,
-            Theme.of(ctx).colorScheme.primary);
+   List<Widget> cards = List<Widget>();
 
-   cards.add(makePostDetailElem(ctx, post.filter));
+   List<Widget> ml = makeMenuInfoList(
+      ctx,
+      post,
+      menu,
+      Theme.of(ctx).colorScheme.primary
+   );
+
+   cards.addAll(ml);
+
+   List<Widget> dl = makeDetailList(ctx, post);
+
+   cards.addAll(dl);
+
+   cards.add(putPostElemOnCard(ctx, makePostInclusiveList(ctx, post)));
 
    TextField tf = TextField(
       controller: txtCtrl,
@@ -263,14 +274,18 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       maxLength: 500,
       decoration:
          InputDecoration.collapsed(
-            hintText: txt.newPostTextFieldHistStr));
+            hintText: txt.newPostTextFieldHistStr
+         ),
+   );
 
    Card tfc = Card(
-      child: Padding(child: Center(child: tf),
-         padding: EdgeInsets.all(stl.postElemTextPadding)),
+      child: Padding(
+         child: Center(child: tf),
+         padding: EdgeInsets.all(stl.postElemTextPadding)
+      ),
       color: Theme.of(ctx).colorScheme.background,
       margin: EdgeInsets.all(stl.postInnerMargin),
-      elevation: 0.0);
+   );
 
    cards.add(tfc);
 
@@ -279,8 +294,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
          ctx,
          cards,
          (final int add) { onSendNewPostPressed(ctx, add); },
-         Icon(
-            Icons.publish,
+         Icon( Icons.publish,
             color: Theme.of(ctx).colorScheme.onPrimary
          ),
       );
@@ -1509,12 +1523,12 @@ Card makePostElemSimple(Icon ic, Widget cols)
    // Padding needed to show the text inside the post element with some
    // distance from the border.
    Padding leftWidget = Padding(
-         padding: EdgeInsets.all(stl.postElemTextPadding),
-         child: Column(
-               crossAxisAlignment: CrossAxisAlignment.stretch,
-               children: r,
-            )
-         );
+      padding: EdgeInsets.all(stl.postElemTextPadding),
+      child: Column(
+         crossAxisAlignment: CrossAxisAlignment.stretch,
+         children: r,
+      )
+   );
 
    // Here we need another padding to make the post inner element have
    // some distance to the outermost card.
@@ -1526,140 +1540,224 @@ Card makePostElemSimple(Icon ic, Widget cols)
    );
 }
 
-Card makePostElem2( BuildContext ctx
-                  , List<String> values
-                  , List<String> keys
-                  , Icon ic)
+Row makePostRowElem(BuildContext ctx, String key, String value)
+{
+   RichText left = RichText(
+      text: TextSpan(
+         text: key + ': ',
+         style: Theme.of(ctx).textTheme.subhead.copyWith(
+            fontWeight: FontWeight.w500,
+         ),
+      )
+   );
+
+   RichText right = RichText(
+      text: TextSpan(
+         text: value,
+         style: Theme.of(ctx).textTheme.subhead
+      ),
+   );
+
+   return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>
+      [ ConstrainedBox(
+         constraints: BoxConstraints(
+            maxWidth: 100.0,
+            minWidth: 100.0),
+         child: left)
+      ,  ConstrainedBox(
+         constraints: BoxConstraints(
+            maxWidth: 250.0,
+            minWidth: 250.0),
+         child: right)
+      ]
+   );
+}
+
+List<Widget> makePostInclusiveList(BuildContext ctx, Post post)
 {
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < values.length; ++i) {
-      RichText left = RichText(
-         text: TextSpan(
-            text: keys[i] + ': ',
-            style: Theme.of(ctx).textTheme.subhead,
-         )
-      );
-
-      RichText right = RichText(
-         text: TextSpan(
-            text: values[i],
-            style: Theme.of(ctx).textTheme.body1
-         ),
-      );
-      Row row = Row(
-         mainAxisSize: MainAxisSize.min,
-         mainAxisAlignment: MainAxisAlignment.start,
-         children: <Widget>
-         [ ConstrainedBox(
-            constraints: BoxConstraints(
-               maxWidth: 100.0,
-               minWidth: 100.0),
-            child: left)
-         ,  ConstrainedBox(
-            constraints: BoxConstraints(
-               maxWidth: 250.0,
-               minWidth: 250.0),
-            child: right)
-         ]);
-
-      list.add(row);
-   }
-
-   Column col = Column(children: list);
-
-   return makePostElemSimple(ic, col);
-}
-
-Card makePostDetailElem(BuildContext ctx, int filter)
-{
-   List<Widget> leftList = List<Widget>();
-
    for (int i = 0; i < txt.exclusiveDetails[0].length; ++i) {
-      final bool b = (filter & (1 << i)) == 0;
-      if (b)
+      //if ((post.filter & (1 << i)) == 0)
+      if ((127 & (1 << i)) == 0)
          continue;
 
       Text text = Text(
          ' ${txt.exclusiveDetails[0][i]}',
-         style: Theme.of(ctx).textTheme.body1,
+         style: Theme.of(ctx).textTheme.subhead,
       );
 
       Row row = Row(children: <Widget>
       [ Icon(Icons.check)
       , text
       ]); 
-      leftList.add(row);
-   }
-
-   Column col =
-      Column( children: leftList
-            , crossAxisAlignment: CrossAxisAlignment.start);
-
-   return makePostElemSimple(Icon(Icons.details), col);
-}
-
-List<Card>
-makeMenuInfoCards(BuildContext ctx,
-                  Post data,
-                  List<MenuItem> menus,
-                  Color color)
-{
-   List<Card> list = List<Card>();
-
-   for (int i = 0; i < data.channel.length; ++i) {
-      List<String> names =
-            loadNames(menus[i].root.first, data.channel[i][0]);
-
-      Card card = makePostElem2(
-                     ctx,
-                     names,
-                     txt.menuDepthNames[i],
-                     Icon(txt.newPostTabIcons[i]));
-
-      list.add(card);
+      list.add(row);
    }
 
    return list;
 }
 
-// Will assemble menu information and the description in cards
-List<Card> postTextAssembler(BuildContext ctx,
-                            Post post,
-                            List<MenuItem> menus,
-                            Color color)
+// Assenbles the menu information.
+List<Widget> makeMenuInfoList(
+   BuildContext ctx,
+   Post data,
+   List<MenuItem> menus,
+   Color color)
 {
-   List<Card> list = makeMenuInfoCards(ctx, post, menus, color);
+   List<Widget> list = List<Widget>();
+
+   for (int i = 0; i < data.channel.length; ++i) {
+      //Center center = Center(
+      //   child: Padding(
+      //      child: Icon(
+      //         txt.newPostTabIcons[i],
+      //         color: Theme.of(ctx).colorScheme.secondaryVariant,
+      //      ),
+      //      padding: EdgeInsets.all(8.0),
+      //   ),
+      //);
+      //list.add(center); // The padded icon
+
+      List<String> names = loadNames(
+         menus[i].root.first,
+         data.channel[i][0],
+      );
+
+      List<Widget> items = List.generate(names.length, (int j)
+      {
+         return makePostRowElem(
+            ctx,
+            txt.menuDepthNames[i][j],
+            names[j],
+         );
+      });
+
+      list.addAll(items); // The menu info.
+   }
+
+   return list;
+}
+
+List<Widget> makeDetailList(
+   BuildContext ctx,
+   Post post)
+{
+   List<Widget> list = List<Widget>();
+
+   //Center center = Center(
+   //   child: Padding(
+   //      child: Icon(
+   //         Icons.description,
+   //         color: Theme.of(ctx).colorScheme.secondaryVariant,
+   //      ),
+   //      padding: EdgeInsets.all(8.0),
+   //   ),
+   //);
+   //list.add(center); // The padded icon
+
+   for (int i = 0; i < txt.exclusiveDetailTitles.length; ++i) {
+      final int j = searchBitOn(
+         post.exclusiveOps[i],
+         txt.exclusiveDetails[i].length,
+      );
+      
+      list.add(
+         makePostRowElem(
+            ctx,
+            txt.exclusiveDetailTitles[i],
+            txt.exclusiveDetails[i][j],
+         ),
+      );
+   }
+
+   //Center center2 = Center(
+   //   child: Padding(
+   //      child: Icon(
+   //         Icons.details,
+   //         color: Theme.of(ctx).colorScheme.secondaryVariant,
+   //      ),
+   //      padding: EdgeInsets.all(8.0),
+   //   ),
+   //);
+   //list.add(center2); // The padded icon
+
    DateTime date = DateTime.fromMillisecondsSinceEpoch(post.date);
    DateFormat format = DateFormat.yMd().add_jm();
    String dateString = format.format(date);
 
-   List<String> values1 = List<String>();
-   values1.add(post.nick);
-   values1.add('${post.from}');
-   values1.add('${post.id}');
-   values1.add(dateString);
+   List<String> values = List<String>();
+   values.add(post.nick);
+   values.add('${post.from}');
+   values.add('${post.id}');
+   values.add(dateString);
 
-   Card dc1 = makePostElem2(
-      ctx, values1, txt.descList,
-      Icon(Icons.description)
+   for (int i = 0; i < values.length; ++i)
+      list.add(makePostRowElem(ctx, txt.descList[i], values[i]));
+
+   return list;
+}
+
+Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
+{
+   return Card(
+      color: Theme.of(ctx).colorScheme.background,
+      margin: EdgeInsets.all(stl.postInnerMargin),
+      child: Padding(
+         padding: EdgeInsets.all(stl.postElemTextPadding),
+         child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: list,
+         ),
+      ),
    );
+}
 
-   list.add(dc1);
+// Will assemble menu information and the description in cards
+List<Widget> postTextAssembler(
+   BuildContext ctx,
+   Post post,
+   List<MenuItem> menus,
+   Color color)
+{
+   List<Widget> list = List<Widget>();
+
+   List<Widget> ml = makeMenuInfoList(ctx, post, menus, color);
+   list.addAll(ml);
+   List<Widget> dl = makeDetailList(ctx, post);
+   list.addAll(dl);
 
    if (!post.description.isEmpty) {
       ConstrainedBox t = ConstrainedBox(
-            constraints: BoxConstraints(
-               maxWidth: 300.0,
-               minWidth: 300.0),
-            child: Text(post.description));
+         constraints: BoxConstraints(
+            maxWidth: 300.0,
+            minWidth: 300.0),
+         child: Text(post.description),
+      );
 
       list.add(makePostElemSimple(Icon(Icons.clear), t));
    }
 
-   list.add(makePostDetailElem(ctx, post.filter));
+   Card c = Card(
+      color: Theme.of(ctx).colorScheme.background,
+      margin: EdgeInsets.all(stl.postInnerMargin),
+      child: Padding(
+         padding: EdgeInsets.all(stl.postElemTextPadding),
+         child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: list,
+         ),
+      ),
+   );
 
-   return list;
+   return <Widget>
+   [ putPostElemOnCard(ctx, list)
+   , putPostElemOnCard(ctx, makePostInclusiveList(ctx, post))
+   ];
 }
 
 String makePostSummaryStr(MenuNode root, Post post)
@@ -1688,10 +1786,12 @@ Card makeChatEntry(BuildContext ctx,
                    Function onLeadingPressed,
                    IconData ic)
 {
-   List<Card> textCards =
-      postTextAssembler(ctx, post, menus,
-                        Theme.of(ctx).colorScheme.primary);
-
+   List<Widget> textCards = postTextAssembler(
+      ctx,
+      post,
+      menus,
+      Theme.of(ctx).colorScheme.primary
+   );
 
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
@@ -1747,7 +1847,7 @@ Card makeChatEntry(BuildContext ctx,
 }
 
 Card makePostWidget(BuildContext ctx,
-                    List<Card> cards,
+                    List<Widget> cards,
                     Function onPressed,
                     Icon icon)
 {
@@ -1780,6 +1880,7 @@ Card makePostWidget(BuildContext ctx,
       children: cards);
 
    final double padding = stl.outerPostCardPadding;
+
    return Card(
       child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: Theme.of(ctx).colorScheme.primary,
@@ -1806,12 +1907,11 @@ makePostTabListView(BuildContext ctx,
 
          Color color = Theme.of(ctx).colorScheme.primary;
 
-         List<Card> cards =
-            postTextAssembler(
-               ctx,
-               posts[i],
-               menus,
-               color);
+         List<Widget> cards = postTextAssembler(
+            ctx,
+            posts[i],
+            menus,
+            color);
 
          return makePostWidget(
              ctx,
