@@ -1960,7 +1960,8 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: Colors.grey[700],
+            color: Theme.of(ctx).colorScheme.secondary,
+            fontWeight: FontWeight.w500,
             fontStyle: FontStyle.italic,
          ),
       );
