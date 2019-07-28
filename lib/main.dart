@@ -250,32 +250,16 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                             , TextEditingController txtCtrl
                             , onSendNewPostPressed)
 {
-   List<Widget> cards = List<Widget>();
-
-   List<Widget> ml = makeMenuInfoList(
-      ctx,
-      post,
-      menu,
-      Theme.of(ctx).colorScheme.primary
-   );
-
-   cards.addAll(ml);
-
-   List<Widget> dl = makeDetailList(ctx, post);
-
-   cards.addAll(dl);
-
-   cards.add(putPostElemOnCard(ctx, makePostInclusiveList(ctx, post)));
+   List<Widget> all = postCardsAssembler(ctx, post, menu);
 
    TextField tf = TextField(
       controller: txtCtrl,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       maxLength: 500,
-      decoration:
-         InputDecoration.collapsed(
-            hintText: txt.newPostTextFieldHistStr
-         ),
+      decoration: InputDecoration.collapsed(
+         hintText: txt.newPostTextFieldHistStr
+      ),
    );
 
    Card tfc = Card(
@@ -287,12 +271,12 @@ makeNewPostFinalScreenWidget( BuildContext ctx
       margin: EdgeInsets.all(stl.postInnerMargin),
    );
 
-   cards.add(tfc);
+   all.add(tfc);
 
    Card card = 
       makePostWidget(
          ctx,
-         cards,
+         all,
          (final int add) { onSendNewPostPressed(ctx, add); },
          Icon( Icons.publish,
             color: Theme.of(ctx).colorScheme.onPrimary
@@ -317,20 +301,18 @@ int searchBitOn(int o, int n)
    return 0;
 }
 
-Widget makeNewPostScreenElem(
+Widget makeNewPostDetailExpTile(
    BuildContext ctx,
-   Function onNewPostCheckOp,
+   Function onNewPostInDetails,
    String title,
    List<String> items,
-   int state)
+   int state,
+   String strDisplay)
 {
-   final int i = searchBitOn(state, items.length);
-   final String str = items[i];
-
    List<Widget> bar =
       makeNewPostDetailElemList(
          ctx,
-         onNewPostCheckOp,
+         onNewPostInDetails,
          state,
          items,
       );
@@ -345,7 +327,7 @@ Widget makeNewPostScreenElem(
          ),
          children: <TextSpan>
          [ TextSpan(
-              text: ': ${str}',
+              text: ': $strDisplay',
               style: TextStyle(
                   fontWeight: FontWeight.normal,
                   color: Theme.of(ctx).colorScheme.secondary,
@@ -361,7 +343,8 @@ Widget makeNewPostScreenElem(
       child: ExpansionTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           title: richTitle,
-          children: bar
+          children: bar,
+          initiallyExpanded: false,
       ),
    );
 
@@ -376,40 +359,50 @@ Widget makeNewPostScreenElem(
 
 List<Widget> makeNewPostDetailScreen(
    BuildContext ctx,
-   Function onNewPostDetail,
-   Function onNewPostCheckOp,
+   Function onNewPostExDetails,
+   Function onNewPostInDetails,
    Post post)
 {
    List<Widget> widgets = List<Widget>();
 
-   // First the exclusive options.
-   final int length = txt.exclusiveDetailTitles.length;
-   for (int i = 0; i < length; ++i) {
-      Widget foo = makeNewPostScreenElem(
+   final int l1 = txt.exDetailTitles.length;
+   for (int i = 0; i < l1; ++i) {
+
+      final int k = searchBitOn(
+         post.exDetails[i],
+         txt.exDetails[i].length
+      );
+
+      Widget foo = makeNewPostDetailExpTile(
          ctx,
-         (int j) {onNewPostDetail(i, j);},
-         txt.exclusiveDetailTitles[i],
-         txt.exclusiveDetails[i],
-         post.exclusiveOps[i],
+         (int j) {onNewPostExDetails(i, j);},
+         txt.exDetailTitles[i],
+         txt.exDetails[i],
+         post.exDetails[i],
+         txt.exDetails[i][k],
       );
 
       widgets.add(foo);
    }
 
-   Widget bar = makeNewPostScreenElem(
-      ctx,
-      onNewPostCheckOp,
-      txt.newPostCheckOpsTitle,
-      txt.newPostCheckOps,
-      post.checkOps,
-   );
+   final int l2 = txt.inDetailTitles.length;
+   for (int i = 0; i < l2; ++i) {
+      Widget foo = makeNewPostDetailExpTile(
+         ctx,
+         (int j) {onNewPostInDetails(i, j);},
+         txt.inDetailTitles[i],
+         txt.inDetails[i],
+         post.inDetails[i],
+         '12 items'
+      );
 
-   widgets.add(bar);
+      widgets.add(foo);
+   }
 
    widgets.add(
       createSendButton(
          ctx,
-         (){onNewPostDetail(-1, -1);},
+         (){onNewPostExDetails(-1, -1);},
          'Continuar',
       ),
    );
@@ -424,12 +417,12 @@ makeNewPostScreens( BuildContext ctx
                   , TextEditingController txtCtrl
                   , onSendNewPostPressed
                   , int screen
-                  , Function onNewPostDetail
+                  , Function onNewPostExDetails
                   , Function onPostLeafPressed
                   , Function onPostNodePressed
                   , Function onWillPopMenu
                   , Function onNewPostBotBarTapped
-                  , Function onNewPostCheckOp)
+                  , Function onNewPostInDetails)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -446,8 +439,8 @@ makeNewPostScreens( BuildContext ctx
       final List<Widget> widgets =
          makeNewPostDetailScreen(
             ctx,
-            onNewPostDetail,
-            onNewPostCheckOp,
+            onNewPostExDetails,
+            onNewPostInDetails,
             post);
 
       // Consider changing this to column.
@@ -562,7 +555,7 @@ makeNewFiltersScreens( BuildContext ctx
             ctx,
             onFilterDetail,
             filter,
-            txt.exclusiveDetails[0],
+            txt.exDetails[0],
          );
 
       wid = ListView.builder(
@@ -1576,17 +1569,18 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 }
 
-List<Widget> makePostInclusiveList(BuildContext ctx, Post post)
+List<Widget> makePostInclusiveList(
+   BuildContext ctx,
+   List<String> names,
+   int state)
 {
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < txt.exclusiveDetails[0].length; ++i) {
-      //if ((post.filter & (1 << i)) == 0)
-      if ((127 & (1 << i)) == 0)
+   for (int i = 0; i < names.length; ++i) {
+      if ((state & (1 << i)) == 0)
          continue;
 
-      Text text = Text(
-         ' ${txt.exclusiveDetails[0][i]}',
+      Text text = Text(' ${names[i]}',
          style: Theme.of(ctx).textTheme.subhead,
       );
 
@@ -1594,6 +1588,7 @@ List<Widget> makePostInclusiveList(BuildContext ctx, Post post)
       [ Icon(Icons.check)
       , text
       ]); 
+
       list.add(row);
    }
 
@@ -1604,23 +1599,11 @@ List<Widget> makePostInclusiveList(BuildContext ctx, Post post)
 List<Widget> makeMenuInfoList(
    BuildContext ctx,
    Post data,
-   List<MenuItem> menus,
-   Color color)
+   List<MenuItem> menus)
 {
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < data.channel.length; ++i) {
-      //Center center = Center(
-      //   child: Padding(
-      //      child: Icon(
-      //         txt.newPostTabIcons[i],
-      //         color: Theme.of(ctx).colorScheme.secondaryVariant,
-      //      ),
-      //      padding: EdgeInsets.all(8.0),
-      //   ),
-      //);
-      //list.add(center); // The padded icon
-
       List<String> names = loadNames(
          menus[i].root.first,
          data.channel[i][0],
@@ -1647,42 +1630,20 @@ List<Widget> makeDetailList(
 {
    List<Widget> list = List<Widget>();
 
-   //Center center = Center(
-   //   child: Padding(
-   //      child: Icon(
-   //         Icons.description,
-   //         color: Theme.of(ctx).colorScheme.secondaryVariant,
-   //      ),
-   //      padding: EdgeInsets.all(8.0),
-   //   ),
-   //);
-   //list.add(center); // The padded icon
-
-   for (int i = 0; i < txt.exclusiveDetailTitles.length; ++i) {
+   for (int i = 0; i < txt.exDetailTitles.length; ++i) {
       final int j = searchBitOn(
-         post.exclusiveOps[i],
-         txt.exclusiveDetails[i].length,
+         post.exDetails[i],
+         txt.exDetails[i].length,
       );
       
       list.add(
          makePostRowElem(
             ctx,
-            txt.exclusiveDetailTitles[i],
-            txt.exclusiveDetails[i][j],
+            txt.exDetailTitles[i],
+            txt.exDetails[i][j],
          ),
       );
    }
-
-   //Center center2 = Center(
-   //   child: Padding(
-   //      child: Icon(
-   //         Icons.details,
-   //         color: Theme.of(ctx).colorScheme.secondaryVariant,
-   //      ),
-   //      padding: EdgeInsets.all(8.0),
-   //   ),
-   //);
-   //list.add(center2); // The padded icon
 
    DateTime date = DateTime.fromMillisecondsSinceEpoch(post.date);
    DateFormat format = DateFormat.yMd().add_jm();
@@ -1716,19 +1677,42 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
    );
 }
 
+List<Widget> postCardsAssembler(
+   BuildContext ctx,
+   Post post,
+   List<MenuItem> menus)
+{
+   List<Widget> exList = List<Widget>();
+   List<Widget> ml = makeMenuInfoList(ctx, post, menus);
+   exList.addAll(ml);
+   List<Widget> dl = makeDetailList(ctx, post);
+   exList.addAll(dl);
+
+   List<Widget> all = List<Widget>();
+
+   all.add(putPostElemOnCard(ctx, exList));
+
+   for (int i = 0; i < txt.inDetails.length; ++i) {
+      List<Widget> foo =
+         makePostInclusiveList(
+            ctx,
+            txt.inDetails[i],
+            post.inDetails[i],
+         );
+
+      all.add(putPostElemOnCard(ctx, foo));
+   }
+
+   return all;
+}
+
 // Will assemble menu information and the description in cards
 List<Widget> postTextAssembler(
    BuildContext ctx,
    Post post,
-   List<MenuItem> menus,
-   Color color)
+   List<MenuItem> menu)
 {
-   List<Widget> list = List<Widget>();
-
-   List<Widget> ml = makeMenuInfoList(ctx, post, menus, color);
-   list.addAll(ml);
-   List<Widget> dl = makeDetailList(ctx, post);
-   list.addAll(dl);
+   List<Widget> all = postCardsAssembler(ctx, post, menu);
 
    if (!post.description.isEmpty) {
       ConstrainedBox t = ConstrainedBox(
@@ -1738,26 +1722,10 @@ List<Widget> postTextAssembler(
          child: Text(post.description),
       );
 
-      list.add(makePostElemSimple(Icon(Icons.clear), t));
+      all.add(makePostElemSimple(Icon(Icons.clear), t));
    }
 
-   Card c = Card(
-      color: Theme.of(ctx).colorScheme.background,
-      margin: EdgeInsets.all(stl.postInnerMargin),
-      child: Padding(
-         padding: EdgeInsets.all(stl.postElemTextPadding),
-         child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: list,
-         ),
-      ),
-   );
-
-   return <Widget>
-   [ putPostElemOnCard(ctx, list)
-   , putPostElemOnCard(ctx, makePostInclusiveList(ctx, post))
-   ];
+   return all;
 }
 
 String makePostSummaryStr(MenuNode root, Post post)
@@ -1786,12 +1754,7 @@ Card makeChatEntry(BuildContext ctx,
                    Function onLeadingPressed,
                    IconData ic)
 {
-   List<Widget> textCards = postTextAssembler(
-      ctx,
-      post,
-      menus,
-      Theme.of(ctx).colorScheme.primary
-   );
+   List<Widget> textCards = postTextAssembler(ctx, post, menus);
 
    final String postSummaryStr =
       makePostSummaryStr(menus[1].root.first, post);
@@ -1810,10 +1773,7 @@ Card makeChatEntry(BuildContext ctx,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
              ),
-             children: ListTile.divideTiles(
-                        context: ctx,
-                        tiles: textCards,
-                        color: Colors.grey).toList()
+             children: textCards,
           ),
       );
 
@@ -1905,13 +1865,7 @@ makePostTabListView(BuildContext ctx,
       {
          updateLasSeenPostIdx(i);
 
-         Color color = Theme.of(ctx).colorScheme.primary;
-
-         List<Widget> cards = postTextAssembler(
-            ctx,
-            posts[i],
-            menus,
-            color);
+         List<Widget> cards = postTextAssembler(ctx, posts[i], menus);
 
          return makePostWidget(
              ctx,
@@ -4057,7 +4011,7 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
-   void _onNewPostDetail(int i, int j)
+   void _onNewPostExDetails(int i, int j)
    {
       if (j == -1) {
          _botBarIdx = 3;
@@ -4066,14 +4020,14 @@ class MenuChatState extends State<MenuChat>
       }
 
       //_post.filter ^= 1 << i;
-      _post.exclusiveOps[i] = 1 << j;
+      _post.exDetails[i] = 1 << j;
 
       setState(() { });
    }
 
-   void _onNewPostCheckOp(int i)
+   void _onNewPostInDetail(int i, int j)
    {
-      _post.checkOps ^= 1 << i;
+      _post.inDetails[i] ^= 1 << j;
       setState(() { });
    }
 
@@ -4111,12 +4065,12 @@ class MenuChatState extends State<MenuChat>
                _txtCtrl,
                _onSendNewPostPressed,
                _botBarIdx,
-               _onNewPostDetail,
+               _onNewPostExDetails,
                _onPostLeafPressed,
                _onPostNodePressed,
                _onWillPopMenu,
                _onNewPostBotBarTapped,
-               _onNewPostCheckOp);
+               _onNewPostInDetail);
       }
 
       if (_newFiltersPressed)

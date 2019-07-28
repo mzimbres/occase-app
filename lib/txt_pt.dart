@@ -98,9 +98,8 @@ final List<String> descList = <String>
 // WARNING: The strings in the array must have size at least two. I
 // won't check that in code.
 
-// In the following, the arrays with the detail options. There are two
-// main types of details, exclusive and inclusive.
-const List<String> exclusiveDetailTitles = <String>
+// Exclusive options.
+const List<String> exDetailTitles = <String>
 [ 'Adicionais'
 , 'Combustível'
 , 'Câmbio'
@@ -109,7 +108,7 @@ const List<String> exclusiveDetailTitles = <String>
 , 'Anunciante'
 ];
 
-const List<List<String>> exclusiveDetails = <List<String>>
+const List<List<String>> exDetails = <List<String>>
 [ <String>
   [ 'Novo'
   , 'Usado'
@@ -173,47 +172,52 @@ const List<List<String>> exclusiveDetails = <List<String>>
   ]
 ];
 
-const String newPostCheckOpsTitle = 'Adicionais';
-final List<String> newPostCheckOps = <String>
-[ 'Airbag'
-, 'Alarme'
-, 'Ar quente'
-, 'Ar condicionado'
-, 'CD Player'
-, 'Direcao hidraulica'
-, 'Freio ABS'
-, 'Player'
-, 'CD Player'
-, 'Banco com regulagem de altura'
-, 'Computador de bordo'
-, 'Desembacador traseiro'
-, 'Encosto de cabeca trazeiro'
-, 'Freio ABS'
-, 'Controle automatico de velocidade'
-, 'Rodas de liga leve'
-, 'Sensor de chuva'
-, 'Sensor de estacionamento'
-, 'Teto solar'
-, 'Retrovisor fotocrômico'
-, 'Travas elétricas'
-, 'Vidros elétricos'
-, 'Volante com regulagen de altura'
-, 'Farol de xenônio'
-, 'Direcao hidráulica'
+// Inclusive options.
+const List<String> inDetailTitles = <String>
+[ 'Opcionais'
+, 'Condicoes'
 ];
 
-const String newPostCheckOpsTitle2 = 'Características';
-final List<String> newPostCheckOps2 = <String>
-[ 'Único dono'
-, 'IPVA pago'
-, 'Nao aceito troca'
-, 'Veículo financiado'
-, 'Licenciado'
-, 'Garantia de fábrica'
-, 'Veículo de colecionador'
-, 'Todas as revis~oes em concessionária'
-, 'Adaptada para pessoas com deficiência'
-, 'Blindado'
+const List<List<String>> inDetails = <List<String>>
+[ <String>
+  [ 'Airbag'
+  , 'Alarme'
+  , 'Ar quente'
+  , 'Ar condicionado'
+  , 'CD Player'
+  , 'Direcao hidraulica'
+  , 'Freio ABS'
+  , 'Player'
+  , 'CD Player'
+  , 'Banco com regulagem de altura'
+  , 'Computador de bordo'
+  , 'Desembacador traseiro'
+  , 'Encosto de cabeca trazeiro'
+  , 'Freio ABS'
+  , 'Controle automatico de velocidade'
+  , 'Rodas de liga leve'
+  , 'Sensor de chuva'
+  , 'Sensor de estacionamento'
+  , 'Teto solar'
+  , 'Retrovisor fotocrômico'
+  , 'Travas elétricas'
+  , 'Vidros elétricos'
+  , 'Volante com regulagen de altura'
+  , 'Farol de xenônio'
+  , 'Direcao hidráulica'
+  ]
+, <String>
+  [ 'Único dono'
+  , 'IPVA pago'
+  , 'Nao aceito troca'
+  , 'Veículo financiado'
+  , 'Licenciado'
+  , 'Garantia de fábrica'
+  , 'Veículo de colecionador'
+  , 'Todas as revis~oes em concessionária'
+  , 'Adaptada para pessoas com deficiência'
+  , 'Blindado'
+  ]
 ];
 
 final String newPostTextFieldHistStr = "Informacoes adicionais";

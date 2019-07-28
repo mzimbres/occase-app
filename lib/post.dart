@@ -292,8 +292,8 @@ class Post {
 
    int checkOps = 0;
 
-   List<int> exclusiveOps =
-      List<int>(txt.exclusiveDetailTitles.length);
+   List<int> exDetails = List<int>(txt.exDetails.length);
+   List<int> inDetails = List<int>(txt.inDetails.length);
 
    // The publication date.
    int date = 0;
@@ -316,8 +316,11 @@ class Post {
    Post()
    {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
-      exclusiveOps = List<int>(txt.exclusiveDetailTitles.length);
-      exclusiveOps.fillRange(0, exclusiveOps.length, 0);
+      exDetails = List<int>(txt.exDetails.length);
+      exDetails.fillRange(0, exDetails.length, 0);
+
+      inDetails = List<int>(txt.inDetails.length);
+      inDetails.fillRange(0, inDetails.length, 0);
    }
 
    Post clone()
@@ -329,8 +332,13 @@ class Post {
       ret.from = this.from;
       ret.id = this.id;
       ret.filter = this.filter;
-      ret.exclusiveOps = List<int>.from(this.exclusiveOps);
-      exclusiveOps.fillRange(0, exclusiveOps.length, 0);
+
+      ret.exDetails = List<int>.from(this.exDetails);
+      exDetails.fillRange(0, exDetails.length, 0);
+
+      ret.inDetails = List<int>.from(this.inDetails);
+      inDetails.fillRange(0, inDetails.length, 0);
+
       ret.nick = this.nick;
       ret.date = this.date;
       ret.status = this.status;
@@ -626,8 +634,11 @@ Post readPostData(var item)
    post.filter = item['filter'];
 
    // FIXME.
-   post.exclusiveOps = List<int>(txt.exclusiveDetailTitles.length);
-   post.exclusiveOps.fillRange(0, post.exclusiveOps.length, 0);
+   post.exDetails = List<int>(txt.exDetailTitles.length);
+   post.exDetails.fillRange(0, post.exDetails.length, 0);
+
+   post.inDetails = List<int>(txt.inDetails.length);
+   post.inDetails.fillRange(0, post.inDetails.length, 0);
 
    post.nick = item['nick'];
    post.channel = decodeChannel(item['to']);
