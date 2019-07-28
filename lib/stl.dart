@@ -12,7 +12,7 @@ final double postMarging = 4.0;
 
 // Marging user to separate the post element cards from the
 // outermost cards.
-final double postInnerMargin = 3.0;
+final double postInnerMargin = 8.0;
 
 final double listTileSubtitleFontSize = 14.0;
 
@@ -32,5 +32,14 @@ const ColorScheme colorScheme = ColorScheme.light(
 );
 
 // The padding used around the posts and likes screens.
-const double postChatPadding = 2.0;
+const double postListViewTopPadding = 2.0;
+const double postListViewSidePadding = 0.0;
+
+const double postCardSideMargin = 4.0;
+const double postCardBottomMargin = 10.0;
+
+const double postCardCornerRadius = 8.0;
+const double cardPostMargin = postCardSideMargin;
+
+const chatTilePadding = cardPostMargin;
 

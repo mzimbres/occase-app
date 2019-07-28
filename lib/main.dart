@@ -250,7 +250,7 @@ makeNewPostFinalScreenWidget( BuildContext ctx
                             , TextEditingController txtCtrl
                             , onSendNewPostPressed)
 {
-   List<Widget> all = postCardsAssembler(ctx, post, menu);
+   List<Widget> all = postCardAssembler(ctx, post, menu);
 
    TextField tf = TextField(
       controller: txtCtrl,
@@ -307,7 +307,8 @@ Widget makeNewPostDetailExpTile(
    String title,
    List<String> items,
    int state,
-   String strDisplay)
+   String strDisplay,
+   bool addGlobalKey)
 {
    List<Widget> bar =
       makeNewPostDetailElemList(
@@ -338,9 +339,14 @@ Widget makeNewPostDetailExpTile(
       ),
    );
 
+   Key key = null;
+   if (addGlobalKey)
+      key = GlobalKey();
+
    Widget exp = Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
+          key: key,
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           title: richTitle,
           children: bar,
@@ -380,6 +386,7 @@ List<Widget> makeNewPostDetailScreen(
          txt.exDetails[i],
          post.exDetails[i],
          txt.exDetails[i][k],
+         true,
       );
 
       widgets.add(foo);
@@ -393,7 +400,8 @@ List<Widget> makeNewPostDetailScreen(
          txt.inDetailTitles[i],
          txt.inDetails[i],
          post.inDetails[i],
-         '12 items'
+         '12 items',
+         false,
       );
 
       widgets.add(foo);
@@ -446,9 +454,9 @@ makeNewPostScreens( BuildContext ctx
       // Consider changing this to column.
       wid = ListView.builder(
          padding: const EdgeInsets.only(
-            left: stl.postChatPadding,
-            right: stl.postChatPadding,
-            top: stl.postChatPadding,
+            left: stl.postListViewSidePadding,
+            right: stl.postListViewSidePadding,
+            top: stl.postListViewTopPadding,
          ),
          itemCount: widgets.length,
          itemBuilder: (BuildContext ctx, int i)
@@ -1552,7 +1560,6 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 
    return Row(
-      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
       [ ConstrainedBox(
@@ -1663,21 +1670,28 @@ List<Widget> makeDetailList(
 
 Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
 {
+   Column col = Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: list,
+   );
+
    return Card(
+      elevation: 0.0,
       color: Theme.of(ctx).colorScheme.background,
-      margin: EdgeInsets.all(stl.postInnerMargin),
+      margin: EdgeInsets.only(
+         top: stl.chatTilePadding,
+         left: stl.chatTilePadding,
+         right: stl.chatTilePadding,
+      ),
       child: Padding(
-         padding: EdgeInsets.all(stl.postElemTextPadding),
-         child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: list,
-         ),
+         child: col,
+         padding: EdgeInsets.all(stl.postInnerMargin),
       ),
    );
 }
 
-List<Widget> postCardsAssembler(
+List<Widget> postCardAssembler(
    BuildContext ctx,
    Post post,
    List<MenuItem> menus)
@@ -1712,7 +1726,7 @@ List<Widget> postTextAssembler(
    Post post,
    List<MenuItem> menu)
 {
-   List<Widget> all = postCardsAssembler(ctx, post, menu);
+   List<Widget> all = postCardAssembler(ctx, post, menu);
 
    if (!post.description.isEmpty) {
       ConstrainedBox t = ConstrainedBox(
@@ -1747,63 +1761,34 @@ ThemeData makeExpTileThemeData(BuildContext ctx)
    );
 }
 
-Card makeChatEntry(BuildContext ctx,
-                   Post post,
-                   List<MenuItem> menus,
-                   Widget chats,
-                   Function onLeadingPressed,
-                   IconData ic)
+Widget makePostInfoExpansion(
+   BuildContext ctx,
+   Post post,
+   List<MenuItem> menu,
+   Function onLeadingPressed,
+   IconData ic)
 {
-   List<Widget> textCards = postTextAssembler(ctx, post, menus);
+   List<Widget> textCards = postTextAssembler(ctx, post, menu);
 
    final String postSummaryStr =
-      makePostSummaryStr(menus[1].root.first, post);
+      makePostSummaryStr(menu[1].root.first, post);
 
    Widget card = Theme(
-         data: makeExpTileThemeData(ctx),
-         child: ExpansionTile(
-             backgroundColor: Theme.of(ctx).colorScheme.primary,
-             leading: IconButton(
-                icon: Icon(ic),
-                onPressed: onLeadingPressed,
-             ),
-             key: PageStorageKey<int>(2 * post.id),
-             title: Text(
-                postSummaryStr,
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-             ),
-             children: textCards,
+      data: makeExpTileThemeData(ctx),
+      child: ExpansionTile(
+          backgroundColor: Theme.of(ctx).colorScheme.primary,
+          leading: IconButton(icon: Icon(ic), onPressed: onLeadingPressed),
+          key: GlobalKey(),
+          title: Text(
+             postSummaryStr,
+             maxLines: 1,
+             overflow: TextOverflow.clip,
           ),
-      );
-
-   List<Widget> cards = List<Widget>();
-   cards.add(
-      Padding(
-         padding: const EdgeInsets.only(
-            left: 4.0, right: 4.0, bottom: 4.0
-         ),
-         child: card,
+          children: textCards,
       ),
    );
 
-   cards.add(
-      Padding(
-         padding: const EdgeInsets.only(
-            left: 4.0, right: 4.0, bottom: 4.0
-         ),
-         child: chats,
-      ),
-   );
-
-   return Card(
-      child: Column(children: cards),
-      color: Theme.of(ctx).colorScheme.primary,
-      elevation: 0.0,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(7.0)),
-      ),
-   );
+   return card;
 }
 
 Card makePostWidget(BuildContext ctx,
@@ -2080,7 +2065,70 @@ Color selectColor(int n)
    }
 }
 
-Widget makePostChatCol(
+Card makeChatListTile(
+   BuildContext ctx,
+   Chat chat,
+   int now,
+   Function onLeadingPressed,
+   Function onLongPress,
+   Function onPressed,
+   bool isFwdChatMsgs)
+{
+   Widget widget;
+   Color bgColor;
+   if (chat.isLongPressed) {
+      widget = Icon(Icons.check);
+      bgColor = stl.chatLongPressendColor;
+   } else {
+      widget = txt.unknownPersonIcon;
+      bgColor = Theme.of(ctx).colorScheme.background;
+   }
+
+   Widget trailing = makeChatListTileTrailingWidget(
+      ctx,
+      chat.nUnreadMsgs,
+      chat.lastChatItem.date,
+      chat.pinDate,
+      now,
+      isFwdChatMsgs
+   );
+
+   ListTile lt =  ListTile(
+      dense: false,
+      enabled: true,
+      trailing: trailing,
+      onTap: onPressed,
+      onLongPress: onLongPress,
+      subtitle: makeChatTileSubtitle(ctx, chat),
+      leading: makeChatListTileLeading(
+         widget,
+         selectColor(int.parse(chat.peer)),
+         onLeadingPressed,
+      ),
+      title: Text(
+         chat.getChatDisplayName(),
+         maxLines: 1,
+         overflow: TextOverflow.clip,
+         style: Theme.of(ctx).textTheme.subhead.copyWith(
+            fontWeight: FontWeight.w500,
+         ),
+      ),
+   );
+
+   return Card(
+      child: lt,
+      color: bgColor,
+      margin: EdgeInsets.all(0.0),
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(
+            Radius.circular(stl.postCardCornerRadius)
+         ),
+      ),
+   );
+}
+
+Widget makePostChatExpansion(
    BuildContext ctx,
    List<Chat> ch,
    Function onPressed,
@@ -2100,56 +2148,24 @@ Widget makePostChatCol(
       if (n > 0)
          ++nUnredChats;
 
-      Widget widget;
-      Color bgColor;
-      if (ch[i].isLongPressed) {
-         widget = Icon(Icons.check);
-         bgColor = stl.chatLongPressendColor;
-      } else {
-         widget = txt.unknownPersonIcon;
-         bgColor = Colors.white;
-      }
-
-      Widget trailing = makeChatListTileTrailingWidget(
-         ctx, n, ch[i].lastChatItem.date, ch[i].pinDate, now,
-         isFwdChatMsgs);
+      Card card = makeChatListTile(
+         ctx,
+         ch[i],
+         now,
+         (){onLeadingPressed(ctx, post.id, i);},
+         () { onLongPressed(i); },
+         () { onPressed(i); },
+         isFwdChatMsgs,
+      );
 
       list[i] = Padding(
+         child: card,
          padding: EdgeInsets.only(
-            left: stl.postInnerMargin,
-            right: stl.postInnerMargin,
-            top: 1.5,
-            bottom: 0.0,
+            left: stl.chatTilePadding,
+            right: stl.chatTilePadding,
+            bottom: stl.chatTilePadding,
          ),
-         child: Container(
-            margin: const EdgeInsets.only(bottom: 3.0),
-            decoration: BoxDecoration(
-               borderRadius: BorderRadius.all(Radius.circular(10.0)),
-               color: bgColor),
-            child: ListTile(
-               dense: false,
-               enabled: true,
-               leading: makeChatListTileLeading(
-                  widget,
-                  selectColor(int.parse(ch[i].peer)),
-                  (){onLeadingPressed(ctx, post.id, i);}
-               ),
-               trailing: trailing,
-               title: Text(
-                  ch[i].getChatDisplayName(),
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     fontWeight: FontWeight.w500,
-                  ),
-               ),
-               subtitle: makeChatTileSubtitle(ctx, ch[i]),
-               //contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
-               onTap: () { onPressed(i); },
-               onLongPress: () { onLongPressed(i); }
-            ),
-          )
-       );
+      );
    }
 
   if (isFav)
@@ -2169,7 +2185,7 @@ Widget makePostChatCol(
          backgroundColor: Theme.of(ctx).colorScheme.primary,
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
-         key: PageStorageKey<int>(2 * post.id + 1),
+         key: GlobalKey(),
          title: Text(str),
          children: list,
       ),
@@ -2181,7 +2197,7 @@ Widget makeChatTab(
    List<Post> posts,
    Function onPressed,
    Function onLongPressed,
-   List<MenuItem> menus,
+   List<MenuItem> menu,
    Function onDelPost,
    Function onPinPost,
    bool isFwdChatMsgs,
@@ -2190,9 +2206,9 @@ Widget makeChatTab(
 {
    return ListView.builder(
       padding: const EdgeInsets.only(
-         left: stl.postChatPadding,
-         right: stl.postChatPadding,
-         top: stl.postChatPadding,
+         left: stl.postListViewSidePadding,
+         right: stl.postListViewSidePadding,
+         top: stl.postListViewTopPadding,
       ),
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
@@ -2216,22 +2232,48 @@ Widget makeChatTab(
          }
 
          final int now = DateTime.now().millisecondsSinceEpoch;
-         return makeChatEntry(
-             ctx,
-             posts[i],
-             menus,
-             makePostChatCol(
-                ctx,
-                posts[i].chats,
-                (j) {onPressed(i, j);},
-                (j) {onLongPressed(i, j);},
-                posts[i],
-                isFwdChatMsgs,
-                onUserInfoPressed,
-                now,
-                onPinPost2,
-                isFav),
-             onDelPost2, ic);
+
+         Widget infoExpansion = makePostInfoExpansion(
+            ctx,
+            posts[i],
+            menu,
+            onDelPost2,
+            ic,
+         );
+
+         Widget chatExpansion = makePostChatExpansion(
+            ctx,
+            posts[i].chats,
+            (j) {onPressed(i, j);},
+            (j) {onLongPressed(i, j);},
+            posts[i],
+            isFwdChatMsgs,
+            onUserInfoPressed,
+            now,
+            onPinPost2,
+            isFav,
+         );
+
+         List<Widget> expansions = <Widget>
+         [ infoExpansion
+         , chatExpansion
+         ];
+
+         return Card(
+            elevation: 0.0,
+            color: Theme.of(ctx).colorScheme.primary,
+            child: Column(children: expansions),
+            shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.all(
+                  Radius.circular(stl.postCardCornerRadius)
+               ),
+            ),
+            margin: const EdgeInsets.only(
+               left: stl.postCardSideMargin,
+               right: stl.postCardSideMargin,
+               bottom: stl.postCardBottomMargin,
+            ),
+         );
       },
    );
 }
