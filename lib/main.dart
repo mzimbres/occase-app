@@ -776,6 +776,41 @@ FloatingActionButton makeFaButton(
       onPressed: onNewPost);
 }
 
+Widget makeFAButtonMiddleScreen(
+   BuildContext ctx,
+   Function onNewFilters,
+   Function onLoadNewPosts,
+   int nNewPosts)
+{
+   FloatingActionButton filters = FloatingActionButton(
+      onPressed: onNewFilters,
+      backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+      child: Icon(
+         Icons.filter_list,
+         color: Theme.of(ctx).colorScheme.onSecondary,
+      ),
+   );
+
+   if (nNewPosts == 0)
+      return filters;
+
+   FloatingActionButton loadNewPosts = FloatingActionButton(
+      mini: true,
+      heroTag: null,
+      onPressed: onLoadNewPosts,
+      backgroundColor: Colors.blue,
+      child: Icon(
+         Icons.file_download,
+         color: Theme.of(ctx).colorScheme.onPrimary,
+      ),
+   );
+
+   return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[loadNewPosts, filters]
+   );
+}
+
 int postIndexHelper(int i)
 {
    if (i == 0) return 1;
@@ -1214,6 +1249,7 @@ makeChatScreen(BuildContext ctx,
       );
    } else {
       title = ListTile(
+          contentPadding: EdgeInsets.all(0.0),
           leading: CircleAvatar(
               child: txt.unknownPersonIcon,
               backgroundColor: selectColor(int.parse(ch.peer))),
@@ -1241,6 +1277,7 @@ makeChatScreen(BuildContext ctx,
                 actions: actions,
                 title: title,
                 leading: IconButton(
+                   padding: EdgeInsets.all(0.0),
                    icon: Icon(Icons.arrow_back),
                    onPressed: onWillPopScope
                 ),
@@ -1839,17 +1876,15 @@ makePostTabListView(BuildContext ctx,
                     List<Post> posts,
                     Function onPostSelection,
                     List<MenuItem> menus,
-                    Function updateLasSeenPostIdx)
+                    int nNewPosts)
 {
-   final int postsLength = posts.length;
+   final int postRangeToShow = posts.length - nNewPosts - 1;
 
    return ListView.builder(
       padding: const EdgeInsets.all(0.0),
-      itemCount: posts.length,
+      itemCount: postRangeToShow,
       itemBuilder: (BuildContext ctx, int i)
       {
-         updateLasSeenPostIdx(i);
-
          List<Widget> cards = postTextAssembler(ctx, posts[i], menus);
 
          return makePostWidget(
@@ -1961,7 +1996,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
             color: Theme.of(ctx).colorScheme.secondary,
-            fontWeight: FontWeight.w500,
+            //fontWeight: FontWeight.w500,
             fontStyle: FontStyle.italic,
          ),
       );
@@ -2448,7 +2483,7 @@ class MenuChatState extends State<MenuChat>
    Chat _chat = null;
 
    // The last post id seen by the user.
-   int _lastSeenPostIdx = -1;
+   int _nNewPosts = 0;
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
@@ -2705,7 +2740,7 @@ class MenuChatState extends State<MenuChat>
          { return e.id == cfg.lastSeenPostId; });
 
       if (i != -1)
-         _lastSeenPostIdx = i;
+         _nNewPosts = _posts.length - i - 1;
 
       List<ChatMsgOutQueueElem> tmp = await loadOutChatMsg(_db);
 
@@ -2816,9 +2851,6 @@ class MenuChatState extends State<MenuChat>
 
       _posts.removeAt(i);
 
-      if (i <= _lastSeenPostIdx)
-         --_lastSeenPostIdx;
-
       setState(() { });
    }
 
@@ -2838,6 +2870,15 @@ class MenuChatState extends State<MenuChat>
       _menu[0].restoreMenuStack();
       _menu[1].restoreMenuStack();
       _botBarIdx = 0;
+      setState(() { });
+   }
+
+   Future<void> _onShowNewPosts() async
+   {
+      _nNewPosts = 0;
+
+      await _db.execute(sql.updateLastSeenPostId,
+                        [_posts.last.id]);
       setState(() { });
    }
 
@@ -3683,6 +3724,7 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onPost(Map<String, dynamic> ack) async
    {
       Batch batch = _db.batch();
+      _nNewPosts += ack['items'].length;
       for (var item in ack['items']) {
          Post post = readPostData(item);
          post.status = 1;
@@ -4038,22 +4080,6 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _updateLastSeenPostIdx(int i) async
-   {
-      if (i <= _lastSeenPostIdx)
-         return;
-
-      _lastSeenPostIdx = i;
-
-      await _db.execute(sql.updateLastSeenPostId,
-                        [_posts[i].id]);
-
-      SchedulerBinding.instance.addPostFrameCallback((_)
-      {
-         setState(() { });
-      });
-   }
-
    void _onNewPostExDetails(int i, int j)
    {
       if (j == -1) {
@@ -4160,8 +4186,7 @@ class MenuChatState extends State<MenuChat>
 
       String appBarTitle = txt.appName;
 
-      List<FloatingActionButton> fltButtons =
-            List<FloatingActionButton>(txt.tabNames.length);
+      List<Widget> fltButtons = List<Widget>(txt.tabNames.length);
 
       fltButtons[0] = makeFaButton(
          ctx,
@@ -4170,13 +4195,11 @@ class MenuChatState extends State<MenuChat>
          _lpChats.length,
          _lpChatMsgs.length);
 
-      fltButtons[1] = FloatingActionButton(
-         onPressed: _onNewFilters,
-         backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
-         child: Icon(
-            Icons.filter_list,
-            color: Theme.of(ctx).colorScheme.onSecondary,
-         ),
+      fltButtons[1] = makeFAButtonMiddleScreen(
+         ctx,
+         _onNewFilters,
+         _onShowNewPosts,
+         _nNewPosts,
       );
 
       fltButtons[2] = makeFaButton(
@@ -4204,7 +4227,8 @@ class MenuChatState extends State<MenuChat>
          _posts,
          _alertUserOnselectPost,
          _menu,
-         _updateLastSeenPostIdx);
+         _nNewPosts,
+      );
 
       bodies[2] = makeChatTab(
          ctx,
@@ -4241,7 +4265,7 @@ class MenuChatState extends State<MenuChat>
 
       List<int> newMsgsCounters = List<int>(txt.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
-      newMsgsCounters[1] = _posts.length - _lastSeenPostIdx - 1;
+      newMsgsCounters[1] = _nNewPosts;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
       List<double> opacities = getNewMsgsOpacities();
