@@ -250,23 +250,27 @@ ListView makeNewPostFinalScreen(
    TextEditingController txtCtrl,
    onSendNewPostPressed)
 {
-   List<Widget> all = postCardAssembler(ctx, post, menu);
+   List<Widget> all = List<Widget>();
+   all.addAll(makeMenuInfo(ctx, post, menu));
+   all.addAll(makePostExDetails(ctx, post));
+   all.addAll(makePostInDetails(ctx, post));
 
+   all.add(makePostSectionTitle(ctx, txt.postDescTitle));
    TextField tf = TextField(
       controller: txtCtrl,
       keyboardType: TextInputType.multiline,
       maxLines: null,
       maxLength: 200,
       decoration: InputDecoration.collapsed(
-         hintText: txt.newPostTextFieldHistStr
+         hintText: txt.newPostTextFieldHistStr,
       ),
    );
 
-   all.add(putPostElemOnCard(ctx, <Widget>[tf]));
+   all.add(tf);
 
    Card card = makePostWidget(
       ctx,
-      all,
+      putPostElemOnCard(ctx, all),
       (final int add) { onSendNewPostPressed(ctx, add); },
       Icon(Icons.publish,
          color: Theme.of(ctx).colorScheme.secondary,
@@ -1593,6 +1597,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
             fontWeight: FontWeight.w500,
+            color: Theme.of(ctx).colorScheme.secondary,
          ),
       )
    );
@@ -1607,10 +1612,14 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-      [ ConstrainedBox(
+      [ Icon(
+           Icons.arrow_right,
+           color: Theme.of(ctx).colorScheme.secondaryVariant,
+        )
+      , ConstrainedBox(
          constraints: BoxConstraints(
-            maxWidth: 130.0,
-            minWidth: 130.0),
+            maxWidth: 110.0,
+            minWidth: 110.0),
          child: left)
       ,  ConstrainedBox(
          constraints: BoxConstraints(
@@ -1621,7 +1630,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 }
 
-List<Widget> makePostInWidgets(
+List<Widget> makePostInRows(
    BuildContext ctx,
    List<String> names,
    int state)
@@ -1637,7 +1646,9 @@ List<Widget> makePostInWidgets(
       );
 
       Row row = Row(children: <Widget>
-      [ Icon(Icons.check)
+      [ Icon(Icons.check,
+           color: Theme.of(ctx).colorScheme.secondaryVariant,
+        )
       , text
       ]); 
 
@@ -1647,8 +1658,24 @@ List<Widget> makePostInWidgets(
    return list;
 }
 
-// Assenbles the menu information.
-List<Widget> makeMenuInfoList(
+Widget makePostSectionTitle(BuildContext ctx, String str)
+{
+   return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+         padding: EdgeInsets.all(stl.postSectionPadding),
+         child: Text(str,
+            style: Theme.of(ctx).textTheme.title.copyWith(
+               color: Theme.of(ctx).colorScheme.primary,
+               fontWeight: FontWeight.w500,
+            ),
+         ),
+      ),
+   );
+}
+
+// Assembles the menu information.
+List<Widget> makeMenuInfo(
    BuildContext ctx,
    Post data,
    List<MenuItem> menus)
@@ -1656,6 +1683,8 @@ List<Widget> makeMenuInfoList(
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < data.channel.length; ++i) {
+      list.add(makePostSectionTitle(ctx, txt.newPostTabNames[i]));
+
       List<String> names = loadNames(
          menus[i].root.first,
          data.channel[i][0],
@@ -1676,7 +1705,7 @@ List<Widget> makeMenuInfoList(
    return list;
 }
 
-List<Widget> makePostExWidgets(
+List<Widget> makePostExDetails(
    BuildContext ctx,
    Post post)
 {
@@ -1685,6 +1714,7 @@ List<Widget> makePostExWidgets(
    final int idx = post.getProductDetailIdx();
 
    List<Widget> list = List<Widget>();
+   list.add(makePostSectionTitle(ctx, txt.postExDetailsTitle));
 
    for (int i = 0; i < txt.exDetailTitles[idx].length; ++i) {
       final int j = searchBitOn(
@@ -1700,6 +1730,8 @@ List<Widget> makePostExWidgets(
          ),
       );
    }
+
+   list.add(makePostSectionTitle(ctx, txt.postRefSectionTitle));
 
    List<String> values = List<String>();
    values.add(post.nick);
@@ -1722,6 +1754,29 @@ List<Widget> makePostExWidgets(
       list.add(makePostRowElem(ctx, txt.descList[i], values[i]));
 
    return list;
+}
+
+List<Widget> makePostInDetails(
+   BuildContext ctx,
+   Post post)
+{
+   List<Widget> all = List<Widget>();
+
+   final int i = post.getProductDetailIdx();
+   for (int j = 0; j < txt.inDetails[i].length; ++j) {
+      List<Widget> foo = makePostInRows(
+         ctx,
+         txt.inDetails[i][j],
+         post.inDetails[j],
+      );
+
+      if (foo.length != 0) {
+         all.add(makePostSectionTitle(ctx, txt.inDetailTitles[i][j]));
+         all.addAll(foo);
+      }
+   }
+
+   return all;
 }
 
 Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
@@ -1747,67 +1802,35 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
    );
 }
 
-List<Widget> postCardAssembler(
-   BuildContext ctx,
-   Post post,
-   List<MenuItem> menus)
+Widget makePostDescription(BuildContext ctx, String desc)
 {
-   final List<Widget> exList = List<Widget>();
-   List<Widget> ml = makeMenuInfoList(ctx, post, menus);
-   exList.addAll(ml);
-   final List<Widget> dl = makePostExWidgets(ctx, post);
-   exList.addAll(dl);
-
-   List<Widget> all = List<Widget>();
-
-   all.add(putPostElemOnCard(ctx, exList));
-
-   final int idx = post.getProductDetailIdx();
-   for (int i = 0; i < txt.inDetails[idx].length; ++i) {
-      List<Widget> foo = makePostInWidgets(
-         ctx,
-         txt.inDetails[idx][i],
-         post.inDetails[i],
-      );
-
-      if (foo.length != 0)
-         all.add(putPostElemOnCard(ctx, foo));
-   }
-
-   return all;
+   // TODO: How to determine the ideal width? If we do not set the
+   // width the text overflow is not handled properly. If we do not
+   // set the width the text overflow is not handled properly.
+   return ConstrainedBox(
+      constraints: BoxConstraints(
+         maxWidth: 350.0,
+         minWidth: 350.0,
+      ),
+      child: Text(
+         desc,
+         overflow: TextOverflow.clip,
+      ),
+   );
 }
 
-// Will assemble menu information and the description in cards
-List<Widget> postTextAssembler(
-   BuildContext ctx,
-   Post post,
-   List<MenuItem> menu)
+Card assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
 {
-   List<Widget> all = postCardAssembler(ctx, post, menu);
-
+   List<Widget> all = List<Widget>();
+   all.addAll(makeMenuInfo(ctx, post, menu));
+   all.addAll(makePostExDetails(ctx, post));
+   all.addAll(makePostInDetails(ctx, post));
    if (!post.description.isEmpty) {
-      Text text = Text(
-         post.description,
-         overflow: TextOverflow.clip,
-      );
-
-      // FIXME: How to determine the idal width? If we do not set the
-      // width the text overflow is not handled properly. If we do not
-      // set the width the text overflow is not handled properly.
-      ConstrainedBox cb = ConstrainedBox(
-         constraints: BoxConstraints(
-            maxWidth: 350.0,
-            minWidth: 350.0,
-         ),
-         child: text,
-      );
-
-      Row row = Row(children: <Widget>[cb]);
-
-      all.add(putPostElemOnCard(ctx, <Widget>[row]));
+      all.add(makePostSectionTitle(ctx, txt.postDescTitle));
+      all.add(makePostDescription(ctx, post.description));
    }
 
-   return all;
+   return putPostElemOnCard(ctx, all);
 }
 
 String makePostSummaryStr(MenuNode root, Post post)
@@ -1836,33 +1859,27 @@ Widget makePostInfoExpansion(
    Function onLeadingPressed,
    IconData ic)
 {
-   List<Widget> textCards = postTextAssembler(ctx, post, menu);
-
-   final String postSummaryStr =
-      makePostSummaryStr(menu[1].root.first, post);
-
-   Widget card = Theme(
+   return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           leading: IconButton(icon: Icon(ic), onPressed: onLeadingPressed),
           key: GlobalKey(),
           title: Text(
-             postSummaryStr,
+             makePostSummaryStr(menu[1].root.first, post),
              maxLines: 1,
              overflow: TextOverflow.clip,
           ),
-          children: textCards,
+          children: <Widget>[assemblePostRows(ctx, post, menu)],
       ),
    );
-
-   return card;
 }
 
-Card makePostWidget(BuildContext ctx,
-                    List<Widget> cards,
-                    Function onPressed,
-                    Icon icon)
+Card makePostWidget(
+   BuildContext ctx,
+   Card card,
+   Function onPressed,
+   Icon icon)
 {
    IconButton icon1 = IconButton(
       iconSize: 35.0,
@@ -1894,8 +1911,6 @@ Card makePostWidget(BuildContext ctx,
       elevation: 0.0,
    );
 
-   cards.add(c4);
-
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
       margin: EdgeInsets.all(stl.postMarging),
@@ -1904,7 +1919,7 @@ Card makePostWidget(BuildContext ctx,
          padding: EdgeInsets.all(stl.outerPostCardPadding),
          child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: cards
+            children: <Widget>[card, c4],
          ),
       ),
    );
@@ -1926,7 +1941,7 @@ ListView makePostTabListView(
       {
          return makePostWidget(
              ctx,
-             postTextAssembler(ctx, posts[i], menus),
+             assemblePostRows(ctx, posts[i], menus),
              (int fav) {onPostSelection(ctx, i, fav);},
              txt.favIcon,
           );
@@ -4155,7 +4170,6 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext ctx)
    {
-      // Just for safety if we did not load the menu fast enough.
       if (_menu.isEmpty)
          return makeWaitMenuScreen();
 

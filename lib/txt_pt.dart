@@ -14,7 +14,7 @@ const List<String> tabNames = <String>
 // Text used in the *new post screens* on the bottom navigation bar.
 const List<String> newPostTabNames = <String>
 [ 'Localizacao'
-, 'Produto'
+, 'Veículo'
 , 'Detalhes'
 , 'Publicar'
 ];
@@ -41,8 +41,8 @@ const String filterAppBarTitle = 'Escolha seus filtros';
 
 const List<String> filterTabNames = <String>
 [ 'Localizacao'
-, 'Modelos'
-, 'Adicionais'
+, 'Veículo'
+, 'Condicoes'
 , 'Enviar'
 ];
 
@@ -74,7 +74,7 @@ const Icon favIcon = Icon(Icons.star, color: Colors.amber);
 // post screen.*
 const List<String> postAppBarMsg = <String>
 [ "Escolha uma localizacao"
-, "Escolha um produto"
+, "Escolha um veículo"
 , "Adicione detalhes"
 , "Verificacao e envio"
 ];
@@ -105,10 +105,17 @@ const List<String> descList = <String>
 // further expansion.
 const int maxExDetailSize = 10;
 
+const String postRefSectionTitle = 'Referências do post';
+
 // NOTE: The strings in the array must have size at least two. I
 // won't check that in code.
 
 // Consider inserting dummy entries in the array for future expansion.
+
+// This is the title that will be used to present the exclusive
+// details in the post
+const String postExDetailsTitle = 'Detalhes Adicionais';
+const String postDescTitle = 'Mensagem do usuário';
 
 // Exclusive options. The size of this array has to match the number
 // of elements in the second menu item.
@@ -442,7 +449,7 @@ const List<List<List<String>>> inDetails = <List<List<String>>>
   ]
 ];
 
-const String newPostTextFieldHistStr = "Informacoes adicionais";
+const String newPostTextFieldHistStr = 'Adicione aqui outras informacoes';
 const String chatTextFieldHintStr = "Mensagem";
 const String nickTextFieldHintStr = "Digite seu nome";
 
