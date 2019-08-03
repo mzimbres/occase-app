@@ -284,7 +284,7 @@ class Post {
 
    // Contains the channel this post was published in.
    //
-   //  [[[1, 2]], [[3, 2]], [[3, 2, 1, 1]]]
+   //  [[[1, 2]], [[3, 2]]]
    //
    List<List<List<int>>> channel;
 
@@ -292,8 +292,8 @@ class Post {
 
    int checkOps = 0;
 
-   List<int> exDetails = List<int>(txt.exDetails.length);
-   List<int> inDetails = List<int>(txt.inDetails.length);
+   List<int> exDetails;
+   List<int> inDetails;
 
    // The publication date.
    int date = 0;
@@ -316,11 +316,16 @@ class Post {
    Post()
    {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
-      exDetails = List<int>(txt.exDetails.length);
+      exDetails = List<int>(txt.maxExDetailSize);
       exDetails.fillRange(0, exDetails.length, 0);
 
-      inDetails = List<int>(txt.inDetails.length);
+      inDetails = List<int>(txt.maxInDetailSize);
       inDetails.fillRange(0, inDetails.length, 0);
+   }
+
+   int getProductDetailIdx()
+   {
+      return channel[1][0][0];
    }
 
    Post clone()
@@ -634,10 +639,10 @@ Post readPostData(var item)
    post.filter = item['filter'];
 
    // FIXME.
-   post.exDetails = List<int>(txt.exDetailTitles.length);
+   post.exDetails = List<int>(txt.maxExDetailSize);
    post.exDetails.fillRange(0, post.exDetails.length, 0);
 
-   post.inDetails = List<int>(txt.inDetails.length);
+   post.inDetails = List<int>(txt.maxInDetailSize);
    post.inDetails.fillRange(0, post.inDetails.length, 0);
 
    post.nick = item['nick'];

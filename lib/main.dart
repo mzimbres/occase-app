@@ -396,37 +396,41 @@ List<Widget> makeNewPostDetailScreen(
    Function onNewPostInDetails,
    Post post)
 {
+   // Post details varies according to the first index of the products
+   // entry in the menu.
+   final int idx = post.getProductDetailIdx();
+
    List<Widget> widgets = List<Widget>();
 
-   final int l1 = txt.exDetailTitles.length;
+   final int l1 = txt.exDetailTitles[idx].length;
    for (int i = 0; i < l1; ++i) {
 
       final int k = searchBitOn(
          post.exDetails[i],
-         txt.exDetails[i].length
+         txt.exDetails[idx][i].length
       );
 
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onNewPostExDetails(i, j);},
-         txt.exDetailTitles[i],
-         txt.exDetails[i],
+         txt.exDetailTitles[idx][i],
+         txt.exDetails[idx][i],
          post.exDetails[i],
-         txt.exDetails[i][k],
+         txt.exDetails[idx][i][k],
          true,
       );
 
       widgets.add(foo);
    }
 
-   final int l2 = txt.inDetailTitles.length;
+   final int l2 = txt.inDetailTitles[idx].length;
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onNewPostInDetails(i, j);},
-         txt.inDetailTitles[i],
-         txt.inDetails[i],
+         txt.inDetailTitles[idx][i],
+         txt.inDetails[idx][i],
          post.inDetails[i],
          '$nBitsSet items',
          false,
@@ -586,12 +590,14 @@ makeNewFiltersScreens( BuildContext ctx
          onCancelNewFilters,
       );
    } else if (screen == 2) {
+      // NOTE: Below we use txt.exDetails[0][0], because the filter is
+      // common to all products.
       final List<Widget> widgets =
          makeNewPostDetailElemList(
             ctx,
             onFilterDetail,
             filter,
-            txt.exDetails[0],
+            txt.exDetails[0][0],
          );
 
       wid = ListView.builder(
@@ -670,7 +676,7 @@ makeNewPostDetailElemList(
        CheckboxListTile cblt = CheckboxListTile(
          dense: true,
          secondary: CircleAvatar(
-            child: Text(list[i].substring(0, 2),
+            child: Text(makeStrAbbrev(list[i]),
                style: TextStyle(color: avatarTxtColor)
             ),
             backgroundColor: avatarBgColor
@@ -1629,13 +1635,13 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       children: <Widget>
       [ ConstrainedBox(
          constraints: BoxConstraints(
-            maxWidth: 100.0,
-            minWidth: 100.0),
+            maxWidth: 130.0,
+            minWidth: 130.0),
          child: left)
       ,  ConstrainedBox(
          constraints: BoxConstraints(
-            maxWidth: 250.0,
-            minWidth: 250.0),
+            maxWidth: 200.0,
+            minWidth: 200.0),
          child: right)
       ]
    );
@@ -1700,19 +1706,23 @@ List<Widget> makePostExWidgets(
    BuildContext ctx,
    Post post)
 {
+   // Post details varies according to the first index of the products
+   // entry in the menu.
+   final int idx = post.getProductDetailIdx();
+
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < txt.exDetailTitles.length; ++i) {
+   for (int i = 0; i < txt.exDetailTitles[idx].length; ++i) {
       final int j = searchBitOn(
          post.exDetails[i],
-         txt.exDetails[i].length,
+         txt.exDetails[idx][i].length,
       );
       
       list.add(
          makePostRowElem(
             ctx,
-            txt.exDetailTitles[i],
-            txt.exDetails[i][j],
+            txt.exDetailTitles[idx][i],
+            txt.exDetails[idx][i][j],
          ),
       );
    }
@@ -1771,10 +1781,11 @@ List<Widget> postCardAssembler(
 
    all.add(putPostElemOnCard(ctx, exList));
 
-   for (int i = 0; i < txt.inDetails.length; ++i) {
+   final int idx = post.getProductDetailIdx();
+   for (int i = 0; i < txt.inDetails[idx].length; ++i) {
       List<Widget> foo = makePostInWidgets(
          ctx,
-         txt.inDetails[i],
+         txt.inDetails[idx][i],
          post.inDetails[i],
       );
 
