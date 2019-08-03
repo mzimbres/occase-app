@@ -243,7 +243,7 @@ makeNickRegisterScreen( BuildContext ctx
    );
 }
 
-ListView makeNewPostFinalScreenWidget(
+ListView makeNewPostFinalScreen(
    BuildContext ctx,
    Post post,
    final List<MenuItem> menu,
@@ -256,32 +256,22 @@ ListView makeNewPostFinalScreenWidget(
       controller: txtCtrl,
       keyboardType: TextInputType.multiline,
       maxLines: null,
-      maxLength: 500,
+      maxLength: 200,
       decoration: InputDecoration.collapsed(
          hintText: txt.newPostTextFieldHistStr
       ),
    );
 
-   Card tfc = Card(
-      child: Padding(
-         child: Center(child: tf),
-         padding: EdgeInsets.all(stl.postElemTextPadding)
+   all.add(putPostElemOnCard(ctx, <Widget>[tf]));
+
+   Card card = makePostWidget(
+      ctx,
+      all,
+      (final int add) { onSendNewPostPressed(ctx, add); },
+      Icon( Icons.publish,
+         color: Theme.of(ctx).colorScheme.secondary,
       ),
-      color: Theme.of(ctx).colorScheme.background,
-      margin: EdgeInsets.all(stl.postInnerMargin),
    );
-
-   all.add(tfc);
-
-   Card card = 
-      makePostWidget(
-         ctx,
-         all,
-         (final int add) { onSendNewPostPressed(ctx, add); },
-         Icon( Icons.publish,
-            color: Theme.of(ctx).colorScheme.onPrimary
-         ),
-      );
 
    return ListView(
       shrinkWrap: true,
@@ -450,38 +440,38 @@ List<Widget> makeNewPostDetailScreen(
    return widgets;
 }
 
-WillPopScope
-makeNewPostScreens( BuildContext ctx
-                  , Post post
-                  , final List<MenuItem> menu
-                  , TextEditingController txtCtrl
-                  , onSendNewPostPressed
-                  , int screen
-                  , Function onNewPostExDetails
-                  , Function onPostLeafPressed
-                  , Function onPostNodePressed
-                  , Function onWillPopMenu
-                  , Function onNewPostBotBarTapped
-                  , Function onNewPostInDetails)
+WillPopScope makeNewPostScreens(
+   BuildContext ctx,
+   Post post,
+   final List<MenuItem> menu,
+   TextEditingController txtCtrl,
+   onSendNewPostPressed,
+   int screen,
+   Function onNewPostExDetails,
+   Function onPostLeafPressed,
+   Function onPostNodePressed,
+   Function onWillPopMenu,
+   Function onNewPostBotBarTapped,
+   Function onNewPostInDetails)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
 
    if (screen == 3) {
-      wid = makeNewPostFinalScreenWidget(
+      wid = makeNewPostFinalScreen(
          ctx,
          post,
          menu,
          txtCtrl,
-         onSendNewPostPressed);
-
+         onSendNewPostPressed
+      );
    } else if (screen == 2) {
-      final List<Widget> widgets =
-         makeNewPostDetailScreen(
-            ctx,
-            onNewPostExDetails,
-            onNewPostInDetails,
-            post);
+      final List<Widget> widgets = makeNewPostDetailScreen(
+         ctx,
+         onNewPostExDetails,
+         onNewPostInDetails,
+         post
+      );
 
       // Consider changing this to column.
       wid = ListView.builder(
@@ -506,12 +496,16 @@ makeNewPostScreens( BuildContext ctx
       appBarTitleWidget = ListTile(
          title: Text(
             txt.newPostAppBarTitle,
+            maxLines: 1,
+            overflow: TextOverflow.clip,
             style: Theme.of(ctx).primaryTextTheme.title.copyWith(
                fontWeight: FontWeight.normal
             ),
          ),
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
+            maxLines: 1,
+            overflow: TextOverflow.clip,
             style: Theme.of(ctx).primaryTextTheme.subtitle,
          ),
       );
@@ -1392,7 +1386,7 @@ ListTile makeFilterSelectAllItem(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
-          color: Theme.of(ctx).colorScheme.onBackground),
+          color: Theme.of(ctx).colorScheme.secondaryVariant),
        title: Text(
           title,
           style: Theme.of(ctx).textTheme.subhead,
@@ -1413,8 +1407,13 @@ ListTile makeFilterListTitle(
    final int cs = child.leafCounter;
 
    String s = ' ($c/$cs)';
-   if (child.isLeaf() && child.leafCounter > 1)
+   TextStyle counterTxtStl = Theme.of(ctx).textTheme.caption;
+   if (child.isLeaf() && child.leafCounter > 1) {
       s = ' (${child.leafCounter})';
+      counterTxtStl = Theme.of(ctx).textTheme.caption.copyWith(
+         color: Theme.of(ctx).colorScheme.primary,
+      );
+   }
 
    RichText title = RichText(
       text: TextSpan(
@@ -1423,10 +1422,7 @@ ListTile makeFilterListTitle(
             fontWeight: FontWeight.w500,
          ),
          children: <TextSpan>
-         [ TextSpan(
-            text: s,
-            style: Theme.of(ctx).textTheme.caption
-           ),
+         [ TextSpan(text: s, style: counterTxtStl),
          ]
       )
    );
@@ -1727,15 +1723,22 @@ List<Widget> makePostExWidgets(
       );
    }
 
-   DateTime date = DateTime.fromMillisecondsSinceEpoch(post.date);
-   DateFormat format = DateFormat.yMd().add_jm();
-   String dateString = format.format(date);
-
    List<String> values = List<String>();
    values.add(post.nick);
    values.add('${post.from}');
-   values.add('${post.id}');
-   values.add(dateString);
+
+   DateTime date;
+   if (post.id == -1) {
+      // We are publishing.
+      values.add('');
+      final int now = DateTime.now().millisecondsSinceEpoch;
+      date = DateTime.fromMillisecondsSinceEpoch(now);
+   } else {
+      values.add('${post.id}');
+      date = DateTime.fromMillisecondsSinceEpoch(post.date);
+   }
+
+   values.add(DateFormat.yMEd().add_jm().format(date));
 
    for (int i = 0; i < values.length; ++i)
       list.add(makePostRowElem(ctx, txt.descList[i], values[i]));
@@ -1873,19 +1876,27 @@ Card makePostWidget(BuildContext ctx,
                     Icon icon)
 {
    IconButton icon1 = IconButton(
-                         icon: Icon(Icons.clear, color: Colors.white),
-                         iconSize: 30.0,
-                         onPressed: () {onPressed(0);});
+      iconSize: 35.0,
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPressed(0);},
+      icon: Icon(
+         Icons.cancel,
+         color: Theme.of(ctx).colorScheme.secondary,
+      ),
+   );
 
    IconButton icon2 = IconButton(
-                         icon: icon,
-                         onPressed: () {onPressed(1);},
-                         color: Theme.of(ctx).colorScheme.primary,
-                         iconSize: 30.0);
+      iconSize: 35.0,
+      padding: EdgeInsets.all(0.0),
+      icon: icon,
+      onPressed: () {onPressed(1);},
+      color: Theme.of(ctx).colorScheme.primary,
+   );
 
-   Row row = Row(children: <Widget>[
-                Expanded(child: icon1),
-                Expanded(child: icon2)]);
+   Row row = Row(children: <Widget>
+   [ Expanded(child: icon1)
+   , Expanded(child: icon2)
+   ]);
 
    Card c4 = Card(
       child: row,
@@ -4173,36 +4184,36 @@ class MenuChatState extends State<MenuChat>
          _cleanUpLpOnSwitchTab();
 
       if (_newPostPressed) {
-         return
-            makeNewPostScreens(
-               ctx,
-               _post,
-               _menu,
-               _txtCtrl,
-               _onSendNewPostPressed,
-               _botBarIdx,
-               _onNewPostExDetails,
-               _onPostLeafPressed,
-               _onPostNodePressed,
-               _onWillPopMenu,
-               _onNewPostBotBarTapped,
-               _onNewPostInDetail);
+         return makeNewPostScreens(
+            ctx,
+            _post,
+            _menu,
+            _txtCtrl,
+            _onSendNewPostPressed,
+            _botBarIdx,
+            _onNewPostExDetails,
+            _onPostLeafPressed,
+            _onPostNodePressed,
+            _onWillPopMenu,
+            _onNewPostBotBarTapped,
+            _onNewPostInDetail
+         );
       }
 
       if (_newFiltersPressed)
-         return
-            makeNewFiltersScreens(
-               ctx,
-               _onSendFilters,
-               _onFilterDetail,
-               _onFilterNodePressed,
-               _onWillPopMenu,
-               _onBotBarTapped,
-               _onFilterLeafNodePressed,
-               _menu,
-               _filter,
-               _botBarIdx,
-               _onCancelNewFilter);
+         return makeNewFiltersScreens(
+            ctx,
+            _onSendFilters,
+            _onFilterDetail,
+            _onFilterNodePressed,
+            _onWillPopMenu,
+            _onBotBarTapped,
+            _onFilterLeafNodePressed,
+            _menu,
+            _filter,
+            _botBarIdx,
+            _onCancelNewFilter
+         );
 
       if (isOnFavChat() || isOnOwnChat()) {
          String postSummary =
@@ -4223,7 +4234,8 @@ class MenuChatState extends State<MenuChat>
             postSummary,
             _onChatAttachment,
             _dragedIdx,
-            _onCancelFwdLPChatMsg);
+            _onCancelFwdLPChatMsg
+         );
       }
 
       List<Function> onWillPops = List<Function>(txt.tabNames.length);
@@ -4240,7 +4252,8 @@ class MenuChatState extends State<MenuChat>
          _onNewPost,
          _onFwdSendButton,
          _lpChats.length,
-         _lpChatMsgs.length);
+         _lpChatMsgs.length
+      );
 
       fltButtons[1] = makeFAButtonMiddleScreen(
          ctx,
@@ -4254,9 +4267,11 @@ class MenuChatState extends State<MenuChat>
          null,
          _onFwdSendButton,
          _lpChats.length,
-         _lpChatMsgs.length);
+         _lpChatMsgs.length
+      );
 
       List<Widget> bodies = List<Widget>(txt.tabNames.length);
+
       bodies[0] = makeChatTab(
          ctx,
          _ownPosts,
@@ -4267,7 +4282,8 @@ class MenuChatState extends State<MenuChat>
          _onPinPost,
          !_lpChatMsgs.isEmpty,
          _onUserInfoPressed,
-         false);
+         false,
+      );
 
       bodies[1] = makePostTabListView(
          ctx,
@@ -4287,25 +4303,36 @@ class MenuChatState extends State<MenuChat>
          _onPinPost,
          !_lpChatMsgs.isEmpty,
          _onUserInfoPressed,
-         true);
+         true,
+      );
 
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
-      if (_isOnFav() || _isOnOwn()) {
-         if (_hasLPChatMsgs()) {
-            appBarTitle = txt.chatMsgRedirectText;
-            appBarLeading = IconButton(
-               icon: Icon(Icons.arrow_back),
-               onPressed: _onBackFromChatMsgRedirect);
-         }
+      if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
+         appBarTitle = txt.chatMsgRedirectText;
+         appBarLeading = IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: _onBackFromChatMsgRedirect
+         );
+      }
 
-         if (_hasLPChats() && !_hasLPChatMsgs()) {
-            actions =
-               makeOnLongPressedActions(
-                  ctx,
-                  _deleteChatDialog,
-                  _pinChats);
-         }
+      if (_isOnOwn() && _hasLPChats() && !_hasLPChatMsgs()) {
+         actions = makeOnLongPressedActions(
+            ctx,
+            _deleteChatDialog,
+            _pinChats,
+         );
+      } else if (_isOnFav() && _hasLPChats() && !_hasLPChatMsgs()) {
+         IconButton delChatBut = IconButton(
+            icon: Icon(
+               Icons.delete_forever,
+               color: Theme.of(ctx).colorScheme.onPrimary,
+            ),
+            tooltip: txt.deleteChatStr,
+            onPressed: () { _deleteChatDialog(ctx); }
+         );
+
+         actions.add(delChatBut);
       }
 
       actions.add(makeAppBarVertAction(_onAppBarVertPressed));
@@ -4318,36 +4345,39 @@ class MenuChatState extends State<MenuChat>
       List<double> opacities = getNewMsgsOpacities();
 
       return WillPopScope(
-          onWillPop: () async { return onWillPops[_tabCtrl.index]();},
-          child: Scaffold(
-              body: NestedScrollView(
-                 controller: _scrollCtrl,
-                 headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled) {
-                   return <Widget>[
+         onWillPop: () async { return onWillPops[_tabCtrl.index]();},
+         child: Scaffold(
+            body: NestedScrollView(
+               controller: _scrollCtrl,
+               headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled)
+               {
+                  return <Widget>[
                      SliverAppBar(
-                       title: Text(appBarTitle),
-                       pinned: true,
-                       floating: true,
-                       forceElevated: innerBoxIsScrolled,
-                       bottom: makeTabBar(
-                          ctx,
-                          newMsgsCounters,
-                          _tabCtrl,
-                          opacities,
-                          _hasLPChatMsgs(),
-                       ),
-                       actions: actions,
-                       leading: appBarLeading
+                        title: Text(appBarTitle),
+                        pinned: true,
+                        floating: true,
+                        forceElevated: innerBoxIsScrolled,
+                        bottom: makeTabBar(
+                           ctx,
+                           newMsgsCounters,
+                           _tabCtrl,
+                           opacities,
+                           _hasLPChatMsgs(),
+                        ),
+                        actions: actions,
+                        leading: appBarLeading,
                      ),
-                   ];
-                 },
-                 body: TabBarView(controller: _tabCtrl,
-                             children: bodies),
-                ),
-                backgroundColor: Colors.white,
-                floatingActionButton: fltButtons[_tabCtrl.index],
-              )
-        );
+                  ];
+               },
+               body: TabBarView(
+                  controller: _tabCtrl,
+                  children: bodies
+               ),
+            ),
+            backgroundColor: Colors.white,
+            floatingActionButton: fltButtons[_tabCtrl.index],
+         ),
+      );
    }
 }
 
