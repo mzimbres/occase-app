@@ -243,12 +243,12 @@ makeNickRegisterScreen( BuildContext ctx
    );
 }
 
-ListView
-makeNewPostFinalScreenWidget( BuildContext ctx
-                            , Post post
-                            , final List<MenuItem> menu
-                            , TextEditingController txtCtrl
-                            , onSendNewPostPressed)
+ListView makeNewPostFinalScreenWidget(
+   BuildContext ctx,
+   Post post,
+   final List<MenuItem> menu,
+   TextEditingController txtCtrl,
+   onSendNewPostPressed)
 {
    List<Widget> all = postCardAssembler(ctx, post, menu);
 
@@ -301,6 +301,34 @@ int searchBitOn(int o, int n)
    return 0;
 }
 
+RichText makeExpTileTitle(
+   BuildContext ctx,
+   String first,
+   String second,
+   String sep)
+{
+   return RichText(
+      text: TextSpan(
+         text: '$first$sep ',
+         style: TextStyle(
+             //fontWeight: FontWeight.w500,
+             color: Theme.of(ctx).colorScheme.onPrimary,
+             fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+         ),
+         children: <TextSpan>
+         [ TextSpan(
+              text: second,
+              style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(ctx).colorScheme.secondary,
+                  fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+              ),
+           )
+         ]
+      ),
+   );
+}
+
 Widget makeNewPostDetailExpTile(
    BuildContext ctx,
    Function onNewPostInDetails,
@@ -318,30 +346,19 @@ Widget makeNewPostDetailExpTile(
          items,
       );
 
-   RichText richTitle = RichText(
-      text: TextSpan(
-         text: title,
-         style: TextStyle(
-             fontWeight: FontWeight.w500,
-             color: Theme.of(ctx).colorScheme.onPrimary,
-             fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-         ),
-         children: <TextSpan>
-         [ TextSpan(
-              text: ': $strDisplay',
-              style: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  color: Theme.of(ctx).colorScheme.secondary,
-                  fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-              ),
-           )
-         ]
-      ),
+   final RichText richTitle = makeExpTileTitle(
+      ctx,
+      title,
+      strDisplay,
+      ':',
    );
 
    Key key = null;
-   if (addGlobalKey)
-      key = GlobalKey();
+   // Passing a global key has the effect that an expansion tile will
+   // collapse after setState is called, but without animation not in
+   // an nice way.
+   //if (addGlobalKey)
+   //   key = GlobalKey();
 
    Widget exp = Theme(
       data: makeExpTileThemeData(ctx),
@@ -361,6 +378,16 @@ Widget makeNewPostDetailExpTile(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
    );
+}
+
+int counterBitsSet(int v)
+{
+   // See https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
+   int c; // c accumulates the total bits set in v
+   for (c = 0; v != 0; c++)
+     v &= v - 1;
+
+   return c;
 }
 
 List<Widget> makeNewPostDetailScreen(
@@ -394,13 +421,14 @@ List<Widget> makeNewPostDetailScreen(
 
    final int l2 = txt.inDetailTitles.length;
    for (int i = 0; i < l2; ++i) {
+      final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onNewPostInDetails(i, j);},
          txt.inDetailTitles[i],
          txt.inDetails[i],
          post.inDetails[i],
-         '12 items',
+         '$nBitsSet items',
          false,
       );
 
@@ -1613,7 +1641,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 }
 
-List<Widget> makePostInclusiveList(
+List<Widget> makePostInWidgets(
    BuildContext ctx,
    List<String> names,
    int state)
@@ -1668,7 +1696,7 @@ List<Widget> makeMenuInfoList(
    return list;
 }
 
-List<Widget> makeDetailList(
+List<Widget> makePostExWidgets(
    BuildContext ctx,
    Post post)
 {
@@ -1733,10 +1761,10 @@ List<Widget> postCardAssembler(
    Post post,
    List<MenuItem> menus)
 {
-   List<Widget> exList = List<Widget>();
+   final List<Widget> exList = List<Widget>();
    List<Widget> ml = makeMenuInfoList(ctx, post, menus);
    exList.addAll(ml);
-   List<Widget> dl = makeDetailList(ctx, post);
+   final List<Widget> dl = makePostExWidgets(ctx, post);
    exList.addAll(dl);
 
    List<Widget> all = List<Widget>();
@@ -1744,14 +1772,14 @@ List<Widget> postCardAssembler(
    all.add(putPostElemOnCard(ctx, exList));
 
    for (int i = 0; i < txt.inDetails.length; ++i) {
-      List<Widget> foo =
-         makePostInclusiveList(
-            ctx,
-            txt.inDetails[i],
-            post.inDetails[i],
-         );
+      List<Widget> foo = makePostInWidgets(
+         ctx,
+         txt.inDetails[i],
+         post.inDetails[i],
+      );
 
-      all.add(putPostElemOnCard(ctx, foo));
+      if (foo.length != 0)
+         all.add(putPostElemOnCard(ctx, foo));
    }
 
    return all;
@@ -2207,9 +2235,17 @@ Widget makePostChatExpansion(
   if (isFav)
      return Column(children: list);
 
-   String str = '${ch.length} conversa(s)';
-   if (nUnredChats != 0)
-      str = '${ch.length} conversas / $nUnredChats nao lidas';
+  Widget title;
+   if (nUnredChats == 0) {
+      title = Text('${ch.length} conversa(s)');
+   } else {
+      title = makeExpTileTitle(
+         ctx,
+         '${ch.length} conversas',
+         '$nUnredChats nao lidas',
+         ', '
+      );
+   }
 
    IconData pinIcon =
       post.pinDate == 0 ? Icons.place : Icons.pin_drop;
@@ -2222,7 +2258,7 @@ Widget makePostChatExpansion(
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
          key: GlobalKey(),
-         title: Text(str),
+         title: title,
          children: list,
       ),
    );
