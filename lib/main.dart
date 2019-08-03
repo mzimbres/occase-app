@@ -268,7 +268,7 @@ ListView makeNewPostFinalScreen(
       ctx,
       all,
       (final int add) { onSendNewPostPressed(ctx, add); },
-      Icon( Icons.publish,
+      Icon(Icons.publish,
          color: Theme.of(ctx).colorScheme.secondary,
       ),
    );
@@ -1566,8 +1566,9 @@ Container makeCircleUnreadMsgs(BuildContext ctx,
        margin: const EdgeInsets.all(2.0),
        padding: const EdgeInsets.all(2.0),
        constraints: BoxConstraints(
-             minHeight: 21.0, minWidth: 21.0,
-             maxHeight: 21.0, maxWidth: 40.0),
+          minHeight: 21.0, minWidth: 21.0,
+          maxHeight: 21.0, maxWidth: 40.0
+       ),
        //height: 21.0,
        //width: 21.0,
        decoration:
@@ -1578,33 +1579,10 @@ Container makeCircleUnreadMsgs(BuildContext ctx,
                    topLeft:  rd,
                    topRight: rd,
                    bottomLeft: rd,
-                   bottomRight: rd)),
-         child: Center(widthFactor: 1.0, child: txt));
-}
-
-Card makePostElemSimple(Icon ic, Widget cols)
-{
-   List<Widget> r = List<Widget>();
-   r.add(Padding(child: Center(child: ic), padding: EdgeInsets.all(4.0)));
-   r.add(cols);
-
-   // Padding needed to show the text inside the post element with some
-   // distance from the border.
-   Padding leftWidget = Padding(
-      padding: EdgeInsets.all(stl.postElemTextPadding),
-      child: Column(
-         crossAxisAlignment: CrossAxisAlignment.stretch,
-         children: r,
-      )
-   );
-
-   // Here we need another padding to make the post inner element have
-   // some distance to the outermost card.
-   return Card(
-      child: leftWidget,
-      color: Colors.white,
-      margin: EdgeInsets.all(stl.postInnerMargin),
-      elevation: 0.0,
+                   bottomRight: rd
+                )
+             ),
+      child: Center(widthFactor: 1.0, child: txt)
    );
 }
 
@@ -1808,14 +1786,25 @@ List<Widget> postTextAssembler(
    List<Widget> all = postCardAssembler(ctx, post, menu);
 
    if (!post.description.isEmpty) {
-      ConstrainedBox t = ConstrainedBox(
-         constraints: BoxConstraints(
-            maxWidth: 300.0,
-            minWidth: 300.0),
-         child: Text(post.description),
+      Text text = Text(
+         post.description,
+         overflow: TextOverflow.clip,
       );
 
-      all.add(makePostElemSimple(Icon(Icons.clear), t));
+      // FIXME: How to determine the idal width? If we do not set the
+      // width the text overflow is not handled properly. If we do not
+      // set the width the text overflow is not handled properly.
+      ConstrainedBox cb = ConstrainedBox(
+         constraints: BoxConstraints(
+            maxWidth: 350.0,
+            minWidth: 350.0,
+         ),
+         child: text,
+      );
+
+      Row row = Row(children: <Widget>[cb]);
+
+      all.add(putPostElemOnCard(ctx, <Widget>[row]));
    }
 
    return all;
@@ -1907,26 +1896,26 @@ Card makePostWidget(BuildContext ctx,
 
    cards.add(c4);
 
-   Column col = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: cards);
-
-   final double padding = stl.outerPostCardPadding;
-
    return Card(
-      child: Padding(child: col, padding: EdgeInsets.all(padding)),
       color: Theme.of(ctx).colorScheme.primary,
       margin: EdgeInsets.all(stl.postMarging),
       elevation: 0.0,
+      child: Padding(
+         padding: EdgeInsets.all(stl.outerPostCardPadding),
+         child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: cards
+         ),
+      ),
    );
 }
 
-ListView
-makePostTabListView(BuildContext ctx,
-                    List<Post> posts,
-                    Function onPostSelection,
-                    List<MenuItem> menus,
-                    int nNewPosts)
+ListView makePostTabListView(
+   BuildContext ctx,
+   List<Post> posts,
+   Function onPostSelection,
+   List<MenuItem> menus,
+   int nNewPosts)
 {
    final int postRangeToShow = posts.length - nNewPosts - 1;
 
@@ -1935,15 +1924,14 @@ makePostTabListView(BuildContext ctx,
       itemCount: postRangeToShow,
       itemBuilder: (BuildContext ctx, int i)
       {
-         List<Widget> cards = postTextAssembler(ctx, posts[i], menus);
-
          return makePostWidget(
              ctx,
-             cards,
+             postTextAssembler(ctx, posts[i], menus),
              (int fav) {onPostSelection(ctx, i, fav);},
              txt.favIcon,
           );
-      });
+      },
+   );
 }
 
 ListView makeNewPostMenuListView(
