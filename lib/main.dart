@@ -1597,15 +1597,14 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
             fontWeight: FontWeight.w500,
-            color: Theme.of(ctx).colorScheme.secondary,
+            color: Theme.of(ctx).colorScheme.secondaryVariant,
          ),
-      )
-   );
-
-   RichText right = RichText(
-      text: TextSpan(
-         text: value,
-         style: Theme.of(ctx).textTheme.subhead
+         children: <TextSpan>
+         [ TextSpan(
+              text: value,
+              style: Theme.of(ctx).textTheme.subhead
+           ),
+         ],
       ),
    );
 
@@ -1614,18 +1613,13 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       children: <Widget>
       [ Icon(
            Icons.arrow_right,
-           color: Theme.of(ctx).colorScheme.secondaryVariant,
+           color: Theme.of(ctx).colorScheme.primary,
         )
       , ConstrainedBox(
          constraints: BoxConstraints(
-            maxWidth: 110.0,
-            minWidth: 110.0),
+            maxWidth: 300.0,
+            minWidth: 300.0),
          child: left)
-      ,  ConstrainedBox(
-         constraints: BoxConstraints(
-            maxWidth: 200.0,
-            minWidth: 200.0),
-         child: right)
       ]
    );
 }
@@ -1647,7 +1641,7 @@ List<Widget> makePostInRows(
 
       Row row = Row(children: <Widget>
       [ Icon(Icons.check,
-           color: Theme.of(ctx).colorScheme.secondaryVariant,
+           color: Theme.of(ctx).colorScheme.primary,
         )
       , text
       ]); 
