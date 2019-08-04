@@ -409,12 +409,11 @@ class Post {
       nick = map['nick'];
       channel = decodeChannel(map['to']);
 
-      // FIXME: Fix the server and read the arrays from the json
-      // command.
-      //exDetails = map['ex_details'];
-      //inDetails = map['in_details'];
-      exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
-      inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+      //exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
+      //inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+
+      exDetails = decodeDetails(txt.maxExDetailSize, map['ex_details']);
+      inDetails = decodeDetails(txt.maxInDetailSize, map['in_details']);
 
       date = map['date'];
       pinDate = 0;
@@ -478,6 +477,16 @@ Map<String, dynamic> postToMap(Post post)
     };
 }
 
+List<int> decodeDetails(int size, List<dynamic> details)
+{
+   List<int> ret = List<int>();
+   ret = List.generate(size, (_) => 0);
+   if (details != null)
+      ret = List.generate(details.length, (int i) { return details[i]; });
+
+   return ret;
+}
+
 Future<List<Post>> loadPosts(Database db) async
 {
   List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
@@ -491,17 +500,15 @@ Future<List<Post>> loadPosts(Database db) async
      post.nick = maps[i]['nick'];
      post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
 
-     post.exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
-     List<dynamic> exDetails = jsonDecode(maps[i]['ex_details']);
-     if (exDetails != null)
-        post.exDetails = List.generate(exDetails.length, (int i)
-           { return exDetails[i]; });
+     post.exDetails = decodeDetails(
+        txt.maxExDetailSize,
+        jsonDecode(maps[i]['ex_details']),
+     );
 
-     post.inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
-     List<dynamic> inDetails = jsonDecode(maps[i]['in_details']);
-     if (inDetails != null)
-        post.inDetails = List.generate(inDetails.length, (int i)
-           { return inDetails[i]; });
+     post.inDetails = decodeDetails(
+        txt.maxInDetailSize,
+        jsonDecode(maps[i]['in_details']),
+     );
 
      post.date = maps[i]['date'];
      post.pinDate = maps[i]['pin_date'];
