@@ -5,7 +5,8 @@ CREATE TABLE posts
 , from_ TEXT
 , nick TEXT
 , channel TEXT
-, filter INTEGER
+, ex_details TEXT
+, in_details TEXT
 , date INTEGER
 , pin_date INTEGER
 , status INTEGER

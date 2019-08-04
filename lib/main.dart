@@ -299,8 +299,13 @@ RichText makeExpTileTitle(
    BuildContext ctx,
    String first,
    String second,
-   String sep)
+   String sep,
+   bool changeColor)
 {
+   Color color = changeColor
+               ? Theme.of(ctx).colorScheme.secondaryVariant
+               : Theme.of(ctx).colorScheme.secondary;
+
    return RichText(
       text: TextSpan(
          text: '$first$sep ',
@@ -314,7 +319,7 @@ RichText makeExpTileTitle(
               text: second,
               style: TextStyle(
                   fontWeight: FontWeight.normal,
-                  color: Theme.of(ctx).colorScheme.secondary,
+                  color: color,
                   fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
               ),
            )
@@ -345,6 +350,7 @@ Widget makeNewPostDetailExpTile(
       title,
       strDisplay,
       ':',
+      state == 0,
    );
 
    Key key = null;
@@ -2262,7 +2268,8 @@ Widget makePostChatExpansion(
          ctx,
          '${ch.length} conversas',
          '$nUnredChats nao lidas',
-         ', '
+         ', ',
+         false, // Any non zero number is enough.
       );
    }
 
@@ -2884,9 +2891,7 @@ class MenuChatState extends State<MenuChat>
 
       if (fav == 1) {
          _posts[i].status = 2;
-         final int j =
-            _posts[i].createChatEntryForPeer(_posts[i].from,
-                                             _posts[i].nick);
+         final int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
 
          Batch batch = _db.batch();
          batch.rawInsert(sql.insertChatStOnPost,
@@ -3121,7 +3126,6 @@ class MenuChatState extends State<MenuChat>
 
    void _onNewPostBotBarTapped(int i)
    {
-      print('====> index $i');
       // We allow the user to tap backwards to a new tab but not
       // forward.  This is to avoid complex logic of avoid the
       // publication of imcomplete posts.
@@ -3225,7 +3229,6 @@ class MenuChatState extends State<MenuChat>
                           conflictAlgorithm:
                              ConflictAlgorithm.replace);
 
-      print('What is this $dbId');
       post.dbId = dbId;
       _outPostsQueue.add(post);
 
@@ -3236,7 +3239,6 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
-      print(payload);
       channel.sink.add(payload);
    }
 
@@ -3275,9 +3277,11 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.add(post);
          _ownPosts.sort(CompPosts);
 
-         print('receiving a publish ack $id for ${post.dbId}.');
          await _db.execute(sql.updatePostOnAck,
                            [0, id, date, post.dbId]);
+
+         // Required to show the publish as soon as its ack arrives.
+         setState(() { });
 
          if (_outPostsQueue.isEmpty)
             return;
@@ -3285,6 +3289,7 @@ class MenuChatState extends State<MenuChat>
          final String payload = makePostPayload(_outPostsQueue.first);
          channel.sink.add(payload);
       } catch (e) {
+         print(e);
       }
    }
 
@@ -3350,7 +3355,6 @@ class MenuChatState extends State<MenuChat>
 
    void _onCancelNewFilter()
    {
-      print('Canceling new filter');
       _newFiltersPressed = false;
       setState(() { });
    }
@@ -3781,7 +3785,7 @@ class MenuChatState extends State<MenuChat>
       Batch batch = _db.batch();
       _nNewPosts += ack['items'].length;
       for (var item in ack['items']) {
-         Post post = readPostData(item);
+         Post post = Post.fromJson(item);
          post.status = 1;
 
          // Just in case the server sends us posts out of order I
@@ -3929,7 +3933,6 @@ class MenuChatState extends State<MenuChat>
       };
 
       final String payload = jsonEncode(subCmd);
-      print('====> $payload');
       channel.sink.add(payload);
    }
 
@@ -4143,7 +4146,6 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      //_post.filter ^= 1 << i;
       _post.exDetails[i] = 1 << j;
 
       setState(() { });

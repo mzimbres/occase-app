@@ -282,15 +282,12 @@ class Post {
    // The publisher nick name.
    String nick = txt.unknownNick;
 
-   // Contains the channel this post was published in.
+   // Contains the channel this post was published in. It has the
+   // follwing form
    //
    //  [[[1, 2]], [[3, 2]]]
    //
    List<List<List<int>>> channel;
-
-   int filter = 0;
-
-   int checkOps = 0;
 
    List<int> exDetails;
    List<int> inDetails;
@@ -316,11 +313,8 @@ class Post {
    Post()
    {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
-      exDetails = List<int>(txt.maxExDetailSize);
-      exDetails.fillRange(0, exDetails.length, 0);
-
-      inDetails = List<int>(txt.maxInDetailSize);
-      inDetails.fillRange(0, inDetails.length, 0);
+      exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
+      inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
    }
 
    int getProductDetailIdx()
@@ -331,27 +325,22 @@ class Post {
    Post clone()
    {
       Post ret = Post();
+      ret.dbId = -1;
+      ret.id = this.id;
+      ret.from = this.from;
+      ret.nick = this.nick;
       ret.channel = List<List<List<int>>>.from(this.channel);
+      ret.exDetails = this.exDetails;
+      ret.inDetails = this.inDetails;
+      ret.date = this.date;
+      ret.pinDate = this.pinDate;
+      ret.status = this.status;
       ret.description = this.description;
       ret.chats = List<Chat>.from(this.chats);
-      ret.from = this.from;
-      ret.id = this.id;
-      ret.filter = this.filter;
-
-      ret.exDetails = List<int>.from(this.exDetails);
-      exDetails.fillRange(0, exDetails.length, 0);
-
-      ret.inDetails = List<int>.from(this.inDetails);
-      inDetails.fillRange(0, inDetails.length, 0);
-
-      ret.nick = this.nick;
-      ret.date = this.date;
-      ret.status = this.status;
-      ret.pinDate = this.pinDate;
       return ret;
    }
 
-   int createChatEntryForPeer(String peer, String nick)
+   int addChat(String peer, String nick)
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       final int l = chats.length;
@@ -375,7 +364,7 @@ class Post {
    {
       final int i = getChatHistIdx(peer);
       if (i == -1)
-         return createChatEntryForPeer(peer, nick);
+         return addChat(peer, nick);
 
       return i;
    }
@@ -414,30 +403,56 @@ class Post {
 
    Post.fromJson(Map<String, dynamic> map)
    {
-      // Part of the object can be deserialized by readPostData. The
-      // only remaining field will be *peers* and the chat history.
-      Post pd = readPostData(map);
-      from = pd.from;
-      id = pd.id;
-      channel = pd.channel;
-      description = pd.description;
-      filter = pd.filter;
-      nick = pd.nick;
-      date = pd.date;
-      pinDate = pd.pinDate;
-      status = pd.status;
+      dbId = -1;
+      id = map['id'];
+      from = map['from'];
+      nick = map['nick'];
+      channel = decodeChannel(map['to']);
+
+      // FIXME: Fix the server and read the arrays from the json
+      // command.
+      //exDetails = map['ex_details'];
+      //inDetails = map['in_details'];
+      exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
+      inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+
+      date = map['date'];
+      pinDate = 0;
+      status = -1;
+      description = map['msg'];
    }
 
+   // This serialization is used to communicate with the server.
    Map<String, dynamic> toJson()
    {
-      // To make the deserialization easier, we will make the json
-      // partially deserializable by readPostData.
+      assert(exDetails.isNotEmpty);
+      assert(inDetails.isNotEmpty);
+
+      // NOTE1: The filter field bellow prevents the server from
+      // having to parse the ex_details field.
+      //
+      // NOTE2: The ex- and inDetails arrays are initialized to a size
+      // that is bigger than usually need (see maxExDetailSize and
+      // maxInDetailSize). We could spare some space in the json
+      // payload by reducing their size to the minimum needed before
+      // we serialize, this may with a cost of not being able to
+      // provide backwards compatibility if expansion of these fields
+      // are required in the future. I think the better strategy is to
+      // choose these arrays to have two unused elements.
+      //
+      // To reduce the size to what is exactly needed one has to first
+      // get the product index with *int getProductDetailIdx()* and
+      // then the size from txt.exDetailTitles[index].length (or
+      // txt.exDetails[index].length) and similar to the inDetails
+      // array.
       return
       {
          'from': from,
          'to': channel,
          'id': id,
-         'filter': filter,
+         'filter': exDetails.first,
+         'ex_details': exDetails,
+         'in_details': inDetails,
          'msg': description,
          'nick': nick,
          'date': date,
@@ -445,6 +460,8 @@ class Post {
    }
 }
 
+// This serialization is more complete than the toJson member function
+// and is used to persist json objects on the database.
 Map<String, dynamic> postToMap(Post post)
 {
     return {
@@ -452,7 +469,8 @@ Map<String, dynamic> postToMap(Post post)
       'from_': post.from,
       'nick': post.nick,
       'channel': jsonEncode(post.channel),
-      'filter': post.filter,
+      'ex_details': jsonEncode(post.exDetails),
+      'in_details': jsonEncode(post.inDetails),
       'date': post.date,
       'pin_date': post.pinDate,
       'status': post.status,
@@ -462,8 +480,7 @@ Map<String, dynamic> postToMap(Post post)
 
 Future<List<Post>> loadPosts(Database db) async
 {
-  final List<Map<String, dynamic>> maps =
-     await db.rawQuery(sql.loadPosts);
+  List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
 
   return List.generate(maps.length, (i)
   {
@@ -473,7 +490,19 @@ Future<List<Post>> loadPosts(Database db) async
      post.from = maps[i]['from_'];
      post.nick = maps[i]['nick'];
      post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
-     post.filter = maps[i]['filter'];
+
+     post.exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
+     List<dynamic> exDetails = jsonDecode(maps[i]['ex_details']);
+     if (exDetails != null)
+        post.exDetails = List.generate(exDetails.length, (int i)
+           { return exDetails[i]; });
+
+     post.inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+     List<dynamic> inDetails = jsonDecode(maps[i]['in_details']);
+     if (inDetails != null)
+        post.inDetails = List.generate(inDetails.length, (int i)
+           { return inDetails[i]; });
+
      post.date = maps[i]['date'];
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
@@ -628,28 +657,6 @@ List<List<List<int>>> decodeChannel(List<dynamic> to)
    }
 
    return channel;
-}
-
-Post readPostData(var item)
-{
-   Post post = Post();
-   post.description = item['msg'];
-   post.from = item['from'];
-   post.id = item['id'];
-   post.filter = item['filter'];
-
-   // FIXME.
-   post.exDetails = List<int>(txt.maxExDetailSize);
-   post.exDetails.fillRange(0, post.exDetails.length, 0);
-
-   post.inDetails = List<int>(txt.maxInDetailSize);
-   post.inDetails.fillRange(0, post.inDetails.length, 0);
-
-   post.nick = item['nick'];
-   post.channel = decodeChannel(item['to']);
-   post.pinDate = 0;
-   post.status = -1;
-   return post;
 }
 
 class Config {

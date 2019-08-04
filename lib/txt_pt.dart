@@ -135,7 +135,7 @@ const List<List<String>> exDetailTitles = <List<String>>
   , 'Motor'
   , 'Freio'
   , 'Cor'
-  , 'Quantidade de marchas'
+  , 'Marchas'
   ]
 , <String> // Caminhoes.
   [ 'Condicao'
@@ -152,7 +152,8 @@ const List<List<String>> exDetailTitles = <List<String>>
 const List<List<List<String>>> exDetails = <List<List<String>>>
 [ <List<String>> // Carros
   [ <String> // Must be equal for all products. Its a filter.
-    [ 'Novo'
+    [ 'Nao informado'
+    , 'Novo'
     , 'Usado'
     , 'Troca'
     , 'Repasse'
@@ -215,26 +216,31 @@ const List<List<List<String>>> exDetails = <List<List<String>>>
   ]
 , <List<String>> // Motos
   [ <String>
-    [ 'Nova'
+    [ 'Nao informado'
+    , 'Nova'
     , 'Usada'
     , 'Troca'
     , 'Repasse'
     ] 
   , <String>
-    [ 'Carburador'
+    [ 'Nao informado'
+    , 'Carburador'
     , 'Injecao eletrônica'
     ]
   , <String>
-    [ 'Ar'
+    [ 'Nao informado'
+    , 'Ar'
     , 'Líquida'
     ]
   , <String>
-    [ '2 tempos'
+    [ 'Nao informado'
+    , '2 tempos'
     , '4 tempos'
     , 'Elétrico de corrent contínua'
     ]
   , <String>
-    [ 'Disco/disco'
+    [ 'Nao informado'
+    , 'Disco/disco'
     , 'Disco/tambor'
     , 'Tambor/disco'
     , 'Tambor/tambor'
@@ -259,7 +265,8 @@ const List<List<List<String>>> exDetails = <List<List<String>>>
     , 'Vinho'
     ]
   , <String>
-    [ 'Automático'
+    [ 'Nao informado'
+    , 'Automático'
     , '2'
     , '3'
     , '4'
@@ -271,13 +278,15 @@ const List<List<List<String>>> exDetails = <List<List<String>>>
   ]
 , <List<String>> // Caminhoes.
   [ <String>
-    [ 'Novo'
+    [ 'Nao informado'
+    , 'Novo'
     , 'Usado'
     , 'Troca'
     , 'Repasse'
     ] 
   , <String>
-    [ 'Bitruck 8 x 2'
+    [ 'Nao informado'
+    , 'Bitruck 8 x 2'
     , 'Bitruck 8 x 4'
     , 'Toco 4 x 2'
     , 'Toco 4 x 4'
@@ -285,7 +294,8 @@ const List<List<List<String>>> exDetails = <List<List<String>>>
     , 'Truck 6 x 4'
     ]
   , <String>
-    [ 'Baú bebidas'
+    [ 'Nao informado'
+    , 'Baú bebidas'
     , 'Baú frigorífico'
     , 'Baú furgao'
     , 'Baú sider'
@@ -299,7 +309,8 @@ const List<List<List<String>>> exDetails = <List<List<String>>>
     , 'Carroceria cabine'
     ]
   , <String>
-    [ 'Manual'
+    [ 'Nao informado'
+    , 'Manual'
     , 'Automática'
     , 'Semi automática'
     , 'Sequencial'
