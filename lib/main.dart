@@ -13,6 +13,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -243,6 +244,32 @@ makeNickRegisterScreen( BuildContext ctx
    );
 }
 
+Widget makeImageBox(String url)
+{
+   return SizedBox(
+      width: 300.0,
+      height: 150.0,
+      child: new Center(
+         child: CachedNetworkImage(
+            imageUrl: url,
+            imageBuilder: (context, imageProvider) => Container(
+              decoration: BoxDecoration(
+                 image: DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    //colorFilter: ColorFilter.mode(
+                    //   Colors.red, BlendMode.colorBurn
+                    //),
+                 ),
+              ),
+            ),
+            placeholder: (context, url) => CircularProgressIndicator(),
+            errorWidget: (context, url, error) => Icon(Icons.error),
+         ),
+      ),
+   );
+}
+
 ListView makeNewPostFinalScreen(
    BuildContext ctx,
    Post post,
@@ -251,6 +278,35 @@ ListView makeNewPostFinalScreen(
    onSendNewPostPressed)
 {
    List<Widget> all = List<Widget>();
+   //_________________________________________
+
+   final String url1 = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
+
+   Widget w1 = makeImageBox(url1);
+
+   ListView lv = ListView(
+      scrollDirection: Axis.horizontal,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(0.0),
+      children: <Widget>[w1, w1, w1]
+   );
+
+   all.add(ConstrainedBox(
+         constraints: BoxConstraints(
+            maxWidth: 350.0,
+            minWidth: 300.0,
+            maxHeight: 150.0,
+            minHeight: 150.0,
+         ),
+         child: SingleChildScrollView(
+       scrollDirection: Axis.horizontal,
+       reverse: true,
+       child: lv
+       )),
+   );
+
+   //_________________________________________
+
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post));
    all.addAll(makePostInDetails(ctx, post));
@@ -1939,12 +1995,23 @@ ListView makePostTabListView(
       itemCount: postRangeToShow,
       itemBuilder: (BuildContext ctx, int i)
       {
-         return makePostWidget(
-             ctx,
-             assemblePostRows(ctx, posts[i], menus),
-             (int fav) {onPostSelection(ctx, i, fav);},
-             txt.favIcon,
-          );
+         Widget w = makePostWidget(
+            ctx,
+            assemblePostRows(ctx, posts[i], menus),
+            (int fav) {onPostSelection(ctx, i, fav);},
+            txt.favIcon,
+         );
+
+         return Dismissible(
+            key: GlobalKey(),
+            onDismissed: (direction) {
+               onPostSelection(ctx, i, 0);
+               Scaffold.of(ctx)
+                  .showSnackBar(SnackBar(content: Text("dismissed")));
+            },
+            background: Container(color: Colors.red),
+            child: w,
+         );
       },
    );
 }
@@ -2357,7 +2424,7 @@ Widget makeChatTab(
          , chatExpansion
          ];
 
-         return Card(
+         Card w = Card(
             elevation: 0.0,
             color: Theme.of(ctx).colorScheme.primary,
             child: Column(children: expansions),
@@ -2371,6 +2438,17 @@ Widget makeChatTab(
                right: stl.postCardSideMargin,
                bottom: stl.postCardBottomMargin,
             ),
+         );
+
+         return Dismissible(
+            key: GlobalKey(),
+            onDismissed: (direction) {
+               onDelPost(i);
+               Scaffold.of(ctx)
+                  .showSnackBar(SnackBar(content: Text("dismissed")));
+            },
+            background: Container(color: Colors.red),
+            child: w,
          );
       },
    );
