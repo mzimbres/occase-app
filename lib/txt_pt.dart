@@ -506,4 +506,4 @@ const Icon unknownPersonIcon = Icon(
 
 const String changeNickStr = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
-
+const String dismissedPostStr = 'Post removido';

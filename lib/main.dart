@@ -244,9 +244,10 @@ makeNickRegisterScreen( BuildContext ctx
    );
 }
 
-Widget makeImageBox(String url)
+Widget makeImageBox()
 {
-   return SizedBox(
+   final String url = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
+   SizedBox sb = SizedBox(
       width: 300.0,
       height: 150.0,
       child: new Center(
@@ -268,6 +269,27 @@ Widget makeImageBox(String url)
          ),
       ),
    );
+
+   ListView lv = ListView(
+      scrollDirection: Axis.horizontal,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(0.0),
+      children: <Widget>[sb, sb, sb]
+   );
+
+   return ConstrainedBox(
+      constraints: BoxConstraints(
+         maxWidth: 350.0,
+         minWidth: 300.0,
+         maxHeight: 150.0,
+         minHeight: 150.0,
+      ),
+      child: SingleChildScrollView(
+         scrollDirection: Axis.horizontal,
+         reverse: true,
+         child: lv
+      ),
+   );
 }
 
 ListView makeNewPostFinalScreen(
@@ -278,35 +300,8 @@ ListView makeNewPostFinalScreen(
    onSendNewPostPressed)
 {
    List<Widget> all = List<Widget>();
-   //_________________________________________
 
-   final String url1 = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
-
-   Widget w1 = makeImageBox(url1);
-
-   ListView lv = ListView(
-      scrollDirection: Axis.horizontal,
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
-      children: <Widget>[w1, w1, w1]
-   );
-
-   all.add(ConstrainedBox(
-         constraints: BoxConstraints(
-            maxWidth: 350.0,
-            minWidth: 300.0,
-            maxHeight: 150.0,
-            minHeight: 150.0,
-         ),
-         child: SingleChildScrollView(
-       scrollDirection: Axis.horizontal,
-       reverse: true,
-       child: lv
-       )),
-   );
-
-   //_________________________________________
-
+   all.add(makeImageBox());
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post));
    all.addAll(makePostInDetails(ctx, post));
@@ -423,7 +418,7 @@ Widget makeNewPostDetailExpTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           title: richTitle,
           children: bar,
-          initiallyExpanded: false,
+          initiallyExpanded: true,
       ),
    );
 
@@ -1659,12 +1654,14 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
             fontWeight: FontWeight.w500,
-            color: Theme.of(ctx).colorScheme.secondaryVariant,
+            color: Theme.of(ctx).colorScheme.primaryVariant,
          ),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: Theme.of(ctx).textTheme.subhead
+              style: Theme.of(ctx).textTheme.subhead.copyWith(
+                 color: Theme.of(ctx).colorScheme.secondary,
+              ),
            ),
          ],
       ),
@@ -1698,7 +1695,9 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text(' ${names[i]}',
-         style: Theme.of(ctx).textTheme.subhead,
+         style: Theme.of(ctx).textTheme.subhead.copyWith(
+           color: Theme.of(ctx).colorScheme.secondary,
+         ),
       );
 
       Row row = Row(children: <Widget>
@@ -1875,9 +1874,10 @@ Widget makePostDescription(BuildContext ctx, String desc)
    );
 }
 
-Card assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
+List<Widget> assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
 {
    List<Widget> all = List<Widget>();
+   all.add(makeImageBox());
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post));
    all.addAll(makePostInDetails(ctx, post));
@@ -1886,7 +1886,7 @@ Card assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
       all.add(makePostDescription(ctx, post.description));
    }
 
-   return putPostElemOnCard(ctx, all);
+   return all;
 }
 
 String makePostSummaryStr(MenuNode root, Post post)
@@ -1910,30 +1910,25 @@ ThemeData makeExpTileThemeData(BuildContext ctx)
 
 Widget makePostInfoExpansion(
    BuildContext ctx,
-   Post post,
-   List<MenuItem> menu,
-   Function onLeadingPressed,
-   IconData ic)
+   Widget detailsCard,
+   Widget title,
+   Widget leading)
 {
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
-          leading: IconButton(icon: Icon(ic), onPressed: onLeadingPressed),
+          leading: leading,
           key: GlobalKey(),
-          title: Text(
-             makePostSummaryStr(menu[1].root.first, post),
-             maxLines: 1,
-             overflow: TextOverflow.clip,
-          ),
-          children: <Widget>[assemblePostRows(ctx, post, menu)],
+          title: title,
+          children: <Widget>[detailsCard],
       ),
    );
 }
 
 Card makePostWidget(
    BuildContext ctx,
-   Card card,
+   Widget card,
    Function onPressed,
    Icon icon)
 {
@@ -1985,7 +1980,7 @@ ListView makePostTabListView(
    BuildContext ctx,
    List<Post> posts,
    Function onPostSelection,
-   List<MenuItem> menus,
+   List<MenuItem> menu,
    int nNewPosts)
 {
    final int postRangeToShow = posts.length - nNewPosts - 1;
@@ -1995,9 +1990,25 @@ ListView makePostTabListView(
       itemCount: postRangeToShow,
       itemBuilder: (BuildContext ctx, int i)
       {
+         Widget title = Text(
+            makePostSummaryStr(menu[1].root.first, posts[i]),
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+         );
+
+         Widget infoExpansion = makePostInfoExpansion(
+            ctx,
+            putPostElemOnCard(
+               ctx,
+               assemblePostRows(ctx, posts[i], menu),
+            ),
+            title,
+            null,
+         );
+
          Widget w = makePostWidget(
             ctx,
-            assemblePostRows(ctx, posts[i], menus),
+            infoExpansion,
             (int fav) {onPostSelection(ctx, i, fav);},
             txt.favIcon,
          );
@@ -2007,7 +2018,8 @@ ListView makePostTabListView(
             onDismissed: (direction) {
                onPostSelection(ctx, i, 0);
                Scaffold.of(ctx)
-                  .showSnackBar(SnackBar(content: Text("dismissed")));
+                  .showSnackBar(
+                     SnackBar(content: Text(txt.dismissedPostStr)));
             },
             background: Container(color: Colors.red),
             child: w,
@@ -2396,15 +2408,28 @@ Widget makeChatTab(
             onDelPost2 = (){};
          }
 
-         final int now = DateTime.now().millisecondsSinceEpoch;
+         Widget leading = IconButton(
+            icon: Icon(ic),
+            onPressed: onDelPost2,
+         );
+
+         Widget title = Text(
+            makePostSummaryStr(menu[1].root.first, posts[i]),
+            maxLines: 1,
+            overflow: TextOverflow.clip,
+         );
 
          Widget infoExpansion = makePostInfoExpansion(
             ctx,
-            posts[i],
-            menu,
-            onDelPost2,
-            ic,
+            putPostElemOnCard(
+               ctx,
+               assemblePostRows(ctx, posts[i], menu),
+            ),
+            title,
+            leading,
          );
+
+         final int now = DateTime.now().millisecondsSinceEpoch;
 
          Widget chatExpansion = makePostChatExpansion(
             ctx,
@@ -3015,8 +3040,13 @@ class MenuChatState extends State<MenuChat>
    {
       _nNewPosts = 0;
 
-      await _db.execute(sql.updateLastSeenPostId,
-                        [_posts.last.id]);
+      if (_posts.isEmpty) {
+         print('===> This should not happen');
+      } else {
+         await _db.execute(sql.updateLastSeenPostId,
+                           [_posts.last.id]);
+      }
+
       setState(() { });
    }
 
