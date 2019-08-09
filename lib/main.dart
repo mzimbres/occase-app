@@ -247,42 +247,42 @@ makeNickRegisterScreen( BuildContext ctx
 Widget makeImageBox()
 {
    final String url = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
+
+   Widget img = CachedNetworkImage(
+      imageUrl: url,
+      imageBuilder: (ctx, imageProvider) => Container(
+        decoration: BoxDecoration(
+           image: DecorationImage(
+              image: imageProvider,
+              fit: BoxFit.cover,
+           ),
+        ),
+      ),
+      placeholder: (ctx, url) => CircularProgressIndicator(),
+      errorWidget: (ctx, url, error) => Icon(Icons.error),
+   );
+
    SizedBox sb = SizedBox(
-      width: 300.0,
-      height: 150.0,
+      width: 395.0,
+      height: 300.0,
       child: new Center(
-         child: CachedNetworkImage(
-            imageUrl: url,
-            imageBuilder: (context, imageProvider) => Container(
-              decoration: BoxDecoration(
-                 image: DecorationImage(
-                    image: imageProvider,
-                    fit: BoxFit.cover,
-                    //colorFilter: ColorFilter.mode(
-                    //   Colors.red, BlendMode.colorBurn
-                    //),
-                 ),
-              ),
-            ),
-            placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) => Icon(Icons.error),
-         ),
+         child: img,
       ),
    );
 
    ListView lv = ListView(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
+      padding: const EdgeInsets.all(4.0),
       children: <Widget>[sb, sb, sb]
    );
 
    return ConstrainedBox(
       constraints: BoxConstraints(
-         maxWidth: 350.0,
+         maxWidth: 395.0,
          minWidth: 300.0,
-         maxHeight: 150.0,
-         minHeight: 150.0,
+         maxHeight: 300.0,
+         minHeight: 300.0,
       ),
       child: SingleChildScrollView(
          scrollDirection: Axis.horizontal,
@@ -1400,9 +1400,11 @@ CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
    return CircleAvatar(child: child, backgroundColor: bgcolor);
 }
 
-CircleAvatar
-makeChatListTileLeading(Widget child, Color bgcolor,
-                        Function onLeadingPressed)
+CircleAvatar makeChatListTileLeading(
+   Widget child,
+   ImageProvider backgroundImage,
+   Color bgcolor,
+   Function onLeadingPressed)
 {
    Stack st = Stack(children: <Widget>
    [ Center(child: child)
@@ -1411,7 +1413,11 @@ makeChatListTileLeading(Widget child, Color bgcolor,
                       style: BorderStyle.none),
                    onPressed: onLeadingPressed,
                    shape: CircleBorder())]);
-   return CircleAvatar(child: st, backgroundColor: bgcolor);
+   return CircleAvatar(
+      child: st,
+      backgroundColor: bgcolor,
+      backgroundImage: backgroundImage,
+   );
 }
 
 String makeStrAbbrev(final String str)
@@ -1877,7 +1883,6 @@ Widget makePostDescription(BuildContext ctx, String desc)
 List<Widget> assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
 {
    List<Widget> all = List<Widget>();
-   all.add(makeImageBox());
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post));
    all.addAll(makePostInDetails(ctx, post));
@@ -1892,7 +1897,7 @@ List<Widget> assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
 String makePostSummaryStr(MenuNode root, Post post)
 {
    final List<String> names = loadNames(root, post.channel[1][0]);
-   return names.join('/');
+   return names.join(', ');
 }
 
 ThemeData makeExpTileThemeData(BuildContext ctx)
@@ -1962,6 +1967,8 @@ Card makePostWidget(
       elevation: 0.0,
    );
 
+   Widget images = makeImageBox();
+
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
       margin: EdgeInsets.all(stl.postMarging),
@@ -1970,7 +1977,7 @@ Card makePostWidget(
          padding: EdgeInsets.all(stl.outerPostCardPadding),
          child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: <Widget>[card, c4],
+            children: <Widget>[images, card, c4],
          ),
       ),
    );
@@ -2243,12 +2250,19 @@ Card makeChatListTile(
    bool isFwdChatMsgs)
 {
    Widget widget;
+   ImageProvider backgroundImage;
    Color bgColor;
    if (chat.isLongPressed) {
       widget = Icon(Icons.check);
       bgColor = stl.chatLongPressendColor;
    } else {
-      widget = txt.unknownPersonIcon;
+      if (true) {
+         final String url = 'https://pbs.twimg.com/profile_images/945853318273761280/0U40alJG_400x400.jpg';
+         backgroundImage = CachedNetworkImageProvider(url);
+      } else {
+         widget = txt.unknownPersonIcon;
+      }
+
       bgColor = Theme.of(ctx).colorScheme.background;
    }
 
@@ -2270,6 +2284,7 @@ Card makeChatListTile(
       subtitle: makeChatTileSubtitle(ctx, chat),
       leading: makeChatListTileLeading(
          widget,
+         backgroundImage,
          selectColor(int.parse(chat.peer)),
          onLeadingPressed,
       ),
@@ -2419,12 +2434,13 @@ Widget makeChatTab(
             overflow: TextOverflow.clip,
          );
 
+         List<Widget> foo = List<Widget>();
+         foo.add(makeImageBox());
+         foo.addAll(assemblePostRows(ctx, posts[i], menu));
+
          Widget infoExpansion = makePostInfoExpansion(
             ctx,
-            putPostElemOnCard(
-               ctx,
-               assemblePostRows(ctx, posts[i], menu),
-            ),
+            putPostElemOnCard(ctx, foo),
             title,
             leading,
          );

@@ -249,7 +249,7 @@ class MenuItem {
    // Returns the name of each node in the menu stack. 
    String getStackNames()
    {
-      return root.join('/');
+      return root.join(', ');
    }
 
    // It is assumed that this function will be called when the last
