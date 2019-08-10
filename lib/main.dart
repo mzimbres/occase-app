@@ -18,7 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
 import 'package:menu_chat/tree.dart';
-import 'package:menu_chat/constants.dart';
+import 'package:menu_chat/constants.dart' as cts;
 import 'package:menu_chat/txt_pt.dart' as txt;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:menu_chat/sql.dart' as sql;
@@ -297,14 +297,16 @@ ListView makeNewPostFinalScreen(
    Post post,
    final List<MenuItem> menu,
    TextEditingController txtCtrl,
-   onSendNewPostPressed)
+   onSendNewPostPressed,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    List<Widget> all = List<Widget>();
 
    all.add(makeImageBox());
    all.addAll(makeMenuInfo(ctx, post, menu));
-   all.addAll(makePostExDetails(ctx, post));
-   all.addAll(makePostInDetails(ctx, post));
+   all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
+   all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
 
    all.add(makePostSectionTitle(ctx, txt.postDescTitle));
    TextField tf = TextField(
@@ -382,8 +384,7 @@ RichText makeExpTileTitle(
 Widget makeNewPostDetailExpTile(
    BuildContext ctx,
    Function onNewPostInDetails,
-   String title,
-   List<String> items,
+   MenuNode titleNode,
    int state,
    String strDisplay,
    bool addGlobalKey)
@@ -393,12 +394,12 @@ Widget makeNewPostDetailExpTile(
          ctx,
          onNewPostInDetails,
          state,
-         items,
+         titleNode.children,
       );
 
    final RichText richTitle = makeExpTileTitle(
       ctx,
-      title,
+      titleNode.name,
       strDisplay,
       ':',
       state == 0,
@@ -445,7 +446,9 @@ List<Widget> makeNewPostDetailScreen(
    BuildContext ctx,
    Function onNewPostExDetails,
    Function onNewPostInDetails,
-   Post post)
+   Post post,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    // Post details varies according to the first index of the products
    // entry in the menu.
@@ -453,35 +456,33 @@ List<Widget> makeNewPostDetailScreen(
 
    List<Widget> widgets = List<Widget>();
 
-   final int l1 = txt.exDetailTitles[idx].length;
+   final int l1 = exDetailsMenu.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
 
       final int k = searchBitOn(
          post.exDetails[i],
-         txt.exDetails[idx][i].length
+         exDetailsMenu.children[idx].children[i].children.length
       );
 
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onNewPostExDetails(i, j);},
-         txt.exDetailTitles[idx][i],
-         txt.exDetails[idx][i],
+         exDetailsMenu.children[idx].children[i],
          post.exDetails[i],
-         txt.exDetails[idx][i][k],
+         exDetailsMenu.children[idx].children[i].children[k].name,
          true,
       );
 
       widgets.add(foo);
    }
 
-   final int l2 = txt.inDetailTitles[idx].length;
+   final int l2 = inDetailsMenu.children[idx].children.length;
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onNewPostInDetails(i, j);},
-         txt.inDetailTitles[idx][i],
-         txt.inDetails[idx][i],
+         inDetailsMenu.children[idx].children[i],
          post.inDetails[i],
          '$nBitsSet items',
          false,
@@ -513,7 +514,9 @@ WillPopScope makeNewPostScreens(
    Function onPostNodePressed,
    Function onWillPopMenu,
    Function onNewPostBotBarTapped,
-   Function onNewPostInDetails)
+   Function onNewPostInDetails,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -524,14 +527,18 @@ WillPopScope makeNewPostScreens(
          post,
          menu,
          txtCtrl,
-         onSendNewPostPressed
+         onSendNewPostPressed,
+         exDetailsMenu,
+         inDetailsMenu,
       );
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
          ctx,
          onNewPostExDetails,
          onNewPostInDetails,
-         post
+         post,
+         exDetailsMenu,
+         inDetailsMenu,
       );
 
       // Consider changing this to column.
@@ -622,18 +629,19 @@ makeNewFiltersEndWidget(
       ]);
 }
 
-WillPopScope
-makeNewFiltersScreens( BuildContext ctx
-                     , Function onSendFilters
-                     , Function onFilterDetail
-                     , Function onFilterNodePressed
-                     , Function onWillPopMenu
-                     , Function onBotBarTaped
-                     , Function onFilterLeafNodePressed
-                     , final List<MenuItem> menu
-                     , int filter
-                     , int screen
-                     , Function onCancelNewFilters)
+WillPopScope makeNewFiltersScreens(
+   BuildContext ctx,
+   Function onSendFilters,
+   Function onFilterDetail,
+   Function onFilterNodePressed,
+   Function onWillPopMenu,
+   Function onBotBarTaped,
+   Function onFilterLeafNodePressed,
+   final List<MenuItem> menu,
+   int filter,
+   int screen,
+   Function onCancelNewFilters,
+   List<MenuNode> exDetailsFilterNodes)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
@@ -645,14 +653,12 @@ makeNewFiltersScreens( BuildContext ctx
          onCancelNewFilters,
       );
    } else if (screen == 2) {
-      // NOTE: Below we use txt.exDetails[0][0], because the filter is
-      // common to all products.
       final List<Widget> widgets =
          makeNewPostDetailElemList(
             ctx,
             onFilterDetail,
             filter,
-            txt.exDetails[0][0],
+            exDetailsFilterNodes,
          );
 
       wid = ListView.builder(
@@ -709,12 +715,11 @@ makeNewFiltersScreens( BuildContext ctx
               screen)));
 }
 
-List<Widget>
-makeNewPostDetailElemList(
+List<Widget> makeNewPostDetailElemList(
    BuildContext ctx,
    Function proceed,
    int filter,
-   List<String> list)
+   List<MenuNode> list)
 {
    List<Widget> widgets = List<Widget>();
 
@@ -731,13 +736,13 @@ makeNewPostDetailElemList(
        CheckboxListTile cblt = CheckboxListTile(
          dense: true,
          secondary: CircleAvatar(
-            child: Text(makeStrAbbrev(list[i]),
+            child: Text(makeStrAbbrev(list[i].name),
                style: TextStyle(color: avatarTxtColor)
             ),
             backgroundColor: avatarBgColor
          ),
          title: Text(
-            list[i],
+            list[i].name,
             style: Theme.of(ctx).textTheme.subhead.copyWith(
                fontWeight: FontWeight.w500,
             ),
@@ -1691,16 +1696,16 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
 
 List<Widget> makePostInRows(
    BuildContext ctx,
-   List<String> names,
+   List<MenuNode> nodes,
    int state)
 {
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < names.length; ++i) {
+   for (int i = 0; i < nodes.length; ++i) {
       if ((state & (1 << i)) == 0)
          continue;
 
-      Text text = Text(' ${names[i]}',
+      Text text = Text(' ${nodes[i].name}',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
            color: Theme.of(ctx).colorScheme.secondary,
          ),
@@ -1768,7 +1773,8 @@ List<Widget> makeMenuInfo(
 
 List<Widget> makePostExDetails(
    BuildContext ctx,
-   Post post)
+   Post post,
+   MenuNode exDetailsMenu)
 {
    // Post details varies according to the first index of the products
    // entry in the menu.
@@ -1777,17 +1783,18 @@ List<Widget> makePostExDetails(
    List<Widget> list = List<Widget>();
    list.add(makePostSectionTitle(ctx, txt.postExDetailsTitle));
 
-   for (int i = 0; i < txt.exDetailTitles[idx].length; ++i) {
+   final int l1 = exDetailsMenu.children[idx].children.length;
+   for (int i = 0; i < l1; ++i) {
       final int j = searchBitOn(
          post.exDetails[i],
-         txt.exDetails[idx][i].length,
+         exDetailsMenu.children[idx].children[i].children.length
       );
       
       list.add(
          makePostRowElem(
             ctx,
-            txt.exDetailTitles[idx][i],
-            txt.exDetails[idx][i][j],
+            exDetailsMenu.children[idx].children[i].name,
+            exDetailsMenu.children[idx].children[i].children[j].name,
          ),
       );
    }
@@ -1819,20 +1826,26 @@ List<Widget> makePostExDetails(
 
 List<Widget> makePostInDetails(
    BuildContext ctx,
-   Post post)
+   Post post,
+   MenuNode inDetailsMenu)
 {
    List<Widget> all = List<Widget>();
 
    final int i = post.getProductDetailIdx();
-   for (int j = 0; j < txt.inDetails[i].length; ++j) {
+   final int l1 = inDetailsMenu.children[i].children.length;
+   for (int j = 0; j < l1; ++j) {
       List<Widget> foo = makePostInRows(
          ctx,
-         txt.inDetails[i][j],
+         inDetailsMenu.children[i].children[j].children,
          post.inDetails[j],
       );
 
       if (foo.length != 0) {
-         all.add(makePostSectionTitle(ctx, txt.inDetailTitles[i][j]));
+         all.add(makePostSectionTitle(
+               ctx,
+               inDetailsMenu.children[i].children[j].name,
+            ),
+         );
          all.addAll(foo);
       }
    }
@@ -1880,12 +1893,17 @@ Widget makePostDescription(BuildContext ctx, String desc)
    );
 }
 
-List<Widget> assemblePostRows(BuildContext ctx, Post post, List<MenuItem> menu)
+List<Widget> assemblePostRows(
+   BuildContext ctx,
+   Post post,
+   List<MenuItem> menu,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    List<Widget> all = List<Widget>();
    all.addAll(makeMenuInfo(ctx, post, menu));
-   all.addAll(makePostExDetails(ctx, post));
-   all.addAll(makePostInDetails(ctx, post));
+   all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
+   all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
    if (!post.description.isEmpty) {
       all.add(makePostSectionTitle(ctx, txt.postDescTitle));
       all.add(makePostDescription(ctx, post.description));
@@ -1988,7 +2006,9 @@ ListView makePostTabListView(
    List<Post> posts,
    Function onPostSelection,
    List<MenuItem> menu,
-   int nNewPosts)
+   int nNewPosts,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    final int postRangeToShow = posts.length - nNewPosts - 1;
 
@@ -2007,7 +2027,13 @@ ListView makePostTabListView(
             ctx,
             putPostElemOnCard(
                ctx,
-               assemblePostRows(ctx, posts[i], menu),
+               assemblePostRows(
+                  ctx,
+                  posts[i],
+                  menu,
+                  exDetailsMenu,
+                  inDetailsMenu,
+               ),
             ),
             title,
             null,
@@ -2394,7 +2420,9 @@ Widget makeChatTab(
    Function onPinPost,
    bool isFwdChatMsgs,
    Function onUserInfoPressed,
-   bool isFav)
+   bool isFav,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu)
 {
    return ListView.builder(
       padding: const EdgeInsets.only(
@@ -2436,7 +2464,14 @@ Widget makeChatTab(
 
          List<Widget> foo = List<Widget>();
          foo.add(makeImageBox());
-         foo.addAll(assemblePostRows(ctx, posts[i], menu));
+         foo.addAll(assemblePostRows(
+               ctx,
+               posts[i],
+               menu,
+               exDetailsMenu,
+               inDetailsMenu,
+            )
+         );
 
          Widget infoExpansion = makePostInfoExpansion(
             ctx,
@@ -2615,6 +2650,12 @@ class MenuChatState extends State<MenuChat>
    // Array with the length equal to the number of menus there
    // are. Used both on the filter and on the *new post* screens.
    List<MenuItem> _menu = List<MenuItem>();
+
+   // The ex details tree root node.
+   MenuNode _exDetailsRoot;
+
+   // The in details tree root node.
+   MenuNode _inDetailsRoot;
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
@@ -2818,7 +2859,8 @@ class MenuChatState extends State<MenuChat>
 
       // When the database is created, we also have to create the
       // default menu table.
-      _menu = menuReader(jsonDecode(Consts.menus));
+      String menuStr = await rootBundle.loadString('data/menu.txt');
+      _menu = menuReader(jsonDecode(menuStr));
 
       List<MenuElem> elems = List<MenuElem>();
       for (int i = 0; i < _menu.length; ++i)
@@ -2827,9 +2869,7 @@ class MenuChatState extends State<MenuChat>
       Batch batch = db.batch();
 
       elems.forEach((MenuElem me)
-      {
-         batch.insert('menu', menuElemToMap(me));
-      });
+         { batch.insert('menu', menuElemToMap(me)); });
 
       await batch.commit(noResult: true, continueOnError: true);
    }
@@ -2841,6 +2881,20 @@ class MenuChatState extends State<MenuChat>
          readOnly: false,
          onCreate: _onCreateDb,
          version: 1);
+
+      try {
+         String exDetailsStr =
+            await rootBundle.loadString('data/ex_details_menu.txt');
+         _exDetailsRoot =
+            menuReader(jsonDecode(exDetailsStr)).first.root.first;
+
+         String inDetailsStr =
+            await rootBundle.loadString('data/in_details_menu.txt');
+         _inDetailsRoot =
+            menuReader(jsonDecode(inDetailsStr)).first.root.first;
+      } catch (e) {
+         print(e);
+      }
 
       try {
          final List<Config> configs = await loadConfig(_db);
@@ -2867,11 +2921,11 @@ class MenuChatState extends State<MenuChat>
          _menu[0] = MenuItem();
          _menu[1] = MenuItem();
 
-         _menu[0].filterDepth = Consts.filterDepths[0];
-         _menu[1].filterDepth = Consts.filterDepths[1];
+         _menu[0].filterDepth = cts.filterDepths[0];
+         _menu[1].filterDepth = cts.filterDepths[1];
 
-         _menu[0].version = Consts.versions[0];
-         _menu[1].version = Consts.versions[1];
+         _menu[0].version = cts.versions[0];
+         _menu[1].version = cts.versions[1];
 
          List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
          tmp[0] = List<MenuElem>();
@@ -4318,11 +4372,15 @@ class MenuChatState extends State<MenuChat>
             _onPostNodePressed,
             _onWillPopMenu,
             _onNewPostBotBarTapped,
-            _onNewPostInDetail
+            _onNewPostInDetail,
+            _exDetailsRoot,
+            _inDetailsRoot,
          );
       }
 
-      if (_newFiltersPressed)
+      if (_newFiltersPressed) {
+         // NOTE: Below we use txt.exDetails[0][0], because the filter
+         // is common to all products.
          return makeNewFiltersScreens(
             ctx,
             _onSendFilters,
@@ -4334,8 +4392,10 @@ class MenuChatState extends State<MenuChat>
             _menu,
             _filter,
             _botBarIdx,
-            _onCancelNewFilter
+            _onCancelNewFilter,
+            _exDetailsRoot.children[0].children[0].children,
          );
+      }
 
       if (isOnFavChat() || isOnOwnChat()) {
          String postSummary =
@@ -4405,6 +4465,8 @@ class MenuChatState extends State<MenuChat>
          !_lpChatMsgs.isEmpty,
          _onUserInfoPressed,
          false,
+         _exDetailsRoot,
+         _inDetailsRoot,
       );
 
       bodies[1] = makePostTabListView(
@@ -4413,6 +4475,8 @@ class MenuChatState extends State<MenuChat>
          _alertUserOnselectPost,
          _menu,
          _nNewPosts,
+         _exDetailsRoot,
+         _inDetailsRoot,
       );
 
       bodies[2] = makeChatTab(
@@ -4426,6 +4490,8 @@ class MenuChatState extends State<MenuChat>
          !_lpChatMsgs.isEmpty,
          _onUserInfoPressed,
          true,
+         _exDetailsRoot,
+         _inDetailsRoot,
       );
 
       List<Widget> actions = List<Widget>();
