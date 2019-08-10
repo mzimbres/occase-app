@@ -292,50 +292,6 @@ Widget makeImageBox()
    );
 }
 
-ListView makeNewPostFinalScreen(
-   BuildContext ctx,
-   Post post,
-   final List<MenuItem> menu,
-   TextEditingController txtCtrl,
-   onSendNewPostPressed,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
-{
-   List<Widget> all = List<Widget>();
-
-   all.add(makeImageBox());
-   all.addAll(makeMenuInfo(ctx, post, menu));
-   all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
-   all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
-
-   all.add(makePostSectionTitle(ctx, txt.postDescTitle));
-   TextField tf = TextField(
-      controller: txtCtrl,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      maxLength: 200,
-      decoration: InputDecoration.collapsed(
-         hintText: txt.newPostTextFieldHistStr,
-      ),
-   );
-
-   all.add(tf);
-
-   Card card = makePostWidget(
-      ctx,
-      putPostElemOnCard(ctx, all),
-      (final int add) { onSendNewPostPressed(ctx, add); },
-      Icon(Icons.publish,
-         color: Theme.of(ctx).colorScheme.secondary,
-      ),
-   );
-
-   return ListView(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
-      children: <Widget>[card]);
-}
-
 int searchBitOn(int o, int n)
 {
    assert(n < 64);
@@ -448,13 +404,12 @@ List<Widget> makeNewPostDetailScreen(
    Function onNewPostInDetails,
    Post post,
    MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
+   MenuNode inDetailsMenu,
+   TextEditingController txtCtrl)
 {
-   // Post details varies according to the first index of the products
-   // entry in the menu.
    final int idx = post.getProductDetailIdx();
 
-   List<Widget> widgets = List<Widget>();
+   List<Widget> all = List<Widget>();
 
    final int l1 = exDetailsMenu.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
@@ -473,7 +428,7 @@ List<Widget> makeNewPostDetailScreen(
          true,
       );
 
-      widgets.add(foo);
+      all.add(foo);
    }
 
    final int l2 = inDetailsMenu.children[idx].children.length;
@@ -488,10 +443,22 @@ List<Widget> makeNewPostDetailScreen(
          false,
       );
 
-      widgets.add(foo);
+      all.add(foo);
    }
 
-   widgets.add(
+   TextField tf = TextField(
+      controller: txtCtrl,
+      keyboardType: TextInputType.multiline,
+      maxLines: null,
+      maxLength: 200,
+      decoration: InputDecoration.collapsed(
+         hintText: txt.newPostTextFieldHistStr,
+      ),
+   );
+
+   all.add(tf);
+
+   all.add(
       createSendButton(
          ctx,
          (){onNewPostExDetails(-1, -1);},
@@ -499,7 +466,7 @@ List<Widget> makeNewPostDetailScreen(
       ),
    );
 
-   return widgets;
+   return all;
 }
 
 WillPopScope makeNewPostScreens(
@@ -507,7 +474,7 @@ WillPopScope makeNewPostScreens(
    Post post,
    final List<MenuItem> menu,
    TextEditingController txtCtrl,
-   onSendNewPostPressed,
+   Function onSendNewPost,
    int screen,
    Function onNewPostExDetails,
    Function onPostLeafPressed,
@@ -522,14 +489,28 @@ WillPopScope makeNewPostScreens(
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
 
    if (screen == 3) {
-      wid = makeNewPostFinalScreen(
-         ctx,
-         post,
-         menu,
-         txtCtrl,
-         onSendNewPostPressed,
-         exDetailsMenu,
-         inDetailsMenu,
+      // NOTE: This ListView is used to provide a new context, so that
+      // it is possible to show the snackbar using the scaffold.of on
+      // the new context.
+      wid = ListView.builder(
+         shrinkWrap: true,
+         padding: const EdgeInsets.all(0.0),
+         itemCount: 1,
+         itemBuilder: (BuildContext ctx, int i)
+         {
+            assert(i == 0);
+
+            return makePostPubWidget(
+               ctx,
+               post,
+               (int add) { onSendNewPost(ctx, add); },
+               menu,
+               exDetailsMenu,
+               inDetailsMenu,
+               txt.pubIcon,
+               txt.cancelNewPostStr,
+            );
+         },
       );
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
@@ -539,6 +520,7 @@ WillPopScope makeNewPostScreens(
          post,
          exDetailsMenu,
          inDetailsMenu,
+         txtCtrl,
       );
 
       // Consider changing this to column.
@@ -589,16 +571,18 @@ WillPopScope makeNewPostScreens(
    );
 
    return WillPopScope(
-       onWillPop: () async { return onWillPopMenu();},
-       child: Scaffold(
-           appBar: appBar,
-           body: wid,
-           bottomNavigationBar:
-              makeBottomBarItems(
-                 txt.newPostTabIcons,
-                 txt.newPostTabNames,
-                 onNewPostBotBarTapped,
-                 screen)));
+      onWillPop: () async { return onWillPopMenu();},
+      child: Scaffold(
+          appBar: appBar,
+          body: wid,
+          bottomNavigationBar: makeBottomBarItems(
+             txt.newPostTabIcons,
+             txt.newPostTabNames,
+             onNewPostBotBarTapped,
+             screen,
+          ),
+       ),
+   );
 }
 
 Widget
@@ -2001,6 +1985,59 @@ Card makePostWidget(
    );
 }
 
+Widget makePostPubWidget(
+   BuildContext ctx,
+   Post post,
+   Function onPostSelection,
+   List<MenuItem> menu,
+   MenuNode exDetailsMenu,
+   MenuNode inDetailsMenu,
+   Icon ic,
+   String snackbarStr)
+{
+   Widget title = Text(
+      makePostSummaryStr(menu[1].root.first, post),
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+   );
+
+   Widget infoExpansion = makePostInfoExpansion(
+      ctx,
+      putPostElemOnCard(
+         ctx,
+         assemblePostRows(
+            ctx,
+            post,
+            menu,
+            exDetailsMenu,
+            inDetailsMenu,
+         ),
+      ),
+      title,
+      null,
+   );
+
+   Widget w = makePostWidget(
+      ctx,
+      infoExpansion,
+      onPostSelection,
+      ic,
+   );
+
+   return Dismissible(
+      key: GlobalKey(),
+      onDismissed: (direction) {
+         onPostSelection(0);
+         Scaffold.of(ctx).showSnackBar(
+               SnackBar(content: Text(snackbarStr))
+         );
+      },
+
+      background: Container(color: Colors.red),
+      child: w,
+   );
+}
+
 ListView makePostTabListView(
    BuildContext ctx,
    List<Post> posts,
@@ -2017,45 +2054,15 @@ ListView makePostTabListView(
       itemCount: postRangeToShow,
       itemBuilder: (BuildContext ctx, int i)
       {
-         Widget title = Text(
-            makePostSummaryStr(menu[1].root.first, posts[i]),
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-         );
-
-         Widget infoExpansion = makePostInfoExpansion(
+         return makePostPubWidget(
             ctx,
-            putPostElemOnCard(
-               ctx,
-               assemblePostRows(
-                  ctx,
-                  posts[i],
-                  menu,
-                  exDetailsMenu,
-                  inDetailsMenu,
-               ),
-            ),
-            title,
-            null,
-         );
-
-         Widget w = makePostWidget(
-            ctx,
-            infoExpansion,
+            posts[i],
             (int fav) {onPostSelection(ctx, i, fav);},
+            menu,
+            exDetailsMenu,
+            inDetailsMenu,
             txt.favIcon,
-         );
-
-         return Dismissible(
-            key: GlobalKey(),
-            onDismissed: (direction) {
-               onPostSelection(ctx, i, 0);
-               Scaffold.of(ctx)
-                  .showSnackBar(
-                     SnackBar(content: Text(txt.dismissedPostStr)));
-            },
-            background: Container(color: Colors.red),
-            child: w,
+            txt.dismissedPostStr,
          );
       },
    );
@@ -3496,7 +3503,7 @@ class MenuChatState extends State<MenuChat>
    }
 
    Future<void>
-   _onSendNewPostPressed(BuildContext ctx, final int i) async
+   _onSendNewPost(BuildContext ctx, final int i) async
    {
       _newPostPressed = false;
 
@@ -3507,13 +3514,12 @@ class MenuChatState extends State<MenuChat>
       }
 
       _botBarIdx = 0;
-      _post.description = _txtCtrl.text;
-      _txtCtrl.clear();
-
       _post.from = cfg.appId;
       _post.nick = cfg.nick;
       _post.status = 3;
+
       await _sendPost(_post.clone());
+
       _post = null;
       setState(() { });
 
@@ -4319,6 +4325,8 @@ class MenuChatState extends State<MenuChat>
    void _onNewPostExDetails(int i, int j)
    {
       if (j == -1) {
+         _post.description = _txtCtrl.text;
+         _txtCtrl.clear();
          _botBarIdx = 3;
          setState(() { });
          return;
@@ -4365,7 +4373,7 @@ class MenuChatState extends State<MenuChat>
             _post,
             _menu,
             _txtCtrl,
-            _onSendNewPostPressed,
+            _onSendNewPost,
             _botBarIdx,
             _onNewPostExDetails,
             _onPostLeafPressed,
@@ -4398,8 +4406,6 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (isOnFavChat() || isOnOwnChat()) {
-         String postSummary =
-            makePostSummaryStr(_menu[1].root.first, _post);
          return makeChatScreen(
             ctx,
             _onPopChat,
@@ -4413,7 +4419,7 @@ class MenuChatState extends State<MenuChat>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            postSummary,
+            makePostSummaryStr(_menu[1].root.first, _post),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLPChatMsg
@@ -4462,7 +4468,7 @@ class MenuChatState extends State<MenuChat>
          _menu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
-         !_lpChatMsgs.isEmpty,
+         _lpChatMsgs.isNotEmpty,
          _onUserInfoPressed,
          false,
          _exDetailsRoot,
@@ -4487,7 +4493,7 @@ class MenuChatState extends State<MenuChat>
          _menu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
-         !_lpChatMsgs.isEmpty,
+         _lpChatMsgs.isNotEmpty,
          _onUserInfoPressed,
          true,
          _exDetailsRoot,

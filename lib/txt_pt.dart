@@ -67,6 +67,7 @@ const List<IconData> chatIcons = <IconData>
 ];
 
 const Icon favIcon = Icon(Icons.star, color: Colors.amber);
+const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
 
 //______________
 
@@ -167,3 +168,5 @@ const Icon unknownPersonIcon = Icon(
 const String changeNickStr = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
 const String dismissedPostStr = 'Post removido';
+const String cancelNewPostStr = 'Operacao cancelada';
+
