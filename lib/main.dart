@@ -337,13 +337,42 @@ RichText makeExpTileTitle(
    );
 }
 
+Widget wrapOnDetailExpTitle(
+   BuildContext ctx,
+   Widget title,
+   List<Widget> children,
+   )
+{
+   //Key key = null;
+   // Passing a global key has the effect that an expansion tile will
+   // collapse after setState is called, but without animation not in
+   // an nice way.
+   //if (addGlobalKey)
+   //   key = GlobalKey();
+
+   return Card(
+      color: Theme.of(ctx).colorScheme.primary,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      child: Theme(
+         data: makeExpTileThemeData(ctx),
+         child: ExpansionTile(
+             backgroundColor: Theme.of(ctx).colorScheme.primary,
+             title: title,
+             children: children,
+             initiallyExpanded: true,
+         ),
+      ),
+   );
+}
+
 Widget makeNewPostDetailExpTile(
    BuildContext ctx,
    Function onNewPostInDetails,
    MenuNode titleNode,
    int state,
-   String strDisplay,
-   bool addGlobalKey)
+   String strDisplay)
 {
    List<Widget> bar =
       makeNewPostDetailElemList(
@@ -361,31 +390,7 @@ Widget makeNewPostDetailExpTile(
       state == 0,
    );
 
-   Key key = null;
-   // Passing a global key has the effect that an expansion tile will
-   // collapse after setState is called, but without animation not in
-   // an nice way.
-   //if (addGlobalKey)
-   //   key = GlobalKey();
-
-   Widget exp = Theme(
-      data: makeExpTileThemeData(ctx),
-      child: ExpansionTile(
-          key: key,
-          backgroundColor: Theme.of(ctx).colorScheme.primary,
-          title: richTitle,
-          children: bar,
-          initiallyExpanded: true,
-      ),
-   );
-
-   return Card(
-      child: exp,
-      color: Theme.of(ctx).colorScheme.primary,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(10.0)),
-      ),
-   );
+   return wrapOnDetailExpTitle(ctx, richTitle, bar);
 }
 
 int counterBitsSet(int v)
@@ -425,7 +430,6 @@ List<Widget> makeNewPostDetailScreen(
          exDetailsMenu.children[idx].children[i],
          post.exDetails[i],
          exDetailsMenu.children[idx].children[i].children[k].name,
-         true,
       );
 
       all.add(foo);
@@ -440,7 +444,6 @@ List<Widget> makeNewPostDetailScreen(
          inDetailsMenu.children[idx].children[i],
          post.inDetails[i],
          '$nBitsSet items',
-         false,
       );
 
       all.add(foo);
@@ -456,7 +459,17 @@ List<Widget> makeNewPostDetailScreen(
       ),
    );
 
-   all.add(tf);
+   Padding pad = Padding(
+      padding: EdgeInsets.all(10.0),
+      child: tf,
+   );
+
+   all.add(wrapOnDetailExpTitle(
+         ctx,
+         Text(txt.postDescTitle),
+         <Widget>[wrapDetailRowOnCard(ctx, pad)],
+      ),
+   );
 
    all.add(
       createSendButton(
@@ -699,6 +712,21 @@ WillPopScope makeNewFiltersScreens(
               screen)));
 }
 
+Widget wrapDetailRowOnCard(BuildContext ctx, Widget body)
+{
+   return Card(
+      margin: const EdgeInsets.only(
+       left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
+      ),
+      color: Theme.of(ctx).colorScheme.background,
+      child: body,
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+      ),
+   );
+}
+
 List<Widget> makeNewPostDetailElemList(
    BuildContext ctx,
    Function proceed,
@@ -736,19 +764,7 @@ List<Widget> makeNewPostDetailElemList(
          activeColor: Theme.of(ctx).colorScheme.primary,
       );
 
-       widgets.add(
-          Card(
-             margin: const EdgeInsets.only(
-                left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
-             ),
-             color: Theme.of(ctx).colorScheme.background,
-             child: cblt,
-             elevation: 0.0,
-             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(0.0)),
-             ),
-          ),
-       );
+       widgets.add(wrapDetailRowOnCard(ctx, cblt));
    }
 
    return widgets;
