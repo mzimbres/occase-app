@@ -244,7 +244,7 @@ makeNickRegisterScreen( BuildContext ctx
    );
 }
 
-Widget makeImageBox()
+Widget makeImgBox(double width, double height)
 {
    final String url = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
 
@@ -262,13 +262,16 @@ Widget makeImageBox()
       errorWidget: (ctx, url, error) => Icon(Icons.error),
    );
 
-   SizedBox sb = SizedBox(
-      width: 395.0,
-      height: 300.0,
-      child: new Center(
-         child: img,
-      ),
+   return SizedBox(
+      width: width,
+      height: height,
+      child: Center(child: img),
    );
+}
+
+Widget makeImgListView()
+{
+   Widget sb = makeImgBox(395.0, 300.0);
 
    ListView lv = ListView(
       scrollDirection: Axis.horizontal,
@@ -1479,11 +1482,14 @@ CircleAvatar makeChatListTileLeading(
 {
    Stack st = Stack(children: <Widget>
    [ Center(child: child)
-   , OutlineButton(child: Text(''),
-                   borderSide: BorderSide(
-                      style: BorderStyle.none),
-                   onPressed: onLeadingPressed,
-                   shape: CircleBorder())]);
+   , OutlineButton(
+        child: Text(''),
+        borderSide: BorderSide(style: BorderStyle.none),
+        onPressed: onLeadingPressed,
+        shape: CircleBorder()
+     ),
+   ]);
+
    return CircleAvatar(
       child: st,
       backgroundColor: bgcolor,
@@ -2054,7 +2060,7 @@ Card makePostWidget(
       elevation: 0.0,
    );
 
-   Widget images = makeImageBox();
+   Widget images = makeImgListView();
 
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
@@ -2286,8 +2292,7 @@ String makeDateString(int date)
    return format.format(dateObj);
 }
 
-Widget
-makeChatListTileTrailingWidget(
+Widget makeChatListTileTrailingWidget(
    BuildContext ctx,
    int nUnreadMsgs,
    int date,
@@ -2309,8 +2314,12 @@ makeChatListTileTrailingWidget(
             children: <Widget>
       [ Icon(Icons.place)
       , makeUnreadMsgsCircle(
-          ctx, nUnreadMsgs, stl.newMsgCircleColor,
-                             Colors.white)]);
+          ctx,
+          nUnreadMsgs,
+          Theme.of(ctx).colorScheme.secondary,
+          Theme.of(ctx).colorScheme.onSecondary,
+        )
+      ]);
       
       return Column(
             mainAxisSize: MainAxisSize.min,
@@ -2328,8 +2337,12 @@ makeChatListTileTrailingWidget(
          mainAxisSize: MainAxisSize.min,
          children: <Widget>
          [ dateText
-         , makeUnreadMsgsCircle(ctx, nUnreadMsgs, stl.newMsgCircleColor,
-                                Colors.white)
+         , makeUnreadMsgsCircle(
+             ctx,
+             nUnreadMsgs,
+             Theme.of(ctx).colorScheme.secondary,
+             Theme.of(ctx).colorScheme.onSecondary,
+           )
          ]);
    }
 
@@ -2556,7 +2569,7 @@ Widget makeChatTab(
          );
 
          List<Widget> foo = List<Widget>();
-         foo.add(makeImageBox());
+         foo.add(makeImgListView());
          foo.addAll(assemblePostRows(
                ctx,
                posts[i],
@@ -3325,6 +3338,7 @@ class MenuChatState extends State<MenuChat>
          isSenderPost = false;
       }
 
+      _chat.nUnreadMsgs = 0;
       await _onSendChatMsgImpl(
          posts,
          _post.id,
@@ -3357,6 +3371,7 @@ class MenuChatState extends State<MenuChat>
    {
       final double offset = _chatScrollCtrl.offset;
       final double max = _chatScrollCtrl.position.maxScrollExtent;
+
       final double tol = 40.0;
 
       if (_showChatJumpDownButton && !(offset < max))
@@ -3630,16 +3645,22 @@ class MenuChatState extends State<MenuChat>
 
       // If the user cancels the operation we do not show the dialog.
       if (i == 1)
-         _showSimpleDial(ctx, (){},
-                         txt.dialTitleStrs[3],
-                         txt.dialBodyStrs[3]);
+         _showSimpleDial(
+            ctx,
+            (){},
+            txt.dialTitleStrs[3],
+            Text(txt.dialBodyStrs[3])
+         );
    }
 
    void _removePostDialog(BuildContext ctx, int i)
    {
-      _showSimpleDial(ctx, () async { await _onRemovePost(i);},
-                      txt.dialTitleStrs[4],
-                      txt.dialBodyStrs[4]);
+      _showSimpleDial(
+         ctx,
+         () async { await _onRemovePost(i);},
+         txt.dialTitleStrs[4],
+         Text(txt.dialBodyStrs[4]),
+      );
    }
 
    void _onCancelNewFilter()
@@ -3716,8 +3737,15 @@ class MenuChatState extends State<MenuChat>
       assert(i != -1);
       assert(j < posts[i].chats.length);
 
-      final String content = 'Id: ${posts[i].chats[j].peer}';
-      _showSimpleDial(ctx, (){}, txt.userInfo, content);
+      final String peer = posts[i].chats[j].peer;
+      final String nich = posts[i].chats[j].nick;
+      final String title = '$nich: $peer';
+      _showSimpleDial(
+         ctx,
+         (){},
+         title,
+         makeImgBox(200.0, 200.0)
+      );
    }
 
    void _onChatLPImpl(List<Post> posts, int i, int j)
@@ -3954,13 +3982,14 @@ class MenuChatState extends State<MenuChat>
          if (!_showChatJumpDownButton) {
             setState(()
             {
+               posts[i].chats[j].nUnreadMsgs = 0;
                SchedulerBinding.instance.addPostFrameCallback((_)
                {
-                  posts[i].chats[j].nUnreadMsgs = 0;
                   _chatScrollCtrl.animateTo(
                      _chatScrollCtrl.position.maxScrollExtent,
                      duration: const Duration(milliseconds: 300),
-                     curve: Curves.easeOut);
+                     curve: Curves.easeOut,
+                  );
                });
             });
          }
@@ -4185,11 +4214,11 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void
-   _showSimpleDial(BuildContext ctx,
-                   Function onOk,
-                   String title,
-                   String content)
+   void _showSimpleDial(
+      BuildContext ctx,
+      Function onOk,
+      String title,
+      Widget content)
    {
       showDialog(
          context: ctx,
@@ -4206,9 +4235,11 @@ class MenuChatState extends State<MenuChat>
             List<FlatButton> actions = List<FlatButton>(1);
             actions[0] = ok;
 
-            return AlertDialog( title: Text(title)
-                              , content: Text(content)
-                              , actions: actions);
+            return AlertDialog(
+               title: Text(title),
+               content: content,
+               actions: actions,
+            );
          },
       );
    }
@@ -4220,10 +4251,12 @@ class MenuChatState extends State<MenuChat>
       // First send the hashes then show the dialog.
       _subscribeToChannels();
 
-      _showSimpleDial(ctx,
-                      _onOkDialAfterSendFilters,
-                      txt.dialTitleStrs[2],
-                      txt.dialBodyStrs[2]);
+      _showSimpleDial(
+         ctx,
+         _onOkDialAfterSendFilters,
+         txt.dialTitleStrs[2],
+         Text(txt.dialBodyStrs[2]),
+      );
    }
 
    void _subscribeToChannels()
@@ -4233,11 +4266,8 @@ class MenuChatState extends State<MenuChat>
          List<List<int>> hashCodes =
             readHashCodes(item.root.first, item.filterDepth);
 
-         if (hashCodes.isEmpty) {
-            print("Menu channels hash is empty. Nothing to do ...");
-            return;
-         }
-
+         // An empty channels list means we do not want any filter for
+         // that menu item.
          channels.add(hashCodes);
       }
 

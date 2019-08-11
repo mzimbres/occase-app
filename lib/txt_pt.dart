@@ -32,7 +32,7 @@ const String delOwnChatTitleStr = 'Remover conversas?';
 const String delFavChatTitleStr = 'Remover de Favoritos?';
 const String devChatOkStr = 'Remover';
 const String delChatCancelStr = 'Cancelar';
-const String userInfo = 'Informacoes do usuário';
+const String userInfo = 'Usuário';
 
 //______________
 
