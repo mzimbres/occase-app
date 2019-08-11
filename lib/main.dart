@@ -914,8 +914,7 @@ int postIndexHelper(int i)
    return 1;
 }
 
-Card
-makeChatMsgWidget(
+Card makeChatMsgWidget(
    BuildContext ctx,
    Chat ch,
    int i,
@@ -1074,7 +1073,6 @@ ListView makeChatMsgListView(
    BuildContext ctx,
    ScrollController scrollCtrl,
    Chat ch,
-   Function onChatSendPressed,
    Function onChatMsgLongPressed,
    Function onDragChatMsg)
 {
@@ -1216,29 +1214,17 @@ makeRefChatMsgWidget(
    return col;
 }
 
-Widget makeChatScreen(
+Widget makeChatSecondLayer(
    BuildContext ctx,
-   Function onWillPopScope,
-   Chat ch,
-   TextEditingController ctrl,
-   Function onChatSendPressed,
-   ScrollController scrollCtrl,
-   Function onChatMsgLongPressed,
-   int nLongPressed,
-   Function onFwdChatMsg,
-   Function onDragChatMsg,
-   FocusNode chatFocusNode,
-   Function onChatMsgReply,
-   String postSummary,
+   Function onChatSend,
    Function onAttachment,
-   int dragedIdx,
-   Function onCancelFwdLPChatMsg,
+   Function onChatJumpDown,
    bool showChatJumpDownButton,
-   Function onChatJumpDown)
+   int nUnreadMsgs)
 {
    IconButton sendButton = IconButton(
       icon: Icon(Icons.send),
-      onPressed: onChatSendPressed,
+      onPressed: onChatSend,
       color: Colors.grey,
    );
 
@@ -1259,7 +1245,7 @@ Widget makeChatScreen(
 
    // In this row we use a placeholder as an easy means to get the
    // alignment right.
-   Row buttons2 = Row(
+   Row row1 = Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>
       [ Opacity(child: Icon(Icons.clear), opacity: 0.0)
@@ -1267,33 +1253,79 @@ Widget makeChatScreen(
       ]
    );
 
-   Row buttons = Row(
+   Widget unreadMsgsCircle = makeUnreadMsgsCircle(
+       ctx,
+       nUnreadMsgs,
+       stl.newMsgCircleColor,
+       Colors.white,
+   );
+
+   Row row2 = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Opacity(child: Icon(Icons.clear), opacity: 0.0)
+      , unreadMsgsCircle
+      ]
+   );
+
+   Row row0 = Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[attachmentButton, sendButton]);
 
    List<Widget> colWidgets;
 
-   if (showChatJumpDownButton)
-      colWidgets = <Widget>[buttons2, buttons];
+   if (showChatJumpDownButton && nUnreadMsgs > 0)
+      colWidgets = <Widget>[row2, row1, row0];
+   else if (showChatJumpDownButton)
+      colWidgets = <Widget>[row1, row0];
    else
-      colWidgets = <Widget>[buttons];
+      colWidgets = <Widget>[row0];
 
-   Column buttonsCol = Column(
+   return Column(
       mainAxisSize: MainAxisSize.min,
       children: colWidgets,
+   );
+}
+
+Widget makeChatScreen(
+   BuildContext ctx,
+   Function onWillPopScope,
+   Chat ch,
+   TextEditingController ctrl,
+   Function onChatSend,
+   ScrollController scrollCtrl,
+   Function onChatMsgLongPressed,
+   int nLongPressed,
+   Function onFwdChatMsg,
+   Function onDragChatMsg,
+   FocusNode chatFocusNode,
+   Function onChatMsgReply,
+   String postSummary,
+   Function onAttachment,
+   int dragedIdx,
+   Function onCancelFwdLPChatMsg,
+   bool showChatJumpDownButton,
+   Function onChatJumpDown)
+{
+   Column secondLayer = makeChatSecondLayer(
+      ctx,
+      onChatSend,
+      onAttachment,
+      onChatJumpDown,
+      showChatJumpDownButton,
+      ch.nUnreadMsgs,
    );
 
    TextField tf = TextField(
        style: Theme.of(ctx).textTheme.body1,
        controller: ctrl,
-       //textInputAction: TextInputAction.go,
-       //onSubmitted: onTextFieldPressed,
        keyboardType: TextInputType.multiline,
        maxLines: null,
        maxLength: null,
        focusNode: chatFocusNode,
        decoration:
-          InputDecoration.collapsed(hintText: txt.chatTextFieldHintStr));
+          InputDecoration.collapsed(hintText: txt.chatTextFieldHintStr),
+    );
 
    Scrollbar sb = Scrollbar(
        child: SingleChildScrollView(
@@ -1307,7 +1339,6 @@ Widget makeChatScreen(
          ctx,
          scrollCtrl,
          ch,
-         onChatSendPressed,
          onChatMsgLongPressed,
          onDragChatMsg);
 
@@ -1344,7 +1375,7 @@ Widget makeChatScreen(
 
    Stack mainCol = Stack(children: <Widget>
    [ Column(children: cols)
-   , Positioned(child: buttonsCol, bottom: 1.0, right: 1.0)
+   , Positioned(child: secondLayer, bottom: 1.0, right: 1.0)
    ]);
 
    List<Widget> actions = List<Widget>();
@@ -1431,7 +1462,7 @@ Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
    // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
    // for opacity values.
    widgets[1] = Opacity(
-      child: makeCircleUnreadMsgs(
+      child: makeUnreadMsgsCircle(
          ctx, n, Colors.white, Theme.of(ctx).colorScheme.primary
       ),
       opacity: opacity,
@@ -1660,8 +1691,11 @@ createSendButton(BuildContext ctx,
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-Container makeCircleUnreadMsgs(BuildContext ctx,
-      int n, Color bgColor, Color textColor)
+Container makeUnreadMsgsCircle(
+   BuildContext ctx,
+   int n,
+   Color bgColor,
+   Color textColor)
 {
    final Text txt =
       Text("${n}",
@@ -2094,21 +2128,22 @@ ListView makePostTabListView(
    List<Post> posts,
    Function onPostSelection,
    List<MenuItem> menu,
-   int nNewPosts,
    MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
+   MenuNode inDetailsMenu,
+   int nNewPosts)
 {
-   final int postRangeToShow = posts.length - nNewPosts - 1;
+   final int l = posts.length - nNewPosts;
 
    return ListView.builder(
       padding: const EdgeInsets.all(0.0),
-      itemCount: postRangeToShow,
+      itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
+         final int j = l - i - 1;
          return makePostPubWidget(
             ctx,
-            posts[i],
-            (int fav) {onPostSelection(ctx, i, fav);},
+            posts[j],
+            (int fav) {onPostSelection(ctx, j, fav);},
             menu,
             exDetailsMenu,
             inDetailsMenu,
@@ -2273,7 +2308,7 @@ makeChatListTileTrailingWidget(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>
       [ Icon(Icons.place)
-      , makeCircleUnreadMsgs(
+      , makeUnreadMsgsCircle(
           ctx, nUnreadMsgs, stl.newMsgCircleColor,
                              Colors.white)]);
       
@@ -2293,7 +2328,7 @@ makeChatListTileTrailingWidget(
          mainAxisSize: MainAxisSize.min,
          children: <Widget>
          [ dateText
-         , makeCircleUnreadMsgs(ctx, nUnreadMsgs, stl.newMsgCircleColor,
+         , makeUnreadMsgsCircle(ctx, nUnreadMsgs, stl.newMsgCircleColor,
                                 Colors.white)
          ]);
    }
@@ -3256,6 +3291,7 @@ class MenuChatState extends State<MenuChat>
       await _db.rawUpdate(sql.updateNUnreadMsgs,
                          [0, _post.id, _chat.peer]);
 
+      _showChatJumpDownButton = false;
       _dragedIdx = -1;
       _chat.nUnreadMsgs = 0;
       _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
@@ -3321,11 +3357,12 @@ class MenuChatState extends State<MenuChat>
    {
       final double offset = _chatScrollCtrl.offset;
       final double max = _chatScrollCtrl.position.maxScrollExtent;
+      final double tol = 40.0;
 
       if (_showChatJumpDownButton && !(offset < max))
          setState(() {_showChatJumpDownButton = false;});
 
-      if (!_showChatJumpDownButton && (offset < max))
+      if (!_showChatJumpDownButton && (offset < (max - tol)))
          setState(() {_showChatJumpDownButton = true;});
    }
 
@@ -3611,9 +3648,11 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void>
-   _onChatPressedImpl(List<Post> posts,
-                      bool isSenderPost, int i, int j) async
+   Future<void> _onChatPressedImpl(
+      List<Post> posts,
+      bool isSenderPost,
+      int i,
+      int j) async
    {
       if (!_lpChats.isEmpty || !_lpChatMsgs.isEmpty) {
          _onChatLPImpl(posts, i, j);
@@ -3757,12 +3796,12 @@ class MenuChatState extends State<MenuChat>
       setState((){});
    }
 
-   Future<void>
-   _onSendChatMsgImpl(List<Post> posts,
-                      int postId,
-                      String peer,
-                      bool isSenderPost,
-                      ChatItem ci) async
+   Future<void> _onSendChatMsgImpl(
+      List<Post> posts,
+      int postId,
+      String peer,
+      bool isSenderPost,
+      ChatItem ci) async
    {
       try {
          if (ci.msg.isEmpty)
@@ -3840,8 +3879,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void>
-   _chatMsgHandler(Map<String, dynamic> ack, int type) async
+   Future<void> _chatMsgHandler(Map<String, dynamic> ack, int type) async
    {
       final int postId = ack['post_id'];
       final bool isSenderPost = ack['is_sender_post'];
@@ -3867,16 +3905,16 @@ class MenuChatState extends State<MenuChat>
                                 type, refersTo);
    }
 
-   Future<void>
-   _chatMsgHandlerImpl(String to,
-                       int postId,
-                       String msg,
-                       String peer,
-                       String nick,
-                       bool isSenderPost,
-                       List<Post> posts,
-                       int type,
-                       int refersTo) async
+   Future<void> _chatMsgHandlerImpl(
+      String to,
+      int postId,
+      String msg,
+      String peer,
+      String nick,
+      bool isSenderPost,
+      List<Post> posts,
+      int type,
+      int refersTo) async
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -3904,12 +3942,29 @@ class MenuChatState extends State<MenuChat>
       final bool isOnPost = _post != null && _post.id == postId; 
       final bool isOnChat = _chat != null && _chat.peer == peer; 
 
+      ++posts[i].chats[j].nUnreadMsgs;
+
       String ack;
       if (isOnPost && isOnChat) {
-         posts[i].chats[j].nUnreadMsgs = 0;
          ack = 'app_ack_read';
+
+         // If we are on the chat screen with the peer and not
+         // currently showing the jump down button we animate to the
+         // bottom.
+         if (!_showChatJumpDownButton) {
+            setState(()
+            {
+               SchedulerBinding.instance.addPostFrameCallback((_)
+               {
+                  posts[i].chats[j].nUnreadMsgs = 0;
+                  _chatScrollCtrl.animateTo(
+                     _chatScrollCtrl.position.maxScrollExtent,
+                     duration: const Duration(milliseconds: 300),
+                     curve: Curves.easeOut);
+               });
+            });
+         }
       } else {
-         ++posts[i].chats[j].nUnreadMsgs;
          ack = 'app_ack_received';
       }
 
@@ -3978,6 +4033,7 @@ class MenuChatState extends State<MenuChat>
 
       await batch.commit(noResult: true, continueOnError: true);
 
+      // TODO: Move this to the individual functions above.
       setState((){});
    }
 
@@ -4558,9 +4614,9 @@ class MenuChatState extends State<MenuChat>
          _posts,
          _alertUserOnselectPost,
          _menu,
-         _nNewPosts,
          _exDetailsRoot,
          _inDetailsRoot,
+         _nNewPosts,
       );
 
       bodies[2] = makeChatTab(
