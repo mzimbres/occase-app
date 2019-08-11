@@ -853,7 +853,8 @@ FloatingActionButton makeFaButton(
             Icons.send,
             color: Theme.of(ctx).colorScheme.onSecondary,
          ),
-         onPressed: onFwdChatMsg);
+         onPressed: onFwdChatMsg,
+      );
    }
 
    if (lpChats != 0)
@@ -1069,8 +1070,7 @@ makeChatMsgWidget(
    );
 }
 
-ListView
-makeChatMsgListView(
+ListView makeChatMsgListView(
    BuildContext ctx,
    ScrollController scrollCtrl,
    Chat ch,
@@ -1216,44 +1216,72 @@ makeRefChatMsgWidget(
    return col;
 }
 
-Widget
-makeChatScreen(BuildContext ctx,
-               Function onWillPopScope,
-               Chat ch,
-               TextEditingController ctrl,
-               Function onChatSendPressed,
-               ScrollController scrollCtrl,
-               Function onChatMsgLongPressed,
-               int nLongPressed,
-               Function onFwdChatMsg,
-               Function onDragChatMsg,
-               FocusNode chatFocusNode,
-               Function onChatMsgReply,
-               String postSummary,
-               Function onAttachment,
-               int dragedIdx,
-               Function onCancelFwdLPChatMsg)
+Widget makeChatScreen(
+   BuildContext ctx,
+   Function onWillPopScope,
+   Chat ch,
+   TextEditingController ctrl,
+   Function onChatSendPressed,
+   ScrollController scrollCtrl,
+   Function onChatMsgLongPressed,
+   int nLongPressed,
+   Function onFwdChatMsg,
+   Function onDragChatMsg,
+   FocusNode chatFocusNode,
+   Function onChatMsgReply,
+   String postSummary,
+   Function onAttachment,
+   int dragedIdx,
+   Function onCancelFwdLPChatMsg,
+   bool showChatJumpDownButton,
+   Function onChatJumpDown)
 {
-   IconButton sendButton =
-      IconButton(
-         icon: Icon(Icons.send),
-         onPressed: onChatSendPressed,
-         color: Colors.grey);
+   IconButton sendButton = IconButton(
+      icon: Icon(Icons.send),
+      onPressed: onChatSendPressed,
+      color: Colors.grey,
+   );
 
-   // Either Icons.attachment or Icons.add_a_photo
-   IconButton attachmentButton =
-      IconButton(icon: Icon(Icons.add_a_photo),
-                 onPressed: onAttachment,
-                 color: Colors.grey);
+   IconButton attachmentButton = IconButton(
+      icon: Icon(Icons.add_a_photo),
+      onPressed: onAttachment,
+      color: Colors.grey,
+   );
 
-   List<Widget> editButtons = List<Widget>();
-   //if (ctrl.text.isEmpty) // Let this for later.
-   editButtons.add(attachmentButton);
-   editButtons.add(sendButton);
+   FloatingActionButton fab = FloatingActionButton(
+      mini: true,
+      onPressed: onChatJumpDown,
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      child: Icon(Icons.expand_more,
+         color: Theme.of(ctx).colorScheme.onSecondary,
+      ),
+   );
+
+   // In this row we use a placeholder as an easy means to get the
+   // alignment right.
+   Row buttons2 = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Opacity(child: Icon(Icons.clear), opacity: 0.0)
+      , Padding(child: fab, padding: const EdgeInsets.only(bottom: 20.0))
+      ]
+   );
 
    Row buttons = Row(
       mainAxisSize: MainAxisSize.min,
-      children: editButtons);
+      children: <Widget>[attachmentButton, sendButton]);
+
+   List<Widget> colWidgets;
+
+   if (showChatJumpDownButton)
+      colWidgets = <Widget>[buttons2, buttons];
+   else
+      colWidgets = <Widget>[buttons];
+
+   Column buttonsCol = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: colWidgets,
+   );
 
    TextField tf = TextField(
        style: Theme.of(ctx).textTheme.body1,
@@ -1316,7 +1344,7 @@ makeChatScreen(BuildContext ctx,
 
    Stack mainCol = Stack(children: <Widget>
    [ Column(children: cols)
-   , Positioned(child: buttons, bottom: 1.0, right: 1.0)
+   , Positioned(child: buttonsCol, bottom: 1.0, right: 1.0)
    ]);
 
    List<Widget> actions = List<Widget>();
@@ -1342,11 +1370,21 @@ makeChatScreen(BuildContext ctx,
             overflow: TextOverflow.clip,
       );
    } else {
+      Widget child;
+      ImageProvider backgroundImage;
+      if (true) {
+         final String url = 'https://pbs.twimg.com/profile_images/945853318273761280/0U40alJG_400x400.jpg';
+         backgroundImage = CachedNetworkImageProvider(url);
+      } else {
+         child = txt.unknownPersonIcon;
+      }
       title = ListTile(
           contentPadding: EdgeInsets.all(0.0),
           leading: CircleAvatar(
-              child: txt.unknownPersonIcon,
-              backgroundColor: selectColor(int.parse(ch.peer))),
+              child: child,
+              backgroundImage: backgroundImage,
+              backgroundColor: selectColor(int.parse(ch.peer)),
+          ),
           title: Text(ch.getChatDisplayName(),
                 maxLines: 1,
                 overflow: TextOverflow.clip,
@@ -1392,17 +1430,14 @@ Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
 
    // See: https://docs.flutter.io/flutter/material/TabBar/labelColor.html
    // for opacity values.
-   widgets[1] =
-      Opacity( child: makeCircleUnreadMsgs(ctx, n, Colors.white,
-                      Theme.of(ctx).colorScheme.primary)
-             , opacity: opacity);
+   widgets[1] = Opacity(
+      child: makeCircleUnreadMsgs(
+         ctx, n, Colors.white, Theme.of(ctx).colorScheme.primary
+      ),
+      opacity: opacity,
+   );
 
    return Row(children: widgets);
-}
-
-CircleAvatar makeCircleAvatar(Widget child, Color bgcolor)
-{
-   return CircleAvatar(child: child, backgroundColor: bgcolor);
 }
 
 CircleAvatar makeChatListTileLeading(
@@ -2680,6 +2715,10 @@ class MenuChatState extends State<MenuChat>
    // The in details tree root node.
    MenuNode _inDetailsRoot;
 
+   // Will be set to true if the user scrolls up a chat screen so that
+   // the jump down button can be used
+   bool _showChatJumpDownButton = true;
+
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
    Post _post = null;
@@ -2782,6 +2821,7 @@ class MenuChatState extends State<MenuChat>
       _tabCtrl.addListener(_tabCtrlChangeHandler);
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
+      _chatScrollCtrl.addListener(_chatScrollListener);
    }
 
    @override
@@ -3277,6 +3317,18 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
+   void _chatScrollListener()
+   {
+      final double offset = _chatScrollCtrl.offset;
+      final double max = _chatScrollCtrl.position.maxScrollExtent;
+
+      if (_showChatJumpDownButton && !(offset < max))
+         setState(() {_showChatJumpDownButton = false;});
+
+      if (!_showChatJumpDownButton && (offset < max))
+         setState(() {_showChatJumpDownButton = true;});
+   }
+
    void _onFwdChatMsg()
    {
       assert(!_lpChatMsgs.isEmpty);
@@ -3593,6 +3645,14 @@ class MenuChatState extends State<MenuChat>
          {
             _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
          });
+      });
+   }
+
+   void _onChatJumpDown()
+   {
+      setState(()
+      {
+         _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
       });
    }
 
@@ -3983,7 +4043,6 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onPost(Map<String, dynamic> ack) async
    {
       Batch batch = _db.batch();
-      _nNewPosts += ack['items'].length;
       for (var item in ack['items']) {
          Post post = Post.fromJson(item);
          post.status = 1;
@@ -4001,6 +4060,7 @@ class MenuChatState extends State<MenuChat>
             conflictAlgorithm: ConflictAlgorithm.replace);
 
          _posts.add(post);
+         ++_nNewPosts;
       }
 
       batch.execute(sql.updateLastPostId, [cfg.lastPostId]);
@@ -4438,7 +4498,9 @@ class MenuChatState extends State<MenuChat>
             makePostSummaryStr(_menu[1].root.first, _post),
             _onChatAttachment,
             _dragedIdx,
-            _onCancelFwdLPChatMsg
+            _onCancelFwdLPChatMsg,
+            _showChatJumpDownButton,
+            _onChatJumpDown,
          );
       }
 
