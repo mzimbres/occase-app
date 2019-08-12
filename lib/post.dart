@@ -7,6 +7,7 @@ import 'package:menu_chat/tree.dart';
 import 'package:menu_chat/txt_pt.dart' as txt;
 import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/globals.dart' as glob;
+import 'package:menu_chat/constants.dart' as cts;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -298,6 +299,8 @@ class Post {
    // The date this post has been pinned by the user.
    int pinDate = 0;
 
+   double price = cts.minPrice;
+
    // Post status.
    //   0: Posts published by the app.
    //   1: Posts received
@@ -315,6 +318,7 @@ class Post {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
       exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
       inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+      price = cts.minPrice;
    }
 
    int getProductDetailIdx()
@@ -334,6 +338,7 @@ class Post {
       ret.inDetails = this.inDetails;
       ret.date = this.date;
       ret.pinDate = this.pinDate;
+      ret.price = this.price;
       ret.status = this.status;
       ret.description = this.description;
       ret.chats = List<Chat>.from(this.chats);

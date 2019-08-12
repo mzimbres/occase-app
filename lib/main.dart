@@ -269,9 +269,9 @@ Widget makeImgBox(double width, double height)
    );
 }
 
-Widget makeImgListView()
+Widget makeImgListView(double width, double height)
 {
-   Widget sb = makeImgBox(395.0, 300.0);
+   Widget sb = makeImgBox(width, height);
 
    ListView lv = ListView(
       scrollDirection: Axis.horizontal,
@@ -282,10 +282,10 @@ Widget makeImgListView()
 
    return ConstrainedBox(
       constraints: BoxConstraints(
-         maxWidth: 395.0,
-         minWidth: 300.0,
-         maxHeight: 300.0,
-         minHeight: 300.0,
+         maxWidth: width,
+         minWidth: width,
+         maxHeight: height,
+         minHeight: height,
       ),
       child: SingleChildScrollView(
          scrollDirection: Axis.horizontal,
@@ -413,7 +413,8 @@ List<Widget> makeNewPostDetailScreen(
    Post post,
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
-   TextEditingController txtCtrl)
+   TextEditingController txtCtrl,
+   Function onPriceChanged)
 {
    final int idx = post.getProductDetailIdx();
 
@@ -451,6 +452,26 @@ List<Widget> makeNewPostDetailScreen(
 
       all.add(foo);
    }
+
+   Slider priceWidget = Slider(
+      value: post.price,
+      min: cts.minPrice,
+      max: cts.maxPrice,
+      divisions: cts.priceDivisions,
+      onChanged: onPriceChanged,
+   );
+
+   all.add(wrapOnDetailExpTitle(
+         ctx,
+         makeExpTileTitle(
+            ctx,
+            txt.pricePrefix,
+            'R${post.price}',
+            ':', false
+         ),
+         <Widget>[wrapDetailRowOnCard(ctx, priceWidget)],
+      ),
+   );
 
    TextField tf = TextField(
       controller: txtCtrl,
@@ -499,7 +520,8 @@ WillPopScope makeNewPostScreens(
    Function onNewPostBotBarTapped,
    Function onNewPostInDetails,
    MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
+   MenuNode inDetailsMenu,
+   Function onPriceChanged)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -537,6 +559,7 @@ WillPopScope makeNewPostScreens(
          exDetailsMenu,
          inDetailsMenu,
          txtCtrl,
+         onPriceChanged,
       );
 
       // Consider changing this to column.
@@ -2060,7 +2083,45 @@ Card makePostWidget(
       elevation: 0.0,
    );
 
-   Widget images = makeImgListView();
+   Widget imgLv = makeImgListView(
+      cts.imgBoxWidth,
+      cts.imgBoxHeight,
+   );
+
+   Widget priceText = Padding(
+      child: Text('R\$ 100.00,0',
+         style: Theme.of(ctx).textTheme.headline.copyWith(
+            color: Theme.of(ctx).colorScheme.onPrimary,
+         ),
+      ),
+      padding: const EdgeInsets.all(10.0),
+   );
+
+   Widget kmText = Padding(
+      child: Text('120.000km',
+         style: Theme.of(ctx).textTheme.headline.copyWith(
+            color: Theme.of(ctx).colorScheme.onPrimary,
+         ),
+      ),
+      padding: const EdgeInsets.all(10.0),
+   );
+
+
+   Row row2 = Row(
+      children: <Widget>[priceText, Spacer(), kmText]
+   );
+
+   Column col = Column(
+      children: <Widget>[Spacer(), row2]
+   );
+
+   SizedBox sb2 = SizedBox(
+      width: cts.imgBoxWidth,
+      height: cts.imgBoxHeight,
+      child: Center(child: col),
+   );
+
+   Widget images = Stack(children: <Widget>[imgLv, sb2]);
 
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
@@ -2569,7 +2630,11 @@ Widget makeChatTab(
          );
 
          List<Widget> foo = List<Widget>();
-         foo.add(makeImgListView());
+         foo.add(makeImgListView(
+               cts.imgBoxWidth,
+               cts.imgBoxHeight,
+            ),
+         );
          foo.addAll(assemblePostRows(
                ctx,
                posts[i],
@@ -3167,6 +3232,11 @@ class MenuChatState extends State<MenuChat>
             
          },
       );
+   }
+
+   void _onPriceChanged(double newValue)
+   {
+      setState((){_post.price = newValue;});
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -4545,6 +4615,7 @@ class MenuChatState extends State<MenuChat>
             _onNewPostInDetail,
             _exDetailsRoot,
             _inDetailsRoot,
+            _onPriceChanged,
          );
       }
 

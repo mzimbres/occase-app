@@ -169,4 +169,5 @@ const String changeNickStr = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
 const String dismissedPostStr = 'Post removido';
 const String cancelNewPostStr = 'Operacao cancelada';
+const String pricePrefix = 'Preco';
 
