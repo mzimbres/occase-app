@@ -1369,7 +1369,14 @@ Widget makeChatScreen(
          onDragChatMsg);
 
    List<Widget> cols = List<Widget>();
-   cols.add(Expanded(child: list));
+
+   Stack chatMsgStack = Stack(children: <Widget>
+   [ list
+   , Positioned(child: Icon(Icons.clear), bottom: 1.0, right: 1.0)
+   ]);
+
+   cols.add(Expanded(child: chatMsgStack));
+
    if (dragedIdx != -1) {
       Color co1 = selectColor(int.parse(ch.peer));
       Icon w1 = Icon(Icons.forward, color: Colors.grey);
@@ -3751,6 +3758,7 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
+      _showChatJumpDownButton = false;
       _post = posts[i];
       _chat = posts[i].chats[j];
 
