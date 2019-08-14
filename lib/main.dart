@@ -963,9 +963,12 @@ Card makeChatMsgWidget(
          text: ch.msgs[i].msg,
          style: Theme.of(ctx).textTheme.body1,
          children: <TextSpan>
-         [TextSpan(
+         [ TextSpan(
             text: '  ${makeDateString(ch.msgs[i].date)}',
-            style: Theme.of(ctx).textTheme.caption)]));
+            style: Theme.of(ctx).textTheme.caption),
+         ]
+      ),
+   );
 
    // Unfourtunately TextSpan still does not support general
    // widgets so I have to put the msg status in a row instead
@@ -1000,10 +1003,12 @@ Card makeChatMsgWidget(
          children: <Widget>
          [ Icon(Icons.forward, color: Colors.blueGrey)
          , Text(txt.chatMsgRedirectedText,
-                style: TextStyle(color: Colors.blueGrey,
-                  fontSize: stl.listTileSubtitleFontSize,
-                 fontStyle: FontStyle.italic))
-         ]);
+            style: TextStyle(color: Colors.blueGrey,
+               fontSize: stl.listTileSubtitleFontSize,
+               fontStyle: FontStyle.italic),
+           )
+         ]
+      );
 
       ww = Column( children: <Widget>
          [ Padding(
@@ -1014,22 +1019,24 @@ Card makeChatMsgWidget(
    } else if (ch.msgs[i].refersToOther()) {
       final int refersTo = ch.msgs[i].refersTo;
       final Color c1 = selectColor(int.parse(ch.peer));
-      SizedBox sb = SizedBox(
-         width: 4.0,
-         height: 60.0,
-         child: DecoratedBox(
-           decoration: BoxDecoration(
-             color: c1)));
+
+      // See comment on C0001 for why I commented this out.
+      //SizedBox sb = SizedBox(
+      //   width: 4.0,
+      //   height: 60.0,
+      //   child: DecoratedBox(
+      //     decoration: BoxDecoration(
+      //       color: c1)));
 
       Row refMsg = Row(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
          children: <Widget>
-         [ Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: sb,
-           )
-         , Flexible(
+         [ //Padding(
+           //   padding: const EdgeInsets.all(5.0),
+           //   child: sb,
+           //) , 
+         Flexible(
               child: Padding(
                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
                  child: makeRefChatMsgWidget(ctx, ch, refersTo, c1),
@@ -1141,10 +1148,13 @@ ListView makeChatMsgListView(
                i -= 1; // For the shift
          }
 
-         Card chatMsgWidget =
-            makeChatMsgWidget( ctx,
-               ch, i, onChatMsgLongPressed,
-               onDragChatMsg);
+         Card chatMsgWidget = makeChatMsgWidget(
+            ctx,
+            ch,
+            i,
+            onChatMsgLongPressed,
+            onDragChatMsg
+         );
 
          return GestureDetector(
             onLongPress: () {onChatMsgLongPressed(i, false);},
@@ -1213,7 +1223,6 @@ makeRefChatMsgWidget(
    int i,
    Color cc)
 {
-   print('===> ${ch.msgs.length} $i');
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
@@ -1312,11 +1321,12 @@ Widget makeChatScreen(
    Card card = makeChatScreenBotCard(null, null, sb, null, null);
 
    ListView list = makeChatMsgListView(
-         ctx,
-         scrollCtrl,
-         ch,
-         onChatMsgLongPressed,
-         onDragChatMsg);
+      ctx,
+      scrollCtrl,
+      ch,
+      onChatMsgLongPressed,
+      onDragChatMsg,
+   );
 
    List<Widget> cols = List<Widget>();
 
@@ -1374,14 +1384,20 @@ Widget makeChatScreen(
          icon: Icon(Icons.clear, color: Colors.grey),
          onPressed: onCancelFwdLPChatMsg);
 
-      SizedBox sb = SizedBox(
-         width: 4.0,
-         height: 60.0,
-         child: DecoratedBox(
-           decoration: BoxDecoration(
-             color: co1)));
+      // C0001
+      // NOTE: At the moment I do not know how to add the division bar
+      // without fixing the height. That means on some rather short
+      // text msgs there will be too much empty vertical space, that
+      // do not look good. I will leave this out untill I find a
+      // solution.
+      //SizedBox sb = SizedBox(
+      //   width: 4.0,
+      //   height: 60.0,
+      //   child: DecoratedBox(
+      //     decoration: BoxDecoration(
+      //       color: co1)));
 
-      Card c1 = makeChatScreenBotCard(w1, sb, w2, null, w4);
+      Card c1 = makeChatScreenBotCard(w1, null, w2, null, w4);
       cols.add(c1);
       cols.add(Divider(color: Colors.deepOrange, height: 0.0));
    }
