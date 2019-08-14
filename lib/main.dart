@@ -1435,7 +1435,8 @@ Widget makeChatScreen(
       Widget child;
       ImageProvider backgroundImage;
       if (true) {
-         final String url = 'https://pbs.twimg.com/profile_images/945853318273761280/0U40alJG_400x400.jpg';
+         final String url =
+            'https://www.gravatar.com/avatar/88832d0c6ddac7944fa8a3d3010500c4.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
          child = txt.unknownPersonIcon;
@@ -2455,7 +2456,8 @@ Card makeChatListTile(
       bgColor = stl.chatLongPressendColor;
    } else {
       if (true) {
-         final String url = 'https://pbs.twimg.com/profile_images/945853318273761280/0U40alJG_400x400.jpg';
+         final String url =
+            'https://www.gravatar.com/avatar/88832d0c6ddac7944fa8a3d3010500c4.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
          widget = txt.unknownPersonIcon;
