@@ -955,8 +955,10 @@ Card makeChatMsgWidget(
       color = Colors.lime[100];
    }
 
-   if (ch.msgs[i].isLongPressed)
+   if (ch.msgs[i].isLongPressed) {
       onSelectedMsgColor = Colors.blue[200];
+      color = Colors.blue[100];
+   }
 
    RichText msgAndDate = RichText(
       text: TextSpan(
