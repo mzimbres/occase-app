@@ -4,8 +4,6 @@ final Color chatLongPressendColor = Colors.grey[400];
 
 final double mainFontSize = 16.0;
 
-final Color newMsgCircleColor = Colors.grey;
-
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
 final double postMarging = 4.0;

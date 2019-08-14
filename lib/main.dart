@@ -1243,10 +1243,7 @@ makeRefChatMsgWidget(
 Widget makeChatSecondLayer(
    BuildContext ctx,
    Function onChatSend,
-   Function onAttachment,
-   Function onChatJumpDown,
-   bool showChatJumpDownButton,
-   int nUnreadMsgs)
+   Function onAttachment)
 {
    IconButton sendButton = IconButton(
       icon: Icon(Icons.send),
@@ -1260,56 +1257,12 @@ Widget makeChatSecondLayer(
       color: Colors.grey,
    );
 
-   FloatingActionButton fab = FloatingActionButton(
-      mini: true,
-      onPressed: onChatJumpDown,
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
-      child: Icon(Icons.expand_more,
-         color: Theme.of(ctx).colorScheme.onSecondary,
-      ),
-   );
-
-   // In this row we use a placeholder as an easy means to get the
-   // alignment right.
-   Row row1 = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>
-      [ Opacity(child: Icon(Icons.clear), opacity: 0.0)
-      , Padding(child: fab, padding: const EdgeInsets.only(bottom: 20.0))
-      ]
-   );
-
-   Widget unreadMsgsCircle = makeUnreadMsgsCircle(
-       ctx,
-       nUnreadMsgs,
-       stl.newMsgCircleColor,
-       Colors.white,
-   );
-
-   Row row2 = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>
-      [ Opacity(child: Icon(Icons.clear), opacity: 0.0)
-      , unreadMsgsCircle
-      ]
-   );
-
-   Row row0 = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[attachmentButton, sendButton]);
-
-   List<Widget> colWidgets;
-
-   if (showChatJumpDownButton && nUnreadMsgs > 0)
-      colWidgets = <Widget>[row2, row1, row0];
-   else if (showChatJumpDownButton)
-      colWidgets = <Widget>[row1, row0];
-   else
-      colWidgets = <Widget>[row0];
-
    return Column(
       mainAxisSize: MainAxisSize.min,
-      children: colWidgets,
+      children: <Widget>[Row(
+         mainAxisSize: MainAxisSize.min,
+         children: <Widget>[attachmentButton, sendButton],
+      )],
    );
 }
 
@@ -1337,9 +1290,6 @@ Widget makeChatScreen(
       ctx,
       onChatSend,
       onAttachment,
-      onChatJumpDown,
-      showChatJumpDownButton,
-      ch.nUnreadMsgs,
    );
 
    TextField tf = TextField(
@@ -1370,10 +1320,42 @@ Widget makeChatScreen(
 
    List<Widget> cols = List<Widget>();
 
-   Stack chatMsgStack = Stack(children: <Widget>
-   [ list
-   , Positioned(child: Icon(Icons.clear), bottom: 1.0, right: 1.0)
-   ]);
+   List<Widget> foo = List<Widget>();
+   foo.add(list);
+
+   if (showChatJumpDownButton) {
+      Widget jumDownButton = Positioned(
+         bottom: 20.0,
+         right: 15.0,
+         child: FloatingActionButton(
+            mini: true,
+            onPressed: onChatJumpDown,
+            backgroundColor: Theme.of(ctx).colorScheme.secondary,
+            child: Icon(Icons.expand_more,
+               color: Theme.of(ctx).colorScheme.onSecondary,
+            ),
+         ),
+      );
+
+      foo.add(jumDownButton);
+
+      if (ch.nUnreadMsgs > 0) {
+         Widget jumDownButton = Positioned(
+            bottom: 53.0,
+            right: 23.0,
+            child: makeUnreadMsgsCircle(
+               ctx,
+               ch.nUnreadMsgs,
+               Theme.of(ctx).colorScheme.secondaryVariant,
+               Theme.of(ctx).colorScheme.onSecondary,
+            ),
+         );
+
+         foo.add(jumDownButton);
+      }
+   }
+
+   Stack chatMsgStack = Stack(children: foo);
 
    cols.add(Expanded(child: chatMsgStack));
 
