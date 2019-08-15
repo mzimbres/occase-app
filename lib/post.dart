@@ -299,7 +299,7 @@ class Post {
    // The date this post has been pinned by the user.
    int pinDate = 0;
 
-   double price = cts.minPrice;
+   int price = cts.minPrice;
 
    // Post status.
    //   0: Posts published by the app.
@@ -316,8 +316,8 @@ class Post {
    Post()
    {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
-      exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
-      inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
+      exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
+      inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
       price = cts.minPrice;
    }
 
@@ -414,16 +414,14 @@ class Post {
       nick = map['nick'];
       channel = decodeChannel(map['to']);
 
-      //exDetails = List.generate(txt.maxExDetailSize, (_) => 0);
-      //inDetails = List.generate(txt.maxInDetailSize, (_) => 0);
-
-      exDetails = decodeDetails(txt.maxExDetailSize, map['ex_details']);
-      inDetails = decodeDetails(txt.maxInDetailSize, map['in_details']);
+      exDetails = decodeDetails(cts.maxExDetailSize, map['ex_details']);
+      inDetails = decodeDetails(cts.maxInDetailSize, map['in_details']);
 
       date = map['date'];
       pinDate = 0;
       status = -1;
       description = map['msg'];
+      price = map['price'];
    }
 
    // This serialization is used to communicate with the server.
@@ -460,6 +458,7 @@ class Post {
          'msg': description,
          'nick': nick,
          'date': date,
+         'price': price,
       };
    }
 }
@@ -479,6 +478,7 @@ Map<String, dynamic> postToMap(Post post)
       'pin_date': post.pinDate,
       'status': post.status,
       'description': post.description,
+      'price': post.price,
     };
 }
 
@@ -506,19 +506,20 @@ Future<List<Post>> loadPosts(Database db) async
      post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
 
      post.exDetails = decodeDetails(
-        txt.maxExDetailSize,
+        cts.maxExDetailSize,
         jsonDecode(maps[i]['ex_details']),
      );
 
      post.inDetails = decodeDetails(
-        txt.maxInDetailSize,
+        cts.maxInDetailSize,
         jsonDecode(maps[i]['in_details']),
      );
 
      post.date = maps[i]['date'];
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
-     post.description = maps[i]['description'];
+     post.description = maps[i]['description'] ?? '';
+     post.price = maps[i]['price'] ?? cts.minPrice;
      return post;
   });
 }

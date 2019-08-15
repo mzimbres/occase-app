@@ -9,8 +9,6 @@ const List<String> tabNames = <String>
 , "LIKES"
 ];
 
-//______________
-
 // Text used in the *new post screens* on the bottom navigation bar.
 const List<String> newPostTabNames = <String>
 [ 'Localizacao'
@@ -19,23 +17,11 @@ const List<String> newPostTabNames = <String>
 , 'Publicar'
 ];
 
-const List<IconData> newPostTabIcons = <IconData>
-[ Icons.home
-, Icons.directions_car
-, Icons.details
-, Icons.publish
-];
-
-//______________
-
 const String delOwnChatTitleStr = 'Remover conversas?';
 const String delFavChatTitleStr = 'Remover de Favoritos?';
 const String devChatOkStr = 'Remover';
 const String delChatCancelStr = 'Cancelar';
 const String userInfo = 'Usuário';
-
-//______________
-
 const String newPostAppBarTitle = 'Publicar novo post';
 const String filterAppBarTitle = 'Escolha seus filtros';
 
@@ -46,30 +32,11 @@ const List<String> filterTabNames = <String>
 , 'Enviar'
 ];
 
-const List<IconData> filterTabIcons = <IconData>
-[ Icons.home
-, Icons.directions_car
-, Icons.filter_list
-, Icons.send
-];
-
-//______________
-
 // Text used in the chat screen.
 const List<String> chatIconTexts = <String>
 [ 'Meus posts'
 , 'Favoritos'
 ];
-
-const List<IconData> chatIcons = <IconData>
-[ Icons.list
-, Icons.star
-];
-
-const Icon favIcon = Icon(Icons.star, color: Colors.amber);
-const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
-
-//______________
 
 // The text shown on the app bar for each tab on the *new
 // post screen.*
@@ -96,16 +63,6 @@ const List<String> descList = <String>
 , "Descricao"
 ];
 
-// This constant should be set to the maximum number of exclusive
-// details among all pruducts. At the moment this is 6 for cars and I
-// see no reason for it being much more than that. This value will
-// be used to initialize the corresponding array in the Post class. At
-// the moment of post creation we do not know which product it will
-// carry and therefore we also do not know the size we need. For
-// backward compatibility it may be a good idea to make room for
-// further expansion.
-const int maxExDetailSize = 10;
-
 const String postRefSectionTitle = 'Referências do post';
 
 // NOTE: The strings in the array must have size at least two. I
@@ -118,14 +75,9 @@ const String postRefSectionTitle = 'Referências do post';
 const String postExDetailsTitle = 'Detalhes Adicionais';
 const String postDescTitle = 'Mensagem do usuário';
 
-// See the comment in maxExDetailSize
-const int maxInDetailSize = 5;
-
 const String newPostTextFieldHistStr = 'Adicione aqui outras informacoes';
 const String chatTextFieldHintStr = "Mensagem";
 const String nickTextFieldHintStr = "Digite seu nome";
-
-const int nickMaxLength = 10;
 
 const IconData newPostIcon = Icons.add;
 
@@ -159,15 +111,10 @@ const List<String> dialBodyStrs = <String>
 
 const String unknownNick = 'Desconhecido';
 const String menuSelectAllStr = 'Selecionar todos';
-
-const Icon unknownPersonIcon = Icon(
-   Icons.person,
-   color: Colors.white, size: 30.0
-);
-
 const String changeNickStr = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
 const String dismissedPostStr = 'Post removido';
 const String cancelNewPostStr = 'Operacao cancelada';
 const String pricePrefix = 'Preco';
+const String dismissedChatStr = 'Chat removido';
 

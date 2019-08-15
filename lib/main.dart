@@ -14,6 +14,7 @@ import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -192,38 +193,44 @@ makeOnLongPressedActions(BuildContext ctx,
    return actions;
 }
 
-Scaffold makeWaitMenuScreen()
+Scaffold makeWaitMenuScreen(BuildContext ctx)
 {
    return Scaffold(
       appBar: AppBar(title: Text(txt.appName)),
       body: Center(child: CircularProgressIndicator()),
+      backgroundColor: Theme.of(ctx).colorScheme.primary,
    );
 }
 
-Scaffold
-makeNickRegisterScreen( BuildContext ctx
-                      , TextEditingController txtCtrl
-                      , Function onNickPressed
-                      , String appBarTitle)
+Scaffold makeNickRegisterScreen(
+   BuildContext ctx,
+   TextEditingController txtCtrl,
+   Function onNickPressed,
+   String appBarTitle)
 {
    TextField tf = TextField(
       controller: txtCtrl,
       maxLines: 1,
-      maxLength: 20,
+      maxLength: cts.maxNickLength,
       decoration: InputDecoration(
          hintText: txt.nickTextFieldHintStr,
          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+            borderRadius: BorderRadius.all(
+               Radius.circular(stl.cornerRadius),
+            ),
             borderSide: BorderSide(
                color: Theme.of(ctx).colorScheme.primary,
-               width: 3.0),
+               width: 3.0
+            ),
          ),
          enabledBorder: OutlineInputBorder(
-           borderRadius: BorderRadius.all(Radius.circular(20.0)),
-           borderSide: BorderSide(
-              color: Colors.red[900],
-              width: 3.0
-           ),
+            borderRadius: BorderRadius.all(
+               Radius.circular(stl.cornerRadius),
+            ),
+            borderSide: BorderSide(
+               color: Colors.red[900],
+               width: 3.0
+            ),
          ),
          suffixIcon: IconButton(
             icon: Icon(Icons.send),
@@ -454,9 +461,9 @@ List<Widget> makeNewPostDetailScreen(
    }
 
    Slider priceWidget = Slider(
-      value: post.price,
-      min: cts.minPrice,
-      max: cts.maxPrice,
+      value: post.price.toDouble(),
+      min: cts.minPrice.toDouble(),
+      max: cts.maxPrice.toDouble(),
       divisions: cts.priceDivisions,
       onChanged: onPriceChanged,
    );
@@ -466,7 +473,7 @@ List<Widget> makeNewPostDetailScreen(
          makeExpTileTitle(
             ctx,
             txt.pricePrefix,
-            'R${post.price}',
+            'R\$${post.price}',
             ':', false
          ),
          <Widget>[wrapDetailRowOnCard(ctx, priceWidget)],
@@ -545,7 +552,7 @@ WillPopScope makeNewPostScreens(
                menu,
                exDetailsMenu,
                inDetailsMenu,
-               txt.pubIcon,
+               stl.pubIcon,
                txt.cancelNewPostStr,
             );
          },
@@ -615,7 +622,7 @@ WillPopScope makeNewPostScreens(
           appBar: appBar,
           body: wid,
           bottomNavigationBar: makeBottomBarItems(
-             txt.newPostTabIcons,
+             stl.newPostTabIcons,
              txt.newPostTabNames,
              onNewPostBotBarTapped,
              screen,
@@ -732,7 +739,7 @@ WillPopScope makeNewFiltersScreens(
            appBar: appBar,
            body: wid,
            bottomNavigationBar: makeBottomBarItems(
-              txt.filterTabIcons,
+              stl.filterTabIcons,
               txt.filterTabNames,
               onBotBarTaped,
               screen)));
@@ -1441,7 +1448,7 @@ Widget makeChatScreen(
             'https://www.gravatar.com/avatar/88832d0c6ddac7944fa8a3d3010500c4.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
-         child = txt.unknownPersonIcon;
+         child = stl.unknownPersonIcon;
       }
       title = ListTile(
           contentPadding: EdgeInsets.all(0.0),
@@ -2055,11 +2062,18 @@ Widget makePostInfoExpansion(
    );
 }
 
+String makePriceStr(int price)
+{
+   final String s = price.toString();
+   return 'R\$$s';
+}
+
 Card makePostWidget(
    BuildContext ctx,
    Widget card,
    Function onPressed,
-   Icon icon)
+   Icon icon,
+   Post post)
 {
    IconButton icon1 = IconButton(
       iconSize: 35.0,
@@ -2097,7 +2111,7 @@ Card makePostWidget(
    );
 
    Widget priceText = Padding(
-      child: Text('R\$ 100.00,0',
+      child: Text(makePriceStr(post.price),
          style: Theme.of(ctx).textTheme.headline.copyWith(
             color: Theme.of(ctx).colorScheme.onPrimary,
          ),
@@ -2182,6 +2196,7 @@ Widget makePostPubWidget(
       infoExpansion,
       onPostSelection,
       ic,
+      post,
    );
 
    return Dismissible(
@@ -2222,7 +2237,7 @@ ListView makePostTabListView(
             menu,
             exDetailsMenu,
             inDetailsMenu,
-            txt.favIcon,
+            stl.favIcon,
             txt.dismissedPostStr,
          );
       },
@@ -2441,6 +2456,15 @@ Color selectColor(int n)
    }
 }
 
+String emailToGravatarHash(String email)
+{
+   // Removes spaces.
+   email = email.replaceAll(' ', '');
+   email = email.toLowerCase();
+   List<int> bytes = utf8.encode(email);
+   return md5.convert(bytes).toString();
+}
+
 Card makeChatListTile(
    BuildContext ctx,
    Chat chat,
@@ -2458,11 +2482,12 @@ Card makeChatListTile(
       bgColor = stl.chatLongPressendColor;
    } else {
       if (true) {
-         final String url =
-            'https://www.gravatar.com/avatar/88832d0c6ddac7944fa8a3d3010500c4.jpg';
+         final String host = 'https://www.gravatar.com/avatar/';
+         final String hash = emailToGravatarHash('mzimbres@gmail.com');
+         final String url = host + hash + '.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
-         widget = txt.unknownPersonIcon;
+         widget = stl.unknownPersonIcon;
       }
 
       bgColor = Theme.of(ctx).colorScheme.background;
@@ -2507,7 +2532,7 @@ Card makeChatListTile(
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
-            Radius.circular(stl.postCardCornerRadius)
+            Radius.circular(stl.cornerRadius)
          ),
       ),
    );
@@ -2686,7 +2711,7 @@ Widget makeChatTab(
             child: Column(children: expansions),
             shape: RoundedRectangleBorder(
                borderRadius: BorderRadius.all(
-                  Radius.circular(stl.postCardCornerRadius)
+                  Radius.circular(stl.cornerRadius)
                ),
             ),
             margin: const EdgeInsets.only(
@@ -2701,7 +2726,8 @@ Widget makeChatTab(
             onDismissed: (direction) {
                onDelPost(i);
                Scaffold.of(ctx)
-                  .showSnackBar(SnackBar(content: Text("dismissed")));
+                  .showSnackBar(SnackBar(
+                     content: Text(txt.dismissedChatStr)));
             },
             background: Container(color: Colors.red),
             child: w,
@@ -3245,7 +3271,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onPriceChanged(double newValue)
    {
-      setState((){_post.price = newValue;});
+      setState((){_post.price = newValue.round();});
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -4595,7 +4621,7 @@ class MenuChatState extends State<MenuChat>
    Widget build(BuildContext ctx)
    {
       if (_menu.isEmpty)
-         return makeWaitMenuScreen();
+         return makeWaitMenuScreen(ctx);
 
       if (cfg.nick.isEmpty) {
          return makeNickRegisterScreen(

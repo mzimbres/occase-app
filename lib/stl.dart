@@ -37,8 +37,30 @@ const double postListViewSidePadding = 0.0;
 const double postCardSideMargin = 4.0;
 const double postCardBottomMargin = 10.0;
 
-const double postCardCornerRadius = 8.0;
+const double cornerRadius = 8.0;
 const double cardPostMargin = postCardSideMargin;
 
 const chatTilePadding = cardPostMargin;
+
+const Icon unknownPersonIcon = Icon(
+   Icons.person,
+   color: Colors.white, size: 30.0
+);
+
+const List<IconData> newPostTabIcons = <IconData>
+[ Icons.home
+, Icons.directions_car
+, Icons.details
+, Icons.publish
+];
+
+const Icon favIcon = Icon(Icons.star, color: Colors.amber);
+const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
+
+const List<IconData> filterTabIcons = <IconData>
+[ Icons.home
+, Icons.directions_car
+, Icons.filter_list
+, Icons.send
+];
 
