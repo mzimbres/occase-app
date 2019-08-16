@@ -11,6 +11,16 @@ import 'package:menu_chat/constants.dart' as cts;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:crypto/crypto.dart';
+
+String emailToGravatarHash(String email)
+{
+   // Removes spaces.
+   email = email.replaceAll(' ', '');
+   email = email.toLowerCase();
+   List<int> bytes = utf8.encode(email);
+   return md5.convert(bytes).toString();
+}
 
 String convertChatMsgTypeToString(int type)
 {
@@ -280,8 +290,11 @@ class Post {
    // The person that published this post.
    String from = '';
 
-   // The publisher nick name.
+   // Publisher nick name.
    String nick = txt.unknownNick;
+
+   // Publisher avatar hash code from gravatar.
+   String avatar = '';
 
    // Contains the channel this post was published in. It has the
    // follwing form
@@ -319,6 +332,7 @@ class Post {
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
       price = cts.minPrice;
+      avatar = '';
    }
 
    int getProductDetailIdx()
@@ -333,6 +347,7 @@ class Post {
       ret.id = this.id;
       ret.from = this.from;
       ret.nick = this.nick;
+      ret.avatar = this.avatar;
       ret.channel = List<List<List<int>>>.from(this.channel);
       ret.exDetails = this.exDetails;
       ret.inDetails = this.inDetails;
@@ -408,10 +423,14 @@ class Post {
 
    Post.fromJson(Map<String, dynamic> map)
    {
+      final String body = map['body'];
+      Map<String, dynamic> bodyMap = jsonDecode(body);
+
       dbId = -1;
       id = map['id'];
       from = map['from'];
-      nick = map['nick'];
+      nick = bodyMap['nick'] ?? txt.unknownNick;
+      avatar = bodyMap['avatar'] ?? '';
       channel = decodeChannel(map['to']);
 
       exDetails = decodeDetails(cts.maxExDetailSize, map['ex_details']);
@@ -420,7 +439,7 @@ class Post {
       date = map['date'];
       pinDate = 0;
       status = -1;
-      description = map['msg'];
+      description = bodyMap['msg'];
       price = map['price'];
    }
 
@@ -447,6 +466,17 @@ class Post {
       // then the size from txt.exDetailTitles[index].length (or
       // txt.exDetails[index].length) and similar to the inDetails
       // array.
+
+      final String hash = emailToGravatarHash(avatar);
+
+      var subCmd = {
+         'msg': description,
+         'nick': nick,
+         'avatar': hash,
+      };
+
+      final String body = jsonEncode(subCmd);
+
       return
       {
          'from': from,
@@ -455,8 +485,7 @@ class Post {
          'filter': exDetails.first,
          'ex_details': exDetails,
          'in_details': inDetails,
-         'msg': description,
-         'nick': nick,
+         'body': body,
          'date': date,
          'price': price,
       };
@@ -471,6 +500,7 @@ Map<String, dynamic> postToMap(Post post)
       'id': post.id,
       'from_': post.from,
       'nick': post.nick,
+      'avatar': post.avatar,
       'channel': jsonEncode(post.channel),
       'ex_details': jsonEncode(post.exDetails),
       'in_details': jsonEncode(post.inDetails),
@@ -503,6 +533,7 @@ Future<List<Post>> loadPosts(Database db) async
      post.id = maps[i]['id'];
      post.from = maps[i]['from_'];
      post.nick = maps[i]['nick'];
+     post.avatar = maps[i]['nick'];
      post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
 
      post.exDetails = decodeDetails(

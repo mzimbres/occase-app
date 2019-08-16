@@ -14,7 +14,6 @@ import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -261,7 +260,6 @@ Scaffold makeRegisterScreen(
       cts.emailMaxLength, txt.emailHint,
    );
 
-   print('====> ' + previousNick);
    if (previousNick.isNotEmpty)
       nickCtrl.text = previousNick;
 
@@ -1354,7 +1352,8 @@ Widget makeChatScreen(
    int dragedIdx,
    Function onCancelFwdLPChatMsg,
    bool showChatJumpDownButton,
-   Function onChatJumpDown)
+   Function onChatJumpDown,
+   String avatar)
 {
    Column secondLayer = makeChatSecondLayer(
       ctx,
@@ -1495,9 +1494,8 @@ Widget makeChatScreen(
    } else {
       Widget child;
       ImageProvider backgroundImage;
-      if (true) {
-         final String url =
-            'https://www.gravatar.com/avatar/88832d0c6ddac7944fa8a3d3010500c4.jpg';
+      if (avatar.isNotEmpty) {
+         final String url = cts.gravatarUrl + avatar + '.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
          child = stl.unknownPersonIcon;
@@ -2508,15 +2506,6 @@ Color selectColor(int n)
    }
 }
 
-String emailToGravatarHash(String email)
-{
-   // Removes spaces.
-   email = email.replaceAll(' ', '');
-   email = email.toLowerCase();
-   List<int> bytes = utf8.encode(email);
-   return md5.convert(bytes).toString();
-}
-
 Card makeChatListTile(
    BuildContext ctx,
    Chat chat,
@@ -2524,7 +2513,8 @@ Card makeChatListTile(
    Function onLeadingPressed,
    Function onLongPress,
    Function onPressed,
-   bool isFwdChatMsgs)
+   bool isFwdChatMsgs,
+   String avatar)
 {
    Widget widget;
    ImageProvider backgroundImage;
@@ -2533,10 +2523,8 @@ Card makeChatListTile(
       widget = Icon(Icons.check);
       bgColor = stl.chatLongPressendColor;
    } else {
-      if (true) {
-         final String host = 'https://www.gravatar.com/avatar/';
-         final String hash = emailToGravatarHash('mzimbres@gmail.com');
-         final String url = host + hash + '.jpg';
+      if (avatar.isNotEmpty) {
+         final String url = cts.gravatarUrl + avatar + '.jpg';
          backgroundImage = CachedNetworkImageProvider(url);
       } else {
          widget = stl.unknownPersonIcon;
@@ -2590,7 +2578,7 @@ Card makeChatListTile(
    );
 }
 
-Widget makePostChatExpansion(
+Widget makeChatsExp(
    BuildContext ctx,
    List<Chat> ch,
    Function onPressed,
@@ -2618,6 +2606,7 @@ Widget makePostChatExpansion(
          () { onLongPressed(i); },
          () { onPressed(i); },
          isFwdChatMsgs,
+         post.avatar,
       );
 
       list[i] = Padding(
@@ -2739,7 +2728,7 @@ Widget makeChatTab(
 
          final int now = DateTime.now().millisecondsSinceEpoch;
 
-         Widget chatExpansion = makePostChatExpansion(
+         Widget chatExpansion = makeChatsExp(
             ctx,
             posts[i].chats,
             (j) {onPressed(i, j);},
@@ -3694,10 +3683,11 @@ class MenuChatState extends State<MenuChat>
       // channel. It has to be filtered out from _posts since that
       // list should not contain our own posts.
 
-      final int dbId = 
-         await _db.insert('posts', postToMap(post),
-                          conflictAlgorithm:
-                             ConflictAlgorithm.replace);
+      final int dbId = await _db.insert(
+         'posts',
+         postToMap(post),
+         conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
       post.dbId = dbId;
       _outPostsQueue.add(post);
@@ -3801,6 +3791,7 @@ class MenuChatState extends State<MenuChat>
       _botBarIdx = 0;
       _post.from = cfg.appId;
       _post.nick = cfg.nick;
+      _post.avatar = emailToGravatarHash(cfg.email);
       _post.status = 3;
 
       await _sendPost(_post.clone());
@@ -4766,6 +4757,7 @@ class MenuChatState extends State<MenuChat>
             _onCancelFwdLPChatMsg,
             _showChatJumpDownButton,
             _onChatJumpDown,
+            _post.avatar,
          );
       }
 

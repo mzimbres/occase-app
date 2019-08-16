@@ -4,6 +4,7 @@ CREATE TABLE posts
 ( id INTEGER
 , from_ TEXT
 , nick TEXT
+, avatar TEXT
 , channel TEXT
 , ex_details TEXT
 , in_details TEXT

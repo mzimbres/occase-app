@@ -26,3 +26,5 @@ const int maxInDetailSize = 5;
 
 const String chatFilePrefix = 'chat';
 
+final String gravatarUrl = 'https://www.gravatar.com/avatar/';
+
