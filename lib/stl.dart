@@ -64,3 +64,5 @@ const List<IconData> filterTabIcons = <IconData>
 , Icons.send
 ];
 
+const IconData newPostIcon = Icons.add;
+

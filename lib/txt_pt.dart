@@ -75,25 +75,21 @@ const String postRefSectionTitle = 'Referências do post';
 const String postExDetailsTitle = 'Detalhes Adicionais';
 const String postDescTitle = 'Mensagem do usuário';
 
-const String newPostTextFieldHistStr = 'Adicione aqui outras informacoes';
-const String chatTextFieldHintStr = "Mensagem";
-const String nickTextFieldHintStr = "Digite seu nome";
+const String newPostTextFieldHist = 'Adicione aqui outras informacoes';
+const String chatTextFieldHint = "Mensagem";
+const String nickHint = "Nome ou nick";
+const String emailHint = "Email do gravatar (opcional)";
 
-const IconData newPostIcon = Icons.add;
+const String msgOnRedirectingChat = 'Redirecionando ...';
+const String msgOnRedirectedChat = 'Redirecionada';
+const String msgOnEmptyChat = 'Conversa ainda nao iniciada ...';
 
-const String hintTextChat = "Digite sua mensagem";
-const String chatMsgRedirectText = 'Redirecionando ...';
-const String chatMsgRedirectedText = 'Redirecionada';
-const String defaultChatTileSubtile = 'Conversa ainda nao iniciada ...';
-
-const String deleteChatStr = "Remover conversa";
-const String blockUserChatStr = "Bloquear usuário";
-const String pinChatStr = "Fixar conversa";
-
-const String chatFilePrefix = 'chat';
+const String deleteChat = "Remover conversa";
+const String blockUser = "Bloquear usuário";
+const String pinChat = "Fixar conversa";
 
 // The texts showed on the dialog in the *Posts* screen
-const List<String> dialTitleStrs = <String>
+const List<String> dialogTitles = <String>
 [ 'Deletar post?'
 , 'Mover para chats?'
 , 'Alteracoes aplicadas'
@@ -101,7 +97,7 @@ const List<String> dialTitleStrs = <String>
 , 'Remover Post?'
 ];
 
-const List<String> dialBodyStrs = <String>
+const List<String> dialogBodies = <String>
 [ 'O post será deletado definitivamente.'
 , 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
 , 'Novos posts serao encaminhados automaticamente pra você.'
@@ -110,11 +106,15 @@ const List<String> dialBodyStrs = <String>
 ];
 
 const String unknownNick = 'Desconhecido';
-const String menuSelectAllStr = 'Selecionar todos';
-const String changeNickStr = 'Alterar apelido';
+const String selectAll = 'Selecionar todos';
+const String changeNichHint = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
-const String dismissedPostStr = 'Post removido';
-const String cancelNewPostStr = 'Operacao cancelada';
+const String dissmissedPost = 'Post removido';
+const String dismissedChat = 'Chat removido';
 const String pricePrefix = 'Preco';
-const String dismissedChatStr = 'Chat removido';
+const String ok = 'Ok';
+const String cancel = 'Cancel';
+const String cancelNewPost = 'Operacao cancelada';
+const String doNotShowAgain = 'Nao mostrar novamente';
+const String next = 'Continuar';
 

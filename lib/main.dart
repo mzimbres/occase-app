@@ -158,7 +158,7 @@ Widget makeAppBarVertAction(Function onSelected)
         [
            const PopupMenuItem<ConfigActions>(
              value: ConfigActions.ChangeNick,
-             child: Text(txt.changeNickStr),
+             child: Text(txt.changeNichHint),
            ),
            const PopupMenuItem<ConfigActions>(
              value: ConfigActions.ChangeProfilePhoto,
@@ -178,14 +178,14 @@ makeOnLongPressedActions(BuildContext ctx,
 
    IconButton pinChatBut = IconButton(
       icon: Icon(Icons.place, color: Colors.white),
-      tooltip: txt.pinChatStr,
+      tooltip: txt.pinChat,
       onPressed: pinChat);
 
    actions.add(pinChatBut);
 
    IconButton delChatBut = IconButton(
       icon: Icon(Icons.delete_forever, color: Colors.white),
-      tooltip: txt.deleteChatStr,
+      tooltip: txt.deleteChat,
       onPressed: () { deleteChatEntryDialog(ctx); });
 
    actions.add(delChatBut);
@@ -202,25 +202,32 @@ Scaffold makeWaitMenuScreen(BuildContext ctx)
    );
 }
 
-Scaffold makeNickRegisterScreen(
+TextField makeNickTxtField(
    BuildContext ctx,
    TextEditingController txtCtrl,
-   Function onNickPressed,
-   String appBarTitle)
+   Icon icon,
+   int fieldMaxLength,
+   String hint)
 {
-   TextField tf = TextField(
+   Color focusedColor = Theme.of(ctx).colorScheme.primary;
+
+   Color enabledColor = Colors.red;
+   if (txtCtrl.text.isNotEmpty)
+      enabledColor = focusedColor;
+
+   return TextField(
       controller: txtCtrl,
       maxLines: 1,
-      maxLength: cts.maxNickLength,
+      maxLength: fieldMaxLength,
       decoration: InputDecoration(
-         hintText: txt.nickTextFieldHintStr,
+         hintText: hint,
          focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.all(
                Radius.circular(stl.cornerRadius),
             ),
             borderSide: BorderSide(
-               color: Theme.of(ctx).colorScheme.primary,
-               width: 3.0
+               color: focusedColor,
+               width: 2.5
             ),
          ),
          enabledBorder: OutlineInputBorder(
@@ -228,23 +235,68 @@ Scaffold makeNickRegisterScreen(
                Radius.circular(stl.cornerRadius),
             ),
             borderSide: BorderSide(
-               color: Colors.red[900],
-               width: 3.0
+               color: enabledColor,
+               width: 2.5,
             ),
          ),
-         suffixIcon: IconButton(
-            icon: Icon(Icons.send),
-            onPressed: onNickPressed,
-            color: Theme.of(ctx).colorScheme.primary,
-         ),
+         prefixIcon: icon,
       ),
+   );
+}
+
+Scaffold makeRegisterScreen(
+   BuildContext ctx,
+   TextEditingController emailCtrl,
+   TextEditingController nickCtrl,
+   Function onContinue,
+   String appBarTitle,
+   String previousEmail,
+   String previousNick)
+{
+   if (previousEmail.isNotEmpty)
+      emailCtrl.text = previousEmail;
+
+   TextField emailTf = makeNickTxtField(
+      ctx, emailCtrl, Icon(Icons.email),
+      cts.emailMaxLength, txt.emailHint,
+   );
+
+   print('====> ' + previousNick);
+   if (previousNick.isNotEmpty)
+      nickCtrl.text = previousNick;
+
+   TextField nickTf = makeNickTxtField(
+      ctx, nickCtrl, Icon(Icons.person),
+      cts.nickMaxLength, txt.nickHint,
+   );
+
+   Widget button = createRaisedButton(
+      ctx, onContinue,
+      txt.next,
+   );
+
+   Column col = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Padding(
+           child: emailTf,
+           padding: EdgeInsets.only(bottom: 30.0),
+        )
+      , Padding(
+           child: nickTf,
+           padding: EdgeInsets.only(bottom: 30.0),
+        )
+      , button
+      ]
    );
 
    return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
       body: Center(
          child: Padding(
-            child: tf,
+            child: col,
             padding: EdgeInsets.symmetric(horizontal: 20.0),
          ),
       ),
@@ -486,7 +538,7 @@ List<Widget> makeNewPostDetailScreen(
       maxLines: null,
       maxLength: 200,
       decoration: InputDecoration.collapsed(
-         hintText: txt.newPostTextFieldHistStr,
+         hintText: txt.newPostTextFieldHist,
       ),
    );
 
@@ -503,7 +555,7 @@ List<Widget> makeNewPostDetailScreen(
    );
 
    all.add(
-      createSendButton(
+      createRaisedButton(
          ctx,
          (){onNewPostExDetails(-1, -1);},
          'Continuar',
@@ -553,7 +605,7 @@ WillPopScope makeNewPostScreens(
                exDetailsMenu,
                inDetailsMenu,
                stl.pubIcon,
-               txt.cancelNewPostStr,
+               txt.cancelNewPost,
             );
          },
       );
@@ -644,14 +696,14 @@ makeNewFiltersEndWidget(
       children: <Widget>
       [ Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(
+          child: createRaisedButton(
              ctx,
              onCancelNewFilters,
              'Cancelar',
           ))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createSendButton(
+          child: createRaisedButton(
              ctx,
              onSendNewFilters,
              'Enviar',
@@ -878,7 +930,7 @@ FloatingActionButton makeFaButton(
    if (lpChats == 0 && lpChatMsgs != 0)
       return null;
 
-   IconData id = txt.newPostIcon;
+   IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
          backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
@@ -1011,7 +1063,7 @@ Card makeChatMsgWidget(
          textBaseline: TextBaseline.alphabetic,
          children: <Widget>
          [ Icon(Icons.forward, color: Colors.blueGrey)
-         , Text(txt.chatMsgRedirectedText,
+         , Text(txt.msgOnRedirectedChat,
             style: TextStyle(color: Colors.blueGrey,
                fontSize: stl.listTileSubtitleFontSize,
                fontStyle: FontStyle.italic),
@@ -1318,7 +1370,7 @@ Widget makeChatScreen(
        maxLength: null,
        focusNode: chatFocusNode,
        decoration:
-          InputDecoration.collapsed(hintText: txt.chatTextFieldHintStr),
+          InputDecoration.collapsed(hintText: txt.chatTextFieldHint),
     );
 
    Scrollbar sb = Scrollbar(
@@ -1685,7 +1737,7 @@ ListView makeNewFilterListView(
       {
          if (shift == 1 && i == 0)
             return makeFilterSelectAllItem(
-               ctx, txt.menuSelectAllStr,
+               ctx, txt.selectAll,
                () { onLeafPressed(0); },
             );
 
@@ -1714,17 +1766,17 @@ ListView makeNewFilterListView(
    );
 }
 
-Widget
-createSendButton(BuildContext ctx,
-                 Function onPressed,
-                 final String txt)
+Widget createRaisedButton(
+   BuildContext ctx,
+   Function onPressed,
+   final String txt)
 {
    RaisedButton but = RaisedButton(
       child: Text(txt,
          style: TextStyle(
-               fontWeight: FontWeight.bold,
-               fontSize: stl.mainFontSize,
-               color: Theme.of(ctx).colorScheme.onSecondary,
+            fontWeight: FontWeight.bold,
+            fontSize: stl.mainFontSize,
+            color: Theme.of(ctx).colorScheme.onSecondary,
          ),
       ),
       color: Theme.of(ctx).colorScheme.secondary,
@@ -2238,7 +2290,7 @@ ListView makePostTabListView(
             exDetailsMenu,
             inDetailsMenu,
             stl.favIcon,
-            txt.dismissedPostStr,
+            txt.dissmissedPost,
          );
       },
    );
@@ -2339,7 +2391,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
    String str = ch.lastChatItem.msg;
    if (str.isEmpty) {
       return Text(
-         txt.defaultChatTileSubtile,
+         txt.msgOnEmptyChat,
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
@@ -2727,7 +2779,7 @@ Widget makeChatTab(
                onDelPost(i);
                Scaffold.of(ctx)
                   .showSnackBar(SnackBar(
-                     content: Text(txt.dismissedChatStr)));
+                     content: Text(txt.dismissedChat)));
             },
             background: Container(color: Colors.red),
             child: w,
@@ -2739,12 +2791,14 @@ Widget makeChatTab(
 //_____________________________________________________________________
 
 class DialogWithOp extends StatefulWidget {
-   DialogWithOp( this.idx
-               , this.getValueFunc
-               , this.setValueFunc
-               , this.onPostSelection
-               , this.title
-               , this.body);
+   DialogWithOp(
+      this.idx,
+      this.getValueFunc,
+      this.setValueFunc,
+      this.onPostSelection,
+      this.title,
+      this.body,
+   );
 
    int idx = 0;
    Function getValueFunc;
@@ -2781,62 +2835,54 @@ class DialogWithOpState extends State<DialogWithOp> {
    @override
    Widget build(BuildContext ctx)
    {
-      final SimpleDialogOption ok =
-         SimpleDialogOption(
-            child:
-               Text('Ok'
-                   , style: TextStyle( color: Colors.blue
-                                     , fontSize: 16.0)),
-            onPressed: () async
-            {
-               await _onPostSelection();
-               Navigator.of(ctx).pop();
-            });
+      final SimpleDialogOption ok = SimpleDialogOption(
+         child: Text(txt.ok,
+            style: TextStyle(color: Colors.blue, fontSize: 16.0),
+         ),
+         onPressed: () async
+         {
+            await _onPostSelection();
+            Navigator.of(ctx).pop();
+         },
+      );
 
-      final SimpleDialogOption cancel =
-         SimpleDialogOption(
-            child:
-               Text('Cancelar'
-                   , style: TextStyle( color: Colors.blue
-                                     , fontSize: 16.0)),
-            onPressed: ()
-            {
-               Navigator.of(ctx).pop();
-            });
+      final SimpleDialogOption cancel = SimpleDialogOption(
+         child: Text(txt.cancel,
+            style: TextStyle(color: Colors.blue, fontSize: 16.0),
+         ),
+         onPressed: () { Navigator.of(ctx).pop(); },
+      );
 
-      List<SimpleDialogOption> actions =
-            List<SimpleDialogOption>(2);
+      List<SimpleDialogOption> actions = List<SimpleDialogOption>(2);
       actions[0] = cancel;
       actions[1] = ok;
 
-      Row row =
-         Row(children: <Widget>
-            [Icon(Icons.check_circle_outline, color: Colors.red)]);
+      Row row = Row(children:
+         <Widget> [Icon(Icons.check_circle_outline, color: Colors.red)],
+      );
 
       CheckboxListTile tile = CheckboxListTile(
-                title: Text('Nao mostrar novamente'),
-                value: !_getValueFunc(),
-                onChanged: (bool v)
-                           {
-                              print(v);
-                              _setValueFunc(!v);
-                              setState(() { });
-                           },
-                controlAffinity: ListTileControlAffinity.leading
-                );
+         title: Text(txt.doNotShowAgain),
+         value: !_getValueFunc(),
+         onChanged: (bool v) { setState(() {_setValueFunc(!v);}); },
+         controlAffinity: ListTileControlAffinity.leading,
+      );
 
       return SimpleDialog(
-             title: Text(_title),
-             children: <Widget>
-             [ Padding( child: Center(child:
-                           Text( _body
-                               , style: TextStyle(fontSize: 16.0)))
-                      , padding: EdgeInsets.all(25.0))
-             , tile
-             , Padding( child: Row(children: actions)
-                      , padding: EdgeInsets.only(left: 105.0))
-                           
-             ]);
+         title: Text(_title),
+         children: <Widget>
+         [ Padding(
+              padding: EdgeInsets.all(25.0),
+              child: Center(
+                 child: Text(_body,
+                    style: TextStyle(fontSize: 16.0),
+                 ),
+              ),
+           )
+         , tile
+         , Padding( child: Row(children: actions)
+                  , padding: EdgeInsets.only(left: 105.0))
+         ]);
    }
 }
 
@@ -2866,6 +2912,10 @@ class MenuChatState extends State<MenuChat>
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
    bool _showChatJumpDownButton = true;
+
+   // Set to true when the user wants to change it email or nick or on
+   // the first time the user opens the app
+   bool _goToRegScreen = false;
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
@@ -2949,11 +2999,17 @@ class MenuChatState extends State<MenuChat>
    int _dragedIdx = -1;
 
    TabController _tabCtrl;
+
+   // Investigate if we need two scroll controllers. I think they are
+   // never used at the same time and therefore one should be enough.
    ScrollController _scrollCtrl = ScrollController();
    ScrollController _chatScrollCtrl = ScrollController();
 
-   // The *new post* text controler
+   // Used for every screen that offers text input.
    TextEditingController _txtCtrl;
+
+   // Used in some cases where two text fields are required.
+   TextEditingController _txtCtrl2;
    FocusNode _chatFocusNode;
 
    IOWebSocketChannel channel;
@@ -2966,6 +3022,7 @@ class MenuChatState extends State<MenuChat>
       super.initState();
       _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
       _txtCtrl = TextEditingController();
+      _txtCtrl2 = TextEditingController();
       _tabCtrl.addListener(_tabCtrlChangeHandler);
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
@@ -2976,6 +3033,7 @@ class MenuChatState extends State<MenuChat>
    void dispose()
    {
       _txtCtrl.dispose();
+      _txtCtrl2.dispose();
       _tabCtrl.dispose();
       _scrollCtrl.dispose();
       _chatScrollCtrl.dispose();
@@ -3083,6 +3141,8 @@ class MenuChatState extends State<MenuChat>
          { batch.insert('menu', menuElemToMap(me)); });
 
       await batch.commit(noResult: true, continueOnError: true);
+
+      _goToRegScreen = true;
    }
 
    Future<void> _load(final String docDir) async
@@ -3262,8 +3322,8 @@ class MenuChatState extends State<MenuChat>
                () {return _dialogPrefs[fav];},
                (bool v) async {await _setDialogPref(fav, v);},
                () async {await _onPostSelection(i, fav);},
-               txt.dialTitleStrs[fav],
-               txt.dialBodyStrs[fav]);
+               txt.dialogTitles[fav],
+               txt.dialogBodies[fav]);
             
          },
       );
@@ -3753,8 +3813,8 @@ class MenuChatState extends State<MenuChat>
          _showSimpleDial(
             ctx,
             (){},
-            txt.dialTitleStrs[3],
-            Text(txt.dialBodyStrs[3])
+            txt.dialogTitles[3],
+            Text(txt.dialogBodies[3])
          );
    }
 
@@ -3763,8 +3823,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          () async { await _onRemovePost(i);},
-         txt.dialTitleStrs[4],
-         Text(txt.dialBodyStrs[4]),
+         txt.dialogTitles[4],
+         Text(txt.dialogBodies[4]),
       );
    }
 
@@ -4360,8 +4420,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          _onOkDialAfterSendFilters,
-         txt.dialTitleStrs[2],
-         Text(txt.dialBodyStrs[2]),
+         txt.dialogTitles[2],
+         Text(txt.dialogBodies[2]),
       );
    }
 
@@ -4457,7 +4517,7 @@ class MenuChatState extends State<MenuChat>
    void _onAppBarVertPressed(ConfigActions ca)
    {
       if (ca == ConfigActions.ChangeNick)
-         cfg.nick = '';
+         _goToRegScreen = true;
 
       setState(() {});
    }
@@ -4576,15 +4636,24 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _onNickPressed() async
+   Future<void> _onRegisterContinue() async
    {
       try {
+         if (_txtCtrl2.text.isNotEmpty) {
+            cfg.email = _txtCtrl2.text;
+            await _db.execute(sql.updateEmail, [cfg.email]);
+         }
+
          cfg.nick = _txtCtrl.text;
          await _db.execute(sql.updateNick, [cfg.nick]);
+
          setState(()
          {
+            _txtCtrl2.clear();
             _txtCtrl.clear();
+            _goToRegScreen = false;
          });
+
       } catch (e) {
          print(e);
       }
@@ -4623,12 +4692,15 @@ class MenuChatState extends State<MenuChat>
       if (_menu.isEmpty)
          return makeWaitMenuScreen(ctx);
 
-      if (cfg.nick.isEmpty) {
-         return makeNickRegisterScreen(
+      if (_goToRegScreen) {
+         return makeRegisterScreen(
             ctx,
+            _txtCtrl2,
             _txtCtrl,
-            _onNickPressed,
-            txt.appName
+            _onRegisterContinue,
+            txt.appName,
+            cfg.email,
+            cfg.nick,
          );
       }
 
@@ -4774,7 +4846,7 @@ class MenuChatState extends State<MenuChat>
       List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
-         appBarTitle = txt.chatMsgRedirectText;
+         appBarTitle = txt.msgOnRedirectingChat;
          appBarLeading = IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: _onBackFromChatMsgRedirect
@@ -4793,7 +4865,7 @@ class MenuChatState extends State<MenuChat>
                Icons.delete_forever,
                color: Theme.of(ctx).colorScheme.onPrimary,
             ),
-            tooltip: txt.deleteChatStr,
+            tooltip: txt.deleteChat,
             onPressed: () { _deleteChatDialog(ctx); }
          );
 

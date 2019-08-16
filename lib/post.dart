@@ -167,7 +167,7 @@ class Chat {
 
    void _openFile(int postId)
    {
-      _msgsFile = File(makeFullPath(txt.chatFilePrefix, postId));
+      _msgsFile = File(makeFullPath(cts.chatFilePrefix, postId));
    }
 
    void loadMsgs(final int postId)
@@ -675,6 +675,7 @@ List<List<List<int>>> decodeChannel(List<dynamic> to)
 class Config {
    String appId;
    String appPwd;
+   String email;
    String nick;
    int lastPostId;
    int lastSeenPostId;
@@ -683,6 +684,7 @@ class Config {
 
    Config({this.appId = '',
            this.appPwd = '',
+           this.email = '',
            this.nick = '',
            this.lastPostId = 0,
            this.lastSeenPostId = 0,
@@ -696,6 +698,7 @@ Map<String, dynamic> configToMap(Config cfg)
     return {
       'app_id': cfg.appId,
       'app_pwd': cfg.appPwd,
+      'email': cfg.email,
       'nick': cfg.nick,
       'last_post_id': cfg.lastPostId,
       'last_seen_post_id': cfg.lastSeenPostId,
@@ -714,6 +717,7 @@ Future<List<Config>> loadConfig(Database db) async
      Config cfg = Config(
         appId: maps[i]['app_id'],
         appPwd: maps[i]['app_pwd'],
+        email: maps[i]['email'],
         nick: maps[i]['nick'],
         lastPostId: maps[i]['last_post_id'],
         lastSeenPostId: maps[i]['last_seen_post_id'],

@@ -8,7 +8,8 @@ const double imgBoxHeight = 300.0;
 const int minPrice = 5000;
 const int maxPrice = 200000;
 const int priceDivisions = 100;
-const int maxNickLength = 20;
+const int nickMaxLength = 20;
+const int emailMaxLength = 50;
 
 // This constant should be set to the maximum number of exclusive
 // details among all pruducts. At the moment this is 6 for cars and I
@@ -22,4 +23,6 @@ const int maxExDetailSize = 10;
 
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 5;
+
+const String chatFilePrefix = 'chat';
 

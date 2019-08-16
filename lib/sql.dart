@@ -50,6 +50,7 @@ CREATE TABLE config
 ( app_id TEXT PRIMARY KEY
 , app_pwd TEXT
 , nick TEXT
+, email TEXT
 , last_post_id INTEGER
 , last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
@@ -59,6 +60,11 @@ CREATE TABLE config
 final String updateNick =
 '''
 UPDATE config SET nick = ?
+''';
+
+final String updateEmail =
+'''
+UPDATE config SET email = ?
 ''';
 
 final String updateLastPostId =
