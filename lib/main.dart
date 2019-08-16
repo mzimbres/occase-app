@@ -84,8 +84,7 @@ Future<void> removeLpChat(Coord c, Database db) async
    assert(n == 1);
 }
 
-Future<void>
-onPinPost(List<Post> posts, int i, Database db) async
+Future<void> onPinPost(List<Post> posts, int i, Database db) async
 {
    if (posts[i].pinDate == 0) {
       posts[i].pinDate = DateTime.now().millisecondsSinceEpoch;
@@ -104,26 +103,27 @@ Future<Null> main() async
   runApp(MyApp());
 }
 
-class ChatMsgOutQueueElem {
+class AppMsgQueueElem {
    int rowid;
    int isChat;
    String payload;
    bool sent; // Used for debugging.
-   ChatMsgOutQueueElem({this.rowid = 0,
-                        this.isChat = 0,
-                        this.payload = '',
-                        this.sent = false,
+   AppMsgQueueElem({
+      this.rowid = 0,
+      this.isChat = 0,
+      this.payload = '',
+      this.sent = false,
    });
 }
 
-Future<List<ChatMsgOutQueueElem>> loadOutChatMsg(Database db) async
+Future<List<AppMsgQueueElem>> loadOutChatMsg(Database db) async
 {
   final List<Map<String, dynamic>> maps =
      await db.rawQuery(sql.loadOutChats);
 
   return List.generate(maps.length, (i)
   {
-     return ChatMsgOutQueueElem(
+     return AppMsgQueueElem(
         rowid: maps[i]['rowid'],
         isChat: maps[i]['is_chat'],
         payload: maps[i]['payload'],
@@ -168,10 +168,10 @@ Widget makeAppBarVertAction(Function onSelected)
    );
 }
 
-List<Widget>
-makeOnLongPressedActions(BuildContext ctx,
-                         Function deleteChatEntryDialog,
-                         Function pinChat)
+List<Widget> makeOnLongPressedActions(
+   BuildContext ctx,
+   Function deleteChatEntryDialog,
+   Function pinChat)
 {
    List<Widget> actions = List<Widget>();
 
@@ -197,7 +197,7 @@ Scaffold makeWaitMenuScreen(BuildContext ctx)
    return Scaffold(
       appBar: AppBar(title: Text(txt.appName)),
       body: Center(child: CircularProgressIndicator()),
-      backgroundColor: Theme.of(ctx).colorScheme.primary,
+      backgroundColor: Theme.of(ctx).colorScheme.background,
    );
 }
 
@@ -301,10 +301,8 @@ Scaffold makeRegisterScreen(
    );
 }
 
-Widget makeImgBox(double width, double height)
+Widget makeImgBox(double width, double height, String url)
 {
-   final String url = "https://cdn.shopify.com/s/files/1/0043/8471/8938/products/155674468194515645.jpg?v=1556744714";
-
    Widget img = CachedNetworkImage(
       imageUrl: url,
       imageBuilder: (ctx, imageProvider) => Container(
@@ -328,13 +326,21 @@ Widget makeImgBox(double width, double height)
 
 Widget makeImgListView(double width, double height)
 {
-   Widget sb = makeImgBox(width, height);
+   final String url1 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
+   final String url2 = 'https://avatarfiles.alphacoders.com/114/114080.jpg';
+   final String url3 = 'https://avatarfiles.alphacoders.com/130/130670.jpg';
+   final String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
 
    ListView lv = ListView(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
       padding: const EdgeInsets.all(4.0),
-      children: <Widget>[sb, sb, sb]
+      children: <Widget>
+      [ makeImgBox(width, height, url1)
+      , makeImgBox(width, height, url2)
+      , makeImgBox(width, height, url3)
+      , makeImgBox(width, height, url4)
+      ]
    );
 
    return ConstrainedBox(
@@ -556,7 +562,7 @@ List<Widget> makeNewPostDetailScreen(
       createRaisedButton(
          ctx,
          (){onNewPostExDetails(-1, -1);},
-         'Continuar',
+         txt.next,
       ),
    );
 
@@ -2934,8 +2940,7 @@ class MenuChatState extends State<MenuChat>
 
    // Stores chat messages that cannot be lost in case the connection
    // to the server is lost. 
-   Queue<ChatMsgOutQueueElem> _outChatMsgsQueue =
-         Queue<ChatMsgOutQueueElem>();
+   Queue<AppMsgQueueElem> _appMsgQueue = Queue<AppMsgQueueElem>();
 
    // A flag that is set to true when the floating button (new post)
    // is clicked. It must be carefully set to false when that screen
@@ -3237,9 +3242,9 @@ class MenuChatState extends State<MenuChat>
       if (i != -1)
          _nNewPosts = _posts.length - i - 1;
 
-      List<ChatMsgOutQueueElem> tmp = await loadOutChatMsg(_db);
+      List<AppMsgQueueElem> tmp = await loadOutChatMsg(_db);
 
-      _outChatMsgsQueue = Queue<ChatMsgOutQueueElem>.from(tmp.reversed);
+      _appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
 
       // WARNING: localhost or 127.0.0.1 is the emulator or the phone
       // address. If the phone is connected (via USB) to a computer
@@ -3711,7 +3716,7 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   Future<void> handlePublishAck(final int id, final int date) async
+   void _handlePublishAck(final int id, final int date, Batch batch)
    {
       try {
          assert(!_outPostsQueue.isEmpty);
@@ -3737,8 +3742,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts.add(post);
          _ownPosts.sort(CompPosts);
 
-         await _db.execute(sql.updatePostOnAck,
-                           [0, id, date, post.dbId]);
+         batch.execute(sql.updatePostOnAck, [0, id, date, post.dbId]);
 
          // Required to show the publish as soon as its ack arrives.
          setState(() { });
@@ -3760,8 +3764,15 @@ class MenuChatState extends State<MenuChat>
          _favPosts.removeAt(i);
       } else {
          await _db.execute(sql.deletePost, [_ownPosts[i].id]);
-         print('Deleting post ${_ownPosts[i].id}');
-         _ownPosts.removeAt(i);
+         final Post delPost = _ownPosts.removeAt(i);
+
+         var msgMap = {
+            'cmd': 'delete',
+            'id': delPost.id,
+            'to': delPost.channel,
+         };
+
+         await _sendAppMsg(jsonEncode(msgMap), 0);
       }
 
       setState(() { });
@@ -3853,8 +3864,7 @@ class MenuChatState extends State<MenuChat>
             'is_sender_post': isSenderPost,
          };
 
-         final String payload = jsonEncode(msgMap);
-         await sendChatMsg(payload, 0);
+         await _sendAppMsg(jsonEncode(msgMap), 0);
       }
 
       setState(() {
@@ -3895,13 +3905,15 @@ class MenuChatState extends State<MenuChat>
       assert(j < posts[i].chats.length);
 
       final String peer = posts[i].chats[j].peer;
-      final String nich = posts[i].chats[j].nick;
-      final String title = '$nich: $peer';
+      final String nick = posts[i].chats[j].nick;
+      final String title = '$nick: $peer';
+
+      final String url = cts.gravatarUrl + posts[i].avatar + '.jpg';
       _showSimpleDial(
          ctx,
          (){},
          title,
-         makeImgBox(200.0, 200.0)
+         makeImgBox(cts.onClickAvatarWidth, cts.onClickAvatarWidth, url),
       );
    }
 
@@ -3927,36 +3939,37 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> sendChatMsg(final String payload, int isChat) async
+   Future<void> _sendAppMsg(String payload, int isChat) async
    {
-      final bool isEmpty = _outChatMsgsQueue.isEmpty;
-      ChatMsgOutQueueElem tmp = ChatMsgOutQueueElem(
+      final bool isEmpty = _appMsgQueue.isEmpty;
+      AppMsgQueueElem tmp = AppMsgQueueElem(
          rowid: -1,
          isChat: isChat,
          payload: payload,
          sent: false
       );
 
-      _outChatMsgsQueue.add(tmp);
+      _appMsgQueue.add(tmp);
 
-      final int rowid =
-         await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
-
-      tmp.rowid = rowid;
+      tmp.rowid = await _db.rawInsert(
+         sql.insertOutChatMsg,
+         [isChat, payload],
+      );
 
       if (isEmpty) {
-         assert(!_outChatMsgsQueue.first.sent);
-         _outChatMsgsQueue.first.sent = true;
-         channel.sink.add(_outChatMsgsQueue.first.payload);
+         assert(!_appMsgQueue.first.sent);
+         _appMsgQueue.first.sent = true;
+         print(_appMsgQueue.first.payload);
+         channel.sink.add(_appMsgQueue.first.payload);
       }
    }
 
    void sendOfflineChatMsgs()
    {
-      if (!_outChatMsgsQueue.isEmpty) {
-         assert(!_outChatMsgsQueue.first.sent);
-         _outChatMsgsQueue.first.sent = true;
-         channel.sink.add(_outChatMsgsQueue.first.payload);
+      if (!_appMsgQueue.isEmpty) {
+         assert(!_appMsgQueue.first.sent);
+         _appMsgQueue.first.sent = true;
+         channel.sink.add(_appMsgQueue.first.payload);
       }
    }
 
@@ -4029,35 +4042,35 @@ class MenuChatState extends State<MenuChat>
             'nick': cfg.nick
          };
 
-         await sendChatMsg(jsonEncode(msgMap), 1);
+         await _sendAppMsg(jsonEncode(msgMap), 1);
 
       } catch(e) {
          print(e);
       }
    }
 
-   void _chatServerAckHandler(Map<String, dynamic> ack, Batch batch)
+   void _onServerAck(Map<String, dynamic> ack, Batch batch)
    {
       try {
-         assert(_outChatMsgsQueue.first.sent);
-         assert(!_outChatMsgsQueue.isEmpty);
+         assert(_appMsgQueue.first.sent);
+         assert(!_appMsgQueue.isEmpty);
          final String res = ack['result'];
 
          batch.rawDelete(sql.deleteOutChatMsg,
-                         [_outChatMsgsQueue.first.rowid]);
+                         [_appMsgQueue.first.rowid]);
 
-         final bool isChat = _outChatMsgsQueue.first.isChat == 1;
-         _outChatMsgsQueue.removeFirst();
+         final bool isChat = _appMsgQueue.first.isChat == 1;
+         _appMsgQueue.removeFirst();
 
          if (res == 'ok' && isChat) {
             _chatAppAckHandler(ack, 1, batch);
             setState(() { });
          }
 
-         if (!_outChatMsgsQueue.isEmpty) {
-            assert(!_outChatMsgsQueue.first.sent);
-            _outChatMsgsQueue.first.sent = true;
-            channel.sink.add(_outChatMsgsQueue.first.payload);
+         if (!_appMsgQueue.isEmpty) {
+            assert(!_appMsgQueue.first.sent);
+            _appMsgQueue.first.sent = true;
+            channel.sink.add(_appMsgQueue.first.payload);
          }
       } catch (e) {
          print(e);
@@ -4182,7 +4195,7 @@ class MenuChatState extends State<MenuChat>
       });
 
       // TODO: Include this in the transaction above.
-      await sendChatMsg(payload, 0);
+      await _sendAppMsg(payload, 0);
    }
 
    void _chatAppAckHandler(Map<String, dynamic> ack,
@@ -4200,13 +4213,11 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _onMessage(Map<String, dynamic> ack) async
+   void _onMessage(Map<String, dynamic> ack, Batch batch)
    {
-      Batch batch = _db.batch();
-
       final String type = ack['type'];
       if (type == 'server_ack') {
-         _chatServerAckHandler(ack, batch);
+         _onServerAck(ack, batch);
       } else if (type == 'chat') {
          _chatMsgHandler(ack, 0);
       }  else if (type == 'chat_redirected') {
@@ -4217,14 +4228,14 @@ class MenuChatState extends State<MenuChat>
          _chatAppAckHandler(ack, 3, batch);
       }
 
-      await batch.commit(noResult: true, continueOnError: true);
-
       // TODO: Move this to the individual functions above.
       setState((){});
    }
 
-   Future<void>
-   _onRegisterAck(Map<String, dynamic> ack, final String msg) async
+   void _onRegisterAck(
+      Map<String, dynamic> ack,
+      final String msg,
+      Batch batch)
    {
       final String res = ack["result"];
       if (res == 'fail') {
@@ -4238,7 +4249,7 @@ class MenuChatState extends State<MenuChat>
       cfg.appPwd = ack["password"];
 
       print('register_ack: Persisting the login.');
-      await _db.insert(
+      batch.insert(
          'config',
          configToMap(cfg),
          conflictAlgorithm: ConflictAlgorithm.replace);
@@ -4246,8 +4257,7 @@ class MenuChatState extends State<MenuChat>
       // TODO: Check for menu updates and apply them.
    }
 
-   Future<void>
-   _onLoginAck(Map<String, dynamic> ack, final String msg) async
+   void _onLoginAck(Map<String, dynamic> ack, final String msg)
    {
       final String res = ack["result"];
 
@@ -4282,9 +4292,8 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> _onPost(Map<String, dynamic> ack) async
+   void _onPost(Map<String, dynamic> ack, Batch batch)
    {
-      Batch batch = _db.batch();
       for (var item in ack['items']) {
          Post post = Post.fromJson(item);
          post.status = 1;
@@ -4306,21 +4315,19 @@ class MenuChatState extends State<MenuChat>
       }
 
       batch.execute(sql.updateLastPostId, [cfg.lastPostId]);
-      await batch.commit(noResult: true, continueOnError: true);
-
       setState(() { });
    }
 
-   Future<void> _onPublishAck(Map<String, dynamic> ack) async
+   void _onPublishAck(Map<String, dynamic> ack, Batch batch)
    {
       final String res = ack['result'];
       if (res == 'ok')
-         await handlePublishAck(ack['id'], ack['date']);
+         _handlePublishAck(ack['id'], ack['date'], batch);
       else
-         await handlePublishAck(-1, -1);
+         _handlePublishAck(-1, -1, batch);
    }
 
-   Future<void> onWSDataImpl() async
+   void _onWSDataImpl(Batch batch)
    {
       while (!_wsMsgQueue.isEmpty) {
          var msg = _wsMsgQueue.removeFirst();
@@ -4329,17 +4336,20 @@ class MenuChatState extends State<MenuChat>
          final String cmd = ack["cmd"];
 
          if (cmd == "message") {
-            await _onMessage(ack);
+            _onMessage(ack, batch);
          } else if (cmd == "login_ack") {
-            await _onLoginAck(ack, msg);
+            _onLoginAck(ack, msg);
          } else if (cmd == "subscribe_ack") {
             _onSubscribeAck(ack);
          } else if (cmd == "post") {
-            await _onPost(ack);
+            _onPost(ack, batch);
          } else if (cmd == "publish_ack") {
-            await _onPublishAck(ack);
+            _onPublishAck(ack, batch);
+         } else if (cmd == "delete_ack") {
+            print('delete_ack');
+            _onServerAck(ack, batch);
          } else if (cmd == "register_ack") {
-            await _onRegisterAck(ack, msg);
+            _onRegisterAck(ack, msg, batch);
          } else {
             print('Unhandled message received from the server:\n$msg.');
          }
@@ -4350,8 +4360,11 @@ class MenuChatState extends State<MenuChat>
    {
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
-      if (isEmpty)
-         await onWSDataImpl();
+      if (isEmpty) {
+         Batch batch = _db.batch();
+         _onWSDataImpl(batch);
+         await batch.commit(noResult: true, continueOnError: true);
+      }
    }
 
    void onWSError(error)
