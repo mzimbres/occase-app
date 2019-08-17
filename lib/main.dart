@@ -730,7 +730,7 @@ WillPopScope makeNewFiltersScreens(
    int filter,
    int screen,
    Function onCancelNewFilters,
-   List<MenuNode> exDetailsFilterNodes)
+   MenuNode exDetailsFilterNodes)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
@@ -742,20 +742,43 @@ WillPopScope makeNewFiltersScreens(
          onCancelNewFilters,
       );
    } else if (screen == 2) {
-      final List<Widget> widgets =
-         makeNewPostDetailElemList(
-            ctx,
-            onFilterDetail,
-            filter,
-            exDetailsFilterNodes,
-         );
+      final Widget vv = makeNewPostDetailExpTile(
+         ctx,
+         onFilterDetail,
+         exDetailsFilterNodes,
+         filter,
+         '');
+
+      final Widget vv2 = RangeSlider(
+         values: RangeValues(10.0, 80.0),
+         onChanged: (RangeValues rv) {print('New range');},
+         min: 0.0,
+         max: 100.0,
+         divisions: 100,
+         labels: RangeLabels('Inicio', 'Fim'),
+      );
+
+      final RichText richTitle = makeExpTileTitle(
+         ctx,
+         'Preco mínimo e máximo',
+         '',
+         '',
+         false,
+      );
+
+      final List<Widget> vvv = <Widget>
+      [ vv
+      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
+      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
+      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
+      ];
 
       wid = ListView.builder(
          padding: const EdgeInsets.all(3.0),
-         itemCount: widgets.length,
+         itemCount: vvv.length,
          itemBuilder: (BuildContext ctx, int i)
          {
-            return widgets[i];
+            return vvv[i];
          },
       );
    } else {
@@ -4753,7 +4776,7 @@ class MenuChatState extends State<MenuChat>
             _filter,
             _botBarIdx,
             _onCancelNewFilter,
-            _exDetailsRoot.children[0].children[0].children,
+            _exDetailsRoot.children[0].children[0],
          );
       }
 

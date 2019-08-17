@@ -489,6 +489,7 @@ class Post {
 
       final String body = jsonEncode(subCmd);
 
+      print('====> ${rangeValues}');
       return
       {
          'from': from,
@@ -528,8 +529,11 @@ List<int> decodeDetails(int size, List<dynamic> details)
 {
    List<int> ret = List<int>();
    ret = List.generate(size, (_) => 0);
-   if (details != null)
+   if (details != null) {
       ret = List.generate(details.length, (int i) { return details[i]; });
+   } else {
+      print('Value not found.');
+   }
 
    return ret;
 }
