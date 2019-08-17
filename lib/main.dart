@@ -477,7 +477,7 @@ List<Widget> makeNewPostDetailScreen(
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
    TextEditingController txtCtrl,
-   Function onPriceChanged)
+   Function onRangeValueChanged)
 {
    final int idx = post.getProductDetailIdx();
 
@@ -516,27 +516,29 @@ List<Widget> makeNewPostDetailScreen(
       all.add(foo);
    }
 
-   // __________________________________________________
-   Slider priceWidget = Slider(
-      value: post.getPrice().toDouble(),
-      min: cts.minPrice.toDouble(),
-      max: cts.maxPrice.toDouble(),
-      divisions: cts.priceDivisions,
-      onChanged: onPriceChanged,
-   );
+   for (int i = 0; i < cts.valueRanges.length; ++i) {
+      Slider rangeSld = Slider(
+         value: post.rangeValues[i].toDouble(),
+         min: cts.valueRanges[i][0].toDouble(),
+         max: cts.valueRanges[i][1].toDouble(),
+         divisions: cts.divisions[i],
+         onChanged: (double v) {onRangeValueChanged(i, v);},
+      );
 
-   all.add(wrapOnDetailExpTitle(
-         ctx,
-         makeExpTileTitle(
+      all.add(wrapOnDetailExpTitle(
             ctx,
-            txt.pricePrefix,
-            makePriceStr(post.getPrice()),
-            ':', false
+            makeExpTileTitle(
+               ctx,
+               txt.rangePrefixes[i],
+               post.rangeValues[i].toString(),
+               ':', false
+            ),
+            <Widget>[wrapDetailRowOnCard(ctx, rangeSld)],
          ),
-         <Widget>[wrapDetailRowOnCard(ctx, priceWidget)],
-      ),
-   );
+      );
+   }
 
+   // __________________________________________________
    TextField tf = TextField(
       controller: txtCtrl,
       keyboardType: TextInputType.multiline,
@@ -585,7 +587,7 @@ WillPopScope makeNewPostScreens(
    Function onNewPostInDetails,
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
-   Function onPriceChanged)
+   Function onRangeValueChanged)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -623,7 +625,7 @@ WillPopScope makeNewPostScreens(
          exDetailsMenu,
          inDetailsMenu,
          txtCtrl,
-         onPriceChanged,
+         onRangeValueChanged,
       );
 
       // Consider changing this to column.
@@ -2176,8 +2178,9 @@ Card makePostWidget(
       padding: const EdgeInsets.all(10.0),
    );
 
+   final String km = post.rangeValues[2].toString();
    Widget kmText = Padding(
-      child: Text('120.000km',
+      child: Text(km + 'km',
          style: Theme.of(ctx).textTheme.headline.copyWith(
             color: Theme.of(ctx).colorScheme.onPrimary,
          ),
@@ -3324,9 +3327,9 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _onPriceChanged(double newValue)
+   void _onRangeValueChanged(int i, double v)
    {
-      setState((){_post.setPrice(newValue.round());});
+      setState((){_post.rangeValues[i] = v.round();});
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -4447,10 +4450,12 @@ class MenuChatState extends State<MenuChat>
          'cmd': 'subscribe',
          'last_post_id': cfg.lastPostId,
          'channels': channels,
-         'filter': _filter
+         'filter': _filter,
+         'ranges': List<List<int>>(),
       };
 
       final String payload = jsonEncode(subCmd);
+      print(payload);
       channel.sink.add(payload);
    }
 
@@ -4729,7 +4734,7 @@ class MenuChatState extends State<MenuChat>
             _onNewPostInDetail,
             _exDetailsRoot,
             _inDetailsRoot,
-            _onPriceChanged,
+            _onRangeValueChanged,
          );
       }
 

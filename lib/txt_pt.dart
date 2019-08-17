@@ -111,10 +111,15 @@ const String changeNichHint = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
 const String dissmissedPost = 'Post removido';
 const String dismissedChat = 'Chat removido';
-const String pricePrefix = 'Preco';
 const String ok = 'Ok';
 const String cancel = 'Cancel';
 const String cancelNewPost = 'Operacao cancelada';
 const String doNotShowAgain = 'Nao mostrar novamente';
 const String next = 'Continuar';
+
+const List<String> rangePrefixes = <String>
+[ 'Preco'
+, 'Ano'
+, 'Kilometragem'
+];
 

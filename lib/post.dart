@@ -331,24 +331,26 @@ class Post {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      rangeValues = List.generate(cts.rangeValuesSize, (_) => cts.minPrice);
+      rangeValues = List.generate(cts.divisions.length, (_) => 0);
+      rangeValues[0] = cts.valueRanges[0].first;
+      rangeValues[1] = cts.valueRanges[1].first;
       avatar = '';
    }
 
    int getPrice()
-   {
-      return rangeValues[0];
-   }
+      { return rangeValues[0]; }
+
+   int getYear()
+      { return rangeValues[1]; }
 
    int setPrice(int price)
-   {
-      rangeValues[0] = price;
-   }
+      { rangeValues[0] = price; }
+
+   int setYear(int year)
+      { rangeValues[1] = year; }
 
    int getProductDetailIdx()
-   {
-      return channel[1][0][0];
-   }
+      { return channel[1][0][0]; }
 
    Post clone()
    {
@@ -450,7 +452,7 @@ class Post {
       pinDate = 0;
       status = -1;
       description = bodyMap['msg'];
-      rangeValues = map['range_values'];
+      rangeValues = decodeDetails(cts.divisions.length, map['range_values']);
    }
 
    // This serialization is used to communicate with the server.
@@ -560,8 +562,9 @@ Future<List<Post>> loadPosts(Database db) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'] ?? '';
-     post.rangeValues = List.generate(cts.rangeValuesSize, (_) => 0);
-     post.rangeValues[0] = maps[i]['price'] ?? cts.minPrice;
+     post.rangeValues = List.generate(cts.divisions.length, (_) => 0);
+     post.rangeValues[0] = maps[i]['price'] ?? cts.valueRanges[0][0];
+     post.rangeValues[1] = maps[i]['year'] ?? cts.valueRanges[1][0];
      return post;
   });
 }

@@ -5,9 +5,18 @@ const List<int> versions = <int>[3, 3];
 const double imgBoxWidth = 395.0;
 const double imgBoxHeight = 300.0;
 
-const int minPrice = 5000;
-const int maxPrice = 200000;
-const int priceDivisions = 100;
+const List<List<int>> valueRanges = <List<int>>
+[ <int>[5000, 200000] // Price
+, <int>[1990, 2040]   // Year.
+, <int>[0, 1000000]   // km.
+];
+
+const List<int> divisions = <int>
+[ 100 // price
+, 50  // year
+, 200 // km
+];
+
 const int nickMaxLength = 20;
 const int emailMaxLength = 50;
 
@@ -23,9 +32,6 @@ const int maxExDetailSize = 10;
 
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 5;
-
-// The number of range values.
-const int rangeValuesSize = 1;
 
 const String chatFilePrefix = 'chat';
 
