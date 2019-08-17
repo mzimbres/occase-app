@@ -24,6 +24,9 @@ const int maxExDetailSize = 10;
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 5;
 
+// The number of range values.
+const int rangeValuesSize = 1;
+
 const String chatFilePrefix = 'chat';
 
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';

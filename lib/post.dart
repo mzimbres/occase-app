@@ -312,7 +312,7 @@ class Post {
    // The date this post has been pinned by the user.
    int pinDate = 0;
 
-   int price = cts.minPrice;
+   List<int> rangeValues = List<int>();
 
    // Post status.
    //   0: Posts published by the app.
@@ -331,8 +331,18 @@ class Post {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      price = cts.minPrice;
+      rangeValues = List.generate(cts.rangeValuesSize, (_) => cts.minPrice);
       avatar = '';
+   }
+
+   int getPrice()
+   {
+      return rangeValues[0];
+   }
+
+   int setPrice(int price)
+   {
+      rangeValues[0] = price;
    }
 
    int getProductDetailIdx()
@@ -353,7 +363,7 @@ class Post {
       ret.inDetails = this.inDetails;
       ret.date = this.date;
       ret.pinDate = this.pinDate;
-      ret.price = this.price;
+      ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.description = this.description;
       ret.chats = List<Chat>.from(this.chats);
@@ -440,7 +450,7 @@ class Post {
       pinDate = 0;
       status = -1;
       description = bodyMap['msg'];
-      price = map['price'];
+      rangeValues = map['range_values'];
    }
 
    // This serialization is used to communicate with the server.
@@ -487,7 +497,7 @@ class Post {
          'in_details': inDetails,
          'body': body,
          'date': date,
-         'price': price,
+         'range_values': rangeValues,
       };
    }
 }
@@ -508,7 +518,7 @@ Map<String, dynamic> postToMap(Post post)
       'pin_date': post.pinDate,
       'status': post.status,
       'description': post.description,
-      'price': post.price,
+      'price': post.getPrice(),
     };
 }
 
@@ -550,7 +560,8 @@ Future<List<Post>> loadPosts(Database db) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'] ?? '';
-     post.price = maps[i]['price'] ?? cts.minPrice;
+     post.rangeValues = List.generate(cts.rangeValuesSize, (_) => 0);
+     post.rangeValues[0] = maps[i]['price'] ?? cts.minPrice;
      return post;
   });
 }

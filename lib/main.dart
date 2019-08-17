@@ -516,8 +516,9 @@ List<Widget> makeNewPostDetailScreen(
       all.add(foo);
    }
 
+   // __________________________________________________
    Slider priceWidget = Slider(
-      value: post.price.toDouble(),
+      value: post.getPrice().toDouble(),
       min: cts.minPrice.toDouble(),
       max: cts.maxPrice.toDouble(),
       divisions: cts.priceDivisions,
@@ -529,7 +530,7 @@ List<Widget> makeNewPostDetailScreen(
          makeExpTileTitle(
             ctx,
             txt.pricePrefix,
-            'R\$${post.price}',
+            makePriceStr(post.getPrice()),
             ':', false
          ),
          <Widget>[wrapDetailRowOnCard(ctx, priceWidget)],
@@ -2167,7 +2168,7 @@ Card makePostWidget(
    );
 
    Widget priceText = Padding(
-      child: Text(makePriceStr(post.price),
+      child: Text(makePriceStr(post.getPrice()),
          style: Theme.of(ctx).textTheme.headline.copyWith(
             color: Theme.of(ctx).colorScheme.onPrimary,
          ),
@@ -3325,7 +3326,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onPriceChanged(double newValue)
    {
-      setState((){_post.price = newValue.round();});
+      setState((){_post.setPrice(newValue.round());});
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -3704,6 +3705,7 @@ class MenuChatState extends State<MenuChat>
       // Therefore we are not waiting for an ack.
 
       final String payload = makePostPayload(_outPostsQueue.first);
+      print(payload);
       channel.sink.add(payload);
    }
 
