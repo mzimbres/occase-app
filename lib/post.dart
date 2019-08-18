@@ -743,8 +743,12 @@ class Config {
       this.lastSeenPostId = 0,
       this.showDialogOnSelectPost = 'yes',
       this.showDialogOnDelPost = 'yes',
-      this.ranges = cts.rangesMinMax,
-   });
+      this.ranges,
+   })
+   {
+      if (ranges == null)
+         ranges = List<int>.from(cts.rangesMinMax);
+   }
 }
 
 Map<String, dynamic> configToMap(Config cfg)
@@ -769,9 +773,9 @@ Future<List<Config>> loadConfig(Database db) async
 
   return List.generate(maps.length, (i)
   {
-     final String str = maps[i]['ranges'];
+     String str = maps[i]['ranges'];
      assert(str != null);
-     final List<String> fields = str.split(' ');
+     List<String> fields = str.split(' ');
      List<int> ranges = List.generate(
         fields.length,
         (int i) { return int.parse(fields[i]); },
