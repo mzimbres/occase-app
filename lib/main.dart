@@ -556,6 +556,7 @@ List<Widget> makeNewPostDetailScreen(
       keyboardType: TextInputType.multiline,
       maxLines: null,
       maxLength: 200,
+      style: Theme.of(ctx).textTheme.subhead,
       decoration: InputDecoration.collapsed(
          hintText: txt.newPostTextFieldHist,
       ),
