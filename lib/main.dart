@@ -4319,16 +4319,16 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      print('register_ack: ok.');
-
       _cfg.appId = ack["id"];
       _cfg.appPwd = ack["password"];
 
-      print('register_ack: Persisting the login.');
       batch.insert(
          'config',
          configToMap(_cfg),
          conflictAlgorithm: ConflictAlgorithm.replace);
+
+      // Retrieves some posts for the newly registered user.
+      _subscribeToChannels();
 
       // TODO: Check for menu updates and apply them.
    }
