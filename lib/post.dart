@@ -331,9 +331,8 @@ class Post {
       channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      rangeValues = List.generate(cts.rangeDivs.length, (_) => 0);
-      rangeValues[0] = cts.rangesMinMax[0];
-      rangeValues[1] = cts.rangesMinMax[2];
+      rangeValues = List.generate(cts.rangeDivs.length, (int i)
+         { return cts.rangesMinMax[2 * i]; });
       avatar = '';
    }
 
@@ -489,7 +488,6 @@ class Post {
 
       final String body = jsonEncode(subCmd);
 
-      print('====> ${rangeValues}');
       return
       {
          'from': from,
@@ -566,7 +564,8 @@ Future<List<Post>> loadPosts(Database db) async
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'] ?? '';
-     post.rangeValues = List.generate(cts.rangeDivs.length, (_) => 0);
+     post.rangeValues = List.generate(cts.rangeDivs.length, (int i)
+        { return cts.rangesMinMax[2 * i]; });
      post.rangeValues[0] = maps[i]['price'] ?? cts.rangesMinMax[0];
      post.rangeValues[1] = maps[i]['year'] ?? cts.rangesMinMax[2];
      return post;
@@ -731,14 +730,20 @@ class Config {
    String showDialogOnSelectPost;
    String showDialogOnDelPost;
 
-   Config({this.appId = '',
-           this.appPwd = '',
-           this.email = '',
-           this.nick = '',
-           this.lastPostId = 0,
-           this.lastSeenPostId = 0,
-           this.showDialogOnSelectPost = 'yes',
-           this.showDialogOnDelPost = 'yes',
+   // Filter Ranges. There is one range for each value, see
+   // cts.rangesMinMax, cts.rangeDivs and txt. rangePrefixes.
+   List<int> ranges;
+
+   Config({
+      this.appId = '',
+      this.appPwd = '',
+      this.email = '',
+      this.nick = '',
+      this.lastPostId = 0,
+      this.lastSeenPostId = 0,
+      this.showDialogOnSelectPost = 'yes',
+      this.showDialogOnDelPost = 'yes',
+      this.ranges = cts.rangesMinMax,
    });
 }
 
@@ -753,6 +758,7 @@ Map<String, dynamic> configToMap(Config cfg)
       'last_seen_post_id': cfg.lastSeenPostId,
       'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
       'show_dialog_on_del_post': cfg.showDialogOnDelPost,
+      'ranges': cfg.ranges.join(' '),
     };
 }
 
@@ -763,6 +769,16 @@ Future<List<Config>> loadConfig(Database db) async
 
   return List.generate(maps.length, (i)
   {
+     final String str = maps[i]['ranges'];
+     assert(str != null);
+     final List<String> fields = str.split(' ');
+     List<int> ranges = List.generate(
+        fields.length,
+        (int i) { return int.parse(fields[i]); },
+     );
+
+     //ranges = cts.rangesMinMax; // remove this
+
      Config cfg = Config(
         appId: maps[i]['app_id'],
         appPwd: maps[i]['app_pwd'],
@@ -772,6 +788,7 @@ Future<List<Config>> loadConfig(Database db) async
         lastSeenPostId: maps[i]['last_seen_post_id'],
         showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
         showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
+        ranges: ranges,
      );
 
      return cfg;

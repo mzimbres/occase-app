@@ -2954,7 +2954,7 @@ class MenuChat extends StatefulWidget {
 
 class MenuChatState extends State<MenuChat>
       with SingleTickerProviderStateMixin {
-   Config cfg = Config();
+   Config _cfg = Config();
 
    // Array with the length equal to the number of menus there
    // are. Used both on the filter and on the *new post* screens.
@@ -2965,10 +2965,6 @@ class MenuChatState extends State<MenuChat>
 
    // The in details tree root node.
    MenuNode _inDetailsRoot;
-
-   // Filter Ranges. There is one range for each value, see
-   // cts.rangesMinMax, cts.rangeDivs and txt. rangePrefixes.
-   List<int> _ranges;
 
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
@@ -3087,7 +3083,6 @@ class MenuChatState extends State<MenuChat>
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
-      _ranges = List<int>.from(cts.rangesMinMax);
    }
 
    @override
@@ -3229,15 +3224,15 @@ class MenuChatState extends State<MenuChat>
       }
 
       try {
-         final List<Config> configs = await loadConfig(_db);
+         List<Config> configs = await loadConfig(_db);
          if (!configs.isEmpty)
-            cfg = configs.first;
+            _cfg = configs.first;
       } catch (e) {
          print(e);
       }
 
-      _dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
-      _dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
+      _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
+      _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
 
       if (_menu.isEmpty) {
          // Here we have to load the menu table, load all leaf
@@ -3304,7 +3299,7 @@ class MenuChatState extends State<MenuChat>
       // TODO: The _posts array is expected to be sorted on its
       // ids, so we could perform a binary search here instead.
       final int i = _posts.indexWhere((e)
-         { return e.id == cfg.lastSeenPostId; });
+         { return e.id == _cfg.lastSeenPostId; });
 
       if (i != -1)
          _nNewPosts = _posts.length - i - 1;
@@ -3328,16 +3323,16 @@ class MenuChatState extends State<MenuChat>
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
 
-      print('Last post id: ${cfg.lastPostId}.');
-      print('Last post id seen: ${cfg.lastSeenPostId}.');
+      print('Last post id: ${_cfg.lastPostId}.');
+      print('Last post id seen: ${_cfg.lastSeenPostId}.');
       print('Menu versions: ${versions}');
-      print('Login: ${cfg.appId}:${cfg.appPwd}.');
+      print('Login: ${_cfg.appId}:${_cfg.appPwd}.');
       setState(() { });
    }
 
    String _makeConnCmd(final List<int> versions)
    {
-      if (cfg.appId.isEmpty) {
+      if (_cfg.appId.isEmpty) {
          // This is the first time we are connecting to the server (or
          // the login file is corrupted, etc.)
          return jsonEncode({'cmd': 'register'});
@@ -3346,8 +3341,8 @@ class MenuChatState extends State<MenuChat>
       // We are already registered in the server.
       var loginCmd = {
          'cmd': 'login',
-         'user': cfg.appId,
-         'password': cfg.appPwd,
+         'user': _cfg.appId,
+         'password': _cfg.appPwd,
          'menu_versions': versions,
       };
 
@@ -3395,15 +3390,17 @@ class MenuChatState extends State<MenuChat>
       setState((){_post.rangeValues[i] = v.round();});
    }
 
-   void _onRangeChanged(int i, RangeValues rv)
+   Future<void> _onRangeChanged(int i, RangeValues rv) async
    {
       final int j = 2 * i;
 
       setState(()
       {
-         _ranges[j + 0] = rv.start.round();
-         _ranges[j + 1] = rv.end.round();
+         _cfg.ranges[j + 0] = rv.start.round();
+         _cfg.ranges[j + 1] = rv.end.round();
       });
+
+      await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -3879,9 +3876,9 @@ class MenuChatState extends State<MenuChat>
       }
 
       _botBarIdx = 0;
-      _post.from = cfg.appId;
-      _post.nick = cfg.nick;
-      _post.avatar = emailToGravatarHash(cfg.email);
+      _post.from = _cfg.appId;
+      _post.nick = _cfg.nick;
+      _post.avatar = emailToGravatarHash(_cfg.email);
       _post.status = 3;
 
       await _sendPost(_post.clone());
@@ -4118,7 +4115,7 @@ class MenuChatState extends State<MenuChat>
             'refers_to': ci.refersTo,
             'post_id': postId,
             'is_sender_post': isSenderPost,
-            'nick': cfg.nick
+            'nick': _cfg.nick
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 1);
@@ -4166,7 +4163,7 @@ class MenuChatState extends State<MenuChat>
       final String nick = ack['nick'];
       final int refersTo = ack['refers_to'];
 
-      if (to != cfg.appId) {
+      if (to != _cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
@@ -4324,13 +4321,13 @@ class MenuChatState extends State<MenuChat>
 
       print('register_ack: ok.');
 
-      cfg.appId = ack["id"];
-      cfg.appPwd = ack["password"];
+      _cfg.appId = ack["id"];
+      _cfg.appPwd = ack["password"];
 
       print('register_ack: Persisting the login.');
       batch.insert(
          'config',
-         configToMap(cfg),
+         configToMap(_cfg),
          conflictAlgorithm: ConflictAlgorithm.replace);
 
       // TODO: Check for menu updates and apply them.
@@ -4380,10 +4377,10 @@ class MenuChatState extends State<MenuChat>
          // Just in case the server sends us posts out of order I
          // will check. It should however be considered a server
          // error.
-         if (post.id > cfg.lastPostId)
-            cfg.lastPostId = post.id;
+         if (post.id > _cfg.lastPostId)
+            _cfg.lastPostId = post.id;
 
-         if (post.from == cfg.appId)
+         if (post.from == _cfg.appId)
             continue;
 
          batch.insert('posts', postToMap(post),
@@ -4393,7 +4390,7 @@ class MenuChatState extends State<MenuChat>
          ++_nNewPosts;
       }
 
-      batch.execute(sql.updateLastPostId, [cfg.lastPostId]);
+      batch.execute(sql.updateLastPostId, [_cfg.lastPostId]);
       setState(() { });
    }
 
@@ -4522,10 +4519,10 @@ class MenuChatState extends State<MenuChat>
 
       var subCmd = {
          'cmd': 'subscribe',
-         'last_post_id': cfg.lastPostId,
+         'last_post_id': _cfg.lastPostId,
          'channels': channels,
          'filter': _filter,
-         'ranges': _ranges,
+         'ranges': _cfg.ranges,
       };
 
       final String payload = jsonEncode(subCmd);
@@ -4725,12 +4722,12 @@ class MenuChatState extends State<MenuChat>
    {
       try {
          if (_txtCtrl2.text.isNotEmpty) {
-            cfg.email = _txtCtrl2.text;
-            await _db.execute(sql.updateEmail, [cfg.email]);
+            _cfg.email = _txtCtrl2.text;
+            await _db.execute(sql.updateEmail, [_cfg.email]);
          }
 
-         cfg.nick = _txtCtrl.text;
-         await _db.execute(sql.updateNick, [cfg.nick]);
+         _cfg.nick = _txtCtrl.text;
+         await _db.execute(sql.updateNick, [_cfg.nick]);
 
          setState(()
          {
@@ -4784,8 +4781,8 @@ class MenuChatState extends State<MenuChat>
             _txtCtrl,
             _onRegisterContinue,
             txt.appName,
-            cfg.email,
-            cfg.nick,
+            _cfg.email,
+            _cfg.nick,
          );
       }
 
@@ -4828,7 +4825,7 @@ class MenuChatState extends State<MenuChat>
             _botBarIdx,
             _onCancelNewFilter,
             _exDetailsRoot.children[0].children[0],
-            _ranges,
+            _cfg.ranges,
             _onRangeChanged,
          );
       }
