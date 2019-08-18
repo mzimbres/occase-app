@@ -11,16 +11,6 @@ import 'package:menu_chat/constants.dart' as cts;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:crypto/crypto.dart';
-
-String emailToGravatarHash(String email)
-{
-   // Removes spaces.
-   email = email.replaceAll(' ', '');
-   email = email.toLowerCase();
-   List<int> bytes = utf8.encode(email);
-   return md5.convert(bytes).toString();
-}
 
 String convertChatMsgTypeToString(int type)
 {
@@ -478,12 +468,10 @@ class Post {
       // txt.exDetails[index].length) and similar to the inDetails
       // array.
 
-      final String hash = emailToGravatarHash(avatar);
-
       var subCmd = {
          'msg': description,
          'nick': nick,
-         'avatar': hash,
+         'avatar': avatar,
       };
 
       final String body = jsonEncode(subCmd);

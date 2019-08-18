@@ -14,6 +14,7 @@ import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -23,6 +24,15 @@ import 'package:menu_chat/txt_pt.dart' as txt;
 import 'package:menu_chat/globals.dart' as glob;
 import 'package:menu_chat/sql.dart' as sql;
 import 'package:menu_chat/stl.dart' as stl;
+
+String emailToGravatarHash(String email)
+{
+   // Removes spaces.
+   email = email.replaceAll(' ', '');
+   email = email.toLowerCase();
+   List<int> bytes = utf8.encode(email);
+   return md5.convert(bytes).toString();
+}
 
 class Coord {
    Post post;
@@ -3864,8 +3874,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void>
-   _onSendNewPost(BuildContext ctx, final int i) async
+   Future<void> _onSendNewPost(BuildContext ctx, final int i) async
    {
       _newPostPressed = false;
 
