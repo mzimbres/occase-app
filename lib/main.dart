@@ -6,6 +6,7 @@ import 'dart:collection';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
@@ -2963,7 +2964,8 @@ class MenuChat extends StatefulWidget {
 }
 
 class MenuChatState extends State<MenuChat>
-      with SingleTickerProviderStateMixin {
+   with SingleTickerProviderStateMixin, WidgetsBindingObserver
+{
    Config _cfg = Config();
 
    // Array with the length equal to the number of menus there
@@ -3082,6 +3084,10 @@ class MenuChatState extends State<MenuChat>
    
    Database _db;
 
+   // This variable is set to true when we are able to either login
+   // and register.
+   bool _isConnected = false;
+
    @override
    void initState()
    {
@@ -3093,6 +3099,8 @@ class MenuChatState extends State<MenuChat>
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
+      _isConnected = false;
+      WidgetsBinding.instance.addObserver(this);
    }
 
    @override
@@ -3104,8 +3112,25 @@ class MenuChatState extends State<MenuChat>
       _scrollCtrl.dispose();
       _chatScrollCtrl.dispose();
       _chatFocusNode.dispose();
+      WidgetsBinding.instance.removeObserver(this);
 
       super.dispose();
+   }
+
+   @override
+   void didChangeAppLifecycleState(AppLifecycleState state)
+   {
+      // TODO: We should not try to reconnect if disconnection
+      // happened just a couples of seconds ago. This is needed
+      // because it may haven't been a clean disconnect with a close
+      // websocket frame.  The server will wait until the pong answer
+      // times out.  To soulve this just use time stamps instead of a
+      // boolean in _isConnected and compare it with the current time.
+      // We should also use the server pong-timeout value.
+      if (state == AppLifecycleState.resumed && !_isConnected) {
+         print('Trying to reconnect.');
+         _stablishNewConnection();
+      }
    }
 
    bool _isOnOwn()
@@ -3318,26 +3343,26 @@ class MenuChatState extends State<MenuChat>
 
       _appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
 
-      // WARNING: localhost or 127.0.0.1 is the emulator or the phone
-      // address. If the phone is connected (via USB) to a computer
-      // the computer can be found on 10.0.2.2.
-      //final String host = 'ws://10.0.2.2:80';
+      _stablishNewConnection();
 
-      // My public ip.
-      final String host = 'ws://37.24.165.216:80';
+      print('Last post id: ${_cfg.lastPostId}.');
+      print('Last post id seen: ${_cfg.lastSeenPostId}.');
+      print('Login: ${_cfg.appId}:${_cfg.appPwd}.');
+      setState(() { });
+   }
 
-      channel = IOWebSocketChannel.connect(host);
-      channel.stream.listen(onWSData, onError: onWSError, onDone: onWSDone);
+   void _stablishNewConnection()
+   {
+      channel = IOWebSocketChannel.connect(cts.host);
+      channel.stream.listen(
+         onWSData,
+         onError: _onWSError,
+         onDone: _onWSDone,
+      );
 
       final List<int> versions = makeMenuVersions(_menu);
       final String cmd = _makeConnCmd(versions);
       channel.sink.add(cmd);
-
-      print('Last post id: ${_cfg.lastPostId}.');
-      print('Last post id seen: ${_cfg.lastSeenPostId}.');
-      print('Menu versions: ${versions}');
-      print('Login: ${_cfg.appId}:${_cfg.appPwd}.');
-      setState(() { });
    }
 
    String _makeConnCmd(final List<int> versions)
@@ -4328,6 +4353,8 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
+      _isConnected = true;
+
       _cfg.appId = ack["id"];
       _cfg.appPwd = ack["password"];
 
@@ -4353,6 +4380,8 @@ class MenuChatState extends State<MenuChat>
          print("login_ack: fail.");
          return;
       }
+
+      _isConnected = true;
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
@@ -4452,14 +4481,16 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void onWSError(error)
+   void _onWSError(error)
    {
-      print(error);
+      print("Error: " + error);
+      _isConnected = false;
    }
 
-   void onWSDone()
+   void _onWSDone()
    {
       print("Communication closed by peer.");
+      _isConnected = false;
    }
 
    void _onOkDialAfterSendFilters()

@@ -40,3 +40,11 @@ const String gravatarUrl = 'https://www.gravatar.com/avatar/';
 
 const double onClickAvatarWidth = 200.0;
 
+// WARNING: localhost or 127.0.0.1 is the emulator or the phone
+// address. If the phone is connected (via USB) to a computer
+// the computer can be found on 10.0.2.2.
+//final String host = 'ws://10.0.2.2:80';
+
+// My public ip.
+final String host = 'ws://37.24.165.216:80';
+
