@@ -1945,17 +1945,17 @@ Widget makePostSectionTitle(BuildContext ctx, String str)
 // Assembles the menu information.
 List<Widget> makeMenuInfo(
    BuildContext ctx,
-   Post data,
+   Post post,
    List<MenuItem> menus)
 {
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < data.channel.length; ++i) {
+   for (int i = 0; i < post.channel.length; ++i) {
       list.add(makePostSectionTitle(ctx, txt.newPostTabNames[i]));
 
       List<String> names = loadNames(
          menus[i].root.first,
-         data.channel[i][0],
+         post.channel[i][0],
       );
 
       List<Widget> items = List.generate(names.length, (int j)
@@ -1969,6 +1969,33 @@ List<Widget> makeMenuInfo(
 
       list.addAll(items); // The menu info.
    }
+
+   return list;
+}
+
+List<Widget> makePostValues(
+   BuildContext ctx,
+   Post post)
+{
+   List<Widget> list = List<Widget>();
+
+   list.add(makePostSectionTitle(ctx, txt.rangesTitle));
+
+   List<Widget> items = List.generate(cts.rangeDivs.length, (int i)
+   {
+      final int j = 2 * i;
+      final String str = txt.rangeUnits[j + 0]
+                       + post.rangeValues[i].toString()
+                       + txt.rangeUnits[j + 1];
+
+      return makePostRowElem(
+         ctx,
+         txt.rangePrefixes[i],
+         str,
+      );
+   });
+
+   list.addAll(items); // The menu info.
 
    return list;
 }
@@ -2103,6 +2130,7 @@ List<Widget> assemblePostRows(
    MenuNode inDetailsMenu)
 {
    List<Widget> all = List<Widget>();
+   all.addAll(makePostValues(ctx, post));
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
    all.addAll(makePostInDetails(ctx, post, inDetailsMenu));

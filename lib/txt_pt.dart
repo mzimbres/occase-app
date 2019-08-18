@@ -12,7 +12,7 @@ const List<String> tabNames = <String>
 // Text used in the *new post screens* on the bottom navigation bar.
 const List<String> newPostTabNames = <String>
 [ 'Localizacao'
-, 'Veículo'
+, 'Modelo'
 , 'Detalhes'
 , 'Publicar'
 ];
@@ -27,7 +27,7 @@ const String filterAppBarTitle = 'Escolha seus filtros';
 
 const List<String> filterTabNames = <String>
 [ 'Localizacao'
-, 'Veículo'
+, 'Modelo'
 , 'Condicoes'
 , 'Enviar'
 ];
@@ -42,7 +42,7 @@ const List<String> chatIconTexts = <String>
 // post screen.*
 const List<String> postAppBarMsg = <String>
 [ "Escolha uma localizacao"
-, "Escolha um veículo"
+, "Escolha um Modelo"
 , "Adicione detalhes"
 , "Verificacao e envio"
 ];
@@ -123,8 +123,18 @@ const List<String> rangePrefixes = <String>
 , 'Kilometragem'
 ];
 
+// The units a prefixed and suffixed to the values.
+const List<String> rangeUnits = <String>
+[ 'R\$',   ''
+,    '',   ''
+,    '', 'km'
+];
+
 // When displaying e.g. price ranges this word will be used to
 // separate the values.
 // Ex: *Precos: 22.000 até 33.000*
 const String rangeSep = 'até';
+
+// The String shown in the title to price, year, km etc.
+const String rangesTitle = 'Dados';
 
