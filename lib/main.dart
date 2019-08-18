@@ -418,14 +418,12 @@ Widget wrapOnDetailExpTitle(
    BuildContext ctx,
    Widget title,
    List<Widget> children,
-   )
+   bool initiallyExpanded)
 {
-   //Key key = null;
    // Passing a global key has the effect that an expansion tile will
    // collapse after setState is called, but without animation not in
    // an nice way.
-   //if (addGlobalKey)
-   //   key = GlobalKey();
+   Key key = UniqueKey();
 
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
@@ -435,10 +433,11 @@ Widget wrapOnDetailExpTitle(
       child: Theme(
          data: makeExpTileThemeData(ctx),
          child: ExpansionTile(
+             //key: key,
              backgroundColor: Theme.of(ctx).colorScheme.primary,
              title: title,
              children: children,
-             initiallyExpanded: true,
+             initiallyExpanded: initiallyExpanded,
          ),
       ),
    );
@@ -467,7 +466,7 @@ Widget makeNewPostDetailExpTile(
       state == 0,
    );
 
-   return wrapOnDetailExpTitle(ctx, richTitle, bar);
+   return wrapOnDetailExpTitle(ctx, richTitle, bar, state == 0);
 }
 
 int counterBitsSet(int v)
@@ -543,9 +542,11 @@ List<Widget> makeNewPostDetailScreen(
                ctx,
                txt.rangePrefixes[i],
                post.rangeValues[i].toString(),
-               ':', false
+               ':',
+               false,
             ),
             <Widget>[wrapDetailRowOnCard(ctx, rangeSld)],
+            true,
          ),
       );
    }
@@ -571,6 +572,7 @@ List<Widget> makeNewPostDetailScreen(
          ctx,
          Text(txt.postDescTitle),
          <Widget>[wrapDetailRowOnCard(ctx, pad)],
+         true,
       ),
    );
 
@@ -789,7 +791,7 @@ WillPopScope makeNewFiltersScreens(
             false,
          );
 
-         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs]));
+         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], true));
       }
 
       wid = ListView.builder(
@@ -2157,7 +2159,9 @@ List<Widget> assemblePostRows(
 String makePostSummaryStr(MenuNode root, Post post)
 {
    final List<String> names = loadNames(root, post.channel[1][0]);
-   return names.join(', ');
+   assert(names.length >= 4);
+   return '${names[1]}, ${names[2]} - 2019';
+   //return names.join(', ');
 }
 
 ThemeData makeExpTileThemeData(BuildContext ctx)
@@ -2718,7 +2722,8 @@ Widget makeChatsExp(
    IconData pinIcon =
       post.pinDate == 0 ? Icons.place : Icons.pin_drop;
 
-   final bool expState = ch.length <= 5 || nUnredChats != 0;
+   final bool expState = (ch.length < 6 && ch.length > 0)
+                       || nUnredChats != 0;
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
@@ -3130,7 +3135,7 @@ class MenuChatState extends State<MenuChat>
       // We should also use the server pong-timeout value.
       if (state == AppLifecycleState.resumed && !_isConnected) {
          print('Trying to reconnect.');
-         _stablishNewConnection();
+         //_stablishNewConnection();
       }
    }
 
