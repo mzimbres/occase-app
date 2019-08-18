@@ -516,12 +516,13 @@ List<Widget> makeNewPostDetailScreen(
       all.add(foo);
    }
 
-   for (int i = 0; i < cts.valueRanges.length; ++i) {
+   for (int i = 0; i < cts.rangeDivs.length; ++i) {
+      final int j = 2 * i;
       Slider rangeSld = Slider(
          value: post.rangeValues[i].toDouble(),
-         min: cts.valueRanges[i][0].toDouble(),
-         max: cts.valueRanges[i][1].toDouble(),
-         divisions: cts.divisions[i],
+         min: cts.rangesMinMax[j + 0].toDouble(),
+         max: cts.rangesMinMax[j + 1].toDouble(),
+         divisions: cts.rangeDivs[i],
          onChanged: (double v) {onRangeValueChanged(i, v);},
       );
 
@@ -730,7 +731,9 @@ WillPopScope makeNewFiltersScreens(
    int filter,
    int screen,
    Function onCancelNewFilters,
-   MenuNode exDetailsFilterNodes)
+   MenuNode exDetailsFilterNodes,
+   List<int> ranges,
+   Function onRangeChanged)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
@@ -742,43 +745,47 @@ WillPopScope makeNewFiltersScreens(
          onCancelNewFilters,
       );
    } else if (screen == 2) {
+      List<Widget> foo = List<Widget>();
+
       final Widget vv = makeNewPostDetailExpTile(
          ctx,
          onFilterDetail,
          exDetailsFilterNodes,
          filter,
-         '');
-
-      final Widget vv2 = RangeSlider(
-         values: RangeValues(10.0, 80.0),
-         onChanged: (RangeValues rv) {print('New range');},
-         min: 0.0,
-         max: 100.0,
-         divisions: 100,
-         labels: RangeLabels('Inicio', 'Fim'),
+         ''
       );
 
-      final RichText richTitle = makeExpTileTitle(
-         ctx,
-         'Preco mínimo e máximo',
-         '',
-         '',
-         false,
-      );
+      foo.add(vv);
 
-      final List<Widget> vvv = <Widget>
-      [ vv
-      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
-      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
-      , wrapOnDetailExpTitle(ctx, richTitle, <Widget>[vv2])
-      ];
+      for (int i = 0; i < cts.rangeDivs.length; ++i) {
+         final int j = 2 * i;
+         final int v1 = ranges[j + 0];
+         final int v2 = ranges[j + 1];
+         final Widget rs = RangeSlider(
+            min: cts.rangesMinMax[j + 0].toDouble(),
+            max: cts.rangesMinMax[j + 1].toDouble(),
+            divisions: cts.rangeDivs[i],
+            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
+            values: RangeValues(v1.toDouble(), v2.toDouble()),
+         );
+
+         final RichText rt = makeExpTileTitle(
+            ctx,
+            txt.rangePrefixes[i],
+            '$v1 ' + txt.rangeSep + ' $v2',
+            ':',
+            false,
+         );
+
+         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs]));
+      }
 
       wid = ListView.builder(
          padding: const EdgeInsets.all(3.0),
-         itemCount: vvv.length,
+         itemCount: foo.length,
          itemBuilder: (BuildContext ctx, int i)
          {
-            return vvv[i];
+            return foo[i];
          },
       );
    } else {
@@ -2931,6 +2938,10 @@ class MenuChatState extends State<MenuChat>
    // The in details tree root node.
    MenuNode _inDetailsRoot;
 
+   // Filter Ranges. There is one range for each value, see
+   // cts.rangesMinMax, cts.rangeDivs and txt. rangePrefixes.
+   List<int> _ranges;
+
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
    bool _showChatJumpDownButton = true;
@@ -3048,6 +3059,7 @@ class MenuChatState extends State<MenuChat>
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
+      _ranges = List<int>.from(cts.rangesMinMax);
    }
 
    @override
@@ -3353,6 +3365,17 @@ class MenuChatState extends State<MenuChat>
    void _onRangeValueChanged(int i, double v)
    {
       setState((){_post.rangeValues[i] = v.round();});
+   }
+
+   void _onRangeChanged(int i, RangeValues rv)
+   {
+      final int j = 2 * i;
+
+      setState(()
+      {
+         _ranges[j + 0] = rv.start.round();
+         _ranges[j + 1] = rv.end.round();
+      });
    }
 
    Future<void> _onPostSelection(int i, int fav) async
@@ -4474,7 +4497,7 @@ class MenuChatState extends State<MenuChat>
          'last_post_id': cfg.lastPostId,
          'channels': channels,
          'filter': _filter,
-         'ranges': List<List<int>>(),
+         'ranges': _ranges,
       };
 
       final String payload = jsonEncode(subCmd);
@@ -4777,6 +4800,8 @@ class MenuChatState extends State<MenuChat>
             _botBarIdx,
             _onCancelNewFilter,
             _exDetailsRoot.children[0].children[0],
+            _ranges,
+            _onRangeChanged,
          );
       }
 

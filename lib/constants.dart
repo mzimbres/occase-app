@@ -5,13 +5,14 @@ const List<int> versions = <int>[3, 3];
 const double imgBoxWidth = 395.0;
 const double imgBoxHeight = 300.0;
 
-const List<List<int>> valueRanges = <List<int>>
-[ <int>[5000, 200000] // Price
-, <int>[1990, 2040]   // Year.
-, <int>[0, 1000000]   // km.
+// In the array below the range min is followed by the range max.
+const List<int> rangesMinMax = <int>
+[ 5000, 1000000 // Price
+, 1990,    2030 // Year.
+,    0, 1000000 // km.
 ];
 
-const List<int> divisions = <int>
+const List<int> rangeDivs = <int>
 [ 100 // price
 , 50  // year
 , 200 // km
