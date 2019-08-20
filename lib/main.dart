@@ -1682,6 +1682,75 @@ ListTile makeFilterSelectAllItem(
     );
 }
 
+Widget makePaymentChoiceWidget(
+   BuildContext ctx,
+   Function freePayment)
+{
+   return Card(
+      margin: const EdgeInsets.only(
+       left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
+      ),
+      color: Theme.of(ctx).colorScheme.background,
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.only(
+           topLeft: Radius.circular(20.0),
+           topRight: Radius.circular(20.0),
+         ),
+      ),
+      child: Column(
+         mainAxisSize: MainAxisSize.min,
+         children: <Widget>
+         [ Center(child: Text('Escolha um plano',
+                style: Theme.of(ctx).textTheme.headline.copyWith(
+                    color: Theme.of(ctx).colorScheme.primary,
+                 ),
+              ),
+           )
+         , ListTile(
+              leading: Text('0 R\$',
+                 style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     color: Theme.of(ctx).colorScheme.primary,
+                  )
+              ),
+              title: Text( "Anúncio grátis com limitacao de um por dia",
+                 style: Theme.of(ctx).textTheme.subhead,
+              ),
+              subtitle: Text( "Seu anúncio no site por um mês"),
+              dense: true,
+              enabled: true,
+              onTap: () { freePayment(ctx); },
+           )
+         , ListTile(
+              leading: Text('5 R\$',
+                 style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     color: Theme.of(ctx).colorScheme.primary,
+                  )
+              ),
+               title: Text( "Prioridade sobre anúnicos grátis",
+                  style: Theme.of(ctx).textTheme.subhead,
+               ),
+               subtitle: Text( "Seu anúncio mostrado com no topo da lista para os usuários"),
+               dense: true,
+               enabled: true,
+            )
+         , ListTile(
+              leading: Text('10 R\$',
+                 style: Theme.of(ctx).textTheme.subhead.copyWith(
+                     color: Theme.of(ctx).colorScheme.primary,
+                  )
+              ),
+               title: Text( "Premium",
+                  style: Theme.of(ctx).textTheme.subhead,
+               ),
+               subtitle: Text( "Prioridade máxima. As maiores taxas de vendas "),
+               dense: true,
+               enabled: true,
+            )
+         ]),
+   );
+}
+
 ListTile makeFilterListTitle(
    BuildContext ctx,
    MenuNode child,
@@ -3905,7 +3974,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _onSendNewPost(BuildContext ctx, final int i) async
+   Future<void> _onSendFreePost(BuildContext ctx, final int i) async
    {
       _newPostPressed = false;
 
@@ -3927,13 +3996,37 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
 
       // If the user cancels the operation we do not show the dialog.
-      if (i == 1)
+      if (i == 1) {
          _showSimpleDial(
             ctx,
             (){},
             txt.dialogTitles[3],
             Text(txt.dialogBodies[3])
          );
+      }
+   }
+
+   Future<void> _onSendNewPost(BuildContext ctx, int i) async
+   {
+      await showModalBottomSheet<void>(
+         context: ctx,
+         backgroundColor: Colors.white,
+         elevation: 1.0,
+         shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
+         ),
+         builder: (BuildContext ctx)
+         {
+            return makePaymentChoiceWidget(
+               ctx,
+               (BuildContext ctx)
+               {
+                  Navigator.of(ctx).pop();
+                  _onSendFreePost(ctx, i);
+               },
+            );
+         },
+      );
    }
 
    void _removePostDialog(BuildContext ctx, int i)
