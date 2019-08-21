@@ -138,3 +138,5 @@ const String rangeSep = 'até';
 // The String shown in the title to price, year, km etc.
 const String rangesTitle = 'Dados';
 
+const String payPricesTitle = 'Escolha um plano';
+

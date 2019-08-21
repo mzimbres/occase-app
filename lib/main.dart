@@ -1682,16 +1682,107 @@ ListTile makeFilterSelectAllItem(
     );
 }
 
+Widget makePayPriceListTile(
+   BuildContext ctx,
+   String title,
+   String subtitle,
+   String price,
+   Function onTap)
+{
+   Color primary = Theme.of(ctx).colorScheme.primary;
+   Color secondary = Theme.of(ctx).colorScheme.secondary;
+   Color onSecondary = Theme.of(ctx).colorScheme.onSecondary;
+   Color background = Theme.of(ctx).colorScheme.background;
+
+   Text subtitleW = Text(subtitle,
+      maxLines: 2,
+      overflow: TextOverflow.clip,
+      style: Theme.of(ctx).textTheme.subtitle.copyWith(
+         fontWeight: FontWeight.normal,
+         color: Theme.of(ctx).colorScheme.secondary,
+      ),
+   );
+
+   Text titleW = Text(title,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      style: Theme.of(ctx).textTheme.title.copyWith(
+         fontWeight: FontWeight.w500,
+         color: primary,
+      ),
+   );
+
+   Widget leading = Card(
+      margin: const EdgeInsets.all(0.0),
+      color: secondary,
+      elevation: 0.0,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+      ),
+      child: Padding(
+         padding: EdgeInsets.all(10.0),
+         child: Text(price, style: TextStyle(color: onSecondary),),
+      ),
+   );
+
+   return ListTile(
+       leading: leading,
+       title: titleW,
+       dense: false,
+       subtitle: subtitleW,
+       trailing: Icon(Icons.keyboard_arrow_right),
+       contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+       onTap: onTap,
+       enabled: true,
+       selected: false,
+       isThreeLine: true,
+    );
+}
+
 Widget makePaymentChoiceWidget(
    BuildContext ctx,
    Function freePayment)
 {
+   Widget title = Padding(
+      padding: EdgeInsets.all(10.0),
+      child: Text(txt.payPricesTitle,
+         style: Theme.of(ctx).textTheme.title.copyWith(
+             color: Theme.of(ctx).colorScheme.primary,
+             //fontWeight: FontWeight.w500,
+          ),
+       ),
+   );
+
+   Widget p1 = makePayPriceListTile(
+      ctx,
+      "Seu anúncio no site por um mês",
+      "Anúncio grátis com limitacao de um por dia",
+      ' 0R\$',
+      () { freePayment(ctx); },
+   );
+
+   Widget p2 = makePayPriceListTile(
+      ctx,
+      'Prioridade sobre anúnicos grátis',
+      'Seu anúncio mostrado com no topo da lista para os usuários',
+      ' 5R\$',
+      () { },
+   );
+
+   Widget p3 = makePayPriceListTile(
+      ctx,
+      'Premium',
+      'Seu anúncio mostrado com no topo da lista para os usuários',
+      '10R\$',
+      () { },
+   );
+
    return Card(
       margin: const EdgeInsets.only(
        left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
       ),
       color: Theme.of(ctx).colorScheme.background,
-      elevation: 0.0,
+      //elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.only(
            topLeft: Radius.circular(20.0),
@@ -1700,54 +1791,7 @@ Widget makePaymentChoiceWidget(
       ),
       child: Column(
          mainAxisSize: MainAxisSize.min,
-         children: <Widget>
-         [ Center(child: Text('Escolha um plano',
-                style: Theme.of(ctx).textTheme.headline.copyWith(
-                    color: Theme.of(ctx).colorScheme.primary,
-                 ),
-              ),
-           )
-         , ListTile(
-              leading: Text('0 R\$',
-                 style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     color: Theme.of(ctx).colorScheme.primary,
-                  )
-              ),
-              title: Text( "Anúncio grátis com limitacao de um por dia",
-                 style: Theme.of(ctx).textTheme.subhead,
-              ),
-              subtitle: Text( "Seu anúncio no site por um mês"),
-              dense: true,
-              enabled: true,
-              onTap: () { freePayment(ctx); },
-           )
-         , ListTile(
-              leading: Text('5 R\$',
-                 style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     color: Theme.of(ctx).colorScheme.primary,
-                  )
-              ),
-               title: Text( "Prioridade sobre anúnicos grátis",
-                  style: Theme.of(ctx).textTheme.subhead,
-               ),
-               subtitle: Text( "Seu anúncio mostrado com no topo da lista para os usuários"),
-               dense: true,
-               enabled: true,
-            )
-         , ListTile(
-              leading: Text('10 R\$',
-                 style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     color: Theme.of(ctx).colorScheme.primary,
-                  )
-              ),
-               title: Text( "Premium",
-                  style: Theme.of(ctx).textTheme.subhead,
-               ),
-               subtitle: Text( "Prioridade máxima. As maiores taxas de vendas "),
-               dense: true,
-               enabled: true,
-            )
-         ]),
+         children: <Widget> [title, p1, p2, p3]),
    );
 }
 
