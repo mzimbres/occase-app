@@ -16,6 +16,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
+import 'package:square_in_app_payments/in_app_payments.dart';
+import 'package:square_in_app_payments/models.dart' as sq;
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -1739,6 +1741,32 @@ Widget makePayPriceListTile(
     );
 }
 
+void pay()
+{
+   InAppPayments.setSquareApplicationId('APPLICATION_ID');
+   InAppPayments.startCardEntryFlow(
+      onCardEntryCancel: (){},
+      onCardNonceRequestSuccess: cardNonceRequestSuccess,
+   );
+}
+
+void cardNonceRequestSuccess(sq.CardDetails result)
+{
+   // Use this nonce from your backend to pay via Square API
+   print(result.nonce);
+
+   final bool invalidZipCode = false;
+
+   if (invalidZipCode) {
+      // Stay in the card flow and show an error:
+      InAppPayments.showCardNonceProcessingError('Invalid ZipCode');
+   }
+
+   InAppPayments.completeCardEntry(
+      onCardEntryComplete: (){},
+   );
+}
+
 Widget makePaymentChoiceWidget(
    BuildContext ctx,
    Function freePayment)
@@ -1766,7 +1794,7 @@ Widget makePaymentChoiceWidget(
       'Prioridade sobre anúnicos grátis',
       'Seu anúncio mostrado com no topo da lista para os usuários',
       ' 5R\$',
-      () { },
+      pay,
    );
 
    Widget p3 = makePayPriceListTile(
