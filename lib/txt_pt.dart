@@ -138,5 +138,22 @@ const String rangeSep = 'até';
 // The String shown in the title to price, year, km etc.
 const String rangesTitle = 'Dados';
 
-const String payPricesTitle = 'Escolha um plano';
+const String paymentTitle = 'Escolha um plano';
 
+const List<List<String>> payments =
+[ <String>
+  [ ' 0R\$'
+  , 'Grátis'
+  , 'Nossa opcao mais econômica (limitacao de um anúnico por semana)'
+  ]
+, <String>
+  [ ' 5R\$'
+  , 'Prioritário'
+  , 'Seu anúncio será mostrado sempre no topo da lista.'
+  ]
+, <String>
+  [ '10R\$'
+  , 'Premium'
+  , 'Prioridade máxima. O maior alcance para seu anúncio.'
+  ]
+];

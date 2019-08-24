@@ -468,7 +468,7 @@ Widget makeNewPostDetailExpTile(
       state == 0,
    );
 
-   return wrapOnDetailExpTitle(ctx, richTitle, bar, state == 0);
+   return wrapOnDetailExpTitle(ctx, richTitle, bar, false);
 }
 
 int counterBitsSet(int v)
@@ -548,7 +548,7 @@ List<Widget> makeNewPostDetailScreen(
                false,
             ),
             <Widget>[wrapDetailRowOnCard(ctx, rangeSld)],
-            true,
+            false,
          ),
       );
    }
@@ -574,7 +574,7 @@ List<Widget> makeNewPostDetailScreen(
          ctx,
          Text(txt.postDescTitle),
          <Widget>[wrapDetailRowOnCard(ctx, pad)],
-         true,
+         false,
       ),
    );
 
@@ -793,7 +793,7 @@ WillPopScope makeNewFiltersScreens(
             false,
          );
 
-         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], true));
+         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], false));
       }
 
       wid = ListView.builder(
@@ -1648,8 +1648,7 @@ String makeStrAbbrev(final String str)
    return str.substring(0, 2);
 }
 
-RichText
-makeFilterListTileTitleWidget(
+RichText makeFilterListTileTitleWidget(
    String str1,
    String str2,
    TextStyle stl1,
@@ -1686,9 +1685,9 @@ ListTile makeFilterSelectAllItem(
 
 Widget makePayPriceListTile(
    BuildContext ctx,
+   String price,
    String title,
    String subtitle,
-   String price,
    Function onTap)
 {
    Color primary = Theme.of(ctx).colorScheme.primary;
@@ -1701,14 +1700,14 @@ Widget makePayPriceListTile(
       overflow: TextOverflow.clip,
       style: Theme.of(ctx).textTheme.subtitle.copyWith(
          fontWeight: FontWeight.normal,
-         color: Theme.of(ctx).colorScheme.secondary,
+         color: Colors.grey[700],
       ),
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: Theme.of(ctx).textTheme.title.copyWith(
+      style: Theme.of(ctx).textTheme.subhead.copyWith(
          fontWeight: FontWeight.w500,
          color: primary,
       ),
@@ -1771,39 +1770,35 @@ Widget makePaymentChoiceWidget(
    BuildContext ctx,
    Function freePayment)
 {
+   List<Widget> widgets = List<Widget>();
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
-      child: Text(txt.payPricesTitle,
-         style: Theme.of(ctx).textTheme.title.copyWith(
+      child: Text(txt.paymentTitle,
+         style: Theme.of(ctx).textTheme.subhead.copyWith(
              color: Theme.of(ctx).colorScheme.primary,
              //fontWeight: FontWeight.w500,
           ),
        ),
    );
 
-   Widget p1 = makePayPriceListTile(
-      ctx,
-      "Seu anúncio no site por um mês",
-      "Anúncio grátis com limitacao de um por dia",
-      ' 0R\$',
-      () { freePayment(ctx); },
-   );
+   widgets.add(title);
 
-   Widget p2 = makePayPriceListTile(
-      ctx,
-      'Prioridade sobre anúnicos grátis',
-      'Seu anúncio mostrado com no topo da lista para os usuários',
-      ' 5R\$',
-      pay,
-   );
+   List<Function> payments = <Function>
+   [ () { freePayment(ctx); }
+   , pay
+   , pay
+   ];
+   for (int i = 0; i < txt.payments.length; ++i) {
+      Widget p = makePayPriceListTile(
+         ctx,
+         txt.payments[i][0],
+         txt.payments[i][1],
+         txt.payments[i][2],
+         payments[i],
+      );
 
-   Widget p3 = makePayPriceListTile(
-      ctx,
-      'Premium',
-      'Seu anúncio mostrado com no topo da lista para os usuários',
-      '10R\$',
-      () { },
-   );
+      widgets.add(p);
+   }
 
    return Card(
       margin: const EdgeInsets.only(
@@ -1819,7 +1814,8 @@ Widget makePaymentChoiceWidget(
       ),
       child: Column(
          mainAxisSize: MainAxisSize.min,
-         children: <Widget> [title, p1, p2, p3]),
+         children: widgets
+      ),
    );
 }
 
