@@ -455,18 +455,40 @@ class MenuTraversal {
    }
 }
 
-List<List<int>> readHashCodes(MenuNode root, int depth)
+// NOTE: Keep this in sync with server code.
+int toChannelHashCodeD3(List<int> c)
 {
+   if (c.length != 3)
+      return 0;
+
+   int ca = c[0];
+   int cb = c[1];
+   int cc = c[2];
+
+   int shift = 21;
+
+   ca <<= 2 * shift;
+   cb <<= 1 * shift;
+   return ca | cb | cc;
+}
+
+List<int> readHashCodes(MenuNode root, int depth)
+{
+   // At the moment only depth 3 is supported. For greater values
+   // refer to the hash function in the server code.
+   assert(depth == 3);
+
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
-   List<List<int>> hashCodes = List<List<int>>();
+   List<int> hashCodes = List<int>();
    while (current != null) {
       if (current.leafReach > 0)
-         hashCodes.add(current.code);
+         hashCodes.add(toChannelHashCodeD3(current.code));
 
       current = iter.nextLeafNode();
    }
 
+   hashCodes.sort();
    return hashCodes;
 }
 

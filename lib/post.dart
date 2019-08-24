@@ -441,6 +441,8 @@ class Post {
       pinDate = 0;
       status = -1;
       description = bodyMap['msg'];
+      //rangeValues = List.generate(cts.rangeDivs.length, (int i)
+      //   { return cts.rangesMinMax[2 * i]; });
       rangeValues = decodeDetails(cts.rangeDivs.length, map['range_values']);
    }
 

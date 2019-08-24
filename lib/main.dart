@@ -4718,15 +4718,11 @@ class MenuChatState extends State<MenuChat>
 
    void _subscribeToChannels()
    {
-      List<List<List<int>>> channels = List<List<List<int>>>();
-      for (MenuItem item in _menu) {
-         List<List<int>> hashCodes =
-            readHashCodes(item.root.first, item.filterDepth);
-
-         // An empty channels list means we do not want any filter for
-         // that menu item.
-         channels.add(hashCodes);
-      }
+      List<List<int>> channels = List<List<int>>();
+      // An empty channels list means we do not want any filter for
+      // that menu item.
+      for (MenuItem item in _menu)
+         channels.add(readHashCodes(item.root.first, item.filterDepth));
 
       var subCmd = {
          'cmd': 'subscribe',
