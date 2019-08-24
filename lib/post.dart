@@ -258,15 +258,12 @@ Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
    return t1 >= t2 ? lhs : rhs;
 }
 
-List<List<List<int>>> makeEmptyMenuCodesContainer(int n)
+List<List<List<int>>> makeEmptyChannels()
 {
-   List<List<List<int>>> channel = List<List<List<int>>>(n);
-   for (int i = 0; i < n; ++i) {
-      channel[i] = List<List<int>>(1);
-      channel[i][0] = List<int>();
-   }
-
-   return channel;
+   return <List<List<int>>>
+   [ <List<int>>[<int>[]]
+   , <List<int>>[<int>[]]
+   ];
 }
 
 class Post {
@@ -314,29 +311,23 @@ class Post {
    // The string *description* inputed when user writes an post.
    String description = '';
 
+   List<String> imgsPerPost = List<String>();
+
    List<Chat> chats = List<Chat>();
 
    Post()
    {
-      channel = makeEmptyMenuCodesContainer(txt.menuDepthNames.length);
+      channel = makeEmptyChannels();
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
       rangeValues = List.generate(cts.rangeDivs.length, (int i)
          { return cts.rangesMinMax[2 * i]; });
       avatar = '';
+      imgsPerPost = List.filled(cts.imgsPerPost, '');
    }
 
    int getPrice()
       { return rangeValues[0]; }
-
-   int getYear()
-      { return rangeValues[1]; }
-
-   int setPrice(int price)
-      { rangeValues[0] = price; }
-
-   int setYear(int year)
-      { rangeValues[1] = year; }
 
    int getProductDetailIdx()
       { return channel[1][0][0]; }
@@ -434,16 +425,14 @@ class Post {
       avatar = bodyMap['avatar'] ?? '';
       channel = decodeChannel(map['to']);
 
-      exDetails = decodeDetails(cts.maxExDetailSize, map['ex_details']);
-      inDetails = decodeDetails(cts.maxInDetailSize, map['in_details']);
+      exDetails = decodeList(cts.maxExDetailSize, map['ex_details']);
+      inDetails = decodeList(cts.maxInDetailSize, map['in_details']);
 
       date = map['date'];
       pinDate = 0;
       status = -1;
       description = bodyMap['msg'];
-      //rangeValues = List.generate(cts.rangeDivs.length, (int i)
-      //   { return cts.rangesMinMax[2 * i]; });
-      rangeValues = decodeDetails(cts.rangeDivs.length, map['range_values']);
+      rangeValues = decodeList(cts.rangeDivs.length, map['range_values']);
    }
 
    // This serialization is used to communicate with the server.
@@ -505,18 +494,17 @@ Map<String, dynamic> postToMap(Post post)
       'channel': jsonEncode(post.channel),
       'ex_details': jsonEncode(post.exDetails),
       'in_details': jsonEncode(post.inDetails),
+      'range_values': jsonEncode(post.rangeValues),
       'date': post.date,
       'pin_date': post.pinDate,
       'status': post.status,
       'description': post.description,
-      'price': post.getPrice(),
     };
 }
 
-List<int> decodeDetails(int size, List<dynamic> details)
+List<int> decodeList(int size, List<dynamic> details)
 {
-   List<int> ret = List<int>();
-   ret = List.generate(size, (_) => 0);
+   List<int> ret = List.filled(size, 0);
    if (details != null) {
       ret = List.generate(details.length, (int i) { return details[i]; });
    } else {
@@ -540,24 +528,25 @@ Future<List<Post>> loadPosts(Database db) async
      post.avatar = maps[i]['nick'];
      post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
 
-     post.exDetails = decodeDetails(
+     post.exDetails = decodeList(
         cts.maxExDetailSize,
         jsonDecode(maps[i]['ex_details']),
      );
 
-     post.inDetails = decodeDetails(
+     post.inDetails = decodeList(
         cts.maxInDetailSize,
         jsonDecode(maps[i]['in_details']),
+     );
+
+     post.rangeValues = decodeList(
+        cts.rangeDivs.length,
+        jsonDecode(maps[i]['range_values']),
      );
 
      post.date = maps[i]['date'];
      post.pinDate = maps[i]['pin_date'];
      post.status = maps[i]['status'];
      post.description = maps[i]['description'] ?? '';
-     post.rangeValues = List.generate(cts.rangeDivs.length, (int i)
-        { return cts.rangesMinMax[2 * i]; });
-     post.rangeValues[0] = maps[i]['price'] ?? cts.rangesMinMax[0];
-     post.rangeValues[1] = maps[i]['year'] ?? cts.rangesMinMax[2];
      return post;
   });
 }
@@ -770,8 +759,6 @@ Future<List<Config>> loadConfig(Database db) async
         fields.length,
         (int i) { return int.parse(fields[i]); },
      );
-
-     //ranges = cts.rangesMinMax; // remove this
 
      Config cfg = Config(
         appId: maps[i]['app_id'],

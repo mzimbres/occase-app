@@ -314,7 +314,10 @@ Scaffold makeRegisterScreen(
    );
 }
 
-Widget makeImgBox(double width, double height, String url)
+Widget makeNetImgView(
+   double width,
+   double height,
+   String url)
 {
    Widget img = CachedNetworkImage(
       imageUrl: url,
@@ -330,14 +333,48 @@ Widget makeImgBox(double width, double height, String url)
       errorWidget: (ctx, url, error) => Icon(Icons.error),
    );
 
-   return SizedBox(
-      width: width,
-      height: height,
-      child: Center(child: img),
+   return FlatButton(
+      onPressed: (){print('===> ');},
+      child: SizedBox(
+         width: width,
+         height: height,
+         child: Center(child: img),
+      ),
    );
 }
+Widget makeImgBox(
+   double width,
+   double height,
+   String url,
+   Function onAddPhoto)
+{
+   if (url.isEmpty) {
+      return SizedBox(
+         width: width,
+         height: height,
+         child: Card(
+            color: Colors.grey[600],
+            child: Center(
+               child: IconButton(
+                  onPressed: () {onAddPhoto(0);},
+                  icon: Icon(Icons.add_a_photo,
+                     color: stl.colorScheme.primary,
+                     size: 30.0,
+                  ),
+               ),
+            ),
+         ),
+      );
+   }
 
-Widget makeImgListView(double width, double height)
+   return makeNetImgView(width, height, url);
+}
+
+Widget makeImgListView(
+   Post post,
+   double width,
+   double height,
+   Function onAddPhoto)
 {
    final String url1 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
    final String url2 = 'https://avatarfiles.alphacoders.com/114/114080.jpg';
@@ -349,10 +386,10 @@ Widget makeImgListView(double width, double height)
       shrinkWrap: true,
       padding: const EdgeInsets.all(4.0),
       children: <Widget>
-      [ makeImgBox(width, height, url1)
-      , makeImgBox(width, height, url2)
-      , makeImgBox(width, height, url3)
-      , makeImgBox(width, height, url4)
+      [ makeImgBox(width, height, url1, onAddPhoto)
+      , makeImgBox(width, height, '', onAddPhoto)
+      , makeImgBox(width, height, url3, onAddPhoto)
+      , makeImgBox(width, height, '', onAddPhoto)
       ]
    );
 
@@ -604,7 +641,8 @@ WillPopScope makeNewPostScreens(
    Function onNewPostInDetails,
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
-   Function onRangeValueChanged)
+   Function onRangeValueChanged,
+   Function onAddPhoto)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -630,6 +668,7 @@ WillPopScope makeNewPostScreens(
                inDetailsMenu,
                stl.pubIcon,
                txt.cancelNewPost,
+               onAddPhoto,
             );
          },
       );
@@ -2343,7 +2382,8 @@ Card makePostWidget(
    Widget card,
    Function onPressed,
    Icon icon,
-   Post post)
+   Post post,
+   Function onAddPhoto)
 {
    IconButton icon1 = IconButton(
       iconSize: 35.0,
@@ -2376,8 +2416,10 @@ Card makePostWidget(
    );
 
    Widget imgLv = makeImgListView(
+      post,
       cts.imgBoxWidth,
       cts.imgBoxHeight,
+      onAddPhoto,
    );
 
    Widget priceText = Padding(
@@ -2438,7 +2480,8 @@ Widget makePostPubWidget(
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
    Icon ic,
-   String snackbarStr)
+   String snackbarStr,
+   Function onAddPhoto)
 {
    Widget title = Text(
       makePostSummaryStr(menu[1].root.first, post),
@@ -2468,6 +2511,7 @@ Widget makePostPubWidget(
       onPostSelection,
       ic,
       post,
+      onAddPhoto,
    );
 
    return Dismissible(
@@ -2510,6 +2554,7 @@ ListView makePostTabListView(
             inDetailsMenu,
             stl.favIcon,
             txt.dissmissedPost,
+            (int i){print('Error: Please fix aaab');},
          );
       },
    );
@@ -2928,10 +2973,13 @@ Widget makeChatTab(
 
          List<Widget> foo = List<Widget>();
          foo.add(makeImgListView(
+               posts[i],
                cts.imgBoxWidth,
                cts.imgBoxHeight,
+               (int i) {print('Error: Please fix');},
             ),
          );
+
          foo.addAll(assemblePostRows(
                ctx,
                posts[i],
@@ -3563,6 +3611,15 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
+   // Used to either add or remove a photo from the new post.
+   // i = 0 ==>  add
+   // i = 1 ==>  remove.
+   //
+   void _onAddPhoto(int i)
+   {
+      print('=====> onAddPhoto');
+   }
+
    void _onRangeValueChanged(int i, double v)
    {
       setState((){_post.rangeValues[i] = v.round();});
@@ -4190,7 +4247,11 @@ class MenuChatState extends State<MenuChat>
          ctx,
          (){},
          title,
-         makeImgBox(cts.onClickAvatarWidth, cts.onClickAvatarWidth, url),
+         makeNetImgView(
+            cts.onClickAvatarWidth,
+            cts.onClickAvatarWidth,
+            url,
+         ),
       );
    }
 
@@ -5009,6 +5070,7 @@ class MenuChatState extends State<MenuChat>
             _exDetailsRoot,
             _inDetailsRoot,
             _onRangeValueChanged,
+            _onAddPhoto,
          );
       }
 

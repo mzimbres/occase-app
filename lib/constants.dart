@@ -46,5 +46,8 @@ const double onClickAvatarWidth = 200.0;
 //final String host = 'ws://10.0.2.2:80';
 
 // My public ip.
-final String host = 'ws://37.24.165.216:80';
+const String host = 'ws://37.24.165.216:80';
+
+const int imgsPerPost = 6;
+
 

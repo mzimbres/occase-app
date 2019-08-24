@@ -44,7 +44,8 @@ const chatTilePadding = cardPostMargin;
 
 const Icon unknownPersonIcon = Icon(
    Icons.person,
-   color: Colors.white, size: 30.0
+   color: Colors.white,
+   size: 30.0,
 );
 
 const List<IconData> newPostTabIcons = <IconData>

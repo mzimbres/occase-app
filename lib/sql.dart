@@ -12,7 +12,7 @@ CREATE TABLE posts
 , pin_date INTEGER
 , status INTEGER
 , description TEXT
-, price INTEGER)
+, range_values TEXT)
 ''';
 
 final String updatePostStatus =
