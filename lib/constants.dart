@@ -43,11 +43,12 @@ const double onClickAvatarWidth = 200.0;
 // WARNING: localhost or 127.0.0.1 is the emulator or the phone
 // address. If the phone is connected (via USB) to a computer
 // the computer can be found on 10.0.2.2.
-//final String host = 'ws://10.0.2.2:80';
+//final String wshost = 'ws://10.0.2.2:80';
 
 // My public ip.
-const String host = 'ws://37.24.165.216:80';
+const String wshost = 'ws://37.24.165.216:80';
+const String httphost = 'http://10.0.2.2:8088';
 
-const int imgsPerPost = 6;
+const int maxImgsPerPost = 6;
 
 

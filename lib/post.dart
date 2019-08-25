@@ -311,7 +311,7 @@ class Post {
    // The string *description* inputed when user writes an post.
    String description = '';
 
-   List<String> imgsPerPost = List<String>();
+   List<String> images = List<String>();
 
    List<Chat> chats = List<Chat>();
 
@@ -320,10 +320,12 @@ class Post {
       channel = makeEmptyChannels();
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      rangeValues = List.generate(cts.rangeDivs.length, (int i)
-         { return cts.rangesMinMax[2 * i]; });
+      rangeValues = List.generate(cts.rangeDivs.length, (int i) {
+         return cts.rangesMinMax[2 * i];
+      });
+
       avatar = '';
-      imgsPerPost = List.filled(cts.imgsPerPost, '');
+      images = List.filled(cts.maxImgsPerPost, '');
    }
 
    int getPrice()

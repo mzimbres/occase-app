@@ -18,6 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:square_in_app_payments/in_app_payments.dart';
 import 'package:square_in_app_payments/models.dart' as sq;
+import 'package:dio/dio.dart';
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -330,7 +331,11 @@ Widget makeNetImgView(
         ),
       ),
       placeholder: (ctx, url) => CircularProgressIndicator(),
-      errorWidget: (ctx, url, error) => Icon(Icons.error),
+      errorWidget: (ctx, url, error) {
+         // TODO: Replace this with a proper widget.
+         print('====> $error $url');
+         return Icon(Icons.error);
+      },
    );
 
    return FlatButton(
@@ -381,16 +386,21 @@ Widget makeImgListView(
    final String url3 = 'https://avatarfiles.alphacoders.com/130/130670.jpg';
    final String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
 
-   ListView lv = ListView(
+   ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
       padding: const EdgeInsets.all(4.0),
-      children: <Widget>
-      [ makeImgBox(width, height, url1, onAddPhoto)
-      , makeImgBox(width, height, '', onAddPhoto)
-      , makeImgBox(width, height, url3, onAddPhoto)
-      , makeImgBox(width, height, '', onAddPhoto)
-      ]
+      itemCount: post.images.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+         String url = post.images[i];
+         return makeImgBox(
+            width,
+            height,
+            url,
+            onAddPhoto,
+         );
+      },
    );
 
    return ConstrainedBox(
@@ -3522,7 +3532,7 @@ class MenuChatState extends State<MenuChat>
          print(e);
       }
 
-      // TODO: The _posts array is expected to be sorted on its
+      // NOTE: The _posts array is expected to be sorted on its
       // ids, so we could perform a binary search here instead.
       final int i = _posts.indexWhere((e)
          { return e.id == _cfg.lastSeenPostId; });
@@ -3544,7 +3554,7 @@ class MenuChatState extends State<MenuChat>
 
    void _stablishNewConnection()
    {
-      channel = IOWebSocketChannel.connect(cts.host);
+      channel = IOWebSocketChannel.connect(cts.wshost);
       channel.stream.listen(
          onWSData,
          onError: _onWSError,
@@ -3612,12 +3622,52 @@ class MenuChatState extends State<MenuChat>
    }
 
    // Used to either add or remove a photo from the new post.
-   // i = 0 ==>  add
-   // i = 1 ==>  remove.
+   // i = 0 ==> add
+   // i != 0 ==> remove.
    //
-   void _onAddPhoto(int i)
+   Future<void> _onAddPhoto(int i) async
    {
-      print('=====> onAddPhoto');
+      try {
+         File img = await ImagePicker.pickImage(source: ImageSource.gallery);
+         if (img == null)
+            return;
+
+         String filename = img.path.split('/').last;
+
+         print('=====> onAddPhoto: Image name $filename');
+
+         FormData formData = new FormData.from({
+            "image": UploadFileInfo(img, filename)
+         });
+
+         const String httpTarget = cts.httphost + '/image';
+
+         var resp = await Dio().post(
+            httpTarget,
+            data: formData,
+            onSendProgress: (int sent, int total)
+            {
+               print("$sent $total");
+            },
+         );
+
+         int j = _post.images.indexWhere((String s) {
+            return s.isEmpty;
+         });
+
+         print('===> Response $j ${resp.data}');
+
+         if (j == -1) {
+            print('No more available slots.');
+            return;
+         }
+
+         // We have to add the image in the first slot available, i.e.
+         // those that still have an empty string.
+         setState((){_post.images[j] = resp.data; });
+      } catch (e) {
+         print(e);
+      }
    }
 
    void _onRangeValueChanged(int i, double v)
@@ -4099,40 +4149,66 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _onSendFreePost(BuildContext ctx, final int i) async
+   Future<void> _onSendFreePost(BuildContext ctx, int i) async
    {
-      _newPostPressed = false;
+      try {
+         // FIXME TODO: Move this to the publish_ack function.
+         // Before we send the post we have to change the image
+         // expiration dates on S3.
 
-      if (i == 0) {
-         _post = null;
-         setState(() { });
-         return;
-      }
+         const String httpTarget = cts.httphost + '/expiration';
 
-      _botBarIdx = 0;
-      _post.from = _cfg.appId;
-      _post.nick = _cfg.nick;
-      _post.avatar = emailToGravatarHash(_cfg.email);
-      _post.status = 3;
+         var map = {
+            'images': _post.images,
+         };
 
-      await _sendPost(_post.clone());
-
-      _post = null;
-      setState(() { });
-
-      // If the user cancels the operation we do not show the dialog.
-      if (i == 1) {
-         _showSimpleDial(
-            ctx,
-            (){},
-            txt.dialogTitles[3],
-            Text(txt.dialogBodies[3])
+         var resp = await Dio().post(
+            httpTarget,
+            data: jsonEncode(map),
+            onSendProgress: (int sent, int total)
+            {
+               print("$sent $total");
+            },
          );
+
+         // Expiration was successfull we can send the post.
+         _newPostPressed = false;
+
+         _botBarIdx = 0;
+         _post.from = _cfg.appId;
+         _post.nick = _cfg.nick;
+         _post.avatar = emailToGravatarHash(_cfg.email);
+         _post.status = 3;
+
+         await _sendPost(_post.clone());
+
+         _post = null;
+
+         setState(() { });
+
+         // If the user cancels the operation we do not show the dialog.
+         if (i == 1) {
+            _showSimpleDial(
+               ctx,
+               (){},
+               txt.dialogTitles[3],
+               Text(txt.dialogBodies[3])
+            );
+         }
+      } catch (e) {
+         print(e);
       }
    }
 
    Future<void> _onSendNewPost(BuildContext ctx, int i) async
    {
+      if (i == 0) {
+         _newPostPressed = false;
+         _post = null;
+         setState(() { });
+         return;
+      }
+
       await showModalBottomSheet<void>(
          context: ctx,
          backgroundColor: Colors.white,
