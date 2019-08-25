@@ -325,7 +325,14 @@ class Post {
       });
 
       avatar = '';
-      images = List.filled(cts.maxImgsPerPost, '');
+
+      const String url1 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
+      const String url2 = 'https://avatarfiles.alphacoders.com/114/114080.jpg';
+      const String url3 = 'https://avatarfiles.alphacoders.com/130/130670.jpg';
+      const String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
+
+      //images = List.filled(cts.maxImgsPerPost, '');
+      images = <String>[url1, url2, url3, url4];
    }
 
    int getPrice()

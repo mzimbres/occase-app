@@ -315,7 +315,7 @@ Scaffold makeRegisterScreen(
    );
 }
 
-Widget makeNetImgView(
+Widget makeNetImgBox(
    double width,
    double height,
    String url)
@@ -347,57 +347,71 @@ Widget makeNetImgView(
       ),
    );
 }
-Widget makeImgBox(
+
+Widget makeAddImgBox(
    double width,
    double height,
-   String url,
    Function onAddPhoto)
 {
-   if (url.isEmpty) {
-      return SizedBox(
-         width: width,
-         height: height,
-         child: Card(
-            color: Colors.grey[600],
-            child: Center(
-               child: IconButton(
-                  onPressed: () {onAddPhoto(0);},
-                  icon: Icon(Icons.add_a_photo,
-                     color: stl.colorScheme.primary,
-                     size: 30.0,
-                  ),
+   return SizedBox(
+      width: width,
+      height: height,
+      child: Card(
+         color: Colors.grey[500],
+         child: Center(
+            child: IconButton(
+               onPressed: () {onAddPhoto(0);},
+               icon: Icon(Icons.add_a_photo,
+                  color: stl.colorScheme.primary,
+                  size: 30.0,
                ),
             ),
          ),
-      );
-   }
-
-   return makeNetImgView(width, height, url);
+      ),
+   );
 }
 
 Widget makeImgListView(
-   Post post,
    double width,
    double height,
-   Function onAddPhoto)
+   Function onAddPhoto,
+   List<File> imgFiles,
+   Post post)
 {
-   final String url1 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
-   final String url2 = 'https://avatarfiles.alphacoders.com/114/114080.jpg';
-   final String url3 = 'https://avatarfiles.alphacoders.com/130/130670.jpg';
-   final String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
+   int l = 1;
+   if (post.images.isNotEmpty) {
+      l = post.images.length;
+   } else if (imgFiles.isNotEmpty) {
+      l = imgFiles.length;
+   }
 
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
       padding: const EdgeInsets.all(4.0),
-      itemCount: post.images.length,
+      itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         String url = post.images[i];
-         return makeImgBox(
+         if (post.images.isNotEmpty) {
+            return makeNetImgBox(
+               width,
+               height,
+               post.images[i],
+            );
+         }
+
+         if (imgFiles.isNotEmpty) {
+            // FIXME: Use a stack to superpose the images and the add
+            // a photo buttom. 
+            return Image.file(imgFiles[i],
+               width: width,
+               height: height,
+            );
+         }
+
+         return makeAddImgBox(
             width,
             height,
-            url,
             onAddPhoto,
          );
       },
@@ -652,7 +666,8 @@ WillPopScope makeNewPostScreens(
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
    Function onRangeValueChanged,
-   Function onAddPhoto)
+   Function onAddPhoto,
+   List<File> imgFiles)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -679,6 +694,7 @@ WillPopScope makeNewPostScreens(
                stl.pubIcon,
                txt.cancelNewPost,
                onAddPhoto,
+               imgFiles,
             );
          },
       );
@@ -2393,7 +2409,8 @@ Card makePostWidget(
    Function onPressed,
    Icon icon,
    Post post,
-   Function onAddPhoto)
+   Function onAddPhoto,
+   List<File> imgFiles)
 {
    IconButton icon1 = IconButton(
       iconSize: 35.0,
@@ -2426,10 +2443,11 @@ Card makePostWidget(
    );
 
    Widget imgLv = makeImgListView(
-      post,
       cts.imgBoxWidth,
       cts.imgBoxHeight,
       onAddPhoto,
+      imgFiles,
+      post,
    );
 
    Widget priceText = Padding(
@@ -2491,7 +2509,8 @@ Widget makePostPubWidget(
    MenuNode inDetailsMenu,
    Icon ic,
    String snackbarStr,
-   Function onAddPhoto)
+   Function onAddPhoto,
+   List<File> imgFiles)
 {
    Widget title = Text(
       makePostSummaryStr(menu[1].root.first, post),
@@ -2522,6 +2541,7 @@ Widget makePostPubWidget(
       ic,
       post,
       onAddPhoto,
+      imgFiles,
    );
 
    return Dismissible(
@@ -2565,6 +2585,7 @@ ListView makePostTabListView(
             stl.favIcon,
             txt.dissmissedPost,
             (int i){print('Error: Please fix aaab');},
+            List<File>(),
          );
       },
    );
@@ -2983,10 +3004,11 @@ Widget makeChatTab(
 
          List<Widget> foo = List<Widget>();
          foo.add(makeImgListView(
-               posts[i],
                cts.imgBoxWidth,
                cts.imgBoxHeight,
-               (int i) {print('Error: Please fix');},
+               (int i){ print('Error: Please fix aaac');},
+               List<File>(),
+               posts[i],
             ),
          );
 
@@ -3288,6 +3310,10 @@ class MenuChatState extends State<MenuChat>
    // This variable is set to true when we are able to either login
    // and register.
    bool _isConnected = false;
+
+   // Used in the final new post screen to store the files while the
+   // user chooses the images.
+   List<File> _imgFiles = List<File>();
 
    @override
    void initState()
@@ -3628,43 +3654,18 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onAddPhoto(int i) async
    {
       try {
+         if (_imgFiles.length == 5) {
+            // TODO: Show dialog if maximum number of images has been
+            // achieved.
+            print('Maximum number of images has been reached.');
+            return;
+         }
+
          File img = await ImagePicker.pickImage(source: ImageSource.gallery);
          if (img == null)
             return;
 
-         String filename = img.path.split('/').last;
-
-         print('=====> onAddPhoto: Image name $filename');
-
-         FormData formData = new FormData.from({
-            "image": UploadFileInfo(img, filename)
-         });
-
-         const String httpTarget = cts.httphost + '/image';
-
-         var resp = await Dio().post(
-            httpTarget,
-            data: formData,
-            onSendProgress: (int sent, int total)
-            {
-               print("$sent $total");
-            },
-         );
-
-         int j = _post.images.indexWhere((String s) {
-            return s.isEmpty;
-         });
-
-         print('===> Response $j ${resp.data}');
-
-         if (j == -1) {
-            print('No more available slots.');
-            return;
-         }
-
-         // We have to add the image in the first slot available, i.e.
-         // those that still have an empty string.
-         setState((){_post.images[j] = resp.data; });
+         setState((){_imgFiles.add(img); });
       } catch (e) {
          print(e);
       }
@@ -3721,6 +3722,7 @@ class MenuChatState extends State<MenuChat>
    {
       _newPostPressed = true;
       _post = Post();
+      _post.images = List<String>(); // TODO: remove this later.
       _menu[0].restoreMenuStack();
       _menu[1].restoreMenuStack();
       _botBarIdx = 0;
@@ -4152,24 +4154,40 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onSendFreePost(BuildContext ctx, int i) async
    {
       try {
-         // FIXME TODO: Move this to the publish_ack function.
-         // Before we send the post we have to change the image
-         // expiration dates on S3.
+         // Problem: The server may refuse the post so that means if
+         // the images are sent first to S3, we may have the problem.
+         // Sending after may also be a problem as the post may become
+         // available. Ideally we would send them together.
 
-         const String httpTarget = cts.httphost + '/expiration';
+         //-----------------------------------------------------------
+         if (_imgFiles.isNotEmpty) {
+            // TODO: Loop on the files.
+            String filename = _imgFiles.first.path.split('/').last;
 
-         var map = {
-            'images': _post.images,
-         };
+            print('=====> onAddPhoto: Image name $filename');
 
-         var resp = await Dio().post(
-            httpTarget,
-            data: jsonEncode(map),
-            onSendProgress: (int sent, int total)
-            {
-               print("$sent $total");
-            },
-         );
+            FormData formData = FormData.from({
+               "image": UploadFileInfo(_imgFiles.first, filename)
+            });
+
+            const String httpTarget = cts.httphost + '/image';
+
+            var resp = await Dio().post(
+               httpTarget,
+               data: formData,
+               onSendProgress: (int sent, int total)
+               {
+                  print("$sent $total");
+               },
+            );
+
+            // TODO: Check the response was successful.
+            _post.images.add(resp.data);
+         }
+
+         _imgFiles = List<File>();
+
+         //------------------------------------
 
          // Expiration was successfull we can send the post.
          _newPostPressed = false;
@@ -4323,7 +4341,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          (){},
          title,
-         makeNetImgView(
+         makeNetImgBox(
             cts.onClickAvatarWidth,
             cts.onClickAvatarWidth,
             url,
@@ -5147,6 +5165,7 @@ class MenuChatState extends State<MenuChat>
             _inDetailsRoot,
             _onRangeValueChanged,
             _onAddPhoto,
+            _imgFiles,
          );
       }
 
