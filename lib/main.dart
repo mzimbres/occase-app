@@ -18,7 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:square_in_app_payments/in_app_payments.dart';
 import 'package:square_in_app_payments/models.dart' as sq;
-import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:menu_chat/post.dart';
@@ -1084,8 +1084,9 @@ Widget makeFAButtonMiddleScreen(
       onPressed: onNewFilters,
       backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
       child: Icon(
-         Icons.filter_list,
-         color: Theme.of(ctx).colorScheme.onSecondary,
+         Icons.notification_important,
+         //color: Theme.of(ctx).colorScheme.onSecondary,
+         color: Colors.white,
       ),
    );
 
@@ -4166,23 +4167,17 @@ class MenuChatState extends State<MenuChat>
 
             print('=====> onAddPhoto: Image name $filename');
 
-            FormData formData = FormData.from({
-               "image": UploadFileInfo(_imgFiles.first, filename)
-            });
-
             const String httpTarget = cts.httphost + '/image';
-
-            var resp = await Dio().post(
+            var response = await http.post(
                httpTarget,
-               data: formData,
-               onSendProgress: (int sent, int total)
-               {
-                  print("$sent $total");
-               },
+               body: await _imgFiles.first.readAsBytes(),
             );
 
+            print('Response status: ${response.statusCode}');
+            print('Response body: ${response.body}');
+
             // TODO: Check the response was successful.
-            _post.images.add(resp.data);
+            //_post.images.add(resp.data);
          }
 
          _imgFiles = List<File>();
