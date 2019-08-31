@@ -667,7 +667,8 @@ WillPopScope makeNewPostScreens(
    MenuNode inDetailsMenu,
    Function onRangeValueChanged,
    Function onAddPhoto,
-   List<File> imgFiles)
+   List<File> imgFiles,
+   bool filenamesTimerActive)
 {
    Widget wid;
    Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
@@ -757,11 +758,17 @@ WillPopScope makeNewPostScreens(
       ),
    );
 
+   List<Widget> ww = <Widget>[wid];
+   if (filenamesTimerActive)
+      ww.add(Center(child: CircularProgressIndicator()));
+
+   Stack stack = Stack(children: ww);
+
    return WillPopScope(
       onWillPop: () async { return onWillPopMenu();},
       child: Scaffold(
           appBar: appBar,
-          body: wid,
+          body: stack,
           bottomNavigationBar: makeBottomBarItems(
              stl.newPostTabIcons,
              txt.newPostTabNames,
@@ -3233,7 +3240,10 @@ class MenuChatState extends State<MenuChat>
    // ok by the server, before that they will live in _outPostsQueue
    List<Post> _ownPosts = List<Post>();
 
-   // Posts sent to the server that haven't been acked yet.
+   // Posts sent to the server that haven't been acked yet. At the
+   // moment this queue will contain only one element. It is needed if
+   // to handle the case where we go offline between a publish and a
+   // publish_ack.
    Queue<Post> _outPostsQueue = Queue<Post>();
 
    // Stores chat messages that cannot be lost in case the connection
@@ -3244,6 +3254,12 @@ class MenuChatState extends State<MenuChat>
    // is clicked. It must be carefully set to false when that screen
    // are left.
    bool _newPostPressed = false;
+
+   // This error code assumes the following values
+   // -1: No error, nothing to do.
+   //  0: There was an error uploading the images.
+   //  1: The post was sent to the server.
+   int _newPostErrorCode = -1;
 
    // Similar to _newPostPressed but for the filter screen.
    bool _newFiltersPressed = false;
@@ -3315,6 +3331,8 @@ class MenuChatState extends State<MenuChat>
    // Used in the final new post screen to store the files while the
    // user chooses the images.
    List<File> _imgFiles = List<File>();
+
+   Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
 
    @override
    void initState()
@@ -4042,8 +4060,15 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _sendPost(Post post) async
+   Future<void> _sendPost() async
    {
+      _post.from = _cfg.appId;
+      _post.nick = _cfg.nick;
+      _post.avatar = emailToGravatarHash(_cfg.email);
+      _post.status = 3;
+
+      Post post = _post.clone();
+
       final bool isEmpty = _outPostsQueue.isEmpty;
 
       // We add it here in our own list of posts and keep in mind it
@@ -4071,22 +4096,13 @@ class MenuChatState extends State<MenuChat>
       channel.sink.add(payload);
    }
 
-   void sendOfflinePosts()
-   {
-      if (_outPostsQueue.isEmpty)
-         return;
-
-      final String payload = makePostPayload(_outPostsQueue.first);
-      channel.sink.add(payload);
-   }
-
    void _handlePublishAck(final int id, final int date, Batch batch)
    {
       try {
          assert(!_outPostsQueue.isEmpty);
          Post post = _outPostsQueue.removeFirst();
          if (id == -1) {
-            // FIXME: Remove the post from the db.
+            // TODO: Remove the post from the db.
             print("Publish failed.");
             return;
          }
@@ -4152,65 +4168,63 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _onSendFreePost(BuildContext ctx, int i) async
+   Future<int> _uploadImgs() async
+   {
+      // TODO: Add timeouts.
+
+      if (_imgFiles.isNotEmpty) {
+         String filename = _imgFiles.first.path.split('/').last;
+
+         print('=====> onAddPhoto: Image name $filename');
+
+         const String httpTarget = cts.httphost + '/image';
+         var response = await http.post(
+            httpTarget,
+            body: await _imgFiles.first.readAsBytes(),
+         );
+
+         print('Response status: ${response.statusCode}');
+         print('Response body: ${response.body}');
+
+         // TODO: Check the response was successful.
+         //_post.images.add(resp.data);
+      }
+
+      _imgFiles = List<File>();
+      return -1;
+   }
+
+   Future<void> _onSendFreePost() async
    {
       try {
-         // Problem: The server may refuse the post so that means if
-         // the images are sent first to S3, we may have the problem.
-         // Sending after may also be a problem as the post may become
-         // available. Ideally we would send them together.
+         _newPostErrorCode = await _uploadImgs();
 
-         //-----------------------------------------------------------
-         if (_imgFiles.isNotEmpty) {
-            // TODO: Loop on the files.
-            String filename = _imgFiles.first.path.split('/').last;
+         if (_newPostErrorCode == -1)
+            await _sendPost();
 
-            print('=====> onAddPhoto: Image name $filename');
-
-            const String httpTarget = cts.httphost + '/image';
-            var response = await http.post(
-               httpTarget,
-               body: await _imgFiles.first.readAsBytes(),
-            );
-
-            print('Response status: ${response.statusCode}');
-            print('Response body: ${response.body}');
-
-            // TODO: Check the response was successful.
-            //_post.images.add(resp.data);
-         }
-
-         _imgFiles = List<File>();
-
-         //------------------------------------
-
-         // Expiration was successfull we can send the post.
-         _newPostPressed = false;
-
-         _botBarIdx = 0;
-         _post.from = _cfg.appId;
-         _post.nick = _cfg.nick;
-         _post.avatar = emailToGravatarHash(_cfg.email);
-         _post.status = 3;
-
-         await _sendPost(_post.clone());
-
-         _post = null;
-
-         setState(() { });
-
-         // If the user cancels the operation we do not show the dialog.
-         if (i == 1) {
-            _showSimpleDial(
-               ctx,
-               (){},
-               txt.dialogTitles[3],
-               Text(txt.dialogBodies[3])
-            );
-         }
       } catch (e) {
          print(e);
       }
+   }
+
+   void _requestFilenames()
+   {
+      // Consider: Check if the app is online before sending.
+
+      var cmd = {
+         'cmd': 'filenames',
+      };
+
+      String payload = jsonEncode(cmd);
+      print(payload);
+      channel.sink.add(payload);
+
+      _filenamesTimer = Timer(
+         Duration(seconds: cts.filenamesTimeout),
+         _leaveNewPostScreen,
+      );
+
+      setState(() { });
    }
 
    Future<void> _onSendNewPost(BuildContext ctx, int i) async
@@ -4236,7 +4250,7 @@ class MenuChatState extends State<MenuChat>
                (BuildContext ctx)
                {
                   Navigator.of(ctx).pop();
-                  _onSendFreePost(ctx, i);
+                  _requestFilenames();
                },
             );
          },
@@ -4248,8 +4262,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          () async { await _onRemovePost(i);},
-         txt.dialogTitles[4],
-         Text(txt.dialogBodies[4]),
+         txt.dialogTitles[3],
+         Text(txt.dialogBodies[3]),
       );
    }
 
@@ -4682,8 +4696,30 @@ class MenuChatState extends State<MenuChat>
 
       // Retrieves some posts for the newly registered user.
       _subscribeToChannels();
+   }
 
-      // TODO: Check for menu updates and apply them.
+   void _leaveNewPostScreen()
+   {
+      setState((){
+         _newPostPressed = false;
+         _botBarIdx = 0;
+         _post = null;
+      });
+   }
+
+   Future<void> _onFilenamesAck(Map<String, dynamic> ack) async
+   {
+      final String res = ack["result"];
+      if (res == 'fail') {
+         print("filenames_ack: fail.");
+         return;
+      }
+
+      if (_filenamesTimer.isActive) {
+         _filenamesTimer.cancel();
+         await _onSendFreePost();
+         _leaveNewPostScreen();
+      }
    }
 
    void _onLoginAck(Map<String, dynamic> ack, final String msg)
@@ -4707,11 +4743,6 @@ class MenuChatState extends State<MenuChat>
       // Sends any chat messages that may have been written while
       // the app were offline.
       sendOfflineChatMsgs();
-
-      // The same for posts.
-      sendOfflinePosts();
-
-      // TODO: Check for menu updates and apply them.
    }
 
    void _onSubscribeAck(Map<String, dynamic> ack)
@@ -4758,7 +4789,7 @@ class MenuChatState extends State<MenuChat>
          _handlePublishAck(-1, -1, batch);
    }
 
-   void _onWSDataImpl(Batch batch)
+   Future<void> _onWSDataImpl(Batch batch) async
    {
       while (!_wsMsgQueue.isEmpty) {
          var msg = _wsMsgQueue.removeFirst();
@@ -4781,6 +4812,9 @@ class MenuChatState extends State<MenuChat>
             _onServerAck(ack, batch);
          } else if (cmd == "register_ack") {
             _onRegisterAck(ack, msg, batch);
+         } else if (cmd == "filenames_ack") {
+            print(msg);
+            await _onFilenamesAck(ack);
          } else {
             print('Unhandled message received from the server:\n$msg.');
          }
@@ -4793,14 +4827,14 @@ class MenuChatState extends State<MenuChat>
       _wsMsgQueue.add(msg);
       if (isEmpty) {
          Batch batch = _db.batch();
-         _onWSDataImpl(batch);
+         await _onWSDataImpl(batch);
          await batch.commit(noResult: true, continueOnError: true);
       }
    }
 
    void _onWSError(error)
    {
-      print("Error: " + error);
+      print("Error: _onWSError");
       _isConnected = false;
    }
 
@@ -5142,6 +5176,19 @@ class MenuChatState extends State<MenuChat>
       if (hasSwitchedTab())
          _cleanUpLpOnSwitchTab();
 
+      if (_newPostErrorCode != -1) {
+         SchedulerBinding.instance.addPostFrameCallback((_)
+         {
+            String title = txt.newPostErrorTitles[_newPostErrorCode];
+            String body = txt.newPostErrorBodies[_newPostErrorCode];
+            _showSimpleDial(ctx, (){},
+               title,
+               Text(body)
+            );
+            _newPostErrorCode = -1;
+         });
+      }
+
       if (_newPostPressed) {
          return makeNewPostScreens(
             ctx,
@@ -5161,6 +5208,7 @@ class MenuChatState extends State<MenuChat>
             _onRangeValueChanged,
             _onAddPhoto,
             _imgFiles,
+            _filenamesTimer.isActive,
          );
       }
 

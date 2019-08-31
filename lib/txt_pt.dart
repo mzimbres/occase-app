@@ -93,7 +93,6 @@ const List<String> dialogTitles = <String>
 [ 'Deletar post?'
 , 'Mover para chats?'
 , 'Alteracoes aplicadas'
-, 'Post enviado.'
 , 'Remover Post?'
 ];
 
@@ -101,7 +100,6 @@ const List<String> dialogBodies = <String>
 [ 'O post será deletado definitivamente.'
 , 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
 , 'Novos posts serao encaminhados automaticamente pra você.'
-, 'Seu post pode ser encontrado agora na tela \"Chats\" na aba \"Menus posts\".'
 , 'Seu post será removido definitivamente.'
 ];
 
@@ -157,3 +155,14 @@ const List<List<String>> payments =
   , 'Prioridade máxima. O maior alcance para seu anúncio.'
   ]
 ];
+
+const List<String> newPostErrorTitles = <String>
+[ 'Error'
+, 'Post enviado.'
+];
+
+const List<String> newPostErrorBodies = <String>
+[ 'As imagens nao puderam ser carregadas. Certifique-se que está conectado a internet e tente novamente.'
+, 'Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao.'
+];
+

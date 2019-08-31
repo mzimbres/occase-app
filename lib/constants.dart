@@ -51,4 +51,8 @@ const String httphost = 'http://10.0.2.2:8088';
 
 const int maxImgsPerPost = 6;
 
+// The time we are willing to wait for the server to send us the
+// filenames.
+const int filenamesTimeout = 5;
+
 
