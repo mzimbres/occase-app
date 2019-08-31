@@ -162,7 +162,7 @@ const List<String> newPostErrorTitles = <String>
 ];
 
 const List<String> newPostErrorBodies = <String>
-[ 'As imagens nao puderam ser carregadas. Certifique-se que está conectado a internet e tente novamente.'
+[ 'Falha na publicacao. Certifique-se que está conectado a internet e tente novamente.'
 , 'Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao.'
 ];
 

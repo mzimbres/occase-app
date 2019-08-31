@@ -4102,8 +4102,7 @@ class MenuChatState extends State<MenuChat>
          assert(!_outPostsQueue.isEmpty);
          Post post = _outPostsQueue.removeFirst();
          if (id == -1) {
-            // TODO: Remove the post from the db.
-            print("Publish failed.");
+            setState(() {_newPostErrorCode = 0;});
             return;
          }
 
@@ -4124,8 +4123,7 @@ class MenuChatState extends State<MenuChat>
 
          batch.execute(sql.updatePostOnAck, [0, id, date, post.dbId]);
 
-         // Required to show the publish as soon as its ack arrives.
-         setState(() { });
+         setState(() {_newPostErrorCode = 1;});
 
          if (_outPostsQueue.isEmpty)
             return;
@@ -4221,7 +4219,10 @@ class MenuChatState extends State<MenuChat>
 
       _filenamesTimer = Timer(
          Duration(seconds: cts.filenamesTimeout),
-         _leaveNewPostScreen,
+         () {
+            _leaveNewPostScreen();
+            _newPostErrorCode = 0;
+         },
       );
 
       setState(() { });
@@ -4229,6 +4230,13 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onSendNewPost(BuildContext ctx, int i) async
    {
+      // When the user sends a post, we start a timer and a circular
+      // progress indicator on the screen. To prevent the user from
+      // interacting with the screen after clicking send we have to
+      // add the following check here.
+      if (_filenamesTimer.isActive)
+         return;
+
       if (i == 0) {
          _newPostPressed = false;
          _post = null;
@@ -4712,14 +4720,13 @@ class MenuChatState extends State<MenuChat>
       final String res = ack["result"];
       if (res == 'fail') {
          print("filenames_ack: fail.");
-         return;
-      }
-
-      if (_filenamesTimer.isActive) {
+         _newPostErrorCode = 0;
+      } else if (_filenamesTimer.isActive) {
          _filenamesTimer.cancel();
          await _onSendFreePost();
-         _leaveNewPostScreen();
       }
+
+      _leaveNewPostScreen();
    }
 
    void _onLoginAck(Map<String, dynamic> ack, final String msg)
