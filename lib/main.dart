@@ -4106,14 +4106,15 @@ class MenuChatState extends State<MenuChat>
             return;
          }
 
-         // When working with the simulator I found out that it
-         // replies on my machine before the post could be moved from
-         // the output queue to the _ownPosts. In normal cases users
-         // won't be so fast. But since this is my test condition, I
-         // will cope with that by inserting the post in _ownPosts and
-         // only after that removing from the queue.
+         // When working with the simulator I noticed on my machine
+         // that it replies before the post could be moved from the
+         // output queue to the _ownPosts. In normal cases users won't
+         // be so fast. But since this is my test condition, I will
+         // cope with that by inserting the post in _ownPosts and only
+         // after that removing from the queue.
          // TODO: I think this does not hold anymore after I
          // introduced a message queue.
+
          post.id = id;
          post.date = date;
          post.status = 0;
@@ -4166,43 +4167,46 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<int> _uploadImgs() async
+   Future<int> _uploadImgs(List<String> fnames) async
    {
       // TODO: Add timeouts.
 
-      if (_imgFiles.isNotEmpty) {
-         String filename = _imgFiles.first.path.split('/').last;
+      final int l1 = fnames.length;
+      final int l2 = _imgFiles.length;
 
-         print('=====> onAddPhoto: Image name $filename');
+      final int l = l1 < l2 ? l1 : l2; // min
 
+      for (int i = 0; i < l; ++i) {
+         String path = _imgFiles.first.path;
+         String basename = p.basename(path);
+         String extension = p.extension(basename);
+         //String newname = fnames[i] + '.' + extension;
+         String newname = fnames[i] + '.jpg';
+
+         print('=====> Path $path');
+         print('=====> Image name $basename');
+         print('=====> Image type $extension');
+         print('=====> New name $newname');
+
+         var headers = {'filename': newname};
          const String httpTarget = cts.httphost + '/image';
-         var response = await http.post(
-            httpTarget,
+
+         var response = await http.post(httpTarget,
+            headers: headers,
             body: await _imgFiles.first.readAsBytes(),
          );
 
-         print('Response status: ${response.statusCode}');
-         print('Response body: ${response.body}');
+         final int stCode = response.statusCode;
+         if (stCode != 200) {
+            _imgFiles = List<File>();
+            return 0;
+         }
 
-         // TODO: Check the response was successful.
-         //_post.images.add(resp.data);
+         _post.images.add(newname);
       }
 
       _imgFiles = List<File>();
       return -1;
-   }
-
-   Future<void> _onSendFreePost() async
-   {
-      try {
-         _newPostErrorCode = await _uploadImgs();
-
-         if (_newPostErrorCode == -1)
-            await _sendPost();
-
-      } catch (e) {
-         print(e);
-      }
    }
 
    void _requestFilenames()
@@ -4717,13 +4721,26 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onFilenamesAck(Map<String, dynamic> ack) async
    {
-      final String res = ack["result"];
-      if (res == 'fail') {
-         print("filenames_ack: fail.");
-         _newPostErrorCode = 0;
-      } else if (_filenamesTimer.isActive) {
-         _filenamesTimer.cancel();
-         await _onSendFreePost();
+      try {
+         final String res = ack["result"];
+         if (res == 'fail') {
+            _newPostErrorCode = 0;
+         } else if (_filenamesTimer.isActive) {
+            _filenamesTimer.cancel();
+
+            List<dynamic> names = ack["names"];
+            List<String> fnames = List.generate(names.length, (i) {
+               return names[i];
+            });
+
+            _newPostErrorCode = await _uploadImgs(fnames);
+            print('_uploadImgs: $_newPostErrorCode');
+
+            if (_newPostErrorCode == -1)
+               await _sendPost();
+         }
+      } catch (e) {
+         print(e);
       }
 
       _leaveNewPostScreen();
@@ -4820,7 +4837,6 @@ class MenuChatState extends State<MenuChat>
          } else if (cmd == "register_ack") {
             _onRegisterAck(ack, msg, batch);
          } else if (cmd == "filenames_ack") {
-            print(msg);
             await _onFilenamesAck(ack);
          } else {
             print('Unhandled message received from the server:\n$msg.');
