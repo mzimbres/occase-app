@@ -332,7 +332,7 @@ class Post {
       const String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
 
       //images = List.filled(cts.maxImgsPerPost, '');
-      images = <String>[url1, url2, url3, url4];
+      //images = <String>[url1, url2, url3, url4];
    }
 
    int getPrice()
@@ -358,6 +358,7 @@ class Post {
       ret.status = this.status;
       ret.description = this.description;
       ret.chats = List<Chat>.from(this.chats);
+      ret.images = List<String>.from(this.images);
       return ret;
    }
 

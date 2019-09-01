@@ -393,10 +393,11 @@ Widget makeImgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (post.images.isNotEmpty) {
+            final String imgUrl = cts.httphost + '/' + post.images[i];
             return makeNetImgBox(
                width,
                height,
-               post.images[i],
+               imgUrl,
             );
          }
 
@@ -4193,7 +4194,7 @@ class MenuChatState extends State<MenuChat>
 
          var response = await http.post(httpTarget,
             headers: headers,
-            body: await _imgFiles.first.readAsBytes(),
+            body: await _imgFiles[i].readAsBytes(),
          );
 
          final int stCode = response.statusCode;
