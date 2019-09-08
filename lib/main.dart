@@ -3290,7 +3290,7 @@ class MenuChatState extends State<MenuChat>
    List<Coord> _lpChats = List<Coord>();
 
    // The menu details filter.
-   int _filter = 0;
+   int _any_of_features = 0;
 
    // A temporary variable used to store forwarded chat messages.
    List<Coord> _lpChatMsgs = List<Coord>();
@@ -3566,7 +3566,11 @@ class MenuChatState extends State<MenuChat>
                for (Post o in _favPosts)
                   o.chats = await loadChats(_db, o.id);
             } else if (p.status == 3) {
-               _outPostsQueue.add(p);
+               // TODO: Remove unacked posts. We need however an
+               // strategy for that, say after 2 reconections. We
+               // cannot remove them directly in the next app startup
+               // since we may still receive the ack.
+               //_outPostsQueue.add(p);
             } else {
                assert(false);
             }
@@ -4737,7 +4741,8 @@ class MenuChatState extends State<MenuChat>
             _newPostErrorCode = await _uploadImgs(fnames);
             print('_uploadImgs: $_newPostErrorCode');
 
-            if (_newPostErrorCode == -1)
+            // Only uncomment for testing.
+            //if (_newPostErrorCode == -1)
                await _sendPost();
          }
       } catch (e) {
@@ -4932,7 +4937,7 @@ class MenuChatState extends State<MenuChat>
          'cmd': 'subscribe',
          'last_post_id': _cfg.lastPostId,
          'channels': channels,
-         'filter': _filter,
+         'any_of_features': _any_of_features,
          'ranges': _cfg.ranges,
       };
 
@@ -5175,7 +5180,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onFilterDetail(int i)
    {
-      _filter ^= 1 << i;
+      _any_of_features ^= 1 << i;
       setState(() { });
    }
 
@@ -5248,7 +5253,7 @@ class MenuChatState extends State<MenuChat>
             _onBotBarTapped,
             _onFilterLeafNodePressed,
             _menu,
-            _filter,
+            _any_of_features,
             _botBarIdx,
             _onCancelNewFilter,
             _exDetailsRoot.children[0].children[0],

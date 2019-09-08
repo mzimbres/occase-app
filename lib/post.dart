@@ -482,7 +482,7 @@ class Post {
          'from': from,
          'to': channel,
          'id': id,
-         'filter': exDetails.first,
+         'features': exDetails.first,
          'ex_details': exDetails,
          'in_details': inDetails,
          'body': body,
