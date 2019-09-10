@@ -543,6 +543,49 @@ int counterBitsSet(int v)
    return c;
 }
 
+List<Widget> makeSliderCol({
+   double value,
+   double min,
+   double max,
+   int divisions,
+   Function onValueChanged})
+{
+   final double min2 = min / divisions;
+   final double max2 = max / divisions;
+
+   final double value2 = value % max2;
+
+   Slider sld1 = Slider(
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions,
+      onChanged: (double v) {
+         double vv = v + value2;
+         if (vv > max)
+            vv = max;
+         onValueChanged(vv);
+      },
+   );
+
+   final double offset = value - value2;
+
+   Slider sld2 = Slider(
+      value: value2,
+      min: min2,
+      max: max2,
+      divisions: divisions,
+      onChanged: (double v) {
+         double vv = offset + v;
+         if (vv > max)
+            vv = max;
+         onValueChanged(vv);
+      },
+   );
+
+   return <Widget>[sld1, sld2];
+}
+
 List<Widget> makeNewPostDetailScreen(
    BuildContext ctx,
    Function onNewPostExDetails,
@@ -592,13 +635,16 @@ List<Widget> makeNewPostDetailScreen(
 
    for (int i = 0; i < cts.rangeDivs.length; ++i) {
       final int j = 2 * i;
-      Slider rangeSld = Slider(
+
+      List<Widget> col = makeSliderCol(
          value: post.rangeValues[i].toDouble(),
          min: cts.rangesMinMax[j + 0].toDouble(),
          max: cts.rangesMinMax[j + 1].toDouble(),
          divisions: cts.rangeDivs[i],
-         onChanged: (double v) {onRangeValueChanged(i, v);},
+         onValueChanged: (double v) {onRangeValueChanged(i, v);}
       );
+
+      Column sliderCol = Column(children: col);
 
       all.add(wrapOnDetailExpTitle(
             ctx,
@@ -609,7 +655,7 @@ List<Widget> makeNewPostDetailScreen(
                ':',
                false,
             ),
-            <Widget>[wrapDetailRowOnCard(ctx, rangeSld)],
+            <Widget>[wrapDetailRowOnCard(ctx, sliderCol)],
             false,
          ),
       );
