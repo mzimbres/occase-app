@@ -56,7 +56,8 @@ CREATE TABLE config
 , last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
 , show_dialog_on_del_post TEXT
-, ranges TEXT)
+, ranges TEXT
+, any_of_features TEXT)
 ''';
 
 final String updateNick =
@@ -92,6 +93,11 @@ UPDATE config SET show_dialog_on_del_post = ?
 final String updateRanges =
 '''
 UPDATE config SET ranges = ?
+''';
+
+final String updateAnyOfFeatures =
+'''
+UPDATE config SET any_of_features = ?
 ''';
 
 //___________________________________________________________

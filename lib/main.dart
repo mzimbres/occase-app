@@ -2370,7 +2370,7 @@ List<Widget> assemblePostRows(
 String makePostSummaryStr(MenuNode root, Post post)
 {
    final List<String> names = loadNames(root, post.channel[1][0]);
-   assert(names.length >= 4);
+   assert(names.length >= 3);
    return '${names[1]}, ${names[2]} - 2019';
    //return names.join(', ');
 }
@@ -3289,9 +3289,6 @@ class MenuChatState extends State<MenuChat>
    // click.
    List<Coord> _lpChats = List<Coord>();
 
-   // The menu details filter.
-   int _any_of_features = 0;
-
    // A temporary variable used to store forwarded chat messages.
    List<Coord> _lpChatMsgs = List<Coord>();
 
@@ -3598,7 +3595,7 @@ class MenuChatState extends State<MenuChat>
 
       print('Last post id: ${_cfg.lastPostId}.');
       print('Last post id seen: ${_cfg.lastSeenPostId}.');
-      print('Login: ${_cfg.appId}:${_cfg.appPwd}.');
+      print('Login: ${_cfg.appId}:${_cfg.appPwd}');
       setState(() { });
    }
 
@@ -4703,6 +4700,13 @@ class MenuChatState extends State<MenuChat>
 
       _isConnected = true;
 
+      String appId = ack["id"];
+      String appPwd = ack["password"];
+      print('====> register_ack: ${appId}:${appPwd}');
+
+      if (appId == null || appPwd == null)
+         return;
+
       _cfg.appId = ack["id"];
       _cfg.appPwd = ack["password"];
 
@@ -4742,7 +4746,7 @@ class MenuChatState extends State<MenuChat>
             print('_uploadImgs: $_newPostErrorCode');
 
             // Only uncomment for testing.
-            //if (_newPostErrorCode == -1)
+            if (_newPostErrorCode == -1)
                await _sendPost();
          }
       } catch (e) {
@@ -4863,7 +4867,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onWSError(error)
    {
-      print("Error: _onWSError");
+      print("Error: _onWSError $error");
       _isConnected = false;
    }
 
@@ -4937,7 +4941,7 @@ class MenuChatState extends State<MenuChat>
          'cmd': 'subscribe',
          'last_post_id': _cfg.lastPostId,
          'channels': channels,
-         'any_of_features': _any_of_features,
+         'any_of_features': _cfg.anyOfFeatures,
          'ranges': _cfg.ranges,
       };
 
@@ -5178,9 +5182,13 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onFilterDetail(int i)
+   Future<void> _onFilterDetail(int i) async
    {
-      _any_of_features ^= 1 << i;
+      _cfg.anyOfFeatures ^= 1 << i;
+
+      final String str = _cfg.anyOfFeatures.toString();
+
+      await _db.execute(sql.updateAnyOfFeatures, [str]);
       setState(() { });
    }
 
@@ -5253,7 +5261,7 @@ class MenuChatState extends State<MenuChat>
             _onBotBarTapped,
             _onFilterLeafNodePressed,
             _menu,
-            _any_of_features,
+            _cfg.anyOfFeatures,
             _botBarIdx,
             _onCancelNewFilter,
             _exDetailsRoot.children[0].children[0],

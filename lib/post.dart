@@ -723,6 +723,8 @@ class Config {
    // cts.rangesMinMax, cts.rangeDivs and txt. rangePrefixes.
    List<int> ranges;
 
+   int anyOfFeatures;
+
    Config({
       this.appId = '',
       this.appPwd = '',
@@ -733,6 +735,7 @@ class Config {
       this.showDialogOnSelectPost = 'yes',
       this.showDialogOnDelPost = 'yes',
       this.ranges,
+      this.anyOfFeatures = 0,
    })
    {
       if (ranges == null)
@@ -752,6 +755,7 @@ Map<String, dynamic> configToMap(Config cfg)
       'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
       'show_dialog_on_del_post': cfg.showDialogOnDelPost,
       'ranges': cfg.ranges.join(' '),
+      'any_of_features': cfg.anyOfFeatures.toString(),
     };
 }
 
@@ -780,6 +784,7 @@ Future<List<Config>> loadConfig(Database db) async
         showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
         showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
         ranges: ranges,
+        anyOfFeatures: int.parse(maps[i]['any_of_features']),
      );
 
      return cfg;
