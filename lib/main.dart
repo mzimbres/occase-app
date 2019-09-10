@@ -550,7 +550,20 @@ List<Widget> makeSliderCol({
    int divisions,
    Function onValueChanged})
 {
-   final double min2 = min / divisions;
+   final int d = (max - min).round();
+
+   if (d <= divisions) {
+      Slider sld = Slider(
+         value: value,
+         min: min,
+         max: max,
+         divisions: divisions,
+         onChanged: onValueChanged,
+      );
+
+      return <Widget>[sld];
+   }
+
    final double max2 = max / divisions;
 
    final double value2 = value % max2;
@@ -572,7 +585,7 @@ List<Widget> makeSliderCol({
 
    Slider sld2 = Slider(
       value: value2,
-      min: min2,
+      min: 0,
       max: max2,
       divisions: divisions,
       onChanged: (double v) {

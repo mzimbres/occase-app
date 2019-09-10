@@ -7,15 +7,15 @@ const double imgBoxHeight = 300.0;
 
 // In the array below the range min is followed by the range max.
 const List<int> rangesMinMax = <int>
-[ 0, 1000000 // Price
-, 0,    2030 // Year.
-, 0, 1000000 // km.
+[    0, 1000000 // Price
+, 1930,    2030 // Year.
+,    0, 1000000 // km.
 ];
 
 const List<int> rangeDivs = <int>
 [ 100 // price
-, 50  // year
-, 200 // km
+, 100 // year
+, 100 // km
 ];
 
 const int nickMaxLength = 20;
