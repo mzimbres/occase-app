@@ -2554,8 +2554,9 @@ Card makePostWidget(
       elevation: 0.0,
    );
 
+   final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
    Widget imgLv = makeImgListView(
-      cts.imgBoxWidth,
+      width,
       cts.imgBoxHeight,
       onAddPhoto,
       imgFiles,
@@ -2593,7 +2594,7 @@ Card makePostWidget(
    );
 
    SizedBox sb2 = SizedBox(
-      width: cts.imgBoxWidth,
+      width: width,
       height: cts.imgBoxHeight,
       child: Center(child: col),
    );
@@ -3117,8 +3118,9 @@ Widget makeChatTab(
          );
 
          List<Widget> foo = List<Widget>();
+         final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
          foo.add(makeImgListView(
-               cts.imgBoxWidth,
+               width,
                cts.imgBoxHeight,
                (int i){ print('Error: Please fix aaac');},
                List<File>(),

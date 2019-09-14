@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 const List<int> filterDepths = <int>[3, 3];
 const List<int> versions = <int>[3, 3];
-const double imgBoxWidth = 395.0;
+const double imgBoxWidth = 0.90;
 const double imgBoxHeight = 300.0;
 
 // In the array below the range min is followed by the range max.
