@@ -47,9 +47,9 @@ const double onClickAvatarWidth = 200.0;
 
 // My public ip.
 const String wshost = 'ws://37.24.165.216:80';
-const String httphost = 'http://37.24.165.216:81';
+const String httpImgTarget = 'http://37.24.165.216:81/images/';
 
-const int maxImgsPerPost = 6;
+const int maxImgsPerPost = 4;
 
 // The time we are willing to wait for the server to send us the
 // filenames.

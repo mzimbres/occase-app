@@ -393,7 +393,7 @@ Widget makeImgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (post.images.isNotEmpty) {
-            final String imgUrl = cts.httphost + '/images/' + post.images[i];
+            final String imgUrl = cts.httpImgTarget + post.images[i];
             return makeNetImgBox(
                width,
                height,
@@ -402,13 +402,18 @@ Widget makeImgListView(
          }
 
          if (imgFiles.isNotEmpty) {
-            // FIXME: Use a stack to superpose the images and the add
-            // a photo buttom. 
             return Image.file(imgFiles[i],
                width: width,
                height: height,
+               fit: BoxFit.cover,
             );
          }
+
+         // aaaaa
+         //final String counterStr = '${imgFiles.length}/${cts.maxImgsPerPost}';
+         //Widget imgCounter = makeIgmInfoWidget(ctx, counterStr);
+
+         //row1List.add(imgCounter);
 
          return makeAddImgBox(
             width,
@@ -2471,6 +2476,34 @@ String makePriceStr(int price)
    return 'R\$$s';
 }
 
+Widget makeIgmInfoWidget(BuildContext ctx, String str)
+{
+   return Padding(
+      child: Text(str,
+         style: Theme.of(ctx).textTheme.headline.copyWith(
+            color: Theme.of(ctx).colorScheme.onPrimary,
+         ),
+      ),
+      padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
+   );
+}
+
+Widget makeAddOrRemoveWidget(
+   Function add,
+   IconData id)
+{
+   return Padding(
+      padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
+      child: IconButton(
+         onPressed: add,
+         icon: Icon(id,
+            color: stl.colorScheme.secondary,
+            size: 30.0,
+         ),
+      )
+   );
+}
+
 Card makePostWidget(
    BuildContext ctx,
    Widget card,
@@ -2518,32 +2551,33 @@ Card makePostWidget(
       post,
    );
 
-   Widget priceText = Padding(
-      child: Text(makePriceStr(post.getPrice()),
-         style: Theme.of(ctx).textTheme.headline.copyWith(
-            color: Theme.of(ctx).colorScheme.onPrimary,
-         ),
-      ),
-      padding: const EdgeInsets.all(10.0),
-   );
+   List<Widget> row1List = List<Widget>();
+   row1List.add(Spacer());
+
+   Widget addImgWidget;
+   if (imgFiles.length < cts.maxImgsPerPost) {
+      addImgWidget = makeAddOrRemoveWidget(
+         () {onAddPhoto(0);},
+         Icons.add_a_photo,
+      );
+   }
+
+   row1List.add(addImgWidget);
+
+   Row row1 = Row(children: row1List);
+
+   final String priceStr = makePriceStr(post.getPrice());
+   Widget priceText = makeIgmInfoWidget(ctx, priceStr);
 
    final String km = post.rangeValues[2].toString();
-   Widget kmText = Padding(
-      child: Text(km + 'km',
-         style: Theme.of(ctx).textTheme.headline.copyWith(
-            color: Theme.of(ctx).colorScheme.onPrimary,
-         ),
-      ),
-      padding: const EdgeInsets.all(10.0),
-   );
-
+   Widget kmText = makeIgmInfoWidget(ctx, km + 'km');
 
    Row row2 = Row(
       children: <Widget>[priceText, Spacer(), kmText]
    );
 
    Column col = Column(
-      children: <Widget>[Spacer(), row2]
+      children: <Widget>[row1, Spacer(), row2]
    );
 
    SizedBox sb2 = SizedBox(
@@ -3734,12 +3768,15 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onAddPhoto(int i) async
    {
       try {
-         if (_imgFiles.length == 5) {
-            // TODO: Show dialog if maximum number of images has been
-            // achieved.
-            print('Maximum number of images has been reached.');
-            return;
-         }
+         // It looks like we do not need to show any dialog, it is
+         // enough to remove the add_a_photo button.
+
+         //if (_imgFiles.length == cts.cts.maxImgsPerPost) {
+         //   // TODO: Show dialog if maximum number of images has been
+         //   // achieved.
+         //   print('Maximum number of images has been reached.');
+         //   return;
+         //}
 
          File img = await ImagePicker.pickImage(source: ImageSource.gallery);
          if (img == null)
@@ -4249,7 +4286,7 @@ class MenuChatState extends State<MenuChat>
          print('=====> Image type $extension');
          print('=====> New name $newname');
 
-         final String httpTarget = cts.httphost + '/images/' + newname;
+         final String httpTarget = cts.httpImgTarget + newname;
 
          print('=====> Http target $httpTarget');
 
