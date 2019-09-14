@@ -433,16 +433,17 @@ class Post {
       from = map['from'];
       nick = bodyMap['nick'] ?? txt.unknownNick;
       avatar = bodyMap['avatar'] ?? '';
+      images = decodeList(1, '', bodyMap['images']) ?? <String>[];
       channel = decodeChannel(map['to']);
 
-      exDetails = decodeList(cts.maxExDetailSize, map['ex_details']);
-      inDetails = decodeList(cts.maxInDetailSize, map['in_details']);
+      exDetails = decodeList(cts.maxExDetailSize, 0, map['ex_details']);
+      inDetails = decodeList(cts.maxInDetailSize, 0, map['in_details']);
 
       date = map['date'];
       pinDate = 0;
       status = -1;
       description = bodyMap['msg'];
-      rangeValues = decodeList(cts.rangeDivs.length, map['range_values']);
+      rangeValues = decodeList(cts.rangeDivs.length, 0, map['range_values']);
    }
 
    // This serialization is used to communicate with the server.
@@ -473,6 +474,7 @@ class Post {
          'msg': description,
          'nick': nick,
          'avatar': avatar,
+         'images': images,
       };
 
       final String body = jsonEncode(subCmd);
@@ -512,9 +514,9 @@ Map<String, dynamic> postToMap(Post post)
     };
 }
 
-List<int> decodeList(int size, List<dynamic> details)
+List<T> decodeList<T>(int size, T init, List<dynamic> details)
 {
-   List<int> ret = List.filled(size, 0);
+   List<T> ret = List.filled(size, init);
    if (details != null) {
       ret = List.generate(details.length, (int i) { return details[i]; });
    } else {
@@ -540,16 +542,19 @@ Future<List<Post>> loadPosts(Database db) async
 
      post.exDetails = decodeList(
         cts.maxExDetailSize,
+        0,
         jsonDecode(maps[i]['ex_details']),
      );
 
      post.inDetails = decodeList(
         cts.maxInDetailSize,
+        0,
         jsonDecode(maps[i]['in_details']),
      );
 
      post.rangeValues = decodeList(
         cts.rangeDivs.length,
+        0,
         jsonDecode(maps[i]['range_values']),
      );
 
