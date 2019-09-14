@@ -360,7 +360,7 @@ Widget makeAddImgBox(
          color: Colors.grey[500],
          child: Center(
             child: IconButton(
-               onPressed: () {onAddPhoto(0);},
+               onPressed: () {onAddPhoto(-1);},
                icon: Icon(Icons.add_a_photo,
                   color: stl.colorScheme.primary,
                   size: 30.0,
@@ -402,11 +402,21 @@ Widget makeImgListView(
          }
 
          if (imgFiles.isNotEmpty) {
-            return Image.file(imgFiles[i],
+            // This case handles the new post screen.
+
+            Widget img = Image.file(imgFiles[i],
                width: width,
                height: height,
                fit: BoxFit.cover,
             );
+
+            Widget delPhotoWidget = makeAddOrRemoveWidget(
+               () {onAddPhoto(i);},
+               Icons.clear,
+               stl.colorScheme.secondaryVariant,
+            );
+
+            return Stack(children: <Widget>[img, delPhotoWidget]);
          }
 
          // aaaaa
@@ -2490,14 +2500,15 @@ Widget makeIgmInfoWidget(BuildContext ctx, String str)
 
 Widget makeAddOrRemoveWidget(
    Function add,
-   IconData id)
+   IconData id,
+   Color color)
 {
    return Padding(
       padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
       child: IconButton(
          onPressed: add,
          icon: Icon(id,
-            color: stl.colorScheme.secondary,
+            color: color,
             size: 30.0,
          ),
       )
@@ -2557,8 +2568,9 @@ Card makePostWidget(
    Widget addImgWidget;
    if (imgFiles.length < cts.maxImgsPerPost) {
       addImgWidget = makeAddOrRemoveWidget(
-         () {onAddPhoto(0);},
+         () {onAddPhoto(-1);},
          Icons.add_a_photo,
+         stl.colorScheme.secondary,
       );
    }
 
@@ -3762,27 +3774,22 @@ class MenuChatState extends State<MenuChat>
    }
 
    // Used to either add or remove a photo from the new post.
-   // i = 0 ==> add
-   // i != 0 ==> remove.
-   //
+   // i = -1 ==> add
+   // i != -1 ==> remove, in this case i is the index to remove.
    Future<void> _onAddPhoto(int i) async
    {
       try {
-         // It looks like we do not need to show any dialog, it is
-         // enough to remove the add_a_photo button.
+         // It looks like we do not need to show any dialog here to
+         // inform the maximum number of photos has been reached.
+         if (i == -1) {
+            File img = await ImagePicker.pickImage(source: ImageSource.gallery);
+            if (img == null)
+               return;
 
-         //if (_imgFiles.length == cts.cts.maxImgsPerPost) {
-         //   // TODO: Show dialog if maximum number of images has been
-         //   // achieved.
-         //   print('Maximum number of images has been reached.');
-         //   return;
-         //}
-
-         File img = await ImagePicker.pickImage(source: ImageSource.gallery);
-         if (img == null)
-            return;
-
-         setState((){_imgFiles.add(img); });
+            setState((){_imgFiles.add(img); });
+         } else {
+            setState((){_imgFiles.removeAt(i); });
+         }
       } catch (e) {
          print(e);
       }
