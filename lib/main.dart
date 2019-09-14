@@ -393,7 +393,7 @@ Widget makeImgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (post.images.isNotEmpty) {
-            final String imgUrl = cts.httphost + '/' + post.images[i];
+            final String imgUrl = cts.httphost + '/images/' + post.images[i];
             return makeNetImgBox(
                width,
                height,
@@ -4249,11 +4249,14 @@ class MenuChatState extends State<MenuChat>
          print('=====> Image type $extension');
          print('=====> New name $newname');
 
-         var headers = {'filename': newname};
-         const String httpTarget = cts.httphost + '/image';
+         final String httpTarget = cts.httphost + '/images/' + newname;
+
+         print('=====> Http target $httpTarget');
+
+         //var headers = {'Accept-Encoding': 'identity'};
 
          var response = await http.post(httpTarget,
-            headers: headers,
+            //headers: headers,
             body: await _imgFiles[i].readAsBytes(),
          );
 

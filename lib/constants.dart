@@ -46,9 +46,8 @@ const double onClickAvatarWidth = 200.0;
 //final String wshost = 'ws://10.0.2.2:80';
 
 // My public ip.
-//const String wshost = 'ws://37.24.165.216:80';
-const String wshost = 'ws://10.0.2.2:81';
-const String httphost = 'http://10.0.2.2:8888';
+const String wshost = 'ws://37.24.165.216:80';
+const String httphost = 'http://37.24.165.216:81';
 
 const int maxImgsPerPost = 6;
 
