@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:menu_chat/constants.dart';
+import 'package:occase/constants.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:menu_chat/sql.dart' as sql;
+import 'package:occase/sql.dart' as sql;
 
 class MenuElem {
    String code;

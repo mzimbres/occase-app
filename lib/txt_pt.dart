@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const String appName = "CarMenu";
+const String appName = "Occase";
 
 // Text used for the main tabs.
 const List<String> tabNames = <String>

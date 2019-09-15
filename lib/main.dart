@@ -21,13 +21,13 @@ import 'package:square_in_app_payments/models.dart' as sq;
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:menu_chat/post.dart';
-import 'package:menu_chat/tree.dart';
-import 'package:menu_chat/constants.dart' as cts;
-import 'package:menu_chat/txt_pt.dart' as txt;
-import 'package:menu_chat/globals.dart' as glob;
-import 'package:menu_chat/sql.dart' as sql;
-import 'package:menu_chat/stl.dart' as stl;
+import 'package:occase/post.dart';
+import 'package:occase/tree.dart';
+import 'package:occase/constants.dart' as cts;
+import 'package:occase/txt_pt.dart' as txt;
+import 'package:occase/globals.dart' as glob;
+import 'package:occase/sql.dart' as sql;
+import 'package:occase/stl.dart' as stl;
 
 String emailToGravatarHash(String email)
 {
