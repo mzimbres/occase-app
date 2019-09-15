@@ -357,14 +357,21 @@ Widget makeAddImgBox(
       width: width,
       height: height,
       child: Card(
-         color: Colors.grey[500],
+         elevation: 0.0,
+         color: Colors.grey,
          child: Center(
-            child: IconButton(
-               onPressed: () {onAddPhoto(-1);},
-               icon: Icon(Icons.add_a_photo,
-                  color: stl.colorScheme.primary,
-                  size: 30.0,
+            child: Text('Adicione imagens.',
+               style: TextStyle(
+                  color: stl.colorScheme.background,
+                  fontSize: stl.tt.title.fontSize,
                ),
+            ),
+         ),
+         shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(4.0)),
+            side: BorderSide(
+               width: 2.0,
+               color: stl.colorScheme.background,
             ),
          ),
       ),
@@ -2165,14 +2172,14 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       text: TextSpan(
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
-            fontWeight: FontWeight.w500,
             color: Theme.of(ctx).colorScheme.primaryVariant,
          ),
          children: <TextSpan>
          [ TextSpan(
               text: value,
               style: Theme.of(ctx).textTheme.subhead.copyWith(
-                 color: Theme.of(ctx).colorScheme.secondary,
+                 //fontWeight: FontWeight.w500,
+                 color: stl.colorScheme.primaryVariant,
               ),
            ),
          ],
@@ -2566,16 +2573,21 @@ Card makePostWidget(
    List<Widget> row1List = List<Widget>();
    row1List.add(Spacer());
 
-   Widget addImgWidget;
-   if (imgFiles.length < cts.maxImgsPerPost) {
-      addImgWidget = makeAddOrRemoveWidget(
+   // The add a photo buttom should appear only when this function is
+   // called on the new posts screen. We determine that in the
+   // following way.
+   final bool isNewPost = post.images.isEmpty;
+
+   if (isNewPost && (imgFiles.length < cts.maxImgsPerPost)) {
+      Widget addImgWidget = makeAddOrRemoveWidget(
          () {onAddPhoto(-1);},
          Icons.add_a_photo,
-         stl.colorScheme.secondary,
+         stl.colorScheme.primary,
       );
+
+      row1List.add(addImgWidget);
    }
 
-   row1List.add(addImgWidget);
 
    Row row1 = Row(children: row1List);
 

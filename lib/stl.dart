@@ -30,6 +30,10 @@ const ColorScheme colorScheme = ColorScheme.light(
       secondaryVariant: Color(0xFFff5635),
 );
 
+const TextTheme tt = TextTheme(
+   title: TextStyle(fontSize: 20.0),
+);
+
 // The padding used around the posts and likes screens.
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
