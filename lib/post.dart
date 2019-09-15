@@ -325,14 +325,6 @@ class Post {
       });
 
       avatar = '';
-
-      const String url1 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
-      const String url2 = 'https://avatarfiles.alphacoders.com/114/114080.jpg';
-      const String url3 = 'https://avatarfiles.alphacoders.com/130/130670.jpg';
-      const String url4 = 'https://avatarfiles.alphacoders.com/116/116803.jpg';
-
-      //images = List.filled(cts.maxImgsPerPost, '');
-      //images = <String>[url1, url2, url3, url4];
    }
 
    int getPrice()
@@ -423,30 +415,30 @@ class Post {
       return hist.lastChatItem.date;
    }
 
+   // This serialization is used to communicate with the server, not
+   // the one used in the sqlite localy.
    Post.fromJson(Map<String, dynamic> map)
    {
+      dbId = -1;
+
       final String body = map['body'];
       Map<String, dynamic> bodyMap = jsonDecode(body);
-
-      dbId = -1;
-      id = map['id'];
-      from = map['from'];
       nick = bodyMap['nick'] ?? txt.unknownNick;
       avatar = bodyMap['avatar'] ?? '';
       images = decodeList(1, '', bodyMap['images']) ?? <String>[];
+      description = bodyMap['msg'];
+      exDetails = decodeList(cts.maxExDetailSize, 0, bodyMap['ex_details']);
+      inDetails = decodeList(cts.maxInDetailSize, 0, bodyMap['in_details']);
+
+      id = map['id'];
+      from = map['from'];
       channel = decodeChannel(map['to']);
-
-      exDetails = decodeList(cts.maxExDetailSize, 0, map['ex_details']);
-      inDetails = decodeList(cts.maxInDetailSize, 0, map['in_details']);
-
       date = map['date'];
       pinDate = 0;
       status = -1;
-      description = bodyMap['msg'];
       rangeValues = decodeList(cts.rangeDivs.length, 0, map['range_values']);
    }
 
-   // This serialization is used to communicate with the server.
    Map<String, dynamic> toJson()
    {
       assert(exDetails.isNotEmpty);
@@ -459,7 +451,7 @@ class Post {
       // that is bigger than usually need (see maxExDetailSize and
       // maxInDetailSize). We could spare some space in the json
       // payload by reducing their size to the minimum needed before
-      // we serialize, this may with a cost of not being able to
+      // we serialize, this may come with a cost of not being able to
       // provide backwards compatibility if expansion of these fields
       // are required in the future. I think the better strategy is to
       // choose these arrays to have two unused elements.
@@ -475,6 +467,8 @@ class Post {
          'nick': nick,
          'avatar': avatar,
          'images': images,
+         'ex_details': exDetails,
+         'in_details': inDetails,
       };
 
       final String body = jsonEncode(subCmd);
@@ -485,8 +479,6 @@ class Post {
          'to': channel,
          'id': id,
          'features': exDetails.first,
-         'ex_details': exDetails,
-         'in_details': inDetails,
          'body': body,
          'date': date,
          'range_values': rangeValues,
