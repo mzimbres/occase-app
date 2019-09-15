@@ -266,6 +266,18 @@ List<List<List<int>>> makeEmptyChannels()
    ];
 }
 
+List<T> decodeList<T>(int size, T init, List<dynamic> details)
+{
+   List<T> ret = List.filled(size, init);
+   if (details != null) {
+      ret = List.generate(details.length, (int i) { return details[i]; });
+   } else {
+      print('Value not found.');
+   }
+
+   return ret;
+}
+
 class Post {
    // The auto increment sqlite rowid.
    int dbId = -1;
@@ -420,6 +432,13 @@ class Post {
    Post.fromJson(Map<String, dynamic> map)
    {
       dbId = -1;
+      id = map['id'];
+      from = map['from'];
+      channel = decodeChannel(map['to']);
+      date = map['date'];
+      pinDate = 0;
+      status = -1;
+      rangeValues = decodeList(cts.rangeDivs.length, 0, map['range_values']);
 
       final String body = map['body'];
       Map<String, dynamic> bodyMap = jsonDecode(body);
@@ -429,14 +448,6 @@ class Post {
       description = bodyMap['msg'];
       exDetails = decodeList(cts.maxExDetailSize, 0, bodyMap['ex_details']);
       inDetails = decodeList(cts.maxInDetailSize, 0, bodyMap['in_details']);
-
-      id = map['id'];
-      from = map['from'];
-      channel = decodeChannel(map['to']);
-      date = map['date'];
-      pinDate = 0;
-      status = -1;
-      rangeValues = decodeList(cts.rangeDivs.length, 0, map['range_values']);
    }
 
    Map<String, dynamic> toJson()
@@ -444,16 +455,13 @@ class Post {
       assert(exDetails.isNotEmpty);
       assert(inDetails.isNotEmpty);
 
-      // NOTE1: The filter field bellow prevents the server from
-      // having to parse the ex_details field.
-      //
       // NOTE2: The ex- and inDetails arrays are initialized to a size
       // that is bigger than usually need (see maxExDetailSize and
       // maxInDetailSize). We could spare some space in the json
       // payload by reducing their size to the minimum needed before
-      // we serialize, this may come with a cost of not being able to
+      // serialization, this may come with a cost of not being able to
       // provide backwards compatibility if expansion of these fields
-      // are required in the future. I think the better strategy is to
+      // is required in the future. I think the better strategy is to
       // choose these arrays to have two unused elements.
       //
       // To reduce the size to what is exactly needed one has to first
@@ -490,72 +498,77 @@ class Post {
 // and is used to persist json objects on the database.
 Map<String, dynamic> postToMap(Post post)
 {
-    return {
-      'id': post.id,
-      'from_': post.from,
-      'nick': post.nick,
-      'avatar': post.avatar,
-      'channel': jsonEncode(post.channel),
-      'ex_details': jsonEncode(post.exDetails),
-      'in_details': jsonEncode(post.inDetails),
-      'range_values': jsonEncode(post.rangeValues),
-      'date': post.date,
-      'pin_date': post.pinDate,
-      'status': post.status,
-      'description': post.description,
-    };
-}
+   // Changing theses fields does not require changes the schema in
+   // sqlite.
 
-List<T> decodeList<T>(int size, T init, List<dynamic> details)
-{
-   List<T> ret = List.filled(size, init);
-   if (details != null) {
-      ret = List.generate(details.length, (int i) { return details[i]; });
-   } else {
-      print('Value not found.');
-   }
+   var subCmd = {
+     'from': post.from,
+     'nick': post.nick,
+     'avatar': post.avatar,
+     'channel': jsonEncode(post.channel),
+     'ex_details': jsonEncode(post.exDetails),
+     'in_details': jsonEncode(post.inDetails),
+     'range_values': jsonEncode(post.rangeValues),
+     'description': post.description,
+     'images': post.images,
+   };
 
-   return ret;
+   final String body = jsonEncode(subCmd);
+
+   return {
+     'id': post.id,
+     'date': post.date,
+     'pin_date': post.pinDate,
+     'status': post.status,
+     'body': body
+   };
 }
 
 Future<List<Post>> loadPosts(Database db) async
 {
-  List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
+   List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
 
-  return List.generate(maps.length, (i)
-  {
-     Post post = Post();
-     post.dbId = maps[i]['rowid'];
-     post.id = maps[i]['id'];
-     post.from = maps[i]['from_'];
-     post.nick = maps[i]['nick'];
-     post.avatar = maps[i]['nick'];
-     post.channel = decodeChannel(jsonDecode(maps[i]['channel']));
+   return List.generate(maps.length, (i)
+   {
+      Post post = Post();
+      post.dbId = maps[i]['rowid'];
+      post.id = maps[i]['id'];
+      post.date = maps[i]['date'];
+      post.pinDate = maps[i]['pin_date'];
+      post.status = maps[i]['status'];
 
-     post.exDetails = decodeList(
-        cts.maxExDetailSize,
-        0,
-        jsonDecode(maps[i]['ex_details']),
-     );
+      final String body = maps[i]['body'];
+      Map<String, dynamic> bodyMap = jsonDecode(body);
 
-     post.inDetails = decodeList(
-        cts.maxInDetailSize,
-        0,
-        jsonDecode(maps[i]['in_details']),
-     );
 
-     post.rangeValues = decodeList(
-        cts.rangeDivs.length,
-        0,
-        jsonDecode(maps[i]['range_values']),
-     );
+      post.from = bodyMap['from'];
+      post.nick = bodyMap['nick'];
+      post.avatar = bodyMap['nick'];
+      post.channel = decodeChannel(jsonDecode(bodyMap['channel']));
 
-     post.date = maps[i]['date'];
-     post.pinDate = maps[i]['pin_date'];
-     post.status = maps[i]['status'];
-     post.description = maps[i]['description'] ?? '';
-     return post;
-  });
+      post.exDetails = decodeList(
+         cts.maxExDetailSize,
+         0,
+         jsonDecode(bodyMap['ex_details']),
+      );
+
+      post.inDetails = decodeList(
+         cts.maxInDetailSize,
+         0,
+         jsonDecode(bodyMap['in_details']),
+      );
+
+      post.rangeValues = decodeList(
+         cts.rangeDivs.length,
+         0,
+         jsonDecode(bodyMap['range_values']),
+      );
+
+      post.images = decodeList(1, '', bodyMap['images']) ?? <String>[];
+
+      post.description = bodyMap['description'] ?? '';
+      return post;
+   });
 }
 
 bool toggleLPChat(Chat ch)

@@ -2,17 +2,10 @@ final String createPostsTable =
 '''
 CREATE TABLE posts
 ( id INTEGER
-, from_ TEXT
-, nick TEXT
-, avatar TEXT
-, channel TEXT
-, ex_details TEXT
-, in_details TEXT
+, body TEXT
 , date INTEGER
 , pin_date INTEGER
-, status INTEGER
-, description TEXT
-, range_values TEXT)
+, status INTEGER)
 ''';
 
 final String updatePostStatus =
