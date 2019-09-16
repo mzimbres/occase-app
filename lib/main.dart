@@ -215,6 +215,20 @@ Scaffold makeWaitMenuScreen(BuildContext ctx)
    );
 }
 
+Widget makeImgExpandScreen(
+   BuildContext ctx,
+   Function onWillPopScope)
+{
+   return WillPopScope(
+      onWillPop: () async { return onWillPopScope();},
+      child: Scaffold(
+         //appBar: AppBar(title: Text(txt.appName)),
+         body: Center(child: CircularProgressIndicator()),
+         backgroundColor: Theme.of(ctx).colorScheme.background,
+      ),
+   );
+}
+
 TextField makeNickTxtField(
    BuildContext ctx,
    TextEditingController txtCtrl,
@@ -318,7 +332,8 @@ Scaffold makeRegisterScreen(
 Widget makeNetImgBox(
    double width,
    double height,
-   String url)
+   String url,
+   Function onExpandImg)
 {
    Widget img = CachedNetworkImage(
       imageUrl: url,
@@ -339,7 +354,7 @@ Widget makeNetImgBox(
    );
 
    return FlatButton(
-      onPressed: (){print('===> ');},
+      onPressed: onExpandImg,
       child: SizedBox(
          width: width,
          height: height,
@@ -383,7 +398,8 @@ Widget makeImgListView(
    double height,
    Function onAddPhoto,
    List<File> imgFiles,
-   Post post)
+   Post post,
+   Function onExpandImg)
 {
    int l = 1;
    if (post.images.isNotEmpty) {
@@ -405,6 +421,7 @@ Widget makeImgListView(
                width,
                height,
                imgUrl,
+               (){onExpandImg(i);},
             );
          }
 
@@ -778,6 +795,7 @@ WillPopScope makeNewPostScreens(
                txt.cancelNewPost,
                onAddPhoto,
                imgFiles,
+               (int i){ print('Error. abab');},
             );
          },
       );
@@ -2529,7 +2547,8 @@ Card makePostWidget(
    Icon icon,
    Post post,
    Function onAddPhoto,
-   List<File> imgFiles)
+   List<File> imgFiles,
+   Function onExpandImg)
 {
    IconButton icon1 = IconButton(
       iconSize: 35.0,
@@ -2568,6 +2587,7 @@ Card makePostWidget(
       onAddPhoto,
       imgFiles,
       post,
+      onExpandImg,
    );
 
    List<Widget> row1List = List<Widget>();
@@ -2637,7 +2657,8 @@ Widget makePostPubWidget(
    Icon ic,
    String snackbarStr,
    Function onAddPhoto,
-   List<File> imgFiles)
+   List<File> imgFiles,
+   Function onExpandImg)
 {
    Widget title = Text(
       makePostSummaryStr(menu[1].root.first, post),
@@ -2669,6 +2690,7 @@ Widget makePostPubWidget(
       post,
       onAddPhoto,
       imgFiles,
+      onExpandImg,
    );
 
    return Dismissible(
@@ -2692,7 +2714,8 @@ ListView makePostTabListView(
    List<MenuItem> menu,
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
-   int nNewPosts)
+   int nNewPosts,
+   Function onExpandImg)
 {
    final int l = posts.length - nNewPosts;
 
@@ -2713,6 +2736,7 @@ ListView makePostTabListView(
             txt.dissmissedPost,
             (int i){print('Error: Please fix aaab');},
             List<File>(),
+            (int j) {onExpandImg(i, j);},
          );
       },
    );
@@ -3089,7 +3113,8 @@ Widget makeChatTab(
    Function onUserInfoPressed,
    bool isFav,
    MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
+   MenuNode inDetailsMenu,
+   Function onExpandImg)
 {
    return ListView.builder(
       padding: const EdgeInsets.only(
@@ -3137,6 +3162,7 @@ Widget makeChatTab(
                (int i){ print('Error: Please fix aaac');},
                List<File>(),
                posts[i],
+               (int j) {onExpandImg(i, j);},
             ),
          );
 
@@ -3451,6 +3477,11 @@ class MenuChatState extends State<MenuChat>
    List<File> _imgFiles = List<File>();
 
    Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
+
+   // These indexes will be set to values different from -1 when the
+   // user clics on an image to expand it.
+   int exp_post_idx = -1;
+   int exp_img_idx = -1;
 
    @override
    void initState()
@@ -3814,6 +3845,18 @@ class MenuChatState extends State<MenuChat>
       } catch (e) {
          print(e);
       }
+   }
+
+   // i = index in _posts, _favPosts, _own_posts.
+   // j = image index in the post.
+   void _onExpandImg(int i, int j)
+   {
+      print('Expand image clicked with $i $j.');
+
+      setState((){
+         exp_post_idx = i;
+         exp_img_idx = j;
+      });
    }
 
    void _onRangeValueChanged(int i, double v)
@@ -4495,6 +4538,7 @@ class MenuChatState extends State<MenuChat>
             cts.onClickAvatarWidth,
             cts.onClickAvatarWidth,
             url,
+            (){},
          ),
       );
    }
@@ -5403,6 +5447,13 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
+      if (exp_post_idx != -1 && exp_img_idx != -1) {
+         return makeImgExpandScreen(
+            ctx,
+            () {_onExpandImg(-1, -1); return false;},
+         );
+      }
+
       if (_isOnFavChat() || _isOnOwnChat()) {
          return makeChatScreen(
             ctx,
@@ -5474,6 +5525,7 @@ class MenuChatState extends State<MenuChat>
          false,
          _exDetailsRoot,
          _inDetailsRoot,
+         _onExpandImg,
       );
 
       bodies[1] = makePostTabListView(
@@ -5484,6 +5536,7 @@ class MenuChatState extends State<MenuChat>
          _exDetailsRoot,
          _inDetailsRoot,
          _nNewPosts,
+         _onExpandImg,
       );
 
       bodies[2] = makeChatTab(
@@ -5499,6 +5552,7 @@ class MenuChatState extends State<MenuChat>
          true,
          _exDetailsRoot,
          _inDetailsRoot,
+         _onExpandImg,
       );
 
       List<Widget> actions = List<Widget>();
