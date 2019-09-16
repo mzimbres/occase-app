@@ -217,13 +217,19 @@ Scaffold makeWaitMenuScreen(BuildContext ctx)
 
 Widget makeImgExpandScreen(
    BuildContext ctx,
-   Function onWillPopScope)
+   Function onWillPopScope,
+   Post post)
 {
+   final double width = MediaQuery.of(ctx).size.width;
+   final double height = MediaQuery.of(ctx).size.height;
+
+   Widget foo = makeImgListView2(width, height, post, (int j){});
+
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
       child: Scaffold(
          //appBar: AppBar(title: Text(txt.appName)),
-         body: Center(child: CircularProgressIndicator()),
+         body: Center(child: foo),
          backgroundColor: Theme.of(ctx).colorScheme.background,
       ),
    );
@@ -393,70 +399,11 @@ Widget makeAddImgBox(
    );
 }
 
-Widget makeImgListView(
+Widget constrainImgListView(
    double width,
    double height,
-   Function onAddPhoto,
-   List<File> imgFiles,
-   Post post,
-   Function onExpandImg)
+   Widget lv)
 {
-   int l = 1;
-   if (post.images.isNotEmpty) {
-      l = post.images.length;
-   } else if (imgFiles.isNotEmpty) {
-      l = imgFiles.length;
-   }
-
-   ListView lv = ListView.builder(
-      scrollDirection: Axis.horizontal,
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(4.0),
-      itemCount: l,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-         if (post.images.isNotEmpty) {
-            final String imgUrl = cts.httpImgTarget + post.images[i];
-            return makeNetImgBox(
-               width,
-               height,
-               imgUrl,
-               (){onExpandImg(i);},
-            );
-         }
-
-         if (imgFiles.isNotEmpty) {
-            // This case handles the new post screen.
-
-            Widget img = Image.file(imgFiles[i],
-               width: width,
-               height: height,
-               fit: BoxFit.cover,
-            );
-
-            Widget delPhotoWidget = makeAddOrRemoveWidget(
-               () {onAddPhoto(i);},
-               Icons.clear,
-               stl.colorScheme.secondaryVariant,
-            );
-
-            return Stack(children: <Widget>[img, delPhotoWidget]);
-         }
-
-         // aaaaa
-         //final String counterStr = '${imgFiles.length}/${cts.maxImgsPerPost}';
-         //Widget imgCounter = makeIgmInfoWidget(ctx, counterStr);
-
-         //row1List.add(imgCounter);
-
-         return makeAddImgBox(
-            width,
-            height,
-            onAddPhoto,
-         );
-      },
-   );
-
    return ConstrainedBox(
       constraints: BoxConstraints(
          maxWidth: width,
@@ -470,6 +417,72 @@ Widget makeImgListView(
          child: lv
       ),
    );
+}
+
+// Generates the image list view of a post.
+Widget makeImgListView2(
+   double width,
+   double height,
+   Post post,
+   Function onExpandImg)
+{
+   ListView lv = ListView.builder(
+      scrollDirection: Axis.horizontal,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(4.0),
+      itemCount: post.images.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+         final String imgUrl = cts.httpImgTarget + post.images[i];
+         return makeNetImgBox(
+            width,
+            height,
+            imgUrl,
+            (){onExpandImg(i);},
+         );
+      },
+   );
+
+   return constrainImgListView(width, height, lv);
+}
+
+Widget makeImgListView(
+   double width,
+   double height,
+   Function onAddPhoto,
+   List<File> imgFiles,
+   Post post)
+{
+   int l = 1;
+   if (imgFiles.isNotEmpty)
+      l = imgFiles.length;
+
+   ListView lv = ListView.builder(
+      scrollDirection: Axis.horizontal,
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(4.0),
+      itemCount: l,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+         // This case handles the new post screen.
+
+         Widget img = Image.file(imgFiles[i],
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+         );
+
+         Widget delPhotoWidget = makeAddOrRemoveWidget(
+            () {onAddPhoto(i);},
+            Icons.clear,
+            stl.colorScheme.secondaryVariant,
+         );
+
+         return Stack(children: <Widget>[img, delPhotoWidget]);
+      },
+   );
+
+   return constrainImgListView(width, height, lv);
 }
 
 int searchBitOn(int o, int n)
@@ -2581,14 +2594,29 @@ Card makePostWidget(
    );
 
    final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
-   Widget imgLv = makeImgListView(
-      width,
-      cts.imgBoxHeight,
-      onAddPhoto,
-      imgFiles,
-      post,
-      onExpandImg,
-   );
+   Widget imgLv;
+   if (post.images.isNotEmpty) {
+      imgLv = makeImgListView2(
+         width,
+         cts.imgBoxHeight,
+         post,
+         onExpandImg,
+      );
+   } else if (imgFiles.isNotEmpty) {
+      imgLv = makeImgListView(
+         width,
+         cts.imgBoxHeight,
+         onAddPhoto,
+         imgFiles,
+         post,
+      );
+   } else {
+      imgLv = makeAddImgBox(
+         width,
+         cts.imgBoxHeight,
+         onAddPhoto,
+      );
+   }
 
    List<Widget> row1List = List<Widget>();
    row1List.add(Spacer());
@@ -3156,11 +3184,9 @@ Widget makeChatTab(
 
          List<Widget> foo = List<Widget>();
          final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
-         foo.add(makeImgListView(
+         foo.add(makeImgListView2(
                width,
                cts.imgBoxHeight,
-               (int i){ print('Error: Please fix aaac');},
-               List<File>(),
                posts[i],
                (int j) {onExpandImg(i, j);},
             ),
@@ -5448,9 +5474,20 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (exp_post_idx != -1 && exp_img_idx != -1) {
+         Post post;
+         if (_isOnOwn())
+            post = _ownPosts[exp_post_idx];
+         else if (_isOnPosts())
+            post = _posts[exp_post_idx];
+         else if (_isOnFav())
+            post = _favPosts[exp_post_idx];
+         else
+            assert(false);
+
          return makeImgExpandScreen(
             ctx,
             () {_onExpandImg(-1, -1); return false;},
+            post,
          );
       }
 
