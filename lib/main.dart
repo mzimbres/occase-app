@@ -3441,9 +3441,10 @@ class MenuChatState extends State<MenuChat>
    
    Database _db;
 
-   // This variable is set to true when we are able to either login
-   // and register.
-   bool _isConnected = false;
+   // This variable is set to the last time the app was disconnected
+   // from the server, a value of -1 means we still did not get
+   // disconnected since startup..
+   int _lastDisconnect = -1;
 
    // Used in the final new post screen to store the files while the
    // user chooses the images.
@@ -3462,7 +3463,7 @@ class MenuChatState extends State<MenuChat>
       _chatFocusNode = FocusNode();
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
-      _isConnected = false;
+      _lastDisconnect = -1;
       WidgetsBinding.instance.addObserver(this);
    }
 
@@ -3483,16 +3484,22 @@ class MenuChatState extends State<MenuChat>
    @override
    void didChangeAppLifecycleState(AppLifecycleState state)
    {
-      // TODO: We should not try to reconnect if disconnection
-      // happened just a couples of seconds ago. This is needed
-      // because it may haven't been a clean disconnect with a close
-      // websocket frame.  The server will wait until the pong answer
-      // times out.  To soulve this just use time stamps instead of a
-      // boolean in _isConnected and compare it with the current time.
-      // We should also use the server pong-timeout value.
-      if (state == AppLifecycleState.resumed && !_isConnected) {
+      // We should not try to reconnect if disconnection happened just
+      // a couples of seconds ago. This is needed because it may
+      // haven't been a clean disconnect with a close websocket frame.
+      // The server will wait until the pong answer times out.  To
+      // solve this we compare _lastDisconnect with the current time.
+
+      bool doConnect = false;
+      if (_lastDisconnect != -1) {
+         final int now = DateTime.now().millisecondsSinceEpoch;
+         final int interval = now - _lastDisconnect;
+         doConnect = interval > cts.pongTimeout;
+      }
+
+      if (state == AppLifecycleState.resumed && doConnect) {
          print('Trying to reconnect.');
-         //_stablishNewConnection();
+         _stablishNewConnection();
       }
    }
 
@@ -4818,8 +4825,6 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      _isConnected = true;
-
       String appId = ack["id"];
       String appPwd = ack["password"];
       print('====> register_ack: ${appId}:${appPwd}');
@@ -4887,8 +4892,6 @@ class MenuChatState extends State<MenuChat>
          print("login_ack: fail.");
          return;
       }
-
-      _isConnected = true;
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
@@ -4988,13 +4991,13 @@ class MenuChatState extends State<MenuChat>
    void _onWSError(error)
    {
       print("Error: _onWSError $error");
-      _isConnected = false;
+      _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
    void _onWSDone()
    {
       print("Communication closed by peer.");
-      _isConnected = false;
+      _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
    void _onOkDialAfterSendFilters()

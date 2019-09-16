@@ -56,3 +56,5 @@ const int maxImgsPerPost = 4;
 // filenames.
 const int filenamesTimeout = 5;
 
+// The pong timeout used by the server. (in milliseconds)
+const int pongTimeout = 30 * 1000;
