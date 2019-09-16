@@ -1174,8 +1174,8 @@ Widget makeFAButtonMiddleScreen(
       backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
       child: Icon(
          Icons.notification_important,
-         //color: Theme.of(ctx).colorScheme.onSecondary,
-         color: Colors.white,
+         color: Theme.of(ctx).colorScheme.onSecondary,
+         //color: Colors.white,
       ),
    );
 
@@ -3506,7 +3506,7 @@ class MenuChatState extends State<MenuChat>
       return _tabCtrl.previousIndex == 0;
    }
 
-   bool isOnPosts()
+   bool _isOnPosts()
    {
       return _tabCtrl.index == 1;
    }
@@ -3521,22 +3521,22 @@ class MenuChatState extends State<MenuChat>
       return _tabCtrl.previousIndex == 2;
    }
 
-   bool isOnFavChat()
+   bool _isOnFavChat()
    {
       return _isOnFav() && _post != null && _chat != null;
    }
 
-   bool isOnOwnChat()
+   bool _isOnOwnChat()
    {
       return _isOnOwn() && _post != null && _chat != null;
    }
 
-   bool hasSwitchedTab()
+   bool _onTabSwitch()
    {
       return _tabCtrl.indexIsChanging;
    }
 
-   List<double> getNewMsgsOpacities()
+   List<double> _getNewMsgsOpacities()
    {
       List<double> opacities = List<double>(3);
 
@@ -3548,7 +3548,7 @@ class MenuChatState extends State<MenuChat>
          opacities[0] = onFocusOp;
 
       opacities[1] = notOnFocusOp;
-      if (isOnPosts())
+      if (_isOnPosts())
          opacities[1] = onFocusOp;
 
       opacities[2] = notOnFocusOp;
@@ -3722,7 +3722,7 @@ class MenuChatState extends State<MenuChat>
    {
       channel = IOWebSocketChannel.connect(cts.wshost);
       channel.stream.listen(
-         onWSData,
+         _onWSData,
          onError: _onWSError,
          onDone: _onWSDone,
       );
@@ -3829,7 +3829,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onPostSelection(int i, int fav) async
    {
-      assert(isOnPosts());
+      assert(_isOnPosts());
 
       if (fav == 1) {
          _posts[i].status = 2;
@@ -4539,7 +4539,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   void sendOfflineChatMsgs()
+   void _sendOfflineChatMsgs()
    {
       if (!_appMsgQueue.isEmpty) {
          assert(!_appMsgQueue.first.sent);
@@ -4896,7 +4896,7 @@ class MenuChatState extends State<MenuChat>
 
       // Sends any chat messages that may have been written while
       // the app were offline.
-      sendOfflineChatMsgs();
+      _sendOfflineChatMsgs();
    }
 
    void _onSubscribeAck(Map<String, dynamic> ack)
@@ -4974,7 +4974,7 @@ class MenuChatState extends State<MenuChat>
       }
    }
 
-   Future<void> onWSData(msg) async
+   Future<void> _onWSData(msg) async
    {
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
@@ -5258,9 +5258,19 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   Future<void> _onRegisterContinue() async
+   Future<void> _onRegisterContinue(BuildContext ctx) async
    {
       try {
+         if (_txtCtrl.text.length < cts.nickMinLength) {
+            _showSimpleDial(
+               ctx,
+               (){},
+               txt.onEmptyNickTitle,
+               Text(txt.onEmptyNickContent),
+            );
+            return;
+         }
+
          if (_txtCtrl2.text.isNotEmpty) {
             _cfg.email = _txtCtrl2.text;
             await _db.execute(sql.updateEmail, [_cfg.email]);
@@ -5323,14 +5333,14 @@ class MenuChatState extends State<MenuChat>
             ctx,
             _txtCtrl2,
             _txtCtrl,
-            _onRegisterContinue,
+            (){_onRegisterContinue(ctx);},
             txt.appName,
             _cfg.email,
             _cfg.nick,
          );
       }
 
-      if (hasSwitchedTab())
+      if (_onTabSwitch())
          _cleanUpLpOnSwitchTab();
 
       if (_newPostErrorCode != -1) {
@@ -5390,7 +5400,7 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
-      if (isOnFavChat() || isOnOwnChat()) {
+      if (_isOnFavChat() || _isOnOwnChat()) {
          return makeChatScreen(
             ctx,
             _onPopChat,
@@ -5524,7 +5534,7 @@ class MenuChatState extends State<MenuChat>
       newMsgsCounters[1] = _nNewPosts;
       newMsgsCounters[2] = _getNUnreadFavChats();
 
-      List<double> opacities = getNewMsgsOpacities();
+      List<double> opacities = _getNewMsgsOpacities();
 
       return WillPopScope(
          onWillPop: () async { return onWillPops[_tabCtrl.index]();},

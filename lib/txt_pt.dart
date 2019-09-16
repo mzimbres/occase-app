@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:occase/constants.dart' as cts;
 
 const String appName = "Occase";
 
@@ -78,7 +79,7 @@ const String postDescTitle = 'Mensagem do usuário';
 const String newPostTextFieldHist = 'Adicione aqui outras informacoes';
 const String chatTextFieldHint = "Mensagem";
 const String nickHint = "Nome ou nick";
-const String emailHint = "Email do gravatar (opcional)";
+const String emailHint = "Email gravatar (opcional)";
 
 const String msgOnRedirectingChat = 'Redirecionando ...';
 const String msgOnRedirectedChat = 'Redirecionada';
@@ -165,4 +166,8 @@ const List<String> newPostErrorBodies = <String>
 [ 'Falha na publicacao. Certifique-se que está conectado a internet e tente novamente.'
 , 'Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao.'
 ];
+
+const String onEmptyNickTitle = 'Erro';
+const String onEmptyNickContent =
+   'Seu apelido deve conter um mínimo de ${cts.nickMinLength} letras.';
 

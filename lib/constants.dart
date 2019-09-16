@@ -19,6 +19,7 @@ const List<int> rangeDivs = <int>
 ];
 
 const int nickMaxLength = 20;
+const int nickMinLength = 3;
 const int emailMaxLength = 50;
 
 // This constant should be set to the maximum number of exclusive
