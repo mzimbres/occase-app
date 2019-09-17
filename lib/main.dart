@@ -4389,43 +4389,43 @@ class MenuChatState extends State<MenuChat>
 
          //_____________________________________
 
-         final List<int> bytes = await _imgFiles[i].readAsBytes();
+         //final List<int> bytes = await _imgFiles[i].readAsBytes();
 
-         HttpClient client = HttpClient();
+         //HttpClient client = HttpClient();
 
-         Uri uri = Uri.http(cts.httpImgHost, cts.httpImgPath + newname);
-         final String foo = uri.data.toString();
-         print('=====> Http uri ${foo}');
-         HttpClientRequest req = await client.postUrl(uri);
+         //Uri uri = Uri.http(cts.httpImgHost, cts.httpImgPath + newname);
+         //final String foo = uri.data.toString();
+         //print('=====> Http uri ${foo}');
+         //HttpClientRequest req = await client.postUrl(uri);
 
-         req.add(bytes);
+         //req.add(bytes);
 
-         HttpClientResponse resp = await req.close();
-               
-         final int stCode = resp.statusCode;
-         if (stCode != 200) {
-            _imgFiles = List<File>();
-            return 0;
-         }
-
-         _post.images.add(newname);
-
-         //_____________________________________
-
-         ////var headers = {'Accept-Encoding': 'identity'};
-
-         //var response = await http.post(httpTarget,
-         //   //headers: headers,
-         //   body: await _imgFiles[i].readAsBytes(),
-         //);
-
-         //final int stCode = response.statusCode;
+         //HttpClientResponse resp = await req.close();
+         //      
+         //final int stCode = resp.statusCode;
          //if (stCode != 200) {
          //   _imgFiles = List<File>();
          //   return 0;
          //}
 
          //_post.images.add(newname);
+
+         //_____________________________________
+
+         //var headers = {'Accept-Encoding': 'identity'};
+
+         var response = await http.post(httpTarget,
+            //headers: headers,
+            body: await _imgFiles[i].readAsBytes(),
+         );
+
+         final int stCode = response.statusCode;
+         if (stCode != 200) {
+            _imgFiles = List<File>();
+            return 0;
+         }
+
+         _post.images.add(newname);
       }
 
       _imgFiles = List<File>();
