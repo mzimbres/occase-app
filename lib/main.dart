@@ -1169,7 +1169,7 @@ FloatingActionButton makeFaButton(
    IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+         backgroundColor: Theme.of(ctx).colorScheme.secondary,
          child: Icon(
             Icons.send,
             color: Theme.of(ctx).colorScheme.onSecondary,
@@ -1185,7 +1185,7 @@ FloatingActionButton makeFaButton(
       return null;
 
    return FloatingActionButton(
-      backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
       child: Icon(id,
          color: Theme.of(ctx).colorScheme.onSecondary,
       ),
@@ -1200,10 +1200,10 @@ Widget makeFAButtonMiddleScreen(
 {
    FloatingActionButton filters = FloatingActionButton(
       onPressed: onNewFilters,
-      backgroundColor: Theme.of(ctx).colorScheme.secondaryVariant,
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
       child: Icon(
          Icons.notification_important,
-         color: Theme.of(ctx).colorScheme.onSecondary,
+         color: Theme.of(ctx).colorScheme.primary,
          //color: Colors.white,
       ),
    );
@@ -1215,10 +1215,11 @@ Widget makeFAButtonMiddleScreen(
       mini: true,
       heroTag: null,
       onPressed: onLoadNewPosts,
-      backgroundColor: Colors.blue,
+      //backgroundColor: Colors.grey[200],
+      backgroundColor: Theme.of(ctx).colorScheme.secondary,
       child: Icon(
          Icons.file_download,
-         color: Theme.of(ctx).colorScheme.onPrimary,
+         color: Theme.of(ctx).colorScheme.onSecondary,
       ),
    );
 
@@ -2195,13 +2196,14 @@ Container makeUnreadMsgsCircle(
    );
 }
 
+//ababab
 Row makePostRowElem(BuildContext ctx, String key, String value)
 {
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
-            color: Theme.of(ctx).colorScheme.primaryVariant,
+            color: Theme.of(ctx).colorScheme.primary,
          ),
          children: <TextSpan>
          [ TextSpan(
@@ -2231,6 +2233,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 }
 
+//ababab
 List<Widget> makePostInRows(
    BuildContext ctx,
    List<MenuNode> nodes,
@@ -2244,14 +2247,12 @@ List<Widget> makePostInRows(
 
       Text text = Text(' ${nodes[i].name}',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
-           color: Theme.of(ctx).colorScheme.secondary,
+            color: Theme.of(ctx).colorScheme.primaryVariant,
          ),
       );
 
       Row row = Row(children: <Widget>
-      [ Icon(Icons.check,
-           color: Theme.of(ctx).colorScheme.primary,
-        )
+      [ Icon(Icons.check, color: Theme.of(ctx).colorScheme.primaryVariant)
       , text
       ]); 
 
@@ -2567,7 +2568,7 @@ Card makePostWidget(
       onPressed: () {onPressed(0);},
       icon: Icon(
          Icons.cancel,
-         color: Theme.of(ctx).colorScheme.secondary,
+         color: Colors.red,
       ),
    );
 
@@ -2799,6 +2800,7 @@ ListView makeNewPostMenuListView(
                   child.name,
                   style: Theme.of(ctx).textTheme.subhead.copyWith(
                      fontWeight: FontWeight.w500,
+                     color: Theme.of(ctx).colorScheme.onSecondary
                   ),
                ),
                dense: true,
@@ -2821,6 +2823,7 @@ ListView makeNewPostMenuListView(
                   o.children[i].name,
                   style: Theme.of(ctx).textTheme.subhead.copyWith(
                      fontWeight: FontWeight.w500,
+                     color: Theme.of(ctx).colorScheme.onSecondary
                   ),
                ),
                dense: true,

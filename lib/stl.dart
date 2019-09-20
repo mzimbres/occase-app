@@ -28,6 +28,7 @@ const ColorScheme colorScheme = ColorScheme.light(
       primaryVariant: Color(0xFF434b79),
       secondary: Color(0xFFffa32c),
       secondaryVariant: Color(0xFFff5635),
+      onSecondary: Color(0xFF434b79),
 );
 
 const TextTheme tt = TextTheme(
