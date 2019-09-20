@@ -394,9 +394,9 @@ Widget makeImgPlaceholder(
             ),
          ),
          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(4.0)),
+            borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
             side: BorderSide(
-               width: 2.0,
+               width: stl.imgLvBorderWidth,
                color: stl.colorScheme.background,
             ),
          ),
@@ -2604,12 +2604,28 @@ Card makePostWidget(
    final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
    Widget imgLv;
    if (post.images.isNotEmpty) {
-      imgLv = makeImgListView2(
+      Widget tmp = makeImgListView2(
          width,
          cts.imgBoxHeight,
          post,
          onExpandImg,
          BoxFit.fill,
+      );
+
+      imgLv = Container(
+         margin: const EdgeInsets.all(10.0),
+         //padding: const EdgeInsets.all(3.0),
+         child: tmp,
+         decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.all(
+               Radius.circular(stl.cornerRadius),
+            ),
+            border: Border.all(
+               width: stl.imgLvBorderWidth,
+               color: Colors.white,
+            ),
+         ),
       );
    } else if (imgFiles.isNotEmpty) {
       imgLv = makeImgListView(

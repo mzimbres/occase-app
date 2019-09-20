@@ -72,4 +72,7 @@ const List<IconData> filterTabIcons = <IconData>
 
 const IconData newPostIcon = Icons.add;
 
-const imgInfoWidgetPadding = 10.0;
+const double imgInfoWidgetPadding = 10.0;
+
+const double imgLvBorderWidth = 2.0;
+
