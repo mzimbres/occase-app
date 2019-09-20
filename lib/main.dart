@@ -345,34 +345,19 @@ Widget makeNetImgBox(
    double width,
    double height,
    String url,
-   Function onExpandImg,
    BoxFit bf)
 {
-   Widget img = CachedNetworkImage(
+   return CachedNetworkImage(
       imageUrl: url,
-      imageBuilder: (ctx, imageProvider) => Container(
-        decoration: BoxDecoration(
-           image: DecorationImage(
-              image: imageProvider,
-              fit: bf,
-           ),
-        ),
-      ),
+      width: width,
+      height: height,
+      fit: bf,
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
          print('====> $error $url $error');
          Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
          return makeImgPlaceholder(width, height, ic);
       },
-   );
-
-   return FlatButton(
-      onPressed: onExpandImg,
-      child: SizedBox(
-         width: width,
-         height: height,
-         child: Center(child: img),
-      ),
    );
 }
 
@@ -404,10 +389,7 @@ Widget makeImgPlaceholder(
    );
 }
 
-Widget constrainImgListView(
-   double width,
-   double height,
-   Widget lv)
+Widget constrainImgListView(double width, double height, Widget lv)
 {
    return ConstrainedBox(
       constraints: BoxConstraints(
@@ -435,17 +417,17 @@ Widget makeImgListView2(
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      padding: const EdgeInsets.all(4.0),
+      //primary: true,
+      //physics: PageScrollPhysics(),
+      padding: const EdgeInsets.all(0.0),
       itemCount: post.images.length,
       itemBuilder: (BuildContext ctx, int i)
       {
          final String imgUrl = cts.httpImgTarget + post.images[i];
-         return makeNetImgBox(
-            width,
-            height,
-            imgUrl,
-            (){onExpandImg(i);},
-            bf,
+
+         return FlatButton(
+            onPressed: (){onExpandImg(i);},
+            child: makeNetImgBox(width, height, imgUrl, bf),
          );
       },
    );
@@ -467,7 +449,7 @@ Widget makeImgListView(
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(0.0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -804,7 +786,7 @@ WillPopScope makeNewPostScreens(
          {
             assert(i == 0);
 
-            return makePostPubWidget(
+            return makeNewPost(
                ctx,
                post,
                (int add) { onSendNewPost(ctx, add); },
@@ -2438,14 +2420,15 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
    return Card(
       elevation: 0.0,
       color: Theme.of(ctx).colorScheme.background,
-      margin: EdgeInsets.only(
-         top: stl.chatTilePadding,
-         left: stl.chatTilePadding,
-         right: stl.chatTilePadding,
-      ),
+      margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
          padding: EdgeInsets.all(stl.postInnerMargin),
+      ),
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(
+            Radius.circular(0.0)
+         ),
       ),
    );
 }
@@ -2561,7 +2544,7 @@ Widget makeAddOrRemoveWidget(
    );
 }
 
-Card makePostWidget(
+Widget makeNewPostImpl(
    BuildContext ctx,
    Widget card,
    Function onPressed,
@@ -2613,19 +2596,9 @@ Card makePostWidget(
       );
 
       imgLv = Container(
-         margin: const EdgeInsets.all(10.0),
-         //padding: const EdgeInsets.all(3.0),
+         //margin: const EdgeInsets.only(top: 10.0),
+         margin: const EdgeInsets.all(0.0),
          child: tmp,
-         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.all(
-               Radius.circular(stl.cornerRadius),
-            ),
-            border: Border.all(
-               width: stl.imgLvBorderWidth,
-               color: Colors.white,
-            ),
-         ),
       );
    } else if (imgFiles.isNotEmpty) {
       imgLv = makeImgListView(
@@ -2690,21 +2663,33 @@ Card makePostWidget(
 
    Widget images = Stack(children: <Widget>[imgLv, sb2]);
 
-   return Card(
+   Card cc = Card(
       color: Theme.of(ctx).colorScheme.primary,
-      margin: EdgeInsets.all(stl.postMarging),
+      margin: EdgeInsets.all(0.0),
       elevation: 0.0,
-      child: Padding(
-         padding: EdgeInsets.all(stl.outerPostCardPadding),
-         child: Column(
+      child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: <Widget>[images, card, c4],
+            children: <Widget>[card, c4],
+      ),
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(
+            Radius.circular(0.0),
          ),
+      ),
+   );
+
+   return Padding(
+      child: Column(children: <Widget>[images, cc]),
+      padding: EdgeInsets.only(
+         top: 20.0,
+         right: 0.0,
+         bottom: 0.0,
+         left: 0.0,
       ),
    );
 }
 
-Widget makePostPubWidget(
+Widget makeNewPost(
    BuildContext ctx,
    Post post,
    Function onPostSelection,
@@ -2739,7 +2724,7 @@ Widget makePostPubWidget(
       null,
    );
 
-   Widget w = makePostWidget(
+   Widget w = makeNewPostImpl(
       ctx,
       infoExpansion,
       onPostSelection,
@@ -2764,7 +2749,7 @@ Widget makePostPubWidget(
    );
 }
 
-ListView makePostTabListView(
+ListView makeNewPostLv(
    BuildContext ctx,
    List<Post> posts,
    Function onPostSelection,
@@ -2782,7 +2767,7 @@ ListView makePostTabListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          final int j = l - i - 1;
-         return makePostPubWidget(
+         return makeNewPost(
             ctx,
             posts[j],
             (int fav) {onPostSelection(ctx, j, fav);},
@@ -4622,7 +4607,6 @@ class MenuChatState extends State<MenuChat>
             cts.onClickAvatarWidth,
             cts.onClickAvatarWidth,
             url,
-            (){},
             BoxFit.contain,
          ),
       );
@@ -5624,7 +5608,7 @@ class MenuChatState extends State<MenuChat>
          _onExpandImg,
       );
 
-      bodies[1] = makePostTabListView(
+      bodies[1] = makeNewPostLv(
          ctx,
          _posts,
          _alertUserOnselectPost,
