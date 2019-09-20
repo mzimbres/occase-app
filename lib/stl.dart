@@ -76,3 +76,5 @@ const double imgInfoWidgetPadding = 10.0;
 
 const double imgLvBorderWidth = 2.0;
 
+const double newPostIconSize = 35.0;
+

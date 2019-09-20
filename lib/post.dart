@@ -727,6 +727,7 @@ class Config {
    int lastPostId;
    int lastSeenPostId;
    String showDialogOnSelectPost;
+   String showDialogOnReportPost;
    String showDialogOnDelPost;
 
    // Filter Ranges. There is one range for each value, see
@@ -743,6 +744,7 @@ class Config {
       this.lastPostId = 0,
       this.lastSeenPostId = 0,
       this.showDialogOnSelectPost = 'yes',
+      this.showDialogOnReportPost = 'yes',
       this.showDialogOnDelPost = 'yes',
       this.ranges,
       this.anyOfFeatures = 0,
@@ -763,6 +765,7 @@ Map<String, dynamic> configToMap(Config cfg)
       'last_post_id': cfg.lastPostId,
       'last_seen_post_id': cfg.lastSeenPostId,
       'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
+      'show_dialog_on_report_post': cfg.showDialogOnReportPost,
       'show_dialog_on_del_post': cfg.showDialogOnDelPost,
       'ranges': cfg.ranges.join(' '),
       'any_of_features': cfg.anyOfFeatures.toString(),
@@ -792,6 +795,7 @@ Future<List<Config>> loadConfig(Database db) async
         lastPostId: maps[i]['last_post_id'],
         lastSeenPostId: maps[i]['last_seen_post_id'],
         showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
+        showDialogOnReportPost: maps[i]['show_dialog_on_report_post'],
         showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
         ranges: ranges,
         anyOfFeatures: int.parse(maps[i]['any_of_features']),

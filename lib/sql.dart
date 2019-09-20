@@ -49,6 +49,7 @@ CREATE TABLE config
 , last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
 , show_dialog_on_del_post TEXT
+, show_dialog_on_report_post TEXT
 , ranges TEXT
 , any_of_features TEXT)
 ''';
@@ -81,6 +82,11 @@ UPDATE config SET show_dialog_on_select_post = ?
 final String updateShowDialogOnDelPost =
 '''
 UPDATE config SET show_dialog_on_del_post = ?
+''';
+
+final String updateShowDialogOnReportPost =
+'''
+UPDATE config SET show_dialog_on_report_post = ?
 ''';
 
 final String updateRanges =

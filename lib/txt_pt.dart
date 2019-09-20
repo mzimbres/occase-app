@@ -93,6 +93,7 @@ const String pinChat = "Fixar conversa";
 const List<String> dialogTitles = <String>
 [ 'Deletar post?'
 , 'Mover para chats?'
+, 'Conteúdo inapropriado?'
 , 'Alteracoes aplicadas'
 , 'Remover Post?'
 ];
@@ -100,6 +101,7 @@ const List<String> dialogTitles = <String>
 const List<String> dialogBodies = <String>
 [ 'O post será deletado definitivamente.'
 , 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
+, 'O post será removido de sua list e um report será criado.'
 , 'Novos posts serao encaminhados automaticamente pra você.'
 , 'Seu post será removido definitivamente.'
 ];

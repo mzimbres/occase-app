@@ -2554,18 +2554,29 @@ Widget makeNewPostImpl(
    List<File> imgFiles,
    Function onExpandImg)
 {
-   IconButton icon1 = IconButton(
-      iconSize: 35.0,
+   IconButton icon0 = IconButton(
+      iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
-      onPressed: () {onPressed(0);},
+      onPressed: () {onPressed(2);},
+      color: Theme.of(ctx).colorScheme.primary,
       icon: Icon(
-         Icons.cancel,
+         Icons.report,
          color: Colors.red,
       ),
    );
 
+   IconButton icon1 = IconButton(
+      iconSize: stl.newPostIconSize,
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPressed(0);},
+      icon: Icon(
+         Icons.cancel,
+         color: Colors.grey,
+      ),
+   );
+
    IconButton icon2 = IconButton(
-      iconSize: 35.0,
+      iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
       icon: icon,
       onPressed: () {onPressed(1);},
@@ -2573,7 +2584,8 @@ Widget makeNewPostImpl(
    );
 
    Row row = Row(children: <Widget>
-   [ Expanded(child: icon1)
+   [ Expanded(child: icon0)
+   , Expanded(child: icon1)
    , Expanded(child: icon2)
    ]);
 
@@ -3467,7 +3479,7 @@ class MenuChatState extends State<MenuChat>
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
-   List<bool> _dialogPrefs = List<bool>(2);
+   List<bool> _dialogPrefs = List<bool>(3);
 
    // Full path to files.
    String _unreadPostsFileFullPath = '';
@@ -3713,6 +3725,7 @@ class MenuChatState extends State<MenuChat>
 
       _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
+      _dialogPrefs[2] = _cfg.showDialogOnReportPost == 'yes';
 
       if (_menu.isEmpty) {
          // Here we have to load the menu table, load all leaf
@@ -3841,12 +3854,14 @@ class MenuChatState extends State<MenuChat>
 
       if (i == 0)
          await _db.execute(sql.updateShowDialogOnDelPost, [str]);
-      else
+      else if (i == 1)
          await _db.execute(sql.updateShowDialogOnSelectPost, [str]);
+      else 
+         await _db.execute(sql.updateShowDialogOnReportPost, [str]);
    }
 
    Future<void>
-   _alertUserOnselectPost(BuildContext ctx, int i, int fav) async
+   _alertUserOnPressed(BuildContext ctx, int i, int fav) async
    {
       if (!_dialogPrefs[fav]) {
          await _onPostSelection(i, fav);
@@ -3943,6 +3958,7 @@ class MenuChatState extends State<MenuChat>
 
       } else {
          await _db.execute(sql.deletePost, [_posts[i].id]);
+         // TODO: Send command to server to report if fav = 2.
       }
 
       _posts.removeAt(i);
@@ -4482,6 +4498,11 @@ class MenuChatState extends State<MenuChat>
       if (_filenamesTimer.isActive)
          return;
 
+      if (i == 2) {
+         // The report button is dummy in the new posts screen.
+         return;
+      }
+
       if (i == 0) {
          _newPostPressed = false;
          _post = null;
@@ -4515,8 +4536,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          () async { await _onRemovePost(i);},
-         txt.dialogTitles[3],
-         Text(txt.dialogBodies[3]),
+         txt.dialogTitles[4],
+         Text(txt.dialogBodies[4]),
       );
    }
 
@@ -5160,8 +5181,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          _onOkDialAfterSendFilters,
-         txt.dialogTitles[2],
-         Text(txt.dialogBodies[2]),
+         txt.dialogTitles[3],
+         Text(txt.dialogBodies[3]),
       );
    }
 
@@ -5611,7 +5632,7 @@ class MenuChatState extends State<MenuChat>
       bodies[1] = makeNewPostLv(
          ctx,
          _posts,
-         _alertUserOnselectPost,
+         _alertUserOnPressed,
          _menu,
          _exDetailsRoot,
          _inDetailsRoot,
