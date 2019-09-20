@@ -223,7 +223,13 @@ Widget makeImgExpandScreen(
    final double width = MediaQuery.of(ctx).size.width;
    final double height = MediaQuery.of(ctx).size.height;
 
-   Widget foo = makeImgListView2(width, height, post, (int j){});
+   Widget foo = makeImgListView2(
+      width,
+      height,
+      post,
+      (int j){},
+      BoxFit.contain,
+   );
 
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
@@ -339,7 +345,8 @@ Widget makeNetImgBox(
    double width,
    double height,
    String url,
-   Function onExpandImg)
+   Function onExpandImg,
+   BoxFit bf)
 {
    Widget img = CachedNetworkImage(
       imageUrl: url,
@@ -347,7 +354,7 @@ Widget makeNetImgBox(
         decoration: BoxDecoration(
            image: DecorationImage(
               image: imageProvider,
-              fit: BoxFit.cover,
+              fit: bf,
            ),
         ),
       ),
@@ -422,7 +429,8 @@ Widget makeImgListView2(
    double width,
    double height,
    Post post,
-   Function onExpandImg)
+   Function onExpandImg,
+   BoxFit bf)
 {
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
@@ -437,6 +445,7 @@ Widget makeImgListView2(
             height,
             imgUrl,
             (){onExpandImg(i);},
+            bf,
          );
       },
    );
@@ -2600,6 +2609,7 @@ Card makePostWidget(
          cts.imgBoxHeight,
          post,
          onExpandImg,
+         BoxFit.fill,
       );
    } else if (imgFiles.isNotEmpty) {
       imgLv = makeImgListView(
@@ -3189,11 +3199,13 @@ Widget makeChatTab(
 
          List<Widget> foo = List<Widget>();
          final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
+
          foo.add(makeImgListView2(
                width,
                cts.imgBoxHeight,
                posts[i],
                (int j) {onExpandImg(i, j);},
+               BoxFit.fill,
             ),
          );
 
@@ -4595,6 +4607,7 @@ class MenuChatState extends State<MenuChat>
             cts.onClickAvatarWidth,
             url,
             (){},
+            BoxFit.contain,
          ),
       );
    }
