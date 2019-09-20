@@ -353,9 +353,9 @@ Widget makeNetImgBox(
       ),
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
-         // TODO: Replace this with a proper widget.
-         print('====> $error $url');
-         return Icon(Icons.error);
+         print('====> $error $url $error');
+         Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
+         return makeImgPlaceholder(width, height, ic);
       },
    );
 
@@ -369,10 +369,10 @@ Widget makeNetImgBox(
    );
 }
 
-Widget makeAddImgBox(
+Widget makeImgPlaceholder(
    double width,
    double height,
-   Function onAddPhoto)
+   Widget w)
 {
    return SizedBox(
       width: width,
@@ -381,11 +381,9 @@ Widget makeAddImgBox(
          elevation: 0.0,
          color: Colors.grey,
          child: Center(
-            child: Text('Adicione imagens.',
-               style: TextStyle(
-                  color: stl.colorScheme.background,
-                  fontSize: stl.tt.title.fontSize,
-               ),
+            child: Padding(
+               padding: const EdgeInsets.symmetric(horizontal: 15.0),
+               child: w,
             ),
          ),
          shape: RoundedRectangleBorder(
@@ -2611,11 +2609,15 @@ Card makePostWidget(
          post,
       );
    } else {
-      imgLv = makeAddImgBox(
-         width,
-         cts.imgBoxHeight,
-         onAddPhoto,
+      Widget w = Text(txt.addImgMsg,
+         overflow: TextOverflow.clip,
+         style: TextStyle(
+            color: stl.colorScheme.background,
+            fontSize: stl.tt.title.fontSize,
+         ),
       );
+
+      imgLv = makeImgPlaceholder(width, cts.imgBoxHeight, w);
    }
 
    List<Widget> row1List = List<Widget>();

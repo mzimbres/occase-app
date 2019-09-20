@@ -171,3 +171,7 @@ const String onEmptyNickTitle = 'Erro';
 const String onEmptyNickContent =
    'Seu apelido deve conter um mínimo de ${cts.nickMinLength} letras.';
 
+const String addImgMsg = 'Adicione imagens do seu produto.';
+
+const String unreachableImgError = 'Imagem temporariamente indisponível.';
+
