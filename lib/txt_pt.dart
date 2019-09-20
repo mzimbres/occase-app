@@ -141,21 +141,24 @@ const String rangesTitle = 'Dados';
 
 const String paymentTitle = 'Escolha um plano';
 
+// Depending on the length of the text, change the function ListTile.
+// dense: true,
+// isThreeLine: false,
 const List<List<String>> payments =
 [ <String>
   [ ' 0R\$'
   , 'Grátis'
-  , 'Nossa opcao mais econômica (limitacao de um anúnico por semana)'
+  , 'Nossa opcao mais econômica.'
   ]
 , <String>
   [ ' 5R\$'
   , 'Prioritário'
-  , 'Seu anúncio será mostrado sempre no topo da lista.'
+  , 'Pra quem precisa de agilidade.'
   ]
 , <String>
   [ '10R\$'
-  , 'Premium'
-  , 'Prioridade máxima. O maior alcance para seu anúncio.'
+  , 'Prioridade máxima'
+  , 'O maior alcance para seu anúncio.'
   ]
 ];
 

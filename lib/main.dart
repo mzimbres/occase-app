@@ -1873,7 +1873,8 @@ Widget makePayPriceListTile(
    String price,
    String title,
    String subtitle,
-   Function onTap)
+   Function onTap,
+   Color color)
 {
    Color primary = Theme.of(ctx).colorScheme.primary;
    Color secondary = Theme.of(ctx).colorScheme.secondary;
@@ -1900,28 +1901,28 @@ Widget makePayPriceListTile(
 
    Widget leading = Card(
       margin: const EdgeInsets.all(0.0),
-      color: secondary,
+      color: color,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Padding(
          padding: EdgeInsets.all(10.0),
-         child: Text(price, style: TextStyle(color: onSecondary),),
+         child: Text(price, style: TextStyle(color: Colors.white),),
       ),
    );
 
    return ListTile(
        leading: leading,
        title: titleW,
-       dense: false,
+       dense: true,
        subtitle: subtitleW,
        trailing: Icon(Icons.keyboard_arrow_right),
        contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
        onTap: onTap,
        enabled: true,
        selected: false,
-       isThreeLine: true,
+       isThreeLine: false,
     );
 }
 
@@ -1980,6 +1981,8 @@ Widget makePaymentChoiceWidget(
          txt.payments[i][1],
          txt.payments[i][2],
          payments[i],
+         stl.priceColors[i],
+
       );
 
       widgets.add(p);

@@ -78,3 +78,9 @@ const double imgLvBorderWidth = 2.0;
 
 const double newPostIconSize = 35.0;
 
+List<Color> priceColors = <Color>
+[ Colors.blueGrey[800]
+, Colors.teal[800]
+, Colors.yellow[900]
+];
+
