@@ -398,7 +398,7 @@ Widget makeImgPlaceholder(
    );
 }
 
-Widget constrainImgListView(double width, double height, Widget lv)
+Widget constrainBox(double width, double height, Widget lv)
 {
    return ConstrainedBox(
       constraints: BoxConstraints(
@@ -434,14 +434,22 @@ Widget makeImgListView2(
       {
          final String imgUrl = cts.httpImgTarget + post.images[i];
 
-         return FlatButton(
+         FlatButton b = FlatButton(
             onPressed: (){onExpandImg(i);},
-            child: makeNetImgBox(width, height, imgUrl, bf),
+            child: Container(
+               width: width * 0.9,
+               height: height * 0.9,
+            ),
          );
+
+         return Stack(children: <Widget>
+         [ makeNetImgBox(width, height, imgUrl, bf)
+         , b
+         ]);
       },
    );
 
-   return constrainImgListView(width, height, lv);
+   return constrainBox(width, height, lv);
 }
 
 Widget makeImgListView(
@@ -462,8 +470,6 @@ Widget makeImgListView(
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         // This case handles the new post screen.
-
          Widget img = Image.file(imgFiles[i],
             width: width,
             height: height,
@@ -480,7 +486,7 @@ Widget makeImgListView(
       },
    );
 
-   return constrainImgListView(width, height, lv);
+   return constrainBox(width, height, lv);
 }
 
 int searchBitOn(int o, int n)
