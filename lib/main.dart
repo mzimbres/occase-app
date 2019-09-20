@@ -355,8 +355,16 @@ Widget makeNetImgBox(
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
          print('====> $error $url $error');
-         Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
-         return makeImgPlaceholder(width, height, ic);
+         //Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
+         Widget w = Text(txt.unreachableImgError,
+            overflow: TextOverflow.clip,
+            style: TextStyle(
+               color: stl.colorScheme.background,
+               fontSize: stl.tt.title.fontSize,
+            ),
+         );
+
+         return makeImgPlaceholder(width, height, w);
       },
    );
 }
@@ -371,6 +379,7 @@ Widget makeImgPlaceholder(
       height: height,
       child: Card(
          elevation: 0.0,
+         margin: EdgeInsets.all(0.0),
          color: Colors.grey,
          child: Center(
             child: Padding(
@@ -379,11 +388,11 @@ Widget makeImgPlaceholder(
             ),
          ),
          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-            side: BorderSide(
-               width: stl.imgLvBorderWidth,
-               color: stl.colorScheme.background,
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(0.0)),
+            //side: BorderSide(
+            //   width: stl.imgLvBorderWidth,
+            //   color: stl.colorScheme.background,
+            //),
          ),
       ),
    );

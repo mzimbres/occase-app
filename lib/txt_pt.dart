@@ -175,5 +175,5 @@ const String onEmptyNickContent =
 
 const String addImgMsg = 'Adicione imagens do seu produto.';
 
-const String unreachableImgError = 'Imagem temporariamente indisponível.';
+const String unreachableImgError = 'Imagem indisponível.';
 
