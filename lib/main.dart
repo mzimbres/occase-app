@@ -2212,25 +2212,25 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       text: TextSpan(
          text: key + ': ',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
-            color: Theme.of(ctx).colorScheme.primary,
+            color: stl.infoKeyColor,
          ),
          children: <TextSpan>
          [ TextSpan(
               text: value,
               style: Theme.of(ctx).textTheme.subhead.copyWith(
                  //fontWeight: FontWeight.w500,
-                 color: stl.colorScheme.primaryVariant,
+                 color: stl.infoValueColor,
               ),
            ),
          ],
       ),
    );
 
+   // TODO: Use ConstrainedBox with aspect ratio.
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-      [ Icon(
-           Icons.arrow_right,
+      [ Icon(Icons.arrow_right,
            color: Theme.of(ctx).colorScheme.primary,
         )
       , ConstrainedBox(
@@ -2256,7 +2256,7 @@ List<Widget> makePostInRows(
 
       Text text = Text(' ${nodes[i].name}',
          style: Theme.of(ctx).textTheme.subhead.copyWith(
-            color: Theme.of(ctx).colorScheme.primaryVariant,
+            color: stl.infoValueColor,
          ),
       );
 
@@ -2271,7 +2271,9 @@ List<Widget> makePostInRows(
    return list;
 }
 
-Widget makePostSectionTitle(BuildContext ctx, String str)
+Widget makePostSectionTitle(
+   BuildContext ctx,
+   String str)
 {
    return Align(
       alignment: Alignment.centerLeft,
@@ -2318,9 +2320,7 @@ List<Widget> makeMenuInfo(
    return list;
 }
 
-List<Widget> makePostValues(
-   BuildContext ctx,
-   Post post)
+List<Widget> makePostValues(BuildContext ctx, Post post)
 {
    List<Widget> list = List<Widget>();
 
@@ -2441,7 +2441,7 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
-         padding: EdgeInsets.all(stl.postInnerMargin),
+         padding: EdgeInsets.all(0.0),
       ),
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
@@ -2693,27 +2693,14 @@ Widget makeNewPostImpl(
 
    Widget images = Stack(children: <Widget>[imgLv, sb2]);
 
-   Card cc = Card(
-      color: Theme.of(ctx).colorScheme.primary,
-      margin: EdgeInsets.all(0.0),
-      elevation: 0.0,
-      child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[card, c4],
-      ),
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(
-            Radius.circular(0.0),
-         ),
-      ),
-   );
+   Widget cc = putPostOnFinalCard(ctx, <Widget>[images, card, c4]);
 
    return Padding(
-      child: Column(children: <Widget>[images, cc]),
+      child: cc,
       padding: EdgeInsets.only(
-         top: 20.0,
+         top: 10.0,
          right: 0.0,
-         bottom: 0.0,
+         bottom: 10.0,
          left: 0.0,
       ),
    );
@@ -3175,6 +3162,27 @@ Widget makeChatsExp(
    );
 }
 
+Widget putPostOnFinalCard(
+   BuildContext ctx,
+   List<Widget> wlist)
+{
+   return Card(
+      elevation: 0.0,
+      color: Theme.of(ctx).colorScheme.primary,
+      child: Column(children: wlist),
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(
+            Radius.circular(stl.cornerRadius)
+         ),
+      ),
+      margin: const EdgeInsets.only(
+         left: stl.postCardSideMargin,
+         right: stl.postCardSideMargin,
+         bottom: stl.postCardBottomMargin,
+      ),
+   );
+}
+
 Widget makeChatTab(
    BuildContext ctx,
    List<Post> posts,
@@ -3276,21 +3284,7 @@ Widget makeChatTab(
          , chatExpansion
          ];
 
-         Card w = Card(
-            elevation: 0.0,
-            color: Theme.of(ctx).colorScheme.primary,
-            child: Column(children: expansions),
-            shape: RoundedRectangleBorder(
-               borderRadius: BorderRadius.all(
-                  Radius.circular(stl.cornerRadius)
-               ),
-            ),
-            margin: const EdgeInsets.only(
-               left: stl.postCardSideMargin,
-               right: stl.postCardSideMargin,
-               bottom: stl.postCardBottomMargin,
-            ),
-         );
+         Widget w = putPostOnFinalCard(ctx, expansions);
 
          return Dismissible(
             key: GlobalKey(),

@@ -21,15 +21,20 @@ final double outerPostCardPadding = 1.0;
 
 // The padding of chat messages inside ist box.
 final double chatMsgPadding = 5.0;
-final double postSectionPadding = 10.0;
+final double postSectionPadding = 5.0;
 
-const ColorScheme colorScheme = ColorScheme.light(
-      primary: Color(0xFF434b79),
+const Color primaryColor = Color(0xFF434b79);
+
+const ColorScheme colorScheme = const ColorScheme.light(
+      primary: primaryColor,
       primaryVariant: Color(0xFF434b79),
       secondary: Color(0xFFffa32c),
       secondaryVariant: Color(0xFFff5635),
       onSecondary: Color(0xFF434b79),
 );
+
+Color infoKeyColor = Colors.grey[600];
+const Color infoValueColor = primaryColor;
 
 const TextTheme tt = TextTheme(
    title: TextStyle(fontSize: 20.0),
