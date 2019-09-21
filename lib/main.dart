@@ -4159,11 +4159,16 @@ class MenuChatState extends State<MenuChat>
 
       final double tol = 40.0;
 
+      final bool old = _showChatJumpDownButton;
+
       if (_showChatJumpDownButton && !(offset < max))
          setState(() {_showChatJumpDownButton = false;});
 
       if (!_showChatJumpDownButton && (offset < (max - tol)))
          setState(() {_showChatJumpDownButton = true;});
+
+      if (!old && _showChatJumpDownButton)
+         _chat.nUnreadMsgs = 0;
    }
 
    void _onFwdChatMsg()
