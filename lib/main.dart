@@ -3900,6 +3900,22 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
+   Future<void> _clearPosts() async
+   {
+      await _db.execute(sql.clearPosts, [1]);
+      setState((){_posts = List<Post>();});
+   }
+
+   void _clearPostsDialog(BuildContext ctx)
+   {
+      _showSimpleDial(
+         ctx,
+         () async { await _clearPosts(); },
+         txt.clearPostsTitle,
+         Text(txt.clearPostsContent),
+      );
+   }
+
    // Used to either add or remove a photo from the new post.
    // i = -1 ==> add
    // i != -1 ==> remove, in this case i is the index to remove.
@@ -5677,7 +5693,6 @@ class MenuChatState extends State<MenuChat>
          _onExpandImg,
       );
 
-      List<Widget> actions = List<Widget>();
       Widget appBarLeading = null;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
          appBarTitle = txt.msgOnRedirectingChat;
@@ -5687,6 +5702,7 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
+      List<Widget> actions = List<Widget>();
       if (_isOnOwn() && _hasLPChats() && !_hasLPChatMsgs()) {
          actions = makeOnLongPressedActions(
             ctx,
@@ -5704,6 +5720,17 @@ class MenuChatState extends State<MenuChat>
          );
 
          actions.add(delChatBut);
+      } else if (_isOnPosts()) {
+         IconButton clearPosts = IconButton(
+            icon: Icon(
+               Icons.delete_forever,
+               color: Theme.of(ctx).colorScheme.onPrimary,
+            ),
+            tooltip: txt.clearPosts,
+            onPressed: () { _clearPostsDialog(ctx); }
+         );
+
+         actions.add(clearPosts);
       }
 
       actions.add(makeAppBarVertAction(_onAppBarVertPressed));

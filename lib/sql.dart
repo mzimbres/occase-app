@@ -37,6 +37,11 @@ final String loadPosts =
 SELECT rowid, * FROM posts
 ''';
 
+final String clearPosts =
+'''
+DELETE FROM posts WHERE status = ?
+''';
+
 //___________________________________________________________
 final String createConfig =
 '''

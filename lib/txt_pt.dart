@@ -88,6 +88,7 @@ const String msgOnEmptyChat = 'Conversa ainda nao iniciada ...';
 const String deleteChat = "Remover conversa";
 const String blockUser = "Bloquear usuário";
 const String pinChat = "Fixar conversa";
+const String clearPosts = "Deletar posts";
 
 // The texts showed on the dialog in the *Posts* screen
 const List<String> dialogTitles = <String>
@@ -179,4 +180,7 @@ const String onEmptyNickContent =
 const String addImgMsg = 'Adicione imagens do seu produto.';
 
 const String unreachableImgError = 'Imagem indisponível.';
+
+const String clearPostsTitle = 'Remover anúncios?';
+const String clearPostsContent = 'Todos os anúncios serao removidos.';
 
