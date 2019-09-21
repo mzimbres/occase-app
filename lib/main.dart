@@ -599,7 +599,7 @@ int counterBitsSet(int v)
    return c;
 }
 
-List<Widget> makeSliderCol({
+List<Widget> makeSliderList({
    double value,
    double min,
    double max,
@@ -705,7 +705,7 @@ List<Widget> makeNewPostDetailScreen(
    for (int i = 0; i < cts.rangeDivs.length; ++i) {
       final int j = 2 * i;
 
-      List<Widget> col = makeSliderCol(
+      List<Widget> col = makeSliderList(
          value: post.rangeValues[i].toDouble(),
          min: cts.rangesMinMax[j + 0].toDouble(),
          max: cts.rangesMinMax[j + 1].toDouble(),
@@ -962,17 +962,46 @@ WillPopScope makeNewFiltersScreens(
 
       foo.add(vv);
 
+      TextStyle ts = TextStyle(
+          color: Theme.of(ctx).colorScheme.onPrimary,
+          fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+      );
+
       for (int i = 0; i < cts.rangeDivs.length; ++i) {
          final int j = 2 * i;
          final int v1 = ranges[j + 0];
          final int v2 = ranges[j + 1];
-         final Widget rs = RangeSlider(
+
+         final double v1d = ranges[j + 0].toDouble();
+         final double v2d = ranges[j + 1].toDouble();
+
+         List<Widget> ll = List<Widget>();
+
+         ll.add(Text(txt.minRangeStr, style: ts));
+
+         List<Widget> slider1 = makeSliderList(
+            value: v1d,
             min: cts.rangesMinMax[j + 0].toDouble(),
             max: cts.rangesMinMax[j + 1].toDouble(),
             divisions: cts.rangeDivs[i],
-            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
-            values: RangeValues(v1.toDouble(), v2.toDouble()),
+            onValueChanged: (double v) {
+               onRangeChanged(i, RangeValues(v, v2d));},
          );
+
+         ll.addAll(slider1);
+
+         ll.add(Text(txt.maxRangeStr, style: ts));
+
+         List<Widget> slider2 = makeSliderList(
+            value: v2d,
+            min: cts.rangesMinMax[j + 0].toDouble(),
+            max: cts.rangesMinMax[j + 1].toDouble(),
+            divisions: cts.rangeDivs[i],
+            onValueChanged: (double v) {
+               onRangeChanged(i, RangeValues(v1d, v));},
+         );
+
+         ll.addAll(slider2);
 
          final RichText rt = makeExpTileTitle(
             ctx,
@@ -982,16 +1011,13 @@ WillPopScope makeNewFiltersScreens(
             false,
          );
 
-         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], false));
+         foo.add(wrapOnDetailExpTitle(ctx, rt, ll, false));
       }
 
       wid = ListView.builder(
          padding: const EdgeInsets.all(3.0),
          itemCount: foo.length,
-         itemBuilder: (BuildContext ctx, int i)
-         {
-            return foo[i];
-         },
+         itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
       );
    } else {
       wid = makeNewFilterListView(
@@ -1137,11 +1163,11 @@ makeTabBar(BuildContext ctx,
                  tabs: tabs);
 }
 
-BottomNavigationBar
-makeBottomBarItems(List<IconData> icons,
-                   List<String> iconLabels,
-                   Function onBotBarTapped,
-                   int i)
+BottomNavigationBar makeBottomBarItems(
+   List<IconData> icons,
+   List<String> iconLabels,
+   Function onBotBarTapped,
+   int i)
 {
    assert(icons.length == iconLabels.length);
    final int length = icons.length;
@@ -2828,7 +2854,7 @@ ListView makeNewPostMenuListView(
                   child.name,
                   style: Theme.of(ctx).textTheme.subhead.copyWith(
                      fontWeight: FontWeight.w500,
-                     color: Theme.of(ctx).colorScheme.onSecondary
+                     //color: Theme.of(ctx).colorScheme.onSecondary,
                   ),
                ),
                dense: true,
@@ -2851,7 +2877,7 @@ ListView makeNewPostMenuListView(
                   o.children[i].name,
                   style: Theme.of(ctx).textTheme.subhead.copyWith(
                      fontWeight: FontWeight.w500,
-                     color: Theme.of(ctx).colorScheme.onSecondary
+                     //color: Theme.of(ctx).colorScheme.onSecondary,
                   ),
                ),
                dense: true,

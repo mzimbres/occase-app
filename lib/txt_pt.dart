@@ -184,3 +184,6 @@ const String unreachableImgError = 'Imagem indisponível.';
 const String clearPostsTitle = 'Remover anúncios?';
 const String clearPostsContent = 'Todos os anúncios serao removidos.';
 
+const String minRangeStr = 'Mínimo';
+const String maxRangeStr = 'Máximo';
+
