@@ -3128,8 +3128,12 @@ Widget makeChatsExp(
       );
    }
 
-  if (isFav)
-     return Column(children: list);
+  if (isFav) {
+     return Padding(
+        child: Column(children: list),
+        padding: EdgeInsets.only(top: stl.chatTilePadding),
+     );
+  }
 
   Widget title;
    if (nUnredChats == 0) {
