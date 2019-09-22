@@ -6,7 +6,7 @@ final double mainFontSize = 16.0;
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
-final double postMarging = 4.0;
+final double postMarging = 2.0;
 
 // Marging user to separate the post element cards from the
 // outermost cards.
@@ -44,13 +44,12 @@ const TextTheme tt = TextTheme(
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
 
-const double postCardSideMargin = 4.0;
+const double postCardSideMargin = 1.0;
 const double postCardBottomMargin = 10.0;
 
 const double cornerRadius = 8.0;
-const double cardPostMargin = postCardSideMargin;
 
-const chatTilePadding = cardPostMargin;
+const chatTilePadding = 4.0;
 
 const Icon unknownPersonIcon = Icon(
    Icons.person,
