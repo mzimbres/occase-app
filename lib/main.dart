@@ -1547,8 +1547,7 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
             child: rr)));
 }
 
-Widget
-makeRefChatMsgWidget(
+Widget makeRefChatMsgWidget(
    BuildContext ctx,
    Chat ch,
    int i,
@@ -2648,7 +2647,7 @@ Widget makeNewPostImpl(
          cts.imgBoxHeight,
          post,
          onExpandImg,
-         BoxFit.fill,
+         BoxFit.cover,
       );
 
       imgLv = Container(
@@ -3206,8 +3205,8 @@ Widget putPostOnFinalCard(
          ),
       ),
       margin: const EdgeInsets.only(
-         left: stl.postCardSideMargin,
-         right: stl.postCardSideMargin,
+         left: stl.postMargin,
+         right: stl.postMargin,
          bottom: stl.postCardBottomMargin,
       ),
    );
@@ -3274,7 +3273,7 @@ Widget makeChatTab(
                cts.imgBoxHeight,
                posts[i],
                (int j) {onExpandImg(i, j);},
-               BoxFit.fill,
+               BoxFit.cover,
             ),
          );
 
@@ -3735,6 +3734,15 @@ class MenuChatState extends State<MenuChat>
       _goToRegScreen = true;
    }
 
+   void sendOfflinePosts()
+   {
+      if (_outPostsQueue.isEmpty)
+         return;
+       
+      final String payload = makePostPayload(_outPostsQueue.first);
+      channel.sink.add(payload);
+   }
+
    Future<void> _load(final String docDir) async
    {
       _db = await openDatabase(
@@ -3819,11 +3827,7 @@ class MenuChatState extends State<MenuChat>
                for (Post o in _favPosts)
                   o.chats = await loadChats(_db, o.id);
             } else if (p.status == 3) {
-               // TODO: Remove unacked posts. We need however an
-               // strategy for that, say after 2 reconections. We
-               // cannot remove them directly in the next app startup
-               // since we may still receive the ack.
-               //_outPostsQueue.add(p);
+               _outPostsQueue.add(p);
             } else {
                assert(false);
             }
@@ -5097,6 +5101,9 @@ class MenuChatState extends State<MenuChat>
       // Sends any chat messages that may have been written while
       // the app were offline.
       _sendOfflineChatMsgs();
+
+      // The same for posts.
+      sendOfflinePosts();
    }
 
    void _onSubscribeAck(Map<String, dynamic> ack)

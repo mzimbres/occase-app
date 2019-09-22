@@ -2,26 +2,24 @@ import 'package:flutter/material.dart';
 
 final Color chatLongPressendColor = Colors.grey[400]; 
 
-final double mainFontSize = 16.0;
+const double mainFontSize = 16.0;
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.
-final double postMarging = 2.0;
+const double postMargin = 1.0;
 
-// Marging user to separate the post element cards from the
+// Marging used to separate the post element cards from the
 // outermost cards.
-final double postInnerMargin = 8.0;
+const double postInnerMargin = 8.0;
 
-final double listTileSubtitleFontSize = 14.0;
+const double listTileSubtitleFontSize = 14.0;
 
 // The padding used for the text inside the post element.
-final double postElemTextPadding = 7.0;
-
-final double outerPostCardPadding = 1.0;
+const double postElemTextPadding = 7.0;
 
 // The padding of chat messages inside ist box.
-final double chatMsgPadding = 5.0;
-final double postSectionPadding = 5.0;
+const double chatMsgPadding = 5.0;
+const double postSectionPadding = 5.0;
 
 const Color primaryColor = Color(0xFF434b79);
 
@@ -33,8 +31,8 @@ const ColorScheme colorScheme = const ColorScheme.light(
       onSecondary: Color(0xFF434b79),
 );
 
-Color infoKeyColor = Colors.grey[600];
-const Color infoValueColor = primaryColor;
+Color infoKeyColor = primaryColor;
+final Color infoValueColor = Colors.blueGrey[800];
 
 const TextTheme tt = TextTheme(
    title: TextStyle(fontSize: 20.0),
@@ -83,7 +81,7 @@ const double imgLvBorderWidth = 2.0;
 const double newPostIconSize = 35.0;
 
 List<Color> priceColors = <Color>
-[ Colors.blueGrey[800]
+[ Colors.blueGrey[700]
 , Colors.teal[800]
 , Colors.yellow[900]
 ];
