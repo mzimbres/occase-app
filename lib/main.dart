@@ -173,10 +173,10 @@ Widget makeAppBarVertAction(Function onSelected)
              value: ConfigActions.ChangeNick,
              child: Text(txt.changeNichHint),
            ),
-           const PopupMenuItem<ConfigActions>(
-             value: ConfigActions.ChangeProfilePhoto,
-             child: Text(txt.changePhoto),
-           ),
+           //const PopupMenuItem<ConfigActions>(
+           //  value: ConfigActions.ChangeProfilePhoto,
+           //  child: Text(txt.changePhoto),
+           //),
         ];
      }
    );
@@ -250,9 +250,7 @@ TextField makeNickTxtField(
 {
    Color focusedColor = Theme.of(ctx).colorScheme.primary;
 
-   Color enabledColor = Colors.red;
-   if (txtCtrl.text.isNotEmpty)
-      enabledColor = focusedColor;
+   Color enabledColor = focusedColor;
 
    return TextField(
       controller: txtCtrl,
@@ -2466,7 +2464,11 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
-         padding: EdgeInsets.all(0.0),
+         padding: EdgeInsets.only(
+            top: 8.0,
+            bottom: 8.0,
+            left: 8.0,
+         ),
       ),
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
@@ -5805,7 +5807,7 @@ class MenuChatState extends State<MenuChat>
                   children: bodies
                ),
             ),
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.grey[200],
             floatingActionButton: fltButtons[_tabCtrl.index],
          ),
       );
