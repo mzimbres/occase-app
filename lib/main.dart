@@ -16,9 +16,8 @@ import 'package:intl/intl.dart';
 import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
-import 'package:square_in_app_payments/in_app_payments.dart';
-import 'package:square_in_app_payments/models.dart' as sq;
 import 'package:http/http.dart' as http;
+import 'package:flutter_widgets/flutter_widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -1585,13 +1584,13 @@ Widget makeChatSecondLayer(
    IconButton sendButton = IconButton(
       icon: Icon(Icons.send),
       onPressed: onChatSend,
-      color: Colors.grey,
+      color: stl.colorScheme.primary,
    );
 
    IconButton attachmentButton = IconButton(
       icon: Icon(Icons.add_a_photo),
       onPressed: onAttachment,
-      color: Colors.grey,
+      color: stl.colorScheme.primary,
    );
 
    return Column(
@@ -1955,31 +1954,31 @@ Widget makePayPriceListTile(
     );
 }
 
-void pay()
-{
-   InAppPayments.setSquareApplicationId('APPLICATION_ID');
-   InAppPayments.startCardEntryFlow(
-      onCardEntryCancel: (){},
-      onCardNonceRequestSuccess: cardNonceRequestSuccess,
-   );
-}
-
-void cardNonceRequestSuccess(sq.CardDetails result)
-{
-   // Use this nonce from your backend to pay via Square API
-   print(result.nonce);
-
-   final bool invalidZipCode = false;
-
-   if (invalidZipCode) {
-      // Stay in the card flow and show an error:
-      InAppPayments.showCardNonceProcessingError('Invalid ZipCode');
-   }
-
-   InAppPayments.completeCardEntry(
-      onCardEntryComplete: (){},
-   );
-}
+//void pay()
+//{
+//   InAppPayments.setSquareApplicationId('APPLICATION_ID');
+//   InAppPayments.startCardEntryFlow(
+//      onCardEntryCancel: (){},
+//      onCardNonceRequestSuccess: cardNonceRequestSuccess,
+//   );
+//}
+//
+//void cardNonceRequestSuccess(sq.CardDetails result)
+//{
+//   // Use this nonce from your backend to pay via Square API
+//   print(result.nonce);
+//
+//   final bool invalidZipCode = false;
+//
+//   if (invalidZipCode) {
+//      // Stay in the card flow and show an error:
+//      InAppPayments.showCardNonceProcessingError('Invalid ZipCode');
+//   }
+//
+//   InAppPayments.completeCardEntry(
+//      onCardEntryComplete: (){},
+//   );
+//}
 
 Widget makePaymentChoiceWidget(
    BuildContext ctx,
@@ -2000,8 +1999,8 @@ Widget makePaymentChoiceWidget(
 
    List<Function> payments = <Function>
    [ () { freePayment(ctx); }
-   , pay
-   , pay
+   , (){print('===> pay1');}
+   , (){print('===> pay2');}
    ];
    for (int i = 0; i < txt.payments.length; ++i) {
       Widget p = makePayPriceListTile(
