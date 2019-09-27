@@ -964,41 +964,19 @@ WillPopScope makeNewFiltersScreens(
           fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
       );
 
-      for (int i = 0; i < cts.rangeDivs.length; ++i) {
+      for (int i = 0; i < cts.discreteRange.length; ++i) {
          final int j = 2 * i;
          final int v1 = ranges[j + 0];
          final int v2 = ranges[j + 1];
+         print('===> $v1 $v2');
 
-         final double v1d = ranges[j + 0].toDouble();
-         final double v2d = ranges[j + 1].toDouble();
-
-         List<Widget> ll = List<Widget>();
-
-         ll.add(Text(txt.minRangeStr, style: ts));
-
-         List<Widget> slider1 = makeSliderList(
-            value: v1d,
-            min: cts.rangesMinMax[j + 0].toDouble(),
-            max: cts.rangesMinMax[j + 1].toDouble(),
-            divisions: cts.rangeDivs[i],
-            onValueChanged: (double v) {
-               onRangeChanged(i, RangeValues(v, v2d));},
+         final Widget rs = RangeSlider(
+            min: 0,
+            max: cts.discreteRange[i].length.toDouble(),
+            divisions: cts.discreteRange[i].length,
+            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
+            values: RangeValues(v1.toDouble(), v2.toDouble()),
          );
-
-         ll.addAll(slider1);
-
-         ll.add(Text(txt.maxRangeStr, style: ts));
-
-         List<Widget> slider2 = makeSliderList(
-            value: v2d,
-            min: cts.rangesMinMax[j + 0].toDouble(),
-            max: cts.rangesMinMax[j + 1].toDouble(),
-            divisions: cts.rangeDivs[i],
-            onValueChanged: (double v) {
-               onRangeChanged(i, RangeValues(v1d, v));},
-         );
-
-         ll.addAll(slider2);
 
          final RichText rt = makeExpTileTitle(
             ctx,
@@ -1008,7 +986,7 @@ WillPopScope makeNewFiltersScreens(
             false,
          );
 
-         foo.add(wrapOnDetailExpTitle(ctx, rt, ll, false));
+         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], false));
       }
 
       wid = ListView.builder(
@@ -3770,6 +3748,7 @@ class MenuChatState extends State<MenuChat>
          List<Config> configs = await loadConfig(_db);
          if (!configs.isEmpty)
             _cfg = configs.first;
+         _cfg.ranges.fillRange(0, _cfg.ranges.length, 0);
       } catch (e) {
          print(e);
       }

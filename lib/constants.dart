@@ -18,6 +18,12 @@ const List<int> rangeDivs = <int>
 , 100 // km
 ];
 
+const List<List<int>> discreteRange = <List<int>>
+[ <int>[0, 5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000]
+, <int>[0, 1930, 1950, 1960, 1980, 1990, 2000, 2010, 2030]
+, <int>[0, 5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000]
+];
+
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
 const int emailMaxLength = 50;
