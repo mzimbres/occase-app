@@ -750,9 +750,32 @@ class Config {
       this.anyOfFeatures = 0,
    })
    {
-      if (ranges == null)
-         ranges = List<int>.from(cts.rangesMinMax);
+      if (ranges == null) {
+         final int l = cts.discreteRanges.length;
+         ranges = List<int>(2 * l);
+         for (int i = 0; i < l; ++i) {
+            assert(cts.discreteRanges[i].isNotEmpty);
+            ranges[2 * i + 0] = 0;
+            ranges[2 * i + 1] = cts.discreteRanges[i].length - 1;
+         }
+      }
    }
+}
+
+List<int> convertToValues(final List<int> ranges)
+{
+   final int l = cts.discreteRanges.length;
+   List<int> rangeValues = List<int>(2 * l);
+   assert(ranges.length == 2 * l);
+
+   for (int i = 0; i < l; ++i) {
+      final int idx1 = 2 * i + 0;
+      final int idx2 = 2 * i + 1;
+      rangeValues[idx1] = cts.discreteRanges[i][ranges[idx1]];
+      rangeValues[idx2] = cts.discreteRanges[i][ranges[idx2]];
+   }
+
+   return rangeValues;
 }
 
 Map<String, dynamic> configToMap(Config cfg)

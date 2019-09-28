@@ -132,11 +132,6 @@ const List<String> rangeUnits = <String>
 ,    '', 'km'
 ];
 
-// When displaying e.g. price ranges this word will be used to
-// separate the values.
-// Ex: *Precos: 22.000 até 33.000*
-const String rangeSep = 'até';
-
 // The String shown in the title to price, year, km etc.
 const String rangesTitle = 'Dados';
 

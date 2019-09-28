@@ -964,24 +964,29 @@ WillPopScope makeNewFiltersScreens(
           fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
       );
 
-      for (int i = 0; i < cts.discreteRange.length; ++i) {
+      for (int i = 0; i < cts.discreteRanges.length; ++i) {
          final int j = 2 * i;
-         final int v1 = ranges[j + 0];
-         final int v2 = ranges[j + 1];
-         print('===> $v1 $v2');
+         final int vmin = ranges[j + 0];
+         final int vmax = ranges[j + 1];
+
+         final int l = cts.discreteRanges[i].length - 1;
 
          final Widget rs = RangeSlider(
             min: 0,
-            max: cts.discreteRange[i].length.toDouble(),
-            divisions: cts.discreteRange[i].length,
+            max: l.toDouble(),
+            divisions: cts.discreteRanges[i].length,
             onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
-            values: RangeValues(v1.toDouble(), v2.toDouble()),
+            values: RangeValues(vmin.toDouble(), vmax.toDouble()),
          );
 
+         final int vmin2 = cts.discreteRanges[i][vmin];
+         final int vmax2 = cts.discreteRanges[i][vmax];
+
+         final String rangeTitle = '$vmin2 até $vmax2';
          final RichText rt = makeExpTileTitle(
             ctx,
             txt.rangePrefixes[i],
-            '$v1 ' + txt.rangeSep + ' $v2',
+            rangeTitle,
             ':',
             false,
          );
@@ -3748,7 +3753,6 @@ class MenuChatState extends State<MenuChat>
          List<Config> configs = await loadConfig(_db);
          if (!configs.isEmpty)
             _cfg = configs.first;
-         _cfg.ranges.fillRange(0, _cfg.ranges.length, 0);
       } catch (e) {
          print(e);
       }
@@ -5249,7 +5253,7 @@ class MenuChatState extends State<MenuChat>
          'last_post_id': _cfg.lastPostId,
          'channels': channels,
          'any_of_features': _cfg.anyOfFeatures,
-         'ranges': _cfg.ranges,
+         'ranges': convertToValues(_cfg.ranges),
       };
 
       final String payload = jsonEncode(subCmd);
