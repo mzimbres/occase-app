@@ -235,7 +235,7 @@ Widget makeImgExpandScreen(
       child: Scaffold(
          //appBar: AppBar(title: Text(txt.appName)),
          body: Center(child: foo),
-         backgroundColor: Theme.of(ctx).colorScheme.background,
+         backgroundColor: Theme.of(ctx).colorScheme.primary,
       ),
    );
 }
@@ -649,7 +649,7 @@ List<Widget> makeSliderList({
       },
    );
 
-   return <Widget>[sld1, sld2];
+   return <Widget>[sld2, sld1];
 }
 
 List<Widget> makeNewPostDetailScreen(
@@ -2442,7 +2442,8 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
 
    return Card(
       elevation: 0.0,
-      color: Theme.of(ctx).colorScheme.background,
+      //color: Theme.of(ctx).colorScheme.background,
+      color: Colors.grey[200],
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
@@ -2571,6 +2572,17 @@ Widget makeAddOrRemoveWidget(
    );
 }
 
+Widget makeImgTextPlaceholder(final String str)
+{
+   return Text(str,
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+         color: stl.colorScheme.background,
+         fontSize: stl.tt.title.fontSize,
+      ),
+   );
+}
+
 Widget makeNewPostImpl(
    BuildContext ctx,
    Widget card,
@@ -2648,14 +2660,7 @@ Widget makeNewPostImpl(
          post,
       );
    } else {
-      Widget w = Text(txt.addImgMsg,
-         overflow: TextOverflow.clip,
-         style: TextStyle(
-            color: stl.colorScheme.background,
-            fontSize: stl.tt.title.fontSize,
-         ),
-      );
-
+      Widget w = makeImgTextPlaceholder(txt.addImgMsg);
       imgLv = makeImgPlaceholder(width, cts.imgBoxHeight, w);
    }
 
@@ -2804,7 +2809,7 @@ ListView makeNewPostLv(
             txt.dissmissedPost,
             (int i){print('Error: Please fix aaab');},
             List<File>(),
-            (int j) {onExpandImg(i, j);},
+            (int k) {onExpandImg(j, k);},
          );
       },
    );
@@ -3252,11 +3257,17 @@ Widget makeChatTab(
          List<Widget> foo = List<Widget>();
          final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
 
+         // If the post contains no images, which should not happen,
+         // we provide no expand image button.
+         Function onExpandImg2 = (int j) {onExpandImg(i, j);};
+         if (posts[i].images.isEmpty)
+            onExpandImg2 = (int j){print('Error: post.images is empty.');};
+
          foo.add(makeImgListView2(
                width,
                cts.imgBoxHeight,
                posts[i],
-               (int j) {onExpandImg(i, j);},
+               onExpandImg2,
                BoxFit.cover,
             ),
          );
@@ -3561,8 +3572,8 @@ class MenuChatState extends State<MenuChat>
 
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
-   int exp_post_idx = -1;
-   int exp_img_idx = -1;
+   int _exp_post_idx = -1;
+   int _exp_img_idx = -1;
 
    @override
    void initState()
@@ -3958,9 +3969,11 @@ class MenuChatState extends State<MenuChat>
    {
       print('Expand image clicked with $i $j.');
 
+      //_nNewPosts
+
       setState((){
-         exp_post_idx = i;
-         exp_img_idx = j;
+         _exp_post_idx = i;
+         _exp_img_idx = j;
       });
    }
 
@@ -5591,17 +5604,18 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
-      if (exp_post_idx != -1 && exp_img_idx != -1) {
+      if (_exp_post_idx != -1 && _exp_img_idx != -1) {
          Post post;
          if (_isOnOwn())
-            post = _ownPosts[exp_post_idx];
+            post = _ownPosts[_exp_post_idx];
          else if (_isOnPosts())
-            post = _posts[exp_post_idx];
+            post = _posts[_exp_post_idx];
          else if (_isOnFav())
-            post = _favPosts[exp_post_idx];
+            post = _favPosts[_exp_post_idx];
          else
             assert(false);
 
+         print('===> ${post.images.length}');
          return makeImgExpandScreen(
             ctx,
             () {_onExpandImg(-1, -1); return false;},
@@ -5789,7 +5803,7 @@ class MenuChatState extends State<MenuChat>
                   children: bodies
                ),
             ),
-            backgroundColor: Colors.grey[200],
+            backgroundColor: Colors.white,
             floatingActionButton: fltButtons[_tabCtrl.index],
          ),
       );
