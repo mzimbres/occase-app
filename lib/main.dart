@@ -223,35 +223,34 @@ Widget makeImgExpandScreen(
    final double width = MediaQuery.of(ctx).size.width;
    final double height = MediaQuery.of(ctx).size.height;
 
-   //Widget foo = makeImgListView2(
-   //   width,
-   //   height,
-   //   post,
-   //   (int j){},
-   //   BoxFit.contain,
-   //);
+   final int l = post.images.length;
 
-   //----------------------------------------------------------
    Widget foo = PhotoViewGallery.builder(
       scrollPhysics: const BouncingScrollPhysics(),
       itemCount: post.images.length,
-      loadingChild: CircularProgressIndicator(),
+      //loadingChild: Container(
+      //         width: 30.0,
+      //         height: 30.0,
+      //),
+      reverse: true,
       //backgroundDecoration: widget.backgroundDecoration,
       //pageController: widget.pageController,
       onPageChanged: (int i){ print('===> New index: $i');},
       builder: (BuildContext context, int i) {
-         final String url = cts.httpImgTarget + post.images[i];
+         // No idea why this is showing in reverse order, I will have
+         // to manually reverse the indexes.
+         final int idx = l - i - 1;
+         final String url = cts.httpImgTarget + post.images[idx];
          return PhotoViewGalleryPageOptions(
-            //imageProvider: AssetImage(widget.galleryItems[i].image),
+            //imageProvider: AssetImage(widget.galleryItems[idx].image),
             imageProvider: CachedNetworkImageProvider(url),
             //initialScale: PhotoViewComputedScale.contained * 0.8,
             //minScale: PhotoViewComputedScale.contained * 0.8,
             //maxScale: PhotoViewComputedScale.covered * 1.1,
-            //heroAttributes: HeroAttributes(tag: galleryItems[i].id),
+            //heroAttributes: HeroAttributes(tag: galleryItems[idx].id),
          );
       },
    );
-   //----------------------------------------------------------
 
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
@@ -443,13 +442,13 @@ Widget makeImgListView2(
    Function onExpandImg,
    BoxFit bf)
 {
+   final int l = post.images.length;
+
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      //primary: true,
-      //physics: PageScrollPhysics(),
       padding: const EdgeInsets.all(0.0),
-      itemCount: post.images.length,
+      itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
          final String imgUrl = cts.httpImgTarget + post.images[i];
@@ -462,10 +461,23 @@ Widget makeImgListView2(
             ),
          );
 
-         return Stack(children: <Widget>
-         [ makeNetImgBox(width, height, imgUrl, bf)
-         , b
-         ]);
+         Widget counters2 = Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: Text('$i/$l',
+               style: Theme.of(ctx).textTheme.subhead.copyWith(
+                  color: Theme.of(ctx).colorScheme.onPrimary,
+               ),
+            ),
+         );
+
+         return Stack(
+            alignment: Alignment(0.0, 0.0),
+            children: <Widget>
+            [ makeNetImgBox(width, height, imgUrl, bf)
+            , b
+            , Column(children: <Widget>[counters2, Spacer()]),
+            ],
+         );
       },
    );
 
@@ -2702,8 +2714,13 @@ Widget makeNewPostImpl(
       row1List.add(addImgWidget);
    }
 
-
    Row row1 = Row(children: row1List);
+
+   Row rowMiddle = Row(children: <Widget>
+   [ Icon(Icons.keyboard_arrow_left, color: stl.colorScheme.secondary)
+   , Spacer()
+   , Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.secondary)
+   ]);
 
    final String priceStr = makePriceStr(post.getPrice());
    Widget priceText = makeIgmInfoWidget(ctx, priceStr);
@@ -2716,7 +2733,7 @@ Widget makeNewPostImpl(
    );
 
    Column col = Column(
-      children: <Widget>[row1, Spacer(), row2]
+      children: <Widget>[row1, Spacer(), rowMiddle,  Spacer(), row2]
    );
 
    SizedBox sb2 = SizedBox(
