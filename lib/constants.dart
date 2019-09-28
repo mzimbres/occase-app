@@ -2,8 +2,18 @@ import 'package:flutter/material.dart';
 
 const List<int> filterDepths = <int>[3, 3];
 const List<int> versions = <int>[3, 3];
-const double imgBoxWidth = 1.0;
-const double imgBoxHeight = 300.0;
+
+// The image width will be determined by the device screen width times
+// this factor.
+const double imgWidthFactor = 1.0;
+
+// The image width will be determined by the device screen WIDTH times
+// this factor, that means, a factor 1.0 means a square image.
+const double imgHeightFactor = 1.0;
+
+// Quality of the image, see
+// https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
+const int imgQuality = 50;
 
 // In the array below the range min is followed by the range max.
 const List<int> rangesMinMax = <int>

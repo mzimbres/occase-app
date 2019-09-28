@@ -497,7 +497,7 @@ Widget makeImgListView(
          );
 
          Widget delPhotoWidget = makeAddOrRemoveWidget(
-            () {onAddPhoto(i);},
+            () {onAddPhoto(ctx, i);},
             Icons.clear,
             stl.colorScheme.secondaryVariant,
          );
@@ -2606,6 +2606,17 @@ Widget makeImgTextPlaceholder(final String str)
    );
 }
 
+double makeImgWidth(BuildContext ctx)
+{
+   return MediaQuery.of(ctx).size.width * cts.imgWidthFactor;
+}
+
+double makeImgHeight(BuildContext ctx)
+{
+   final double width = MediaQuery.of(ctx).size.width * cts.imgWidthFactor;
+   return width * cts.imgHeightFactor;
+}
+
 Widget makeNewPostImpl(
    BuildContext ctx,
    Widget card,
@@ -2658,12 +2669,11 @@ Widget makeNewPostImpl(
       elevation: 0.0,
    );
 
-   final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
    Widget imgLv;
    if (post.images.isNotEmpty) {
       Widget tmp = makeImgListView2(
-         width,
-         cts.imgBoxHeight,
+         makeImgWidth(ctx),
+         makeImgHeight(ctx),
          post,
          onExpandImg,
          BoxFit.cover,
@@ -2676,15 +2686,19 @@ Widget makeNewPostImpl(
       );
    } else if (imgFiles.isNotEmpty) {
       imgLv = makeImgListView(
-         width,
-         cts.imgBoxHeight,
+         makeImgWidth(ctx),
+         makeImgHeight(ctx),
          onAddPhoto,
          imgFiles,
          post,
       );
    } else {
       Widget w = makeImgTextPlaceholder(txt.addImgMsg);
-      imgLv = makeImgPlaceholder(width, cts.imgBoxHeight, w);
+      imgLv = makeImgPlaceholder(
+         makeImgWidth(ctx),
+         makeImgHeight(ctx),
+         w,
+      );
    }
 
    List<Widget> row1List = List<Widget>();
@@ -2697,7 +2711,7 @@ Widget makeNewPostImpl(
 
    if (isNewPost && (imgFiles.length < cts.maxImgsPerPost)) {
       Widget addImgWidget = makeAddOrRemoveWidget(
-         () {onAddPhoto(-1);},
+         () {onAddPhoto(ctx, -1);},
          Icons.add_a_photo,
          stl.colorScheme.primary,
       );
@@ -2723,8 +2737,8 @@ Widget makeNewPostImpl(
    );
 
    SizedBox sb2 = SizedBox(
-      width: width,
-      height: cts.imgBoxHeight,
+      width: makeImgWidth(ctx),
+      height: makeImgHeight(ctx),
       child: Center(child: col),
    );
 
@@ -3278,7 +3292,6 @@ Widget makeChatTab(
          );
 
          List<Widget> foo = List<Widget>();
-         final double width = MediaQuery.of(ctx).size.width * cts.imgBoxWidth;
 
          // If the post contains no images, which should not happen,
          // we provide no expand image button.
@@ -3287,8 +3300,8 @@ Widget makeChatTab(
             onExpandImg2 = (int j){print('Error: post.images is empty.');};
 
          foo.add(makeImgListView2(
-               width,
-               cts.imgBoxHeight,
+               makeImgWidth(ctx),
+               makeImgHeight(ctx),
                posts[i],
                onExpandImg2,
                BoxFit.cover,
@@ -3967,13 +3980,19 @@ class MenuChatState extends State<MenuChat>
    // Used to either add or remove a photo from the new post.
    // i = -1 ==> add
    // i != -1 ==> remove, in this case i is the index to remove.
-   Future<void> _onAddPhoto(int i) async
+   Future<void> _onAddPhoto(BuildContext ctx, int i) async
    {
       try {
          // It looks like we do not need to show any dialog here to
          // inform the maximum number of photos has been reached.
          if (i == -1) {
-            File img = await ImagePicker.pickImage(source: ImageSource.gallery);
+            File img = await ImagePicker.pickImage(
+               source: ImageSource.gallery,
+               maxWidth: makeImgWidth(ctx),
+               maxHeight: makeImgHeight(ctx),
+               //imageQuality: cts.imgQuality,
+            );
+
             if (img == null)
                return;
 
