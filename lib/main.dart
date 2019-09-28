@@ -2827,11 +2827,13 @@ ListView makeNewPostLv(
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
    int nNewPosts,
-   Function onExpandImg)
-{
+   Function onExpandImg,
+   ScrollController scrollCtrl,
+) {
    final int l = posts.length - nNewPosts;
 
    return ListView.builder(
+      controller: scrollCtrl,
       padding: const EdgeInsets.all(0.0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
@@ -3253,9 +3255,11 @@ Widget makeChatTab(
    bool isFav,
    MenuNode exDetailsMenu,
    MenuNode inDetailsMenu,
-   Function onExpandImg)
-{
+   Function onExpandImg,
+   ScrollController scrollCtrl,
+) {
    return ListView.builder(
+      controller: scrollCtrl,
       padding: const EdgeInsets.only(
          left: stl.postListViewSidePadding,
          right: stl.postListViewSidePadding,
@@ -3586,6 +3590,17 @@ class MenuChatState extends State<MenuChat>
    ScrollController _scrollCtrl = ScrollController();
    ScrollController _chatScrollCtrl = ScrollController();
 
+   // When the user clicks on an image to see it expanded and then
+   // back we want the list view to start in the same position as it
+   // was before. I do not know a better way to do it than store the
+   // offset and then jump to that point when the user clicks the back
+   // button.
+   //
+   // WARNING: Do not forget that the controller cannot be used if it
+   // is not attached to a listview.
+   ScrollController _postsScrollCtrl = ScrollController();
+   double _middleLvOffset = 0.0;
+
    // Used for every screen that offers text input.
    TextEditingController _txtCtrl;
 
@@ -3635,6 +3650,7 @@ class MenuChatState extends State<MenuChat>
       _txtCtrl2.dispose();
       _tabCtrl.dispose();
       _scrollCtrl.dispose();
+      _postsScrollCtrl.dispose();
       _chatScrollCtrl.dispose();
       _chatFocusNode.dispose();
       WidgetsBinding.instance.removeObserver(this);
@@ -4013,13 +4029,25 @@ class MenuChatState extends State<MenuChat>
    // j = image index in the post.
    void _onExpandImg(int i, int j)
    {
-      print('Expand image clicked with $i $j.');
+      //print('Expand image clicked with $i $j.');
+
+      final bool cond = _exp_post_idx == -1 || _exp_img_idx == -1;
+
+      if (cond) {
+         _middleLvOffset = _postsScrollCtrl.offset;
+      }
 
       //_nNewPosts
 
       setState((){
          _exp_post_idx = i;
          _exp_img_idx = j;
+
+         // Reinitializes the scroll controller with the old position.
+         if (!cond)
+            _postsScrollCtrl = ScrollController(
+               initialScrollOffset: _middleLvOffset,
+            );
       });
    }
 
@@ -5738,6 +5766,7 @@ class MenuChatState extends State<MenuChat>
          _exDetailsRoot,
          _inDetailsRoot,
          _onExpandImg,
+         _postsScrollCtrl,
       );
 
       bodies[1] = makeNewPostLv(
@@ -5749,6 +5778,7 @@ class MenuChatState extends State<MenuChat>
          _inDetailsRoot,
          _nNewPosts,
          _onExpandImg,
+         _postsScrollCtrl,
       );
 
       bodies[2] = makeChatTab(
@@ -5765,6 +5795,7 @@ class MenuChatState extends State<MenuChat>
          _exDetailsRoot,
          _inDetailsRoot,
          _onExpandImg,
+         _postsScrollCtrl,
       );
 
       Widget appBarLeading = null;
