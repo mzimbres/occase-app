@@ -157,7 +157,7 @@ String makePostPayload(final Post post)
 
 enum ConfigActions
 { ChangeNick
-, ChangeProfilePhoto
+, Filters
 }
 
 Widget makeAppBarVertAction(Function onSelected)
@@ -173,10 +173,10 @@ Widget makeAppBarVertAction(Function onSelected)
              value: ConfigActions.ChangeNick,
              child: Text(txt.changeNichHint),
            ),
-           //const PopupMenuItem<ConfigActions>(
-           //  value: ConfigActions.ChangeProfilePhoto,
-           //  child: Text(txt.changePhoto),
-           //),
+           const PopupMenuItem<ConfigActions>(
+             value: ConfigActions.Filters,
+             child: Text(txt.newFilters),
+           ),
         ];
      }
    );
@@ -1229,38 +1229,21 @@ FloatingActionButton makeFaButton(
 
 Widget makeFAButtonMiddleScreen(
    BuildContext ctx,
-   Function onNewFilters,
    Function onLoadNewPosts,
    int nNewPosts)
 {
-   FloatingActionButton filters = FloatingActionButton(
-      onPressed: onNewFilters,
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
-      child: Icon(
-         Icons.notification_important,
-         color: Theme.of(ctx).colorScheme.primary,
-         //color: Colors.white,
-      ),
-   );
-
    if (nNewPosts == 0)
-      return filters;
+      return null;
 
-   FloatingActionButton loadNewPosts = FloatingActionButton(
+   return FloatingActionButton(
       mini: true,
       heroTag: null,
       onPressed: onLoadNewPosts,
-      //backgroundColor: Colors.grey[200],
       backgroundColor: Theme.of(ctx).colorScheme.secondary,
       child: Icon(
          Icons.file_download,
          color: Theme.of(ctx).colorScheme.onSecondary,
       ),
-   );
-
-   return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[loadNewPosts, filters]
    );
 }
 
@@ -4078,15 +4061,6 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _onNewFilters()
-   {
-      _newFiltersPressed = true;
-      _menu[0].restoreMenuStack();
-      _menu[1].restoreMenuStack();
-      _botBarIdx = 0;
-      setState(() { });
-   }
-
    Future<void> _onShowNewPosts() async
    {
       _nNewPosts = 0;
@@ -5387,6 +5361,13 @@ class MenuChatState extends State<MenuChat>
       if (ca == ConfigActions.ChangeNick)
          _goToRegScreen = true;
 
+      if (ca == ConfigActions.Filters) {
+         _newFiltersPressed = true;
+         _menu[0].restoreMenuStack();
+         _menu[1].restoreMenuStack();
+         _botBarIdx = 0;
+      }
+
       setState(() {});
    }
 
@@ -5708,7 +5689,6 @@ class MenuChatState extends State<MenuChat>
 
       fltButtons[1] = makeFAButtonMiddleScreen(
          ctx,
-         _onNewFilters,
          _onShowNewPosts,
          _nNewPosts,
       );

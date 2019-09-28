@@ -111,6 +111,7 @@ const String unknownNick = 'Desconhecido';
 const String selectAll = 'Selecionar todos';
 const String changeNichHint = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
+const String newFilters = 'Filtros';
 const String dissmissedPost = 'Post removido';
 const String dismissedChat = 'Chat removido';
 const String ok = 'Ok';
