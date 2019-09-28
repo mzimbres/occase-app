@@ -183,3 +183,5 @@ const String clearPostsContent = 'Todos os anúncios serao removidos.';
 const String minRangeStr = 'Mínimo';
 const String maxRangeStr = 'Máximo';
 
+const String localeName = 'pt_BR';
+

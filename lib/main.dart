@@ -19,6 +19,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_widgets/flutter_widgets.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -2413,7 +2414,8 @@ List<Widget> makePostExDetails(
       date = DateTime.fromMillisecondsSinceEpoch(post.date);
    }
 
-   values.add(DateFormat.yMEd().add_jm().format(date));
+   DateFormat df = Intl(txt.localeName).date().add_yMEd().add_jm();
+   values.add(df.format(date));
 
    for (int i = 0; i < values.length; ++i)
       list.add(makePostRowElem(ctx, txt.descList[i], values[i]));
@@ -3776,6 +3778,8 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _load(final String docDir) async
    {
+       await initializeDateFormatting(txt.localeName, null);
+
       _db = await openDatabase(
          p.join(await getDatabasesPath(), 'main.db'),
          readOnly: false,
