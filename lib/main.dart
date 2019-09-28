@@ -18,6 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_widgets/flutter_widgets.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -222,13 +223,35 @@ Widget makeImgExpandScreen(
    final double width = MediaQuery.of(ctx).size.width;
    final double height = MediaQuery.of(ctx).size.height;
 
-   Widget foo = makeImgListView2(
-      width,
-      height,
-      post,
-      (int j){},
-      BoxFit.contain,
+   //Widget foo = makeImgListView2(
+   //   width,
+   //   height,
+   //   post,
+   //   (int j){},
+   //   BoxFit.contain,
+   //);
+
+   //----------------------------------------------------------
+   Widget foo = PhotoViewGallery.builder(
+      scrollPhysics: const BouncingScrollPhysics(),
+      itemCount: post.images.length,
+      loadingChild: CircularProgressIndicator(),
+      //backgroundDecoration: widget.backgroundDecoration,
+      //pageController: widget.pageController,
+      onPageChanged: (int i){ print('===> New index: $i');},
+      builder: (BuildContext context, int i) {
+         final String url = cts.httpImgTarget + post.images[i];
+         return PhotoViewGalleryPageOptions(
+            //imageProvider: AssetImage(widget.galleryItems[i].image),
+            imageProvider: CachedNetworkImageProvider(url),
+            //initialScale: PhotoViewComputedScale.contained * 0.8,
+            //minScale: PhotoViewComputedScale.contained * 0.8,
+            //maxScale: PhotoViewComputedScale.covered * 1.1,
+            //heroAttributes: HeroAttributes(tag: galleryItems[i].id),
+         );
+      },
    );
+   //----------------------------------------------------------
 
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
