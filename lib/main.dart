@@ -2501,8 +2501,8 @@ List<Widget> assemblePostRows(
    Post post,
    List<MenuItem> menu,
    MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu)
-{
+   MenuNode inDetailsMenu,
+) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
    all.addAll(makeMenuInfo(ctx, post, menu));
@@ -2622,17 +2622,6 @@ Widget makeNewPostImpl(
    List<File> imgFiles,
    Function onExpandImg)
 {
-   IconButton icon0 = IconButton(
-      iconSize: stl.newPostIconSize,
-      padding: EdgeInsets.all(0.0),
-      onPressed: () {onPressed(2);},
-      color: Theme.of(ctx).colorScheme.primary,
-      icon: Icon(
-         Icons.report,
-         color: Colors.red,
-      ),
-   );
-
    IconButton icon1 = IconButton(
       iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
@@ -2652,8 +2641,7 @@ Widget makeNewPostImpl(
    );
 
    Row row = Row(children: <Widget>
-   [ Expanded(child: icon0)
-   , Expanded(child: icon1)
+   [ Expanded(child: icon1)
    , Expanded(child: icon2)
    ]);
 
@@ -2776,18 +2764,30 @@ Widget makeNewPost(
       overflow: TextOverflow.clip,
    );
 
+   List<Widget> rows = assemblePostRows(
+      ctx,
+      post,
+      menu,
+      exDetailsMenu,
+      inDetailsMenu,
+   );
+
+   IconButton inapropriate = IconButton(
+      iconSize: stl.newPostIconSize,
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPostSelection(2);},
+      color: stl.colorScheme.primary,
+      icon: Icon(Icons.report,
+         color: stl.colorScheme.primary,
+         size: 30.0
+      ),
+   );
+
+   rows.add(inapropriate);
+
    Widget infoExpansion = makePostInfoExpansion(
       ctx,
-      putPostElemOnCard(
-         ctx,
-         assemblePostRows(
-            ctx,
-            post,
-            menu,
-            exDetailsMenu,
-            inDetailsMenu,
-         ),
-      ),
+      putPostElemOnCard(ctx, rows),
       title,
       null,
    );
@@ -3313,14 +3313,15 @@ Widget makeChatTab(
             ),
          );
 
-         foo.addAll(assemblePostRows(
-               ctx,
-               posts[i],
-               menu,
-               exDetailsMenu,
-               inDetailsMenu,
-            )
+         List<Widget> rows = assemblePostRows(
+            ctx,
+            posts[i],
+            menu,
+            exDetailsMenu,
+            inDetailsMenu,
          );
+
+         foo.addAll(rows);
 
          Widget infoExpansion = makePostInfoExpansion(
             ctx,
