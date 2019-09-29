@@ -185,11 +185,6 @@ CREATE TABLE chats
 )
 ''';
 
-final String insertChatMsg =
-'''
-INSERT INTO chats VALUES (?, ?, ?, ?, ?, ?)
-''';
-
 final String selectChats =
 '''
 SELECT * FROM chats WHERE post_id = ? AND user_id == ?

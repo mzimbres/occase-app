@@ -64,7 +64,7 @@ const double onClickAvatarWidth = 200.0;
 const String wshost = 'ws://www.occase.de:80';
 const String httpImgHost = 'www.occase.de:81';
 const String httpImgPath = '/images/';
-const String httpImgTarget = 'http://www.occase.de:81/images/';
+const String httpImgTarget = 'http://www.occase.de:81/';
 
 const int maxImgsPerPost = 4;
 

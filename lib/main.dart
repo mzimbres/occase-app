@@ -505,6 +505,7 @@ Widget makeImgListView(
             width: width,
             height: height,
             fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
          );
 
          Widget delPhotoWidget = makeAddOrRemoveWidget(
