@@ -2744,7 +2744,7 @@ Widget makeNewPostImpl(
 
    Widget images = Stack(children: <Widget>[imgLv, sb2]);
 
-   Widget cc = putPostOnFinalCard(ctx, <Widget>[images, card, c4]);
+   Widget cc = putPostOnFinalCard(ctx, <Widget>[card, images, c4]);
 
    return Padding(
       child: cc,
