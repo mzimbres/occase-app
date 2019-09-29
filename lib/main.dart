@@ -1249,8 +1249,8 @@ Widget makeFAButtonMiddleScreen(
       return null;
 
    return FloatingActionButton(
-      mini: true,
-      heroTag: null,
+      //mini: true,
+      //heroTag: null,
       onPressed: onLoadNewPosts,
       backgroundColor: Theme.of(ctx).colorScheme.secondary,
       child: Icon(
