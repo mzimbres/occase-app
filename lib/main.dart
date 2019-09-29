@@ -39,7 +39,7 @@ String emailToGravatarHash(String email)
 
 class Coord {
    Post post;
-   Chat chat;
+   ChatMetadata chat;
    int msgIdx;
 
    Coord({this.post,
@@ -53,7 +53,7 @@ void myprint(Coord c, String prefix)
    print('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
 }
 
-void toggleChatPinDate(Chat chat)
+void toggleChatPinDate(ChatMetadata chat)
 {
    if (chat.pinDate == 0)
       chat.pinDate = DateTime.now().millisecondsSinceEpoch;
@@ -1268,7 +1268,7 @@ int postIndexHelper(int i)
 
 Card makeChatMsgWidget(
    BuildContext ctx,
-   Chat ch,
+   ChatMetadata ch,
    int i,
    Function onChatMsgLongPressed,
    Function onDragChatMsg)
@@ -1433,7 +1433,7 @@ Card makeChatMsgWidget(
 ListView makeChatMsgListView(
    BuildContext ctx,
    ScrollController scrollCtrl,
-   Chat ch,
+   ChatMetadata ch,
    Function onChatMsgLongPressed,
    Function onDragChatMsg)
 {
@@ -1546,7 +1546,7 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
 
 Widget makeRefChatMsgWidget(
    BuildContext ctx,
-   Chat ch,
+   ChatMetadata ch,
    int i,
    Color cc)
 {
@@ -1605,7 +1605,7 @@ Widget makeChatSecondLayer(
 Widget makeChatScreen(
    BuildContext ctx,
    Function onWillPopScope,
-   Chat ch,
+   ChatMetadata ch,
    TextEditingController ctrl,
    Function onChatSend,
    ScrollController scrollCtrl,
@@ -2928,7 +2928,7 @@ ListView makeNewPostMenuListView(
 }
 
 // Returns an icon based on the message status.
-Widget chooseMsgStatusIcon(Chat ch, int i)
+Widget chooseMsgStatusIcon(ChatMetadata ch, int i)
 {
    final double s = 20.0;
 
@@ -2947,7 +2947,7 @@ Widget chooseMsgStatusIcon(Chat ch, int i)
       padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
-Widget makeChatTileSubtitle(BuildContext ctx, final Chat ch)
+Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
 {
    String str = ch.lastChatItem.msg;
    if (str.isEmpty) {
@@ -3071,7 +3071,7 @@ Color selectColor(int n)
 
 Card makeChatListTile(
    BuildContext ctx,
-   Chat chat,
+   ChatMetadata chat,
    int now,
    Function onLeadingPressed,
    Function onLongPress,
@@ -3143,7 +3143,7 @@ Card makeChatListTile(
 
 Widget makeChatsExp(
    BuildContext ctx,
-   List<Chat> ch,
+   List<ChatMetadata> ch,
    Function onPressed,
    Function onLongPressed,
    Post post,
@@ -3550,7 +3550,7 @@ class MenuChatState extends State<MenuChat>
    int _botBarIdx = 0;
 
    // The current chat, if any.
-   Chat _chat;
+   ChatMetadata _chat;
 
    // The last post id seen by the user.
    int _nNewPosts = 0;
@@ -3850,13 +3850,13 @@ class MenuChatState extends State<MenuChat>
             if (p.status == 0) {
                _ownPosts.add(p);
                for (Post o in _ownPosts)
-                  o.chats = await loadChats(_db, o.id);
+                  o.chats = await loadChatMetadata(_db, o.id);
             } else if (p.status == 1) {
                _posts.add(p);
             } else if (p.status == 2) {
                _favPosts.add(p);
                for (Post o in _favPosts)
-                  o.chats = await loadChats(_db, o.id);
+                  o.chats = await loadChatMetadata(_db, o.id);
             } else if (p.status == 3) {
                _outPostsQueue.add(p);
             } else {
@@ -4661,7 +4661,7 @@ class MenuChatState extends State<MenuChat>
       _chat = posts[i].chats[j];
 
       if (!_chat.isLoaded())
-         _chat.loadMsgs(_post.id);
+         await _chat.loadMsgs(_post.id, _chat.peer,  _db);
       
       if (posts[i].chats[j].nUnreadMsgs != 0) {
          var msgMap = {
@@ -4833,10 +4833,17 @@ class MenuChatState extends State<MenuChat>
 
             // Perhaps we should update only the last chat item here
             // for performance?
-            batch.rawInsert(sql.insertOrReplaceChatOnPost,
-               makeChatUpdateSql(posts[i].chats[j], postId));
-            batch.rawInsert(sql.insertChatMsg,
-                [postId, peer, 1, ci.date, ci.msg]);
+            batch.rawInsert(
+               sql.insertOrReplaceChatOnPost,
+               makeChatUpdateSql(posts[i].chats[j], postId),
+            );
+
+            batch.insert(
+               'chats',
+               makeChatItemToMap(postId, peer, ci),
+               conflictAlgorithm: ConflictAlgorithm.replace,
+            );
+
             await batch.commit(noResult: true, continueOnError: true);
          });
 
@@ -4940,13 +4947,15 @@ class MenuChatState extends State<MenuChat>
       }
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      posts[i].chats[j].addChatItem(
-         ChatItem(
-            type: type,
-            msg: msg,
-            date: now,
-            refersTo: refersTo),
-         postId);
+
+      final ChatItem ci = ChatItem(
+         type: type,
+         msg: msg,
+         date: now,
+         refersTo: refersTo
+      );
+
+      posts[i].chats[j].addChatItem(ci, postId);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
@@ -4980,7 +4989,7 @@ class MenuChatState extends State<MenuChat>
          ack = 'app_ack_received';
       }
 
-      final Chat chat = posts[i].chats[j];
+      final ChatMetadata chat = posts[i].chats[j];
 
       posts[i].chats.sort(CompChats);
       posts.sort(CompPosts);
@@ -5000,10 +5009,17 @@ class MenuChatState extends State<MenuChat>
 
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
-         batch.rawInsert(sql.insertOrReplaceChatOnPost,
-            makeChatUpdateSql(chat, postId));
-         batch.rawInsert(sql.insertChatMsg,
-                        [postId, peer, 0, now, msg]);
+         batch.rawInsert(
+            sql.insertOrReplaceChatOnPost,
+            makeChatUpdateSql(chat, postId),
+         );
+
+         batch.insert(
+            'chats',
+            makeChatItemToMap(postId, peer, ci),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+         );
+
          await batch.commit(noResult: true, continueOnError: true);
       });
 

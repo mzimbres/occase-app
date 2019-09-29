@@ -43,11 +43,12 @@ class ChatItem {
 
    bool isLongPressed;
 
-   ChatItem({this.type = 2,
-             this.msg = '',
-             this.date = 0,
-             this.refersTo = -1,
-             this.isLongPressed = false,
+   ChatItem(
+   { this.type = 2
+   , this.msg = ''
+   , this.date = 0
+   , this.refersTo = -1
+   , this.isLongPressed = false
    });
 
    bool isRedirected()
@@ -86,7 +87,22 @@ class ChatItem {
    }
 }
 
-class Chat {
+Map<String, dynamic> makeChatItemToMap(
+   int postId,
+   String userId,
+   ChatItem ci,
+) {
+    return {
+      'post_id': postId,
+      'user_id': userId,
+      'type': ci.type,
+      'date': ci.date,
+      'msg': ci.msg,
+      'refers_to': ci.refersTo,
+    };
+}
+
+class ChatMetadata {
    String peer;
    String nick;
    int date;
@@ -100,20 +116,25 @@ class Chat {
 
    bool isLongPressed;
    List<ChatItem> msgs;
-   File _msgsFile;
 
-   Chat({this.peer = '',
-         this.nick = '',
-         this.date = 0,
-         this.pinDate = 0,
-         this.appAckReadEnd = 0,
-         this.appAckReceivedEnd = 0,
-         this.serverAckEnd = 0,
-         this.chatLength = 0,
-         this.nUnreadMsgs = 0,
-         this.lastChatItem,
-         this.isLongPressed = false,
+   ChatMetadata(
+   { this.peer = ''
+   , this.nick = ''
+   , this.date = 0
+   , this.pinDate = 0
+   , this.appAckReadEnd = 0
+   , this.appAckReceivedEnd = 0
+   , this.serverAckEnd = 0
+   , this.chatLength = 0
+   , this.nUnreadMsgs = 0
+   , this.lastChatItem
+   , this.isLongPressed = false
    });
+
+   bool isLoaded()
+   {
+      return msgs != null;
+   }
 
    void addChatItem(ChatItem ci, int postId)
    {
@@ -124,8 +145,6 @@ class Chat {
       } else {
          ++chatLength;
       }
-
-      persistChatMsg(ci, postId);
    }
 
    String getChatDisplayName()
@@ -151,51 +170,28 @@ class Chat {
       return nick.substring(0, 2);
    }
 
-   String makeFullPath(final String prefix, final int postId)
-   {
-      return '${glob.docDir}/${prefix}_${postId}_${peer}.txt';
-   }
-
-   bool isLoaded()
-   {
-      return msgs != null;
-   }
-
-   bool _isFileOpen()
-   {
-      return _msgsFile != null;
-   }
-
-   void _openFile(int postId)
-   {
-      _msgsFile = File(makeFullPath(cts.chatFilePrefix, postId));
-   }
-
-   void loadMsgs(final int postId)
-   {
+   Future<void> loadMsgs(
+      final int postId,
+      final String userId,
+      Database db,
+   ) async {
       try {
-         if (!_isFileOpen()) {
-            _openFile(postId);
-         }
+         final List<Map<String, dynamic>> maps =
+            await db.rawQuery(sql.selectChats, [postId, userId]);
 
-         msgs = List<ChatItem>(); 
+         msgs = List.generate(maps.length, (i)
+         {
+            return ChatItem(
+               type: maps[i]['type'],
+               date: maps[i]['date'],
+               msg: maps[i]['msg'],
+               refersTo: maps[i]['refers_to'],
+            );
+         });
 
-         List<String> lines = _msgsFile.readAsLinesSync();
-         msgs = List<ChatItem>.generate(lines.length, (int i)
-            { return ChatItem.fromJson(jsonDecode(lines[i])); });
       } catch (e) {
          print(e);
       }
-   }
-
-   void persistChatMsg(ChatItem ci, final int postId)
-   {
-      if (!_isFileOpen())
-         _openFile(postId);
-
-      String content = jsonEncode(ci);
-      content += '\n';
-      _msgsFile.writeAsStringSync(content, mode: FileMode.append);
    }
 }
 
@@ -215,7 +211,7 @@ class Chat {
  *        other messages. The function bellow has to be adapted to
  *        such cases.
  */
-int CompChats(final Chat lhs, final Chat rhs)
+int CompChats(final ChatMetadata lhs, final ChatMetadata rhs)
 {
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
       return lhs.pinDate > rhs.pinDate ? -1
@@ -251,8 +247,10 @@ int CompChats(final Chat lhs, final Chat rhs)
         : lhs.lastChatItem.date < rhs.lastChatItem.date ? 1 : 0;
 }
 
-Chat selectMostRecentChat(final Chat lhs, final Chat rhs)
-{
+ChatMetadata selectMostRecentChat(
+   final ChatMetadata lhs,
+   final ChatMetadata rhs
+) {
    final int t1 = lhs.lastChatItem.date;
    final int t2 = rhs.lastChatItem.date;
 
@@ -326,7 +324,7 @@ class Post {
 
    List<String> images = List<String>();
 
-   List<Chat> chats = List<Chat>();
+   List<ChatMetadata> chats = List<ChatMetadata>();
 
    Post()
    {
@@ -362,7 +360,7 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.description = this.description;
-      ret.chats = List<Chat>.from(this.chats);
+      ret.chats = List<ChatMetadata>.from(this.chats);
       ret.images = List<String>.from(this.images);
       return ret;
    }
@@ -371,7 +369,7 @@ class Post {
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       final int l = chats.length;
-      chats.add(Chat(
+      chats.add(ChatMetadata(
             peer: peer,
             nick: nick,
             date: now,
@@ -399,7 +397,7 @@ class Post {
    int getNumberOfUnreadChats()
    {
       int i = 0;
-      for (Chat h in chats)
+      for (ChatMetadata h in chats)
          if (h.nUnreadMsgs > 0)
             ++i;
 
@@ -411,7 +409,7 @@ class Post {
       // This is more eficient than comparing
       // getNumberOfUnreadChats != 0
 
-      for (Chat h in chats)
+      for (ChatMetadata h in chats)
          if (h.nUnreadMsgs > 0)
             return true;
 
@@ -423,7 +421,7 @@ class Post {
       if (chats.isEmpty)
          return 0;
 
-      final Chat hist = chats.reduce(selectMostRecentChat);
+      final ChatMetadata hist = chats.reduce(selectMostRecentChat);
 
       return hist.lastChatItem.date;
    }
@@ -572,7 +570,7 @@ Future<List<Post>> loadPosts(Database db) async
    });
 }
 
-bool toggleLPChat(Chat ch)
+bool toggleLPChat(ChatMetadata ch)
 {
    final bool old = ch.isLongPressed;
    ch.isLongPressed = !old;
@@ -627,8 +625,8 @@ int CompPosts(final Post lhs, final Post rhs)
    if (rhs.chats.length == 0)
       return -1;
 
-   final Chat c1 = lhs.chats.reduce(selectMostRecentChat);
-   final Chat c2 = rhs.chats.reduce(selectMostRecentChat);
+   final ChatMetadata c1 = lhs.chats.reduce(selectMostRecentChat);
+   final ChatMetadata c2 = rhs.chats.reduce(selectMostRecentChat);
 
    if (c1.lastChatItem.msg.isEmpty && c2.lastChatItem.msg.isEmpty)
       return c1.date > c2.date ? -1
@@ -829,7 +827,7 @@ Future<List<Config>> loadConfig(Database db) async
   });
 }
 
-Future<List<Chat>> loadChats(Database db, int postId) async
+Future<List<ChatMetadata>> loadChatMetadata(Database db, int postId) async
 {
   final List<Map<String, dynamic>> maps =
      await db.rawQuery(sql.selectChatStatusItem, [postId]);
@@ -841,7 +839,7 @@ Future<List<Chat>> loadChats(Database db, int postId) async
      if (!str.isEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(str));
 
-     return Chat(
+     return ChatMetadata(
         peer: maps[i]['user_id'],
         nick: maps[i]['nick'],
         date: maps[i]['date'],
@@ -856,7 +854,7 @@ Future<List<Chat>> loadChats(Database db, int postId) async
   });
 }
 
-List<dynamic> makeChatUpdateSql(Chat chat, int postId)
+List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
 {
    final String payload = jsonEncode(chat.lastChatItem);
 

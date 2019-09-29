@@ -178,7 +178,8 @@ CREATE TABLE chats
 , user_id TEXT
 , type INTEGER
 , date INTEGER
-, body TEXT
+, msg TEXT
+, refers_to INTEGER
 , FOREIGN KEY (post_id, user_id)
   REFERENCES chat_status (post_id, user_id) ON DELETE CASCADE
 )
@@ -186,7 +187,12 @@ CREATE TABLE chats
 
 final String insertChatMsg =
 '''
-INSERT INTO chats VALUES (?, ?, ?, ?, ?)
+INSERT INTO chats VALUES (?, ?, ?, ?, ?, ?)
+''';
+
+final String selectChats =
+'''
+SELECT * FROM chats WHERE post_id = ? AND user_id == ?
 ''';
 
 //___________________________________________________________
