@@ -4,10 +4,8 @@ import 'dart:io';
 import 'dart:collection';
 
 import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:device_info/device_info.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -17,7 +15,7 @@ import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_widgets/flutter_widgets.dart';
+//import 'package:flutter_widgets/flutter_widgets.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -221,8 +219,8 @@ Widget makeImgExpandScreen(
    Function onWillPopScope,
    Post post)
 {
-   final double width = MediaQuery.of(ctx).size.width;
-   final double height = MediaQuery.of(ctx).size.height;
+   //final double width = MediaQuery.of(ctx).size.width;
+   //final double height = MediaQuery.of(ctx).size.height;
 
    final int l = post.images.length;
 
@@ -576,7 +574,7 @@ Widget wrapOnDetailExpTitle(
    // Passing a global key has the effect that an expansion tile will
    // collapse after setState is called, but without animation not in
    // an nice way.
-   Key key = UniqueKey();
+   //Key key = UniqueKey();
 
    return Card(
       color: Theme.of(ctx).colorScheme.primary,
@@ -995,10 +993,10 @@ WillPopScope makeNewFiltersScreens(
 
       foo.add(vv);
 
-      TextStyle ts = TextStyle(
-          color: Theme.of(ctx).colorScheme.onPrimary,
-          fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-      );
+      //TextStyle ts = TextStyle(
+      //    color: Theme.of(ctx).colorScheme.onPrimary,
+      //    fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
+      //);
 
       for (int i = 0; i < cts.discreteRanges.length; ++i) {
          final int j = 2 * i;
@@ -1408,7 +1406,7 @@ Card makeChatMsgWidget(
                minWidth: 35.0),
             child: ww)));
 
-   Row r = null;
+   Row r;
    if (ch.msgs[i].isFromThisApp()) {
       r = Row(children: <Widget>
       [ Spacer()
@@ -1740,7 +1738,7 @@ Widget makeChatScreen(
    ]);
 
    List<Widget> actions = List<Widget>();
-   Widget title = null;
+   Widget title;
 
    if (nLongPressed == 1) {
       IconButton reply = IconButton(
@@ -1907,9 +1905,9 @@ Widget makePayPriceListTile(
    Color color)
 {
    Color primary = Theme.of(ctx).colorScheme.primary;
-   Color secondary = Theme.of(ctx).colorScheme.secondary;
-   Color onSecondary = Theme.of(ctx).colorScheme.onSecondary;
-   Color background = Theme.of(ctx).colorScheme.background;
+   //Color secondary = Theme.of(ctx).colorScheme.secondary;
+   //Color onSecondary = Theme.of(ctx).colorScheme.onSecondary;
+   //Color background = Theme.of(ctx).colorScheme.background;
 
    Text subtitleW = Text(subtitle,
       maxLines: 2,
@@ -2083,7 +2081,7 @@ ListTile makeFilterListTitle(
       );
    }
 
-   Widget subtitle = null;
+   Widget subtitle;
    if (!child.isLeaf()) {
       subtitle = Text(
           child.getChildrenNames(),
@@ -2200,7 +2198,7 @@ Container makeUnreadMsgsCircle(
    Color textColor)
 {
    final Text txt =
-      Text("${n}",
+      Text("$n",
            style: TextStyle(
               color: textColor,
               fontSize: Theme.of(ctx).textTheme.caption.fontSize));
@@ -2510,7 +2508,7 @@ List<Widget> assemblePostRows(
    all.addAll(makeMenuInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
    all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
-   if (!post.description.isEmpty) {
+   if (post.description.isNotEmpty) {
       all.add(makePostSectionTitle(ctx, txt.postDescTitle));
       all.add(makePostDescription(ctx, post.description));
    }
@@ -3392,7 +3390,7 @@ class DialogWithOp extends StatefulWidget {
 }
 
 class DialogWithOpState extends State<DialogWithOp> {
-   int _idx = 0;
+   int _idx;
    Function _getValueFunc;
    Function _setValueFunc;
    Function _onPostSelection;
@@ -3437,9 +3435,9 @@ class DialogWithOpState extends State<DialogWithOp> {
       actions[0] = cancel;
       actions[1] = ok;
 
-      Row row = Row(children:
-         <Widget> [Icon(Icons.check_circle_outline, color: Colors.red)],
-      );
+      //Row row = Row(children:
+      //   <Widget> [Icon(Icons.check_circle_outline, color: Colors.red)],
+      //);
 
       CheckboxListTile tile = CheckboxListTile(
          title: Text(txt.doNotShowAgain),
@@ -3500,7 +3498,7 @@ class MenuChatState extends State<MenuChat>
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
-   Post _post = null;
+   Post _post;
 
    // The list of posts received from the server. Our own posts that the
    // server echoes back to us (if we are subscribed to the channel)
@@ -3551,7 +3549,7 @@ class MenuChatState extends State<MenuChat>
    int _botBarIdx = 0;
 
    // The current chat, if any.
-   Chat _chat = null;
+   Chat _chat;
 
    // The last post id seen by the user.
    int _nNewPosts = 0;
@@ -3559,9 +3557,6 @@ class MenuChatState extends State<MenuChat>
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
    List<bool> _dialogPrefs = List<bool>(3);
-
-   // Full path to files.
-   String _unreadPostsFileFullPath = '';
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -3615,8 +3610,8 @@ class MenuChatState extends State<MenuChat>
 
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
-   int _exp_post_idx = -1;
-   int _exp_img_idx = -1;
+   int _expPostIdx = -1;
+   int _expImgIdx = -1;
 
    @override
    void initState()
@@ -3672,11 +3667,6 @@ class MenuChatState extends State<MenuChat>
    bool _isOnOwn()
    {
       return _tabCtrl.index == 0;
-   }
-
-   bool _previousWasOwn()
-   {
-      return _tabCtrl.previousIndex == 0;
    }
 
    bool _isOnPosts()
@@ -3807,7 +3797,7 @@ class MenuChatState extends State<MenuChat>
 
       try {
          List<Config> configs = await loadConfig(_db);
-         if (!configs.isEmpty)
+         if (configs.isNotEmpty)
             _cfg = configs.first;
       } catch (e) {
          print(e);
@@ -4023,8 +4013,8 @@ class MenuChatState extends State<MenuChat>
       //_nNewPosts
 
       setState((){
-         _exp_post_idx = i;
-         _exp_img_idx = j;
+         _expPostIdx = i;
+         _expImgIdx = j;
       });
    }
 
@@ -4434,7 +4424,7 @@ class MenuChatState extends State<MenuChat>
    void _handlePublishAck(final int id, final int date, Batch batch)
    {
       try {
-         assert(!_outPostsQueue.isEmpty);
+         assert(_outPostsQueue.isNotEmpty);
          Post post = _outPostsQueue.removeFirst();
          if (id == -1) {
             setState(() {_newPostErrorCode = 0;});
@@ -4659,7 +4649,7 @@ class MenuChatState extends State<MenuChat>
       int i,
       int j) async
    {
-      if (!_lpChats.isEmpty || !_lpChatMsgs.isEmpty) {
+      if (_lpChats.isNotEmpty || _lpChatMsgs.isNotEmpty) {
          _onChatLPImpl(posts, i, j);
          setState(() { });
          return;
@@ -4788,7 +4778,7 @@ class MenuChatState extends State<MenuChat>
 
    void _sendOfflineChatMsgs()
    {
-      if (!_appMsgQueue.isEmpty) {
+      if (_appMsgQueue.isNotEmpty) {
          assert(!_appMsgQueue.first.sent);
          _appMsgQueue.first.sent = true;
          channel.sink.add(_appMsgQueue.first.payload);
@@ -5191,7 +5181,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onWSDataImpl(Batch batch) async
    {
-      while (!_wsMsgQueue.isEmpty) {
+      while (_wsMsgQueue.isNotEmpty) {
          var msg = _wsMsgQueue.removeFirst();
 
          Map<String, dynamic> ack = jsonDecode(msg);
@@ -5368,12 +5358,12 @@ class MenuChatState extends State<MenuChat>
 
    bool _hasLPChats()
    {
-      return !_lpChats.isEmpty;
+      return _lpChats.isNotEmpty;
    }
 
    bool _hasLPChatMsgs()
    {
-      return !_lpChatMsgs.isEmpty;
+      return _lpChatMsgs.isNotEmpty;
    }
 
    void _unmarkLPChats()
@@ -5497,7 +5487,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onBackFromChatMsgRedirect()
    {
-      assert(!_lpChatMsgs.isEmpty);
+      assert(_lpChatMsgs.isNotEmpty);
 
       if (_lpChats.isEmpty) {
          // All items int _lpChatMsgs should have the same post id and
@@ -5653,14 +5643,14 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
-      if (_exp_post_idx != -1 && _exp_img_idx != -1) {
+      if (_expPostIdx != -1 && _expImgIdx != -1) {
          Post post;
          if (_isOnOwn())
-            post = _ownPosts[_exp_post_idx];
+            post = _ownPosts[_expPostIdx];
          else if (_isOnPosts())
-            post = _posts[_exp_post_idx];
+            post = _posts[_expPostIdx];
          else if (_isOnFav())
-            post = _favPosts[_exp_post_idx];
+            post = _favPosts[_expPostIdx];
          else
             assert(false);
 
