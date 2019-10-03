@@ -172,10 +172,6 @@ Widget makeAppBarVertAction(Function onSelected)
              value: ConfigActions.ChangeNick,
              child: Text(txt.changeNichHint),
            ),
-           const PopupMenuItem<ConfigActions>(
-             value: ConfigActions.Filters,
-             child: Text(txt.newFilters),
-           ),
         ];
      }
    );
@@ -5401,17 +5397,21 @@ class MenuChatState extends State<MenuChat>
 
    void _onAppBarVertPressed(ConfigActions ca)
    {
-      if (ca == ConfigActions.ChangeNick)
-         _goToRegScreen = true;
+      if (ca == ConfigActions.ChangeNick) {
+         setState(() {
+            _goToRegScreen = true;
+         });
+      }
+   }
 
-      if (ca == ConfigActions.Filters) {
+   void _onNotificationsPressed()
+   {
+      setState(() {
          _newFiltersPressed = true;
          _menu[0].restoreMenuStack();
          _menu[1].restoreMenuStack();
          _botBarIdx = 0;
-      }
-
-      setState(() {});
+      });
    }
 
    Future<void> _pinChats() async
@@ -5828,6 +5828,17 @@ class MenuChatState extends State<MenuChat>
 
          actions.add(clearPosts);
       }
+
+      IconButton notifcationsButton = IconButton(
+         icon: Icon(
+            Icons.notifications,
+            color: Theme.of(ctx).colorScheme.onPrimary,
+         ),
+         tooltip: txt.notificationsButton,
+         onPressed: () { _onNotificationsPressed(); }
+      );
+
+      actions.add(notifcationsButton);
 
       actions.add(makeAppBarVertAction(_onAppBarVertPressed));
 

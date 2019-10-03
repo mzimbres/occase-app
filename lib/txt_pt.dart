@@ -89,6 +89,7 @@ const String deleteChat = "Remover conversa";
 const String blockUser = "Bloquear usuário";
 const String pinChat = "Fixar conversa";
 const String clearPosts = "Deletar posts";
+const String notificationsButton = "Notificacaoes";
 
 // The texts showed on the dialog in the *Posts* screen
 const List<String> dialogTitles = <String>
@@ -111,7 +112,6 @@ const String unknownNick = 'Desconhecido';
 const String selectAll = 'Selecionar todos';
 const String changeNichHint = 'Alterar apelido';
 const String changePhoto = 'Alterar foto';
-const String newFilters = 'Filtros';
 const String dissmissedPost = 'Post removido';
 const String dismissedChat = 'Chat removido';
 const String ok = 'Ok';
