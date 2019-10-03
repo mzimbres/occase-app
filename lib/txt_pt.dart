@@ -185,3 +185,9 @@ const String maxRangeStr = 'Máximo';
 
 const String localeName = 'pt_BR';
 
+const List<String> newFiltersFinalScreenButton = <String>
+[ 'Sair'
+, 'Todos'
+, 'Recentes'
+];
+

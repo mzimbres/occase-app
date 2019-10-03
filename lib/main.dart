@@ -924,12 +924,10 @@ WillPopScope makeNewPostScreens(
    );
 }
 
-Widget
-makeNewFiltersEndWidget(
-   BuildContext ctx,
-   Function onSendNewFilters,
-   Function onCancelNewFilters)
+Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
 {
+   // See the comment in _onPostSelection for why I removed the middle
+   // button for now.
    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -939,17 +937,25 @@ makeNewFiltersEndWidget(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
              ctx,
-             onCancelNewFilters,
-             'Cancelar',
+             () {onPressed(ctx, 0);},
+             txt.newFiltersFinalScreenButton[0],
           ))
+      //, Padding(
+      //    padding: const EdgeInsets.symmetric(vertical: 40.0),
+      //    child: createRaisedButton(
+      //       ctx,
+      //       () {onPressed(ctx, 1);},
+      //       txt.newFiltersFinalScreenButton[1],
+      //    ))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
              ctx,
-             onSendNewFilters,
-             'Enviar',
+             () {onPressed(ctx, 2);},
+             txt.newFiltersFinalScreenButton[2],
           ))
-      ]);
+      ]
+   );
 }
 
 WillPopScope makeNewFiltersScreens(
@@ -963,7 +969,6 @@ WillPopScope makeNewFiltersScreens(
    final List<MenuItem> menu,
    int filter,
    int screen,
-   Function onCancelNewFilters,
    MenuNode exDetailsFilterNodes,
    List<int> ranges,
    Function onRangeChanged)
@@ -972,11 +977,7 @@ WillPopScope makeNewFiltersScreens(
    Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
 
    if (screen == 3) {
-      wid = makeNewFiltersEndWidget(
-         ctx,
-         (){onSendFilters(ctx);},
-         onCancelNewFilters,
-      );
+      wid = makeNewFiltersEndWidget(ctx, onSendFilters);
    } else if (screen == 2) {
       List<Widget> foo = List<Widget>();
 
@@ -4034,6 +4035,8 @@ class MenuChatState extends State<MenuChat>
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
+   // If we ever allow the user to retrieve old posts we have to
+   // adjust this function so that it does add a post twice.
    Future<void> _onPostSelection(int i, int fav) async
    {
       assert(_isOnPosts());
@@ -4637,12 +4640,6 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _onCancelNewFilter()
-   {
-      _newFiltersPressed = false;
-      setState(() { });
-   }
-
    Future<void> _onChatPressedImpl(
       List<Post> posts,
       bool isSenderPost,
@@ -5094,7 +5091,7 @@ class MenuChatState extends State<MenuChat>
          conflictAlgorithm: ConflictAlgorithm.replace);
 
       // Retrieves some posts for the newly registered user.
-      _subscribeToChannels();
+      _subscribeToChannels(0);
    }
 
    void _leaveNewPostScreen()
@@ -5148,7 +5145,7 @@ class MenuChatState extends State<MenuChat>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _subscribeToChannels();
+      _subscribeToChannels(_cfg.lastPostId);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -5293,12 +5290,25 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   Future<void> _onSendFilters(BuildContext ctx) async
+   // The variable i can assume the following values
+   // i = 0: Only leaves the screen.
+   // i = 1: Retrieve all posts from the server.
+   // i = 2: Most recent posts.
+   Future<void> _onSendFilters(BuildContext ctx, int i) async
    {
       _newFiltersPressed = false;
+      if (i == 0) {
+         setState(() { });
+         return;
+      }
+
+      // See comment on _onPostSelection for why I am removing this
+      // for now.
+      //final int lastPostId = i == 1 ? 0 : _cfg.lastPostId;
+      final int lastPostId = _cfg.lastPostId;
 
       // First send the hashes then show the dialog.
-      _subscribeToChannels();
+      _subscribeToChannels(lastPostId);
 
       _showSimpleDial(
          ctx,
@@ -5308,7 +5318,7 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   void _subscribeToChannels()
+   void _subscribeToChannels(int lastPostId)
    {
       List<List<int>> channels = List<List<int>>();
       // An empty channels list means we do not want any filter for
@@ -5318,7 +5328,7 @@ class MenuChatState extends State<MenuChat>
 
       var subCmd = {
          'cmd': 'subscribe',
-         'last_post_id': _cfg.lastPostId,
+         'last_post_id': lastPostId,
          'channels': channels,
          'any_of_features': _cfg.anyOfFeatures,
          'ranges': convertToValues(_cfg.ranges),
@@ -5663,7 +5673,6 @@ class MenuChatState extends State<MenuChat>
             _menu,
             _cfg.anyOfFeatures,
             _botBarIdx,
-            _onCancelNewFilter,
             _exDetailsRoot.children[0].children[0],
             _cfg.ranges,
             _onRangeChanged,
