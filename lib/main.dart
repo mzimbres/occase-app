@@ -15,7 +15,6 @@ import 'package:image_picker_modern/image_picker_modern.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
-//import 'package:flutter_widgets/flutter_widgets.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -4236,22 +4235,22 @@ class MenuChatState extends State<MenuChat>
    void _onWritingChat(String v)
    {
       assert(_chat != null);
-      final int now = DateTime.now().millisecondsSinceEpoch;
+      assert(_post != null);
 
+      final int now = DateTime.now().millisecondsSinceEpoch;
       final int last = _chat.lastPresenceSent + cts.presenceInterval;
 
-      print('$last $now');
       if (now < last)
          return;
 
       _chat.lastPresenceSent = now;
 
-      // Time to send presence to the server.
-
       var subCmd = {
          'cmd': 'presence',
          'to': _chat.peer,
          'type': 'writing',
+         'is_sender_post': _post.from == _cfg.appId,
+         'post_id': _post.id,
       };
 
       final String payload = jsonEncode(subCmd);
@@ -5059,6 +5058,25 @@ class MenuChatState extends State<MenuChat>
       await _sendAppMsg(payload, 0);
    }
 
+   void _onPresence(Map<String, dynamic> ack)
+   {
+      final String peer = ack['from'];
+      final bool isSenderPost = ack['is_sender_post'];
+      final int postId = ack['post_id'];
+
+      // We have to perform the following action
+      //
+      // 1. Search the chat from user from
+      // 2. Set the presence timestamp.
+      // 3. Call setState.
+
+      if (isSenderPost) {
+         markPresence(_favPosts, peer, postId);
+      } else {
+         markPresence(_ownPosts, peer, postId);
+      }
+   }
+
    void _chatAppAckHandler(Map<String, dynamic> ack,
                            final int status,
                            Batch batch)
@@ -5235,8 +5253,9 @@ class MenuChatState extends State<MenuChat>
 
          Map<String, dynamic> ack = jsonDecode(msg);
          final String cmd = ack["cmd"];
-
-         if (cmd == "message") {
+         if (cmd == "presence") {
+            _onPresence(ack);
+         } else if (cmd == "message") {
             _onMessage(ack, batch);
          } else if (cmd == "login_ack") {
             _onLoginAck(ack, msg);

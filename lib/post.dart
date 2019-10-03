@@ -652,36 +652,77 @@ int CompPosts(final Post lhs, final Post rhs)
         : c1.lastChatItem.date < c2.lastChatItem.date ? 1 : 0;
 }
 
-void
-findAndMarkChatApp( final List<Post> posts
-                  , final String peer
-                  , final int postId
-                  , final int status
-                  , Batch batch)
+class IdxPair {
+   int i;
+   int j;
+   IdxPair({this.i = -1, this.j = -1});
+}
+
+bool IsValidPair(final IdxPair p)
+{
+   return p.i == -1 || p.j == -1;
+}
+
+IdxPair findChat(final List<Post> posts, String peer, int postId)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
    if (i == -1) {
-      print('====> findAndMarkChatApp: Cannot find post id.');
-      return;
+      print('findChat: Cannot find post id.');
+      return IdxPair(i: -1, j: -1);
    }
 
    final int j = posts[i].chats.indexWhere((e) {return e.peer == peer;});
    if (i == -1) {
-      print('====> findAndMarkChatApp: Cannot find user id.');
+      print('findChat: Cannot find user id.');
+      return IdxPair(i: -1, j: -1);
+   }
+
+   return IdxPair(i: i, j: j);
+}
+
+void markPresence(
+   final List<Post> posts,
+   final String peer,
+   final int postId,
+) {
+   // We have to traverse all posts and in each one search chat by
+   // chat for the user with the given id.
+
+   final IdxPair p = findChat(posts, peer, postId);
+
+   if (IsValidPair(p)) {
+      print('===> presence chat not found.');
+      return;
+   }
+
+   final int now = DateTime.now().millisecondsSinceEpoch;
+   print('===> Setting presence in ${p.i} ${p.j} $now.');
+}
+
+void findAndMarkChatApp(
+   final List<Post> posts,
+   final String peer,
+   final int postId,
+   final int status,
+   Batch batch,
+) {
+   final IdxPair p = findChat(posts, peer, postId);
+   if (IsValidPair(p)) {
+      print('===> Chat not found.');
       return;
    }
 
    if (status == 1) {
-      final int idx = posts[i].chats[j].chatLength;
-      posts[i].chats[j].serverAckEnd = idx;
+      final int idx = posts[p.i].chats[p.j].chatLength;
+      posts[p.i].chats[p.j].serverAckEnd = idx;
       batch.rawUpdate(sql.updateServerAckEnd,
                      [idx, postId, peer]);
       return;
    }
 
    if (status == 2) {
-      final int idx = posts[i].chats[j].serverAckEnd;
-      posts[i].chats[j].appAckReceivedEnd = idx;
+      final int idx = posts[p.i].chats[p.j].serverAckEnd;
+      posts[p.i].chats[p.j].appAckReceivedEnd = idx;
       batch.rawUpdate(sql.updateAppAckReceivedEnd,
                      [idx, postId, peer]);
       return;
@@ -693,9 +734,9 @@ findAndMarkChatApp( final List<Post> posts
       // app_ack_received belongs to, intead an app_ack_read will be
       // sent directly. In such cases we have to update both the
       // received and the read indexes.
-      final int idx = posts[i].chats[j].serverAckEnd;
-      posts[i].chats[j].appAckReceivedEnd = idx;
-      posts[i].chats[j].appAckReadEnd = idx;
+      final int idx = posts[p.i].chats[p.j].serverAckEnd;
+      posts[p.i].chats[p.j].appAckReceivedEnd = idx;
+      posts[p.i].chats[p.j].appAckReadEnd = idx;
 
       batch.rawUpdate(sql.updateAppAckReceivedEnd,
                      [idx, postId, peer]);
