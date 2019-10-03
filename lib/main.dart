@@ -1439,7 +1439,7 @@ ListView makeChatMsgListView(
    Function onDragChatMsg)
 {
    final int nMsgs = ch.msgs.length;
-   final int shift = ch.nUnreadMsgs == 0 ? 0 : 1;
+   final int shift = ch.divisorUnreadMsgs == 0 ? 0 : 1;
 
    return ListView.builder(
       controller: scrollCtrl,
@@ -1449,7 +1449,7 @@ ListView makeChatMsgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (shift == 1) {
-            if (i == nMsgs - ch.nUnreadMsgs) {
+            if (i == ch.divisorUnreadMsgsIdx) {
                return Card(
                   color: Colors.white,
                   margin: const EdgeInsets.symmetric(vertical: 10.0),
@@ -1460,7 +1460,7 @@ ListView makeChatMsgListView(
                       child: Padding(
                          padding: EdgeInsets.all(3.0),
                          child: Text(
-                            '${ch.nUnreadMsgs} nao lidas.',
+                            '${ch.divisorUnreadMsgs} nao lidas.',
                             style: TextStyle(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
@@ -1473,7 +1473,7 @@ ListView makeChatMsgListView(
                );
             }
 
-            if (i > (nMsgs - ch.nUnreadMsgs))
+            if (i > ch.divisorUnreadMsgsIdx)
                i -= 1; // For the shift
          }
 
@@ -4169,6 +4169,8 @@ class MenuChatState extends State<MenuChat>
       _showChatJumpDownButton = false;
       _dragedIdx = -1;
       _chat.nUnreadMsgs = 0;
+      _chat.divisorUnreadMsgs = 0;
+      _chat.divisorUnreadMsgsIdx = -1;
       _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
 
       final bool isEmpty = _lpChatMsgs.isEmpty;
@@ -4664,7 +4666,9 @@ class MenuChatState extends State<MenuChat>
       if (!_chat.isLoaded())
          await _chat.loadMsgs(_post.id, _chat.peer,  _db);
       
-      if (posts[i].chats[j].nUnreadMsgs != 0) {
+      if (_chat.nUnreadMsgs != 0) {
+         final int l = _chat.msgs.length;
+         _chat.divisorUnreadMsgsIdx = l - _chat.nUnreadMsgs;
          var msgMap = {
             'cmd': 'message',
             'type': 'app_ack_read',
@@ -4967,11 +4971,11 @@ class MenuChatState extends State<MenuChat>
 
       String ack;
       if (isOnPost && isOnChat) {
+         // We are on the chat screen with the peer.
          ack = 'app_ack_read';
 
-         // If we are on the chat screen with the peer and not
-         // currently showing the jump down button we animate to the
-         // bottom.
+         // We are not currently showing the jump down button and can
+         // animate to the bottom.
          if (!_showChatJumpDownButton) {
             setState(()
             {
@@ -4986,8 +4990,13 @@ class MenuChatState extends State<MenuChat>
                });
             });
          }
+
       } else {
          ack = 'app_ack_received';
+         final int n = posts[i].chats[j].nUnreadMsgs;
+         posts[i].chats[j].divisorUnreadMsgs = n;
+         final int l = posts[i].chats[j].chatLength;
+         posts[i].chats[j].divisorUnreadMsgsIdx = l - n;
       }
 
       final ChatMetadata chat = posts[i].chats[j];

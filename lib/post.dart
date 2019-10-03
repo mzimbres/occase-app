@@ -1,15 +1,9 @@
 import 'dart:convert';
 import 'dart:io' show File, FileMode, Directory;
-//import 'dart:collection';
-//import 'package:flutter/material.dart';
-//import 'package:occase/constants.dart';
-//import 'package:occase/tree.dart';
 import 'package:occase/txt_pt.dart' as txt;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/globals.dart' as glob;
 import 'package:occase/constants.dart' as cts;
-//import 'package:intl/intl.dart';
-//import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 String convertChatMsgTypeToString(int type)
@@ -117,6 +111,14 @@ class ChatMetadata {
    bool isLongPressed;
    List<ChatItem> msgs;
 
+   // The number of unread msgs shown int the new msgs divisor shown
+   // in the chat screen when one enters it and threre were unread
+   // msgs in the chat.
+   int divisorUnreadMsgs;
+
+   // The index where the divisor above shall be shown.
+   int divisorUnreadMsgsIdx;
+
    ChatMetadata(
    { this.peer = ''
    , this.nick = ''
@@ -129,7 +131,10 @@ class ChatMetadata {
    , this.nUnreadMsgs = 0
    , this.lastChatItem
    , this.isLongPressed = false
-   });
+   }) {
+      divisorUnreadMsgs = nUnreadMsgs;
+      divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
+   }
 
    bool isLoaded()
    {
