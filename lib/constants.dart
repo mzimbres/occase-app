@@ -77,5 +77,5 @@ const int pongTimeout = 30 * 1000;
 
 // Interval used to send presence messages to the peer in
 // milliseconds.
-const int presenceInterval = 10 * 1000;
+const int presenceInterval = 5 * 1000;
 

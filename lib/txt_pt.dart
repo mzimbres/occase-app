@@ -191,3 +191,6 @@ const List<String> newFiltersFinalScreenButton = <String>
 , 'Recentes'
 ];
 
+// The message that appears on the list title when the peer is typing
+const String typing = 'Escrevendo ...';
+

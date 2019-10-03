@@ -123,6 +123,10 @@ class ChatMetadata {
    // presence-writing message to the peer.
    int lastPresenceSent;
 
+   // This variable contains the timestamp from the last presence
+   // message received from the peer.
+   int lastPresenceReceived;
+
    ChatMetadata(
    { this.peer = ''
    , this.nick = ''
@@ -136,6 +140,7 @@ class ChatMetadata {
    , this.lastChatItem
    , this.isLongPressed = false
    , this.lastPresenceSent = 0
+   , this.lastPresenceReceived = 0
    }) {
       divisorUnreadMsgs = nUnreadMsgs;
       divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
@@ -696,6 +701,7 @@ void markPresence(
    }
 
    final int now = DateTime.now().millisecondsSinceEpoch;
+   posts[p.i].chats[p.j].lastPresenceReceived = now;
    print('===> Setting presence in ${p.i} ${p.j} $now.');
 }
 

@@ -2949,6 +2949,8 @@ Widget chooseMsgStatusIcon(ChatMetadata ch, int i)
 Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
 {
    String str = ch.lastChatItem.msg;
+
+   // Chats that are empty have always prevalence
    if (str.isEmpty) {
       return Text(
          txt.msgOnEmptyChat,
@@ -2962,11 +2964,31 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       );
    }
 
+   final int now = DateTime.now().millisecondsSinceEpoch;
+   final int last = ch.lastPresenceReceived + cts.presenceInterval;
+   final bool b = now < last;
+
+   // We also have to know whether the last message is from the peer
+   // and if so only show the typing message if it is more recent than
+   // the message.
+   final bool notFromThisApp = !ch.lastChatItem.isFromThisApp();
+   final bool moreRecent =
+      ch.lastPresenceReceived > ch.lastChatItem.date;
+
+   print('$notFromThisApp $moreRecent $now $last');
+
+   String subtitle = str;
+   Color subtitleColor = Colors.grey;
+   if (notFromThisApp && moreRecent && now < last) {
+      subtitle = txt.typing;
+      subtitleColor = stl.colorScheme.secondary;
+   }
+
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
       return Text(
-         str,
+         subtitle,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: Colors.grey[700],
+            color: subtitleColor,
          ),
          maxLines: 1,
          overflow: TextOverflow.clip
@@ -2975,10 +2997,15 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
    , Expanded(
-      child: Text(
-         str,
-         style: Theme.of(ctx).textTheme.subtitle,
-         maxLines: 1, overflow: TextOverflow.clip))]);
+        child: Text(subtitle,
+           maxLines: 1,
+           overflow: TextOverflow.clip,
+           style: Theme.of(ctx).textTheme.subtitle.copyWith(
+              color: subtitleColor,
+           ),
+        ),
+     ),
+   ]);
 }
 
 String makeDateString(int date)
@@ -3607,6 +3634,11 @@ class MenuChatState extends State<MenuChat>
    List<File> _imgFiles = List<File>();
 
    Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
+
+   // A timer that is launched after presence arrives. It is used to
+   // call setState so that presence e.g. typing messages are not
+   // shown after some time
+   Timer _presenceTimer = Timer(Duration(seconds: 0), (){});
 
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
@@ -5075,6 +5107,13 @@ class MenuChatState extends State<MenuChat>
       } else {
          markPresence(_ownPosts, peer, postId);
       }
+
+      // TODO: Start timer to remove presence msg.
+      _presenceTimer = Timer(
+         Duration(milliseconds: cts.presenceInterval),
+         () { setState((){}); },
+      );
+      setState((){});
    }
 
    void _chatAppAckHandler(Map<String, dynamic> ack,
