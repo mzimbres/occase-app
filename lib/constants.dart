@@ -74,3 +74,8 @@ const int filenamesTimeout = 5;
 
 // The pong timeout used by the server. (in milliseconds)
 const int pongTimeout = 30 * 1000;
+
+// Interval used to send presence messages to the peer in
+// milliseconds.
+const int presenceInterval = 10 * 1000;
+

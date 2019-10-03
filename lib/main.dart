@@ -1619,7 +1619,8 @@ Widget makeChatScreen(
    Function onCancelFwdLPChatMsg,
    bool showChatJumpDownButton,
    Function onChatJumpDown,
-   String avatar)
+   String avatar,
+   Function onWritingChat)
 {
    Column secondLayer = makeChatSecondLayer(
       ctx,
@@ -1634,6 +1635,7 @@ Widget makeChatScreen(
        maxLines: null,
        maxLength: null,
        focusNode: chatFocusNode,
+       onChanged: onWritingChat,
        decoration:
           InputDecoration.collapsed(hintText: txt.chatTextFieldHint),
     );
@@ -4230,6 +4232,33 @@ class MenuChatState extends State<MenuChat>
       });
    }
 
+   // Called on user changes text in the chat text field.
+   void _onWritingChat(String v)
+   {
+      assert(_chat != null);
+      final int now = DateTime.now().millisecondsSinceEpoch;
+
+      final int last = _chat.lastPresenceSent + cts.presenceInterval;
+
+      print('$last $now');
+      if (now < last)
+         return;
+
+      _chat.lastPresenceSent = now;
+
+      // Time to send presence to the server.
+
+      var subCmd = {
+         'cmd': 'presence',
+         'to': _chat.peer,
+         'type': 'writing',
+      };
+
+      final String payload = jsonEncode(subCmd);
+      print(payload);
+      channel.sink.add(payload);
+   }
+
    void _chatScrollListener()
    {
       final double offset = _chatScrollCtrl.offset;
@@ -5719,6 +5748,7 @@ class MenuChatState extends State<MenuChat>
             _showChatJumpDownButton,
             _onChatJumpDown,
             _post.avatar,
+            _onWritingChat,
          );
       }
 

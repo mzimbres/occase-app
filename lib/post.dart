@@ -119,6 +119,10 @@ class ChatMetadata {
    // The index where the divisor above shall be shown.
    int divisorUnreadMsgsIdx;
 
+   // This variable contains the timestamps of the last time we sent a
+   // presence-writing message to the peer.
+   int lastPresenceSent;
+
    ChatMetadata(
    { this.peer = ''
    , this.nick = ''
@@ -131,6 +135,7 @@ class ChatMetadata {
    , this.nUnreadMsgs = 0
    , this.lastChatItem
    , this.isLongPressed = false
+   , this.lastPresenceSent = 0
    }) {
       divisorUnreadMsgs = nUnreadMsgs;
       divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
