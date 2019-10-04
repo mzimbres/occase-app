@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:collection';
@@ -60,19 +60,22 @@ void toggleChatPinDate(ChatMetadata chat)
       chat.pinDate = 0;
 }
 
-bool CompPostIdAndPeer(Coord a, Coord b)
+bool compPostIdAndPeer(Coord a, Coord b)
 {
    return a.post.id == b.post.id && a.chat.peer == b.chat.peer;
 }
 
-bool CompPeerAndChatIdx(Coord a, Coord b)
+bool compPeerAndChatIdx(Coord a, Coord b)
 {
    return a.chat.peer == b.chat.peer && a.msgIdx == b.msgIdx;
 }
 
-void
-handleLPChats(List<Coord> pairs, bool old, Coord coord, Function comp)
-{
+void handleLPChats(
+   List<Coord> pairs,
+   bool old,
+   Coord coord,
+   Function comp,
+) {
    if (old) {
       pairs.removeWhere((e) {return comp(e, coord);});
    } else {
@@ -107,7 +110,7 @@ Future<void> onPinPost(List<Post> posts, int i, Database db) async
    await db.execute(sql.updatePostPinDate,
                     [posts[i].pinDate, posts[i].id]);
 
-   posts.sort(CompPosts);
+   posts.sort(compPosts);
 }
 
 Future<Null> main() async
@@ -1270,11 +1273,9 @@ Card makeChatMsgWidget(
    Function onChatMsgLongPressed,
    Function onDragChatMsg)
 {
-   Alignment align = Alignment.bottomLeft;
    Color color = Color(0xFFFFFFFF);
    Color onSelectedMsgColor = Colors.grey[300];
    if (ch.msgs[i].isFromThisApp()) {
-      align = Alignment.bottomRight;
       color = Colors.lime[100];
    }
 
@@ -2968,7 +2969,6 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
 ) {
    final int now = DateTime.now().millisecondsSinceEpoch;
    final int last = cm.lastPresenceReceived + cts.presenceInterval;
-   final bool b = now < last;
 
    // We also have to know whether the last message is from the peer
    // and if so only show the typing message if it is more recent than
@@ -3427,7 +3427,6 @@ Widget makeChatTab(
 
 class DialogWithOp extends StatefulWidget {
    DialogWithOp(
-      this.idx,
       this.getValueFunc,
       this.setValueFunc,
       this.onPostSelection,
@@ -3435,19 +3434,17 @@ class DialogWithOp extends StatefulWidget {
       this.body,
    );
 
-   int idx = 0;
-   Function getValueFunc;
-   Function setValueFunc;
-   Function onPostSelection;
-   String title;
-   String body;
+   final Function getValueFunc;
+   final Function setValueFunc;
+   final Function onPostSelection;
+   final String title;
+   final String body;
 
    @override
    DialogWithOpState createState() => DialogWithOpState();
 }
 
 class DialogWithOpState extends State<DialogWithOp> {
-   int _idx;
    Function _getValueFunc;
    Function _setValueFunc;
    Function _onPostSelection;
@@ -3457,7 +3454,6 @@ class DialogWithOpState extends State<DialogWithOp> {
    @override
    void initState()
    {
-      _idx = widget.idx;
       _getValueFunc = widget.getValueFunc;
       _setValueFunc = widget.setValueFunc;
       _onPostSelection = widget.onPostSelection;
@@ -3665,11 +3661,6 @@ class MenuChatState extends State<MenuChat>
 
    Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
 
-   // A timer that is launched after presence arrives. It is used to
-   // call setState so that presence e.g. typing messages are not
-   // shown after some time
-   Timer _presenceTimer = Timer(Duration(seconds: 0), (){});
-
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
    int _expPostIdx = -1;
@@ -3739,11 +3730,6 @@ class MenuChatState extends State<MenuChat>
    bool _isOnFav()
    {
       return _tabCtrl.index == 2;
-   }
-
-   bool _previousWasFav()
-   {
-      return _tabCtrl.previousIndex == 2;
    }
 
    bool _isOnFavChat()
@@ -3925,8 +3911,8 @@ class MenuChatState extends State<MenuChat>
             }
          }
 
-         _ownPosts.sort(CompPosts);
-         _favPosts.sort(CompPosts);
+         _ownPosts.sort(compPosts);
+         _favPosts.sort(compPosts);
       } catch (e) {
          print(e);
       }
@@ -4011,7 +3997,6 @@ class MenuChatState extends State<MenuChat>
          builder: (BuildContext ctx)
          {
             return DialogWithOp(
-               fav,
                () {return _dialogPrefs[fav];},
                (bool v) async {await _setDialogPref(fav, v);},
                () async {await _onPostSelection(i, fav);},
@@ -4118,7 +4103,7 @@ class MenuChatState extends State<MenuChat>
          await batch.commit(noResult: true, continueOnError: true);
 
          _favPosts.add(_posts[i]);
-         _favPosts.sort(CompPosts);
+         _favPosts.sort(compPosts);
 
       } else {
          await _db.execute(sql.deletePost, [_posts[i].id]);
@@ -4341,7 +4326,7 @@ class MenuChatState extends State<MenuChat>
 
    void _onFwdChatMsg()
    {
-      assert(!_lpChatMsgs.isEmpty);
+      assert(_lpChatMsgs.isNotEmpty);
 
       _post = null;
       _chat = null;
@@ -4538,7 +4523,7 @@ class MenuChatState extends State<MenuChat>
          post.status = 0;
          post.pinDate = 0;
          _ownPosts.add(post);
-         _ownPosts.sort(CompPosts);
+         _ownPosts.sort(compPosts);
 
          batch.execute(sql.updatePostOnAck, [0, id, date, post.dbId]);
 
@@ -4825,7 +4810,7 @@ class MenuChatState extends State<MenuChat>
       handleLPChats(
          _lpChats,
          toggleLPChat(posts[i].chats[j]),
-         tmp, CompPostIdAndPeer
+         tmp, compPostIdAndPeer
       );
    }
 
@@ -4890,7 +4875,7 @@ class MenuChatState extends State<MenuChat>
 
       handleLPChats(_lpChatMsgs,
                     toggleLPChatMsg(_chat.msgs[k]),
-                    tmp, CompPeerAndChatIdx);
+                    tmp, compPeerAndChatIdx);
 
       setState((){});
    }
@@ -4935,8 +4920,8 @@ class MenuChatState extends State<MenuChat>
             await batch.commit(noResult: true, continueOnError: true);
          });
 
-         posts[i].chats.sort(CompChats);
-         posts.sort(CompPosts);
+         posts[i].chats.sort(compChats);
+         posts.sort(compPosts);
 
          final String type = convertChatMsgTypeToString(ci.type);
          var msgMap = {
@@ -4961,7 +4946,7 @@ class MenuChatState extends State<MenuChat>
    {
       try {
          assert(_appMsgQueue.first.sent);
-         assert(!_appMsgQueue.isEmpty);
+         assert(_appMsgQueue.isNotEmpty);
          final String res = ack['result'];
 
          batch.rawDelete(sql.deleteOutChatMsg,
@@ -4975,7 +4960,7 @@ class MenuChatState extends State<MenuChat>
             setState(() { });
          }
 
-         if (!_appMsgQueue.isEmpty) {
+         if (_appMsgQueue.isNotEmpty) {
             assert(!_appMsgQueue.first.sent);
             _appMsgQueue.first.sent = true;
             channel.sink.add(_appMsgQueue.first.payload);
@@ -5084,8 +5069,8 @@ class MenuChatState extends State<MenuChat>
 
       final ChatMetadata chat = posts[i].chats[j];
 
-      posts[i].chats.sort(CompChats);
-      posts.sort(CompPosts);
+      posts[i].chats.sort(compChats);
+      posts.sort(compPosts);
 
       var msgMap = {
          'cmd': 'message',
@@ -5138,11 +5123,14 @@ class MenuChatState extends State<MenuChat>
          markPresence(_ownPosts, peer, postId);
       }
 
-      // TODO: Start timer to remove presence msg.
-      _presenceTimer = Timer(
+      // A timer that is launched after presence arrives. It is used
+      // to call setState so that presence e.g. typing messages are
+      // not shown after some time
+      Timer(
          Duration(milliseconds: cts.presenceInterval),
          () { setState((){}); },
       );
+
       setState((){});
    }
 
@@ -5193,7 +5181,7 @@ class MenuChatState extends State<MenuChat>
 
       String appId = ack["id"];
       String appPwd = ack["password"];
-      print('====> register_ack: ${appId}:${appPwd}');
+      print('====> register_ack: $appId:$appPwd');
 
       if (appId == null || appPwd == null)
          return;
@@ -5550,7 +5538,7 @@ class MenuChatState extends State<MenuChat>
 
       _lpChats.forEach((e){toggleChatPinDate(e.chat);});
       _lpChats.forEach((e){toggleLPChat(e.chat);});
-      _lpChats.first.post.chats.sort(CompChats);
+      _lpChats.first.post.chats.sort(compChats);
       _lpChats.clear();
 
       // TODO: Sort _favPosts and _ownPosts. Beaware that the array
@@ -5580,7 +5568,7 @@ class MenuChatState extends State<MenuChat>
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       } else {
-         _ownPosts.sort(CompPosts);
+         _ownPosts.sort(compPosts);
       }
 
       _lpChats.clear();
@@ -5916,7 +5904,7 @@ class MenuChatState extends State<MenuChat>
          _onExpandImg,
       );
 
-      Widget appBarLeading = null;
+      Widget appBarLeading;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
          appBarTitle = txt.msgOnRedirectingChat;
          appBarLeading = IconButton(

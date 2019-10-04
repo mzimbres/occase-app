@@ -1,6 +1,4 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:occase/constants.dart';
+import 'dart:async' show Future;
 import 'package:sqflite/sqflite.dart';
 import 'package:occase/sql.dart' as sql;
 
@@ -74,7 +72,7 @@ class MenuNode {
    String getChildrenNames()
    {
       String res = children.join(', ');
-      if (!children.isEmpty)
+      if (children.isNotEmpty)
          return res + '.';
 
       return res;
@@ -179,7 +177,7 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
       // wrong order.
       if (me.depth > lastDepth) {
          if (lastDepth + 1 != me.depth) {
-            print('Error on node: ${lastDepth} -- ${me.depth};${me.name};${me.leafReach}');
+            print('Error on node: $lastDepth -- ${me.depth};${me.name};${me.leafReach}');
             return MenuNode();
          }
 
@@ -197,8 +195,8 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          // Now we have to pop that number of nodes from the stack
          // until we get to the node that should be the parent of the
          // current line.
-         int delta_depth = lastDepth - me.depth;
-         for (int i = 0; i < delta_depth; ++i)
+         int deltaDepth = lastDepth - me.depth;
+         for (int i = 0; i < deltaDepth; ++i)
             st.removeLast();
 
          st.removeLast();
@@ -271,7 +269,7 @@ class MenuItem {
       // parent nodes.
 
       for (int i = 0; i < root.length; ++i) {
-         int j = root.length - i - 1; // Index of the last element.
+         //int j = root.length - i - 1; // Index of the last element.
          root[i].leafReach += d;
       }
 
@@ -400,9 +398,9 @@ class MenuTraversal {
    List<List<MenuNode>> st = List<List<MenuNode>>();
    int depth;
 
-   MenuTraversal(MenuNode root, int depth_)
+   MenuTraversal(MenuNode root, int d)
    {
-      depth = depth_;
+      depth = d;
 
       if (root != null)
          st.add(<MenuNode>[root]);
@@ -410,7 +408,7 @@ class MenuTraversal {
 
    MenuNode advanceToLeaf()
    {
-      while (!st.last.last.children.isEmpty && st.length <= depth) {
+      while (st.last.last.children.isNotEmpty && st.length <= depth) {
          List<MenuNode> childrenCopy = List<MenuNode>();
          for (MenuNode o in st.last.last.children)
             childrenCopy.add(o);
@@ -507,7 +505,7 @@ class MenuTraversal2 {
    {
       final MenuNode node = st.last.last;
       st.last.removeLast();
-      if (!node.children.isEmpty) {
+      if (node.children.isNotEmpty) {
          // TODO: See the TODO in parseTree for why I am adding the
          // nodes here in reverse order. Once that function is fixed
          // the nodes have be added in same order they appear in the
@@ -546,7 +544,7 @@ String serializeMenuToStr(final MenuNode root)
    while (current != null) {
       final int depth = current.code.length;
       final String line =
-         "${depth};${current.name};${current.leafReach}=";
+         "$depth;${current.name};${current.leafReach}=";
       menu += line;
       current = iter.next();
    }

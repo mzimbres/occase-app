@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:io' show File, FileMode, Directory;
+import 'dart:async' show Future;
 import 'package:occase/txt_pt.dart' as txt;
 import 'package:occase/sql.dart' as sql;
-import 'package:occase/globals.dart' as glob;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
 
@@ -226,7 +225,7 @@ class ChatMetadata {
  *        other messages. The function bellow has to be adapted to
  *        such cases.
  */
-int CompChats(final ChatMetadata lhs, final ChatMetadata rhs)
+int compChats(final ChatMetadata lhs, final ChatMetadata rhs)
 {
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
       return lhs.pinDate > rhs.pinDate ? -1
@@ -618,7 +617,7 @@ bool toggleLPChatMsg(ChatItem ci)
  * 6. If the most recent chat message is zero for both posts, meaning
  *    the chat is empty, the chat entry date is used as criteria.
  */
-int CompPosts(final Post lhs, final Post rhs)
+int compPosts(final Post lhs, final Post rhs)
 {
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
       return lhs.pinDate > rhs.pinDate ? -1
@@ -663,7 +662,7 @@ class IdxPair {
    IdxPair({this.i = -1, this.j = -1});
 }
 
-bool IsValidPair(final IdxPair p)
+bool isValidPair(final IdxPair p)
 {
    return p.i == -1 || p.j == -1;
 }
@@ -695,7 +694,7 @@ void markPresence(
 
    final IdxPair p = findChat(posts, peer, postId);
 
-   if (IsValidPair(p)) {
+   if (isValidPair(p)) {
       print('===> presence chat not found.');
       return;
    }
@@ -713,7 +712,7 @@ void findAndMarkChatApp(
    Batch batch,
 ) {
    final IdxPair p = findChat(posts, peer, postId);
-   if (IsValidPair(p)) {
+   if (isValidPair(p)) {
       print('===> Chat not found.');
       return;
    }
@@ -893,7 +892,7 @@ Future<List<ChatMetadata>> loadChatMetadata(Database db, int postId) async
   {
      final String str = maps[i]['last_chat_item'];
      ChatItem lastChatItem = ChatItem();
-     if (!str.isEmpty)
+     if (str.isNotEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(str));
 
      return ChatMetadata(

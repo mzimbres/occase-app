@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:occase/constants.dart' as cts;
 
 const String appName = "Occase";
