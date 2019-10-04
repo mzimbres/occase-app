@@ -1767,6 +1767,13 @@ Widget makeChatScreen(
       } else {
          child = stl.unknownPersonIcon;
       }
+
+      ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
+         ch,
+         postSummary,
+         Colors.grey[200],
+      );
+
       title = ListTile(
           contentPadding: EdgeInsets.all(0.0),
           leading: CircleAvatar(
@@ -1783,10 +1790,12 @@ Widget makeChatScreen(
           ),
           dense: true,
           subtitle:
-             Text(postSummary,
+             Text(cps.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: Theme.of(ctx).primaryTextTheme.subtitle
+                style: Theme.of(ctx).primaryTextTheme.subtitle.copyWith(
+                   color: cps.color,
+                ),
              ),
        );
    }
@@ -2946,6 +2955,41 @@ Widget chooseMsgStatusIcon(ChatMetadata ch, int i)
       padding: const EdgeInsets.symmetric(horizontal: 2.0));
 }
 
+class ChatPresenceSubtitle {
+   String subtitle;
+   Color color;
+   ChatPresenceSubtitle({this.subtitle = '', this.color = Colors.white});
+}
+
+ChatPresenceSubtitle makeLTPresenceSubtitle(
+   final ChatMetadata cm,
+   String str,
+   Color color,
+) {
+   final int now = DateTime.now().millisecondsSinceEpoch;
+   final int last = cm.lastPresenceReceived + cts.presenceInterval;
+   final bool b = now < last;
+
+   // We also have to know whether the last message is from the peer
+   // and if so only show the typing message if it is more recent than
+   // the message.
+   final bool notFromThisApp = !cm.lastChatItem.isFromThisApp();
+   final bool moreRecent =
+      cm.lastPresenceReceived > cm.lastChatItem.date;
+
+   if (notFromThisApp && moreRecent && now < last) {
+      return ChatPresenceSubtitle(
+         subtitle: txt.typing,
+         color: stl.colorScheme.secondary,
+      );
+   }
+
+   return ChatPresenceSubtitle(
+      subtitle: str,
+      color: color,
+   );
+}
+
 Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
 {
    String str = ch.lastChatItem.msg;
@@ -2964,31 +3008,17 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       );
    }
 
-   final int now = DateTime.now().millisecondsSinceEpoch;
-   final int last = ch.lastPresenceReceived + cts.presenceInterval;
-   final bool b = now < last;
-
-   // We also have to know whether the last message is from the peer
-   // and if so only show the typing message if it is more recent than
-   // the message.
-   final bool notFromThisApp = !ch.lastChatItem.isFromThisApp();
-   final bool moreRecent =
-      ch.lastPresenceReceived > ch.lastChatItem.date;
-
-   print('$notFromThisApp $moreRecent $now $last');
-
-   String subtitle = str;
-   Color subtitleColor = Colors.grey;
-   if (notFromThisApp && moreRecent && now < last) {
-      subtitle = txt.typing;
-      subtitleColor = stl.colorScheme.secondary;
-   }
+   ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
+      ch,
+      str,
+      Colors.grey,
+   );
 
    if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
       return Text(
-         subtitle,
+         cps.subtitle,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: subtitleColor,
+            color: cps.color,
          ),
          maxLines: 1,
          overflow: TextOverflow.clip
@@ -2997,11 +3027,11 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
    return Row(children: <Widget>
    [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
    , Expanded(
-        child: Text(subtitle,
+        child: Text(cps.subtitle,
            maxLines: 1,
            overflow: TextOverflow.clip,
            style: Theme.of(ctx).textTheme.subtitle.copyWith(
-              color: subtitleColor,
+              color: cps.color,
            ),
         ),
      ),
