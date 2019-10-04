@@ -5956,18 +5956,22 @@ class MenuChatState extends State<MenuChat>
          actions.add(clearPosts);
       }
 
-      IconButton notifcationsButton = IconButton(
-         icon: Icon(
-            Icons.notifications,
-            color: Theme.of(ctx).colorScheme.onPrimary,
-         ),
-         tooltip: txt.notificationsButton,
-         onPressed: () { _onNotificationsPressed(); }
-      );
+      // We only add the global action buttons if
+      // 1. There is now chat selected for selection.
+      // 2. We are not forwarding a message.
+      if (!_hasLPChats() && !_hasLPChatMsgs()) {
+         IconButton notifcationsButton = IconButton(
+            icon: Icon(
+               Icons.notifications,
+               color: Theme.of(ctx).colorScheme.onPrimary,
+            ),
+            tooltip: txt.notificationsButton,
+            onPressed: () { _onNotificationsPressed(); }
+         );
 
-      actions.add(notifcationsButton);
-
-      actions.add(makeAppBarVertAction(_onAppBarVertPressed));
+         actions.add(notifcationsButton);
+         actions.add(makeAppBarVertAction(_onAppBarVertPressed));
+      }
 
       List<int> newMsgsCounters = List<int>(txt.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
