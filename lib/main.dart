@@ -3793,8 +3793,13 @@ class MenuChatState extends State<MenuChat>
 
       // When the database is created, we also have to create the
       // default menu table.
-      String menuStr = await rootBundle.loadString('data/menu.txt');
-      _menu = menuReader(jsonDecode(menuStr));
+      _menu = List<MenuItem>(2);
+
+      final String menu0 = await rootBundle.loadString('data/menu0.txt');
+      _menu[0] = menuReader(jsonDecode(menu0)).first;
+
+      final String menu1 = await rootBundle.loadString('data/menu1.txt');
+      _menu[1] = menuReader(jsonDecode(menu1)).first;
 
       List<MenuElem> elems = List<MenuElem>();
       for (int i = 0; i < _menu.length; ++i)
