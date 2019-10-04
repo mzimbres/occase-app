@@ -6,7 +6,7 @@ const String appName = "Occase";
 const List<String> tabNames = <String>
 [ "POSTS"
 , "NOVOS"
-, "LIKES"
+, "CHATS"
 ];
 
 // Text used in the *new post screens* on the bottom navigation bar.
@@ -51,7 +51,7 @@ const List<String> postAppBarMsg = <String>
 const List<List<String>> menuDepthNames = <List<String>>
 [
    <String>['Regiao', 'Estado', 'Cidade', 'Bairro'],
-   <String>['Veículo', 'Marca',  'Tipo', 'Modelo'],
+   <String>['Veículo', 'Marca',  'Tipo', 'Modelo', 'Ano', 'Combustível', 'Preco Fipe'],
 ];
 
 // The text in the post description field.

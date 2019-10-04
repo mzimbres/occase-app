@@ -1,6 +1,7 @@
 import 'dart:async' show Future;
 import 'package:sqflite/sqflite.dart';
 import 'package:occase/sql.dart' as sql;
+import 'package:occase/constants.dart' as cts;
 
 class MenuElem {
    String code;
@@ -552,7 +553,7 @@ String serializeMenuToStr(final MenuNode root)
    return menu;
 }
 
-List<MenuElem> makeMenuElems(final MenuNode root, int index)
+List<MenuElem> makeMenuElems(final MenuNode root, int index, int maxDepth)
 {
    // TODO: The depth is taken from the lenght of the code. Maybe we
    // should consider removing the depth from sqlite to avoid
@@ -562,20 +563,24 @@ List<MenuElem> makeMenuElems(final MenuNode root, int index)
    MenuTraversal2 iter = MenuTraversal2(root);
    MenuNode current = iter.advance();
    while (current != null) {
-      MenuElem me = MenuElem(
-         code: current.code.join('.'),
-         name: current.name,
-         depth: current.code.length, 
-         leafReach: current.leafReach, 
-         index: index, 
-      );
-      elems.add(me);
+      if (current.code.length <= maxDepth) {
+         MenuElem me = MenuElem(
+            code: current.code.join('.'),
+            name: current.name,
+            depth: current.code.length, 
+            leafReach: current.leafReach, 
+            index: index, 
+         );
+         elems.add(me);
+      }
       current = iter.next();
    }
 
    return elems;
 }
 
+// TODO: I think this function can be remove since sending menu
+// versions to the server is not used anymore.
 List<int> makeMenuVersions(final List<MenuItem> menus)
 {
    List<int> versions = List<int>();
@@ -583,5 +588,42 @@ List<int> makeMenuVersions(final List<MenuItem> menus)
       versions.add(o.version);
 
    return versions;
+}
+
+Future<List<MenuItem>> loadMenuItems(final List<MenuElem> elems) async
+{
+   // Here we have to load the menu table, load all leaf
+   // counters and leaf reach. NOTE: When the user selects a
+   // specific menu item in the filters screen, we save only
+   // that specific item's leaf reach on the database, the
+   // corrections in the leaf reach of parent nodes are kept in
+   // memory, that is why we have to load them here.
+
+   List<MenuItem> menu = List<MenuItem>(2);
+   menu[0] = MenuItem();
+   menu[1] = MenuItem();
+
+   menu[0].filterDepth = cts.filterDepths[0];
+   menu[1].filterDepth = cts.filterDepths[1];
+
+   menu[0].version = cts.versions[0];
+   menu[1].version = cts.versions[1];
+
+   List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
+   tmp[0] = List<MenuElem>();
+   tmp[1] = List<MenuElem>();
+   elems.forEach((MenuElem me) {tmp[me.index].add(me);});
+
+   for (int i = 0; i < tmp.length; ++i) {
+      final int menuDepth = findMenuDepth(tmp[i]);
+      if (menuDepth != 0) {
+         MenuNode node = parseTree(tmp[i], menuDepth);
+         loadLeafCounters(node);
+         loadLeafReaches(node, menu[i].filterDepth);
+         menu[i].root.add(node);
+      }
+   }
+
+   return menu;
 }
 

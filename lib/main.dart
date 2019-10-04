@@ -27,6 +27,21 @@ import 'package:occase/globals.dart' as glob;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/stl.dart' as stl;
 
+Future<List<MenuItem>> readMenuItemsFromAsset() async
+{
+   // When the database is created, we also have to create the
+   // default menu table.
+   List<MenuItem> l = List<MenuItem>(2);
+
+   final String menu0 = await rootBundle.loadString('data/menu0.txt');
+   l[0] = menuReader(jsonDecode(menu0)).first;
+
+   final String menu1 = await rootBundle.loadString('data/menu1.txt');
+   l[1] = menuReader(jsonDecode(menu1)).first;
+
+   return l;
+}
+
 String emailToGravatarHash(String email)
 {
    // Removes spaces.
@@ -3532,8 +3547,11 @@ class MenuChatState extends State<MenuChat>
    Config _cfg = Config();
 
    // Array with the length equal to the number of menus there
-   // are. Used both on the filter and on the *new post* screens.
-   List<MenuItem> _menu = List<MenuItem>();
+   // are. Used for the filters screen.
+   List<MenuItem> _filtersMenu = List<MenuItem>();
+
+   // Similar to _FilterMenu but for the new screen.
+   List<MenuItem> _productsMenu = List<MenuItem>();
 
    // The ex details tree root node.
    MenuNode _exDetailsRoot;
@@ -3793,17 +3811,17 @@ class MenuChatState extends State<MenuChat>
 
       // When the database is created, we also have to create the
       // default menu table.
-      _menu = List<MenuItem>(2);
-
-      final String menu0 = await rootBundle.loadString('data/menu0.txt');
-      _menu[0] = menuReader(jsonDecode(menu0)).first;
-
-      final String menu1 = await rootBundle.loadString('data/menu1.txt');
-      _menu[1] = menuReader(jsonDecode(menu1)).first;
+      _productsMenu = await readMenuItemsFromAsset();
 
       List<MenuElem> elems = List<MenuElem>();
-      for (int i = 0; i < _menu.length; ++i)
-         elems.addAll(makeMenuElems(_menu[i].root.first, i));
+      for (int i = 0; i < _productsMenu.length; ++i) {
+         elems.addAll(makeMenuElems(
+               _productsMenu[i].root.first,
+               i,
+               cts.filterDepths[i],
+            ),
+         );
+      }
 
       Batch batch = db.batch();
 
@@ -3860,41 +3878,11 @@ class MenuChatState extends State<MenuChat>
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
       _dialogPrefs[2] = _cfg.showDialogOnReportPost == 'yes';
 
-      if (_menu.isEmpty) {
-         // Here we have to load the menu table, load all leaf
-         // counters and leaf reach. NOTE: When the user selects a
-         // specific menu item in the filters screen, we save only
-         // that specific item's leaf reach on the database, the
-         // corrections in the leaf reach of parent nodes are kept in
-         // memory, that is why we have to load them here.
+      if (_productsMenu.isEmpty)
+         _productsMenu = await readMenuItemsFromAsset();
 
-         final List<MenuElem> elems = await loadMenu(_db);
-
-         _menu = List<MenuItem>(2);
-         _menu[0] = MenuItem();
-         _menu[1] = MenuItem();
-
-         _menu[0].filterDepth = cts.filterDepths[0];
-         _menu[1].filterDepth = cts.filterDepths[1];
-
-         _menu[0].version = cts.versions[0];
-         _menu[1].version = cts.versions[1];
-
-         List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
-         tmp[0] = List<MenuElem>();
-         tmp[1] = List<MenuElem>();
-         elems.forEach((MenuElem me) {tmp[me.index].add(me);});
-
-         for (int i = 0; i < tmp.length; ++i) {
-            final int menuDepth = findMenuDepth(tmp[i]);
-            if (menuDepth != 0) {
-               MenuNode node = parseTree(tmp[i], menuDepth);
-               loadLeafCounters(node);
-               loadLeafReaches(node, _menu[i].filterDepth);
-               _menu[i].root.add(node);
-            }
-         }
-      }
+      if (_filtersMenu.isEmpty)
+         _filtersMenu = await loadMenuItems(await loadMenu(_db));
 
       try {
          final List<Post> posts = await loadPosts(_db);
@@ -3951,8 +3939,7 @@ class MenuChatState extends State<MenuChat>
          onDone: _onWSDone,
       );
 
-      final List<int> versions = makeMenuVersions(_menu);
-      final String cmd = _makeConnCmd(versions);
+      final String cmd = _makeConnCmd(cts.versions);
       channel.sink.add(cmd);
    }
 
@@ -4125,8 +4112,8 @@ class MenuChatState extends State<MenuChat>
       _newPostPressed = true;
       _post = Post();
       _post.images = List<String>(); // TODO: remove this later.
-      _menu[0].restoreMenuStack();
-      _menu[1].restoreMenuStack();
+      _productsMenu[0].restoreMenuStack();
+      _productsMenu[1].restoreMenuStack();
       _botBarIdx = 0;
       setState(() { });
    }
@@ -4145,17 +4132,17 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   bool _onWillPopMenu()
+   bool _onWillPopMenu(final List<MenuItem> menu)
    {
       // We may want to  split this function in two: One for the
       // filters and one for the new post screen.
-      if (_botBarIdx >= _menu.length) {
+      if (_botBarIdx >= menu.length) {
          --_botBarIdx;
          setState(() { });
          return false;
       }
 
-      if (_menu[_botBarIdx].root.length == 1) {
+      if (menu[_botBarIdx].root.length == 1) {
          if (_botBarIdx == 0){
             _newPostPressed = false;
             _newFiltersPressed = false;
@@ -4167,7 +4154,7 @@ class MenuChatState extends State<MenuChat>
          return false;
       }
 
-      _menu[_botBarIdx].root.removeLast();
+      menu[_botBarIdx].root.removeLast();
       setState(() { });
       return false;
    }
@@ -4371,8 +4358,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onBotBarTapped(int i)
    {
-      if (_botBarIdx < _menu.length)
-         _menu[_botBarIdx].restoreMenuStack();
+      if (_botBarIdx < _productsMenu.length)
+         _productsMenu[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -4399,7 +4386,7 @@ class MenuChatState extends State<MenuChat>
 
       do {
          --_botBarIdx;
-         _menu[_botBarIdx].restoreMenuStack();
+         _productsMenu[_botBarIdx].restoreMenuStack();
       } while (_botBarIdx != i);
 
       setState(() { });
@@ -4407,16 +4394,16 @@ class MenuChatState extends State<MenuChat>
 
    void _onPostLeafPressed(int i)
    {
-      MenuNode o = _menu[_botBarIdx].root.last.children[i];
-      _menu[_botBarIdx].root.add(o);
+      MenuNode o = _productsMenu[_botBarIdx].root.last.children[i];
+      _productsMenu[_botBarIdx].root.add(o);
       _onPostLeafReached();
       setState(() { });
    }
 
    void _onPostLeafReached()
    {
-      _post.channel[_botBarIdx][0] = _menu[_botBarIdx].root.last.code;
-      _menu[_botBarIdx].restoreMenuStack();
+      _post.channel[_botBarIdx][0] = _productsMenu[_botBarIdx].root.last.code;
+      _productsMenu[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
@@ -4425,12 +4412,12 @@ class MenuChatState extends State<MenuChat>
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
-         MenuNode o = _menu[_botBarIdx].root.last.children[i];
-         _menu[_botBarIdx].root.add(o);
+         MenuNode o = _productsMenu[_botBarIdx].root.last.children[i];
+         _productsMenu[_botBarIdx].root.add(o);
          i = 0;
-      } while (_menu[_botBarIdx].root.last.children.length == 1);
+      } while (_productsMenu[_botBarIdx].root.last.children.length == 1);
 
-      final int length = _menu[_botBarIdx].root.last.children.length;
+      final int length = _productsMenu[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -4443,8 +4430,8 @@ class MenuChatState extends State<MenuChat>
 
    void _onFilterNodePressed(int i)
    {
-      MenuNode o = _menu[_botBarIdx].root.last.children[i];
-      _menu[_botBarIdx].root.add(o);
+      MenuNode o = _filtersMenu[_botBarIdx].root.last.children[i];
+      _filtersMenu[_botBarIdx].root.add(o);
 
       setState(() { });
    }
@@ -4454,7 +4441,7 @@ class MenuChatState extends State<MenuChat>
       // k = 0 means the *check all fields*.
       if (k == 0) {
          Batch batch = _db.batch();
-         _menu[_botBarIdx].updateLeafReachAll(batch, _botBarIdx);
+         _filtersMenu[_botBarIdx].updateLeafReachAll(batch, _botBarIdx);
          await batch.commit(noResult: true, continueOnError: true);
          setState(() { });
          return;
@@ -4463,7 +4450,7 @@ class MenuChatState extends State<MenuChat>
       --k; // Accounts for the Todos index.
 
       Batch batch = _db.batch();
-      _menu[_botBarIdx].updateLeafReach(k, batch, _botBarIdx);
+      _filtersMenu[_botBarIdx].updateLeafReach(k, batch, _botBarIdx);
       await batch.commit(noResult: true, continueOnError: true);
       setState(() { });
    }
@@ -5433,7 +5420,7 @@ class MenuChatState extends State<MenuChat>
       List<List<int>> channels = List<List<int>>();
       // An empty channels list means we do not want any filter for
       // that menu item.
-      for (MenuItem item in _menu)
+      for (MenuItem item in _filtersMenu)
          channels.add(readHashCodes(item.root.first, item.filterDepth));
 
       var subCmd = {
@@ -5528,8 +5515,8 @@ class MenuChatState extends State<MenuChat>
    {
       setState(() {
          _newFiltersPressed = true;
-         _menu[0].restoreMenuStack();
-         _menu[1].restoreMenuStack();
+         _filtersMenu[0].restoreMenuStack();
+         _filtersMenu[1].restoreMenuStack();
          _botBarIdx = 0;
       });
    }
@@ -5715,7 +5702,7 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext ctx)
    {
-      if (_menu.isEmpty)
+      if (_productsMenu.isEmpty)
          return makeWaitMenuScreen(ctx);
 
       if (_goToRegScreen) {
@@ -5750,14 +5737,14 @@ class MenuChatState extends State<MenuChat>
          return makeNewPostScreens(
             ctx,
             _post,
-            _menu,
+            _productsMenu,
             _txtCtrl,
             _onSendNewPost,
             _botBarIdx,
             _onNewPostExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
-            _onWillPopMenu,
+            () { return _onWillPopMenu(_productsMenu);},
             _onNewPostBotBarTapped,
             _onNewPostInDetail,
             _exDetailsRoot,
@@ -5777,10 +5764,10 @@ class MenuChatState extends State<MenuChat>
             _onSendFilters,
             _onFilterDetail,
             _onFilterNodePressed,
-            _onWillPopMenu,
+            () { return _onWillPopMenu(_filtersMenu);},
             _onBotBarTapped,
             _onFilterLeafNodePressed,
-            _menu,
+            _filtersMenu,
             _cfg.anyOfFeatures,
             _botBarIdx,
             _exDetailsRoot.children[0].children[0],
@@ -5822,7 +5809,7 @@ class MenuChatState extends State<MenuChat>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            makePostSummaryStr(_menu[1].root.first, _post),
+            makePostSummaryStr(_productsMenu[1].root.first, _post),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLPChatMsg,
@@ -5871,7 +5858,7 @@ class MenuChatState extends State<MenuChat>
          _ownPosts,
          _onChatPressed,
          _onChatLP,
-         _menu,
+         _productsMenu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _lpChatMsgs.isNotEmpty,
@@ -5886,7 +5873,7 @@ class MenuChatState extends State<MenuChat>
          ctx,
          _posts,
          _alertUserOnPressed,
-         _menu,
+         _productsMenu,
          _exDetailsRoot,
          _inDetailsRoot,
          _nNewPosts,
@@ -5898,7 +5885,7 @@ class MenuChatState extends State<MenuChat>
          _favPosts,
          _onChatPressed,
          _onChatLP,
-         _menu,
+         _productsMenu,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _lpChatMsgs.isNotEmpty,
