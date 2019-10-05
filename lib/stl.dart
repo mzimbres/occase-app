@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-final Color chatLongPressendColor = Colors.grey[400]; 
+final Color chatLongPressendColor = Colors.grey[350]; 
 
 const double mainFontSize = 16.0;
 

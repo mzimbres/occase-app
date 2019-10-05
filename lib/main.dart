@@ -1882,25 +1882,54 @@ Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
 }
 
 CircleAvatar makeChatListTileLeading(
-   Widget child,
-   ImageProvider backgroundImage,
+   bool isLongPressed,
+   String avatar,
    Color bgcolor,
    Function onLeadingPressed)
 {
-   Stack st = Stack(children: <Widget>
-   [ Center(child: child)
-   , OutlineButton(
-        child: Text(''),
-        borderSide: BorderSide(style: BorderStyle.none),
-        onPressed: onLeadingPressed,
-        shape: CircleBorder()
-     ),
-   ]);
+   List<Widget> l = List<Widget>();
+
+   ImageProvider bgImg;
+   if (avatar.isEmpty) {
+      l.add(Center(child: stl.unknownPersonIcon));
+   } else {
+      final String url = cts.gravatarUrl + avatar + '.jpg';
+      bgImg = CachedNetworkImageProvider(url);
+   }
+
+   l.add(OutlineButton(
+         child: Text(''),
+         borderSide: BorderSide(style: BorderStyle.none),
+         onPressed: onLeadingPressed,
+         shape: CircleBorder()
+      ),
+   );
+
+   if (isLongPressed) {
+      Positioned p = Positioned(
+         bottom: 0.0,
+         right: 0.0,
+         child: Container(
+            height: 20,
+            width: 20,
+            child: Icon(Icons.check,
+               color: Colors.white,
+               size: 15,
+            ),
+            decoration: BoxDecoration(
+               color: stl.primaryColor,
+               shape: BoxShape.circle,
+            ),
+         ),
+      );
+
+      l.add(p);
+   }
 
    return CircleAvatar(
-      child: st,
+      child: Stack(children: l),
       backgroundColor: bgcolor,
-      backgroundImage: backgroundImage,
+      backgroundImage: bgImg,
    );
 }
 
@@ -3131,20 +3160,10 @@ Card makeChatListTile(
    bool isFwdChatMsgs,
    String avatar)
 {
-   Widget widget;
-   ImageProvider backgroundImage;
    Color bgColor;
    if (chat.isLongPressed) {
-      widget = Icon(Icons.check);
       bgColor = stl.chatLongPressendColor;
    } else {
-      if (avatar.isNotEmpty) {
-         final String url = cts.gravatarUrl + avatar + '.jpg';
-         backgroundImage = CachedNetworkImageProvider(url);
-      } else {
-         widget = stl.unknownPersonIcon;
-      }
-
       bgColor = Theme.of(ctx).colorScheme.background;
    }
 
@@ -3165,8 +3184,8 @@ Card makeChatListTile(
       onLongPress: onLongPress,
       subtitle: makeChatTileSubtitle(ctx, chat),
       leading: makeChatListTileLeading(
-         widget,
-         backgroundImage,
+         chat.isLongPressed,
+         avatar,
          selectColor(int.parse(chat.peer)),
          onLeadingPressed,
       ),
