@@ -22,6 +22,7 @@ const double chatMsgPadding = 5.0;
 const double postSectionPadding = 5.0;
 
 const Color primaryColor = Color(0xFF434b79);
+const Color onPrimaryColor = Colors.white;
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
@@ -29,14 +30,66 @@ const ColorScheme colorScheme = const ColorScheme.light(
       secondary: Color(0xFFffa32c),
       secondaryVariant: Color(0xFFff5635),
       onSecondary: Color(0xFF434b79),
+      onPrimary: onPrimaryColor,
 );
 
 Color infoKeyColor = primaryColor;
 final Color infoValueColor = Colors.blueGrey[800];
 
+const double titleFontSize = 21.0;
+const double subheadFontSize = 17.0;
+const double subtitleFontSize = 15.0;
+
 const TextTheme tt = TextTheme(
-   title: TextStyle(fontSize: 20.0),
+   title: TextStyle(fontSize: titleFontSize),
+   subhead: TextStyle(fontSize: subheadFontSize),
 );
+
+const TextStyle tsSubheadPrimary = TextStyle(
+   fontSize: subheadFontSize,
+   color: primaryColor,
+);
+
+const TextStyle tsSubheadOnPrimary = TextStyle(
+   fontSize: subheadFontSize,
+   color: onPrimaryColor,
+);
+
+//-------------------------------------------------------------------------
+// This section contains some style of ListTiles so that they have a
+// uniform appearence on the app.
+
+// All ListTile titles should use the same fontsize.
+const double ltTitleFontSize = subheadFontSize;
+const double ltSubtitleFontSize = subtitleFontSize;
+
+const TextStyle ltTitle = TextStyle(
+   fontSize: ltTitleFontSize,
+   color: Colors.black,
+   fontWeight: FontWeight.w500,
+);
+
+const TextStyle ltTitleOnPrimary = TextStyle(
+   fontSize: ltTitleFontSize,
+   color: onPrimaryColor,
+   fontWeight: FontWeight.w500,
+);
+
+final TextStyle ltSubtitle = TextStyle(
+   fontSize: ltSubtitleFontSize,
+   color: Colors.grey[600],
+   fontWeight: FontWeight.normal,
+);
+
+final Color onPrimarySubtitleColor = Colors.grey[300];
+
+final TextStyle ltSubtitleOnPrimary = TextStyle(
+   fontSize: ltSubtitleFontSize,
+   color: onPrimarySubtitleColor,
+   fontWeight: FontWeight.normal,
+);
+
+//-------------------------------------------------------------------------
 
 // The padding used around the posts and likes screens.
 const double postListViewTopPadding = 2.0;

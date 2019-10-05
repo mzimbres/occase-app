@@ -476,7 +476,7 @@ Widget makeImgListView2(
          Widget counters2 = Padding(
             padding: const EdgeInsets.all(2.0),
             child: Text('$i/$l',
-               style: Theme.of(ctx).textTheme.subhead.copyWith(
+               style: stl.tt.subhead.copyWith(
                   color: Theme.of(ctx).colorScheme.onPrimary,
                ),
             ),
@@ -560,21 +560,13 @@ RichText makeExpTileTitle(
    return RichText(
       text: TextSpan(
          text: '$first$sep ',
-         style: TextStyle(
-             //fontWeight: FontWeight.w500,
-             color: Theme.of(ctx).colorScheme.onPrimary,
-             fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-         ),
+         style: stl.tsSubheadOnPrimary,
          children: <TextSpan>
          [ TextSpan(
               text: second,
-              style: TextStyle(
-                  fontWeight: FontWeight.normal,
-                  color: color,
-                  fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-              ),
-           )
-         ]
+              style: stl.tt.subhead.copyWith(color: color),
+           ),
+         ],
       ),
    );
 }
@@ -781,7 +773,7 @@ List<Widget> makeNewPostDetailScreen(
       keyboardType: TextInputType.multiline,
       maxLines: null,
       maxLength: 200,
-      style: Theme.of(ctx).textTheme.subhead,
+      style: stl.tt.subhead,
       decoration: InputDecoration.collapsed(
          hintText: txt.newPostTextFieldHist,
       ),
@@ -898,15 +890,13 @@ WillPopScope makeNewPostScreens(
             txt.newPostAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).primaryTextTheme.title.copyWith(
-               fontWeight: FontWeight.normal
-            ),
+            style: stl.ltTitleOnPrimary,
          ),
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).primaryTextTheme.subtitle,
+            style: stl.ltSubtitleOnPrimary,
          ),
       );
    }
@@ -1008,11 +998,6 @@ WillPopScope makeNewFiltersScreens(
 
       foo.add(vv);
 
-      //TextStyle ts = TextStyle(
-      //    color: Theme.of(ctx).colorScheme.onPrimary,
-      //    fontSize: Theme.of(ctx).textTheme.subhead.fontSize,
-      //);
-
       for (int i = 0; i < cts.discreteRanges.length; ++i) {
          final int j = 2 * i;
          final int vmin = ranges[j + 0];
@@ -1062,14 +1047,12 @@ WillPopScope makeNewFiltersScreens(
             txt.filterAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).primaryTextTheme.title.copyWith(
-               fontWeight: FontWeight.w500,
-            ),
+            style: stl.ltTitleOnPrimary,
          ),
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: Theme.of(ctx).primaryTextTheme.subtitle,
+            style: stl.ltSubtitleOnPrimary,
          ),
       );
    }
@@ -1135,12 +1118,7 @@ List<Widget> makeNewPostDetailElemList(
             ),
             backgroundColor: avatarBgColor
          ),
-         title: Text(
-            list[i].name,
-            style: Theme.of(ctx).textTheme.subhead.copyWith(
-               fontWeight: FontWeight.w500,
-            ),
-         ),
+         title: Text(list[i].name, style: stl.ltTitle),
          value: v,
          onChanged: (bool v) { proceed(i); },
          activeColor: Theme.of(ctx).colorScheme.primary,
@@ -1840,7 +1818,7 @@ Widget makeChatScreen(
       ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
          ch,
          postSummary,
-         Colors.grey[200],
+         stl.onPrimarySubtitleColor,
       );
 
       title = ListTile(
@@ -1851,20 +1829,16 @@ Widget makeChatScreen(
               backgroundColor: selectColor(int.parse(ch.peer)),
           ),
           title: Text(ch.getChatDisplayName(),
-                maxLines: 1,
-                overflow: TextOverflow.clip,
-                style: Theme.of(ctx).primaryTextTheme.title.copyWith(
-                   fontWeight: FontWeight.normal
-                ),
+             maxLines: 1,
+             overflow: TextOverflow.clip,
+             style: stl.ltTitleOnPrimary,
           ),
           dense: true,
           subtitle:
              Text(cps.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: Theme.of(ctx).primaryTextTheme.subtitle.copyWith(
-                   color: cps.color,
-                ),
+                style: stl.ltSubtitleOnPrimary.copyWith(color: cps.color),
              ),
        );
    }
@@ -1962,11 +1936,9 @@ ListTile makeFilterSelectAllItem(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
-          color: Theme.of(ctx).colorScheme.secondaryVariant),
-       title: Text(
-          title,
-          style: Theme.of(ctx).textTheme.subhead,
+          color: Theme.of(ctx).colorScheme.secondaryVariant
        ),
+       title: Text(title, style: stl.ltTitle),
        dense: true,
        onTap: onTap,
        enabled: true,
@@ -1981,27 +1953,16 @@ Widget makePayPriceListTile(
    Function onTap,
    Color color)
 {
-   Color primary = Theme.of(ctx).colorScheme.primary;
-   //Color secondary = Theme.of(ctx).colorScheme.secondary;
-   //Color onSecondary = Theme.of(ctx).colorScheme.onSecondary;
-   //Color background = Theme.of(ctx).colorScheme.background;
-
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.clip,
-      style: Theme.of(ctx).textTheme.subtitle.copyWith(
-         fontWeight: FontWeight.normal,
-         color: Colors.grey[700],
-      ),
+      style: stl.ltSubtitle,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: Theme.of(ctx).textTheme.subhead.copyWith(
-         fontWeight: FontWeight.w500,
-         color: primary,
-      ),
+      style: stl.ltTitle,
    );
 
    Widget leading = Card(
@@ -2064,12 +2025,7 @@ Widget makePaymentChoiceWidget(
    List<Widget> widgets = List<Widget>();
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
-      child: Text(txt.paymentTitle,
-         style: Theme.of(ctx).textTheme.subhead.copyWith(
-             color: Theme.of(ctx).colorScheme.primary,
-             //fontWeight: FontWeight.w500,
-          ),
-       ),
+      child: Text(txt.paymentTitle, style: stl.tsSubheadPrimary),
    );
 
    widgets.add(title);
@@ -2133,9 +2089,7 @@ ListTile makeFilterListTitle(
    RichText title = RichText(
       text: TextSpan(
          text: child.name,
-         style: Theme.of(ctx).textTheme.subhead.copyWith(
-            fontWeight: FontWeight.w500,
-         ),
+         style: stl.ltTitle,
          children: <TextSpan>
          [ TextSpan(text: s, style: counterTxtStl),
          ]
@@ -2144,25 +2098,17 @@ ListTile makeFilterListTitle(
          
    Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
    Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
-   TextStyle subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
-      fontWeight: FontWeight.normal,
-      color: Colors.grey[700],
-   );
 
    if (c != 0) {
       avatarBgColor = Theme.of(ctx).colorScheme.primary;
       avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
-      subtitleTxtStl = Theme.of(ctx).textTheme.subtitle.copyWith(
-         fontWeight: FontWeight.normal,
-         color: avatarBgColor,
-      );
    }
 
    Widget subtitle;
    if (!child.isLeaf()) {
       subtitle = Text(
           child.getChildrenNames(),
-          style: subtitleTxtStl,
+          style: stl.ltSubtitle,
           maxLines: 2,
           overflow: TextOverflow.clip,
        );
@@ -2310,13 +2256,13 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
-         style: Theme.of(ctx).textTheme.subhead.copyWith(
+         style: stl.tt.subhead.copyWith(
             color: stl.infoKeyColor,
          ),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: Theme.of(ctx).textTheme.subhead.copyWith(
+              style: stl.tt.subhead.copyWith(
                  //fontWeight: FontWeight.w500,
                  color: stl.infoValueColor,
               ),
@@ -2354,7 +2300,7 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text(' ${nodes[i].name}',
-         style: Theme.of(ctx).textTheme.subhead.copyWith(
+         style: stl.tt.subhead.copyWith(
             color: stl.infoValueColor,
          ),
       );
@@ -2955,17 +2901,12 @@ ListView makeNewPostMenuListView(
                   backgroundColor:
                      Theme.of(ctx).colorScheme.secondary,
                ),
-               title: Text(
-                  child.name,
-                  style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     fontWeight: FontWeight.w500,
-                     //color: Theme.of(ctx).colorScheme.onSecondary,
-                  ),
-               ),
+               title: Text(child.name, style: stl.ltTitle),
                dense: true,
                onTap: () { onLeafPressed(i);},
                enabled: true,
-               onLongPress: (){});
+               onLongPress: (){},
+            );
          }
          
          return
@@ -2978,22 +2919,13 @@ ListView makeNewPostMenuListView(
                   ),
                   backgroundColor: Theme.of(ctx).colorScheme.secondary,
                ),
-               title: Text(
-                  o.children[i].name,
-                  style: Theme.of(ctx).textTheme.subhead.copyWith(
-                     fontWeight: FontWeight.w500,
-                     //color: Theme.of(ctx).colorScheme.onSecondary,
-                  ),
-               ),
+               title: Text(o.children[i].name, style: stl.ltTitle),
                dense: true,
                subtitle: Text(
                   o.children[i].getChildrenNames(),
                   maxLines: 2,
                   overflow: TextOverflow.clip,
-                  style: Theme.of(ctx).textTheme.subtitle.copyWith(
-                     fontWeight: FontWeight.normal,
-                     color: Colors.grey[700],
-                  ),
+                  style: stl.ltSubtitle,
                ),
                trailing: Icon(Icons.keyboard_arrow_right),
                onTap: () { onNodePressed(i); },
@@ -3242,9 +3174,7 @@ Card makeChatListTile(
          chat.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.clip,
-         style: Theme.of(ctx).textTheme.subhead.copyWith(
-            fontWeight: FontWeight.w500,
-         ),
+         style: stl.ltTitle,
       ),
    );
 
@@ -4831,6 +4761,7 @@ class MenuChatState extends State<MenuChat>
       final String title = '$nick: $peer';
 
       final String url = cts.gravatarUrl + posts[i].avatar + '.jpg';
+
       _showSimpleDial(
          ctx,
          (){},
