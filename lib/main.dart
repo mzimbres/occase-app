@@ -1281,6 +1281,25 @@ int postIndexHelper(int i)
    return 1;
 }
 
+Widget putRefMsgInBorder(Widget w, Color borderColor)
+{
+   return Card(
+      color: Colors.grey[200],
+      elevation: 2.0,
+      margin: const EdgeInsets.all(4.0),
+      //shape: RoundedRectangleBorder(
+      //   borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
+      //),
+      child: Center(
+         widthFactor: 1.0,
+         child: Padding(
+            child: w,
+            padding: EdgeInsets.all(4.0),
+         )
+      ),
+   );
+}
+
 Card makeChatMsgWidget(
    BuildContext ctx,
    ChatMetadata ch,
@@ -1375,34 +1394,19 @@ Card makeChatMsgWidget(
       final int refersTo = ch.msgs[i].refersTo;
       final Color c1 = selectColor(int.parse(ch.peer));
 
-      // See comment on C0001 for why I commented this out.
-      //SizedBox sb = SizedBox(
-      //   width: 4.0,
-      //   height: 60.0,
-      //   child: DecoratedBox(
-      //     decoration: BoxDecoration(
-      //       color: c1)));
+      Widget refWidget = makeRefChatMsgWidget(
+         ctx,
+         ch,
+         refersTo,
+         c1,
+         isNewMsg,
+      );
 
       Row refMsg = Row(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
          children: <Widget>
-         [ //Padding(
-           //   padding: const EdgeInsets.all(5.0),
-           //   child: sb,
-           //) , 
-           Flexible(
-              child: Padding(
-                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                 child: makeRefChatMsgWidget(
-                    ctx,
-                    ch,
-                    refersTo,
-                    c1,
-                    isNewMsg,
-                 ),
-              ),
-           ),
+         [ Flexible(child: putRefMsgInBorder(refWidget, stl.chatDateColor)),
          ],
       );
 
@@ -1592,7 +1596,7 @@ Widget makeRefChatMsgWidget(
    bool isNewMsg,
 ) {
    Color titleColor = cc;
-   Color bodyTxtColor = stl.chatDateColor;
+   Color bodyTxtColor = Colors.black;
    
    if (isNewMsg) {
       titleColor = stl.colorScheme.secondary;
