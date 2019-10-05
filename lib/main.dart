@@ -1286,32 +1286,43 @@ Card makeChatMsgWidget(
    ChatMetadata ch,
    int i,
    Function onChatMsgLongPressed,
-   Function onDragChatMsg)
-{
+   Function onDragChatMsg,
+   bool isNewMsg,
+) {
+   Color txtColor = Colors.black;
    Color color = Color(0xFFFFFFFF);
    Color onSelectedMsgColor = Colors.grey[300];
    if (ch.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
+   } else if (isNewMsg) {
+      txtColor = stl.colorScheme.onPrimary;
+      color = stl.colorScheme.primary;
    }
 
    if (ch.msgs[i].isLongPressed) {
       onSelectedMsgColor = Colors.blue[200];
       color = Colors.blue[100];
+      txtColor = Colors.black;
    }
 
    RichText msgAndDate = RichText(
       text: TextSpan(
          text: ch.msgs[i].msg,
-         style: Theme.of(ctx).textTheme.body1,
+         style: Theme.of(ctx).textTheme.body1.copyWith(
+               color: txtColor,
+         ),
          children: <TextSpan>
          [ TextSpan(
-            text: '  ${makeDateString(ch.msgs[i].date)}',
-            style: Theme.of(ctx).textTheme.caption),
+              text: '  ${makeDateString(ch.msgs[i].date)}',
+              style: Theme.of(ctx).textTheme.caption.copyWith(
+                 color: stl.chatDateColor,
+              ),
+           ),
          ]
       ),
    );
 
-   // Unfourtunately TextSpan still does not support general
+   // Unfortunately TextSpan still does not support general
    // widgets so I have to put the msg status in a row instead
    // of simply appending it to the richtext as I do for the
    // date. Hopefully this will be fixed this later.
@@ -1336,15 +1347,18 @@ Card makeChatMsgWidget(
 
    Widget ww = msgAndStatus;
    if (ch.msgs[i].isRedirected()) {
+      final Color redirTitleColor =
+         isNewMsg ? stl.colorScheme.secondary : Colors.blueGrey;
+
       Row redirWidget = Row(
          mainAxisSize: MainAxisSize.min,
          mainAxisAlignment: MainAxisAlignment.start,
          crossAxisAlignment: CrossAxisAlignment.center,
          textBaseline: TextBaseline.alphabetic,
          children: <Widget>
-         [ Icon(Icons.forward, color: Colors.blueGrey)
+         [ Icon(Icons.forward, color: stl.chatDateColor)
          , Text(txt.msgOnRedirectedChat,
-            style: TextStyle(color: Colors.blueGrey,
+            style: TextStyle(color: redirTitleColor,
                fontSize: stl.listTileSubtitleFontSize,
                fontStyle: FontStyle.italic),
            )
@@ -1377,13 +1391,19 @@ Card makeChatMsgWidget(
            //   padding: const EdgeInsets.all(5.0),
            //   child: sb,
            //) , 
-         Flexible(
+           Flexible(
               child: Padding(
                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                 child: makeRefChatMsgWidget(ctx, ch, refersTo, c1),
-              )
-           )
-         ]
+                 child: makeRefChatMsgWidget(
+                    ctx,
+                    ch,
+                    refersTo,
+                    c1,
+                    isNewMsg,
+                 ),
+              ),
+           ),
+         ],
       );
 
       ww = Column(
@@ -1403,6 +1423,7 @@ Card makeChatMsgWidget(
       marginRight = tmp;
    }
 
+   // TODO: Use media query to provide widget with in percentage.
    Card w1 = Card(
       margin: EdgeInsets.only(
             left: marginLeft,
@@ -1489,12 +1510,18 @@ ListView makeChatMsgListView(
                i -= 1; // For the shift
          }
 
+         final bool isNewMsg =
+            shift == 1 &&
+            i >= ch.divisorUnreadMsgsIdx &&
+            i < ch.divisorUnreadMsgsIdx + ch.divisorUnreadMsgs;
+                               
          Card chatMsgWidget = makeChatMsgWidget(
             ctx,
             ch,
             i,
             onChatMsgLongPressed,
-            onDragChatMsg
+            onDragChatMsg,
+            isNewMsg,
          );
 
          return GestureDetector(
@@ -1561,19 +1588,34 @@ Widget makeRefChatMsgWidget(
    BuildContext ctx,
    ChatMetadata ch,
    int i,
-   Color cc)
-{
+   Color cc,
+   bool isNewMsg,
+) {
+   Color titleColor = cc;
+   Color bodyTxtColor = stl.chatDateColor;
+   
+   if (isNewMsg) {
+      titleColor = stl.colorScheme.secondary;
+      //bodyTxtColor = Colors.grey[300];
+   }
+
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
       overflow: TextOverflow.clip,
-      style: Theme.of(ctx).textTheme.caption);
+      style: Theme.of(ctx).textTheme.caption.copyWith(
+         color: bodyTxtColor,
+      ),
+   );
 
    Text title = Text(ch.nick,
       maxLines: 1,
       overflow: TextOverflow.clip,
-      style: TextStyle(fontSize: stl.mainFontSize,
-             fontWeight: FontWeight.bold,
-             color: cc));
+      style: TextStyle(
+         fontSize: stl.mainFontSize,
+         fontWeight: FontWeight.bold,
+         color: titleColor,
+      ),
+   );
 
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -1582,7 +1624,8 @@ Widget makeRefChatMsgWidget(
       children: <Widget>
       [ Padding(
            child: title,
-           padding: const EdgeInsets.symmetric(vertical: 3.0))
+           padding: const EdgeInsets.symmetric(vertical: 3.0)
+        )
       , body
       ]);
 
@@ -1720,7 +1763,13 @@ Widget makeChatScreen(
       // for now I wont be able to show the date at the end.
       Widget w2 = Padding(
          padding: const EdgeInsets.symmetric(horizontal: 5.0),
-         child: makeRefChatMsgWidget(ctx, ch, dragedIdx, co1),
+         child: makeRefChatMsgWidget(
+            ctx,
+            ch,
+            dragedIdx,
+            co1,
+            false,
+         ),
       );
 
       IconButton w4 = IconButton(

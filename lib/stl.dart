@@ -86,3 +86,8 @@ List<Color> priceColors = <Color>
 , Colors.yellow[900]
 ];
 
+// This color is used to show the chat message date both on primary
+// color and white backckground. It is also used for the title and
+// forward arrow in redirected messages.
+final Color chatDateColor = Colors.grey[500];
+
