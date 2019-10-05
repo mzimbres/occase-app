@@ -36,9 +36,9 @@ const ColorScheme colorScheme = const ColorScheme.light(
 Color infoKeyColor = primaryColor;
 final Color infoValueColor = Colors.blueGrey[800];
 
-const double titleFontSize = 21.0;
-const double subheadFontSize = 17.0;
-const double subtitleFontSize = 15.0;
+const double titleFontSize = 20.0;
+const double subheadFontSize = 16.0;
+const double subtitleFontSize = 14.0;
 
 const TextTheme tt = TextTheme(
    title: TextStyle(fontSize: titleFontSize),

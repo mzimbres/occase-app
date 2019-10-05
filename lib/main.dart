@@ -5921,7 +5921,7 @@ class MenuChatState extends State<MenuChat>
       if (!_hasLPChats() && !_hasLPChatMsgs()) {
          IconButton notifcationsButton = IconButton(
             icon: Icon(
-               Icons.notifications,
+               Icons.search,
                color: Theme.of(ctx).colorScheme.onPrimary,
             ),
             tooltip: txt.notificationsButton,
