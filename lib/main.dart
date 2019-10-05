@@ -3034,14 +3034,10 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
    final int now = DateTime.now().millisecondsSinceEpoch;
    final int last = cm.lastPresenceReceived + cts.presenceInterval;
 
-   // We also have to know whether the last message is from the peer
-   // and if so only show the typing message if it is more recent than
-   // the message.
-   final bool notFromThisApp = !cm.lastChatItem.isFromThisApp();
    final bool moreRecent =
       cm.lastPresenceReceived > cm.lastChatItem.date;
 
-   if (notFromThisApp && moreRecent && now < last) {
+   if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
          subtitle: txt.typing,
          color: stl.colorScheme.secondary,
@@ -5836,7 +5832,6 @@ class MenuChatState extends State<MenuChat>
          else
             assert(false);
 
-         print('===> ${post.images.length}');
          return makeImgExpandScreen(
             ctx,
             () {_onExpandImg(-1, -1); return false;},
