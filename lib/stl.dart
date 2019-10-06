@@ -59,7 +59,9 @@ const TextStyle tsSubheadOnPrimary = TextStyle(
 // This section contains some style of ListTiles so that they have a
 // uniform appearence on the app.
 
-// All ListTile titles should use the same fontsize.
+// All ListTile titles should use the same fontsize. An exception is
+// made to those LT that are used on the appBar, they need a larger
+// fontSize
 const double ltTitleFontSize = subheadFontSize;
 const double ltSubtitleFontSize = subtitleFontSize;
 
@@ -87,6 +89,26 @@ final TextStyle ltSubtitleOnPrimary = TextStyle(
    fontSize: ltSubtitleFontSize,
    color: onPrimarySubtitleColor,
    fontWeight: FontWeight.normal,
+);
+
+const TextStyle appBarLtTitle = TextStyle(
+   fontSize: 18.0,
+   color: onPrimaryColor,
+   fontWeight: FontWeight.w500,
+);
+
+final TextStyle appBarLtSubtitle = TextStyle(
+   fontSize: ltSubtitleFontSize,
+   color: onPrimarySubtitleColor,
+   fontWeight: FontWeight.normal,
+);
+
+//-------------------------------------------------------------------------
+
+// Text style of TextFields.
+const TextStyle textField = TextStyle(
+   fontSize: subheadFontSize,
+   color: Colors.black,
 );
 
 //-------------------------------------------------------------------------

@@ -23,7 +23,7 @@ const String devChatOkStr = 'Remover';
 const String delChatCancelStr = 'Cancelar';
 const String userInfo = 'Usuário';
 const String newPostAppBarTitle = 'Publicar novo post';
-const String filterAppBarTitle = 'Escolha seus filtros';
+const String filterAppBarTitle = 'Restringir notificacoes';
 
 const List<String> filterTabNames = <String>
 [ 'Localizacao'
@@ -51,7 +51,7 @@ const List<String> postAppBarMsg = <String>
 const List<List<String>> menuDepthNames = <List<String>>
 [
    <String>['Regiao', 'Estado', 'Cidade', 'Bairro'],
-   <String>['Veículo', 'Marca',  'Tipo', 'Modelo', 'Ano', 'Combustível', 'Preco Fipe'],
+   <String>['Veículo', 'Marca',  'Tipo', 'Ano', 'Modelo', 'Combustível', 'Preco Fipe'],
 ];
 
 // The text in the post description field.
@@ -187,7 +187,7 @@ const String localeName = 'pt_BR';
 const List<String> newFiltersFinalScreenButton = <String>
 [ 'Sair'
 , 'Todos'
-, 'Recentes'
+, 'Enviar'
 ];
 
 // The message that appears on the list title when the peer is typing

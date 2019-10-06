@@ -286,6 +286,7 @@ TextField makeNickTxtField(
    Color enabledColor = focusedColor;
 
    return TextField(
+      style: stl.textField,
       controller: txtCtrl,
       maxLines: 1,
       maxLength: fieldMaxLength,
@@ -773,7 +774,7 @@ List<Widget> makeNewPostDetailScreen(
       keyboardType: TextInputType.multiline,
       maxLines: null,
       maxLength: 200,
-      style: stl.tt.subhead,
+      style: stl.textField,
       decoration: InputDecoration.collapsed(
          hintText: txt.newPostTextFieldHist,
       ),
@@ -824,7 +825,10 @@ WillPopScope makeNewPostScreens(
    bool filenamesTimerActive)
 {
    Widget wid;
-   Widget appBarTitleWidget = Text(txt.newPostAppBarTitle);
+   Widget appBarTitleWidget = Text(
+      txt.newPostAppBarTitle,
+      style: stl.appBarLtTitle,
+   );
 
    if (screen == 3) {
       // NOTE: This ListView is used to provide a new context, so that
@@ -890,13 +894,13 @@ WillPopScope makeNewPostScreens(
             txt.newPostAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.ltTitleOnPrimary,
+            style: stl.appBarLtTitle,
          ),
          dense: true,
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.ltSubtitleOnPrimary,
+            style: stl.appBarLtSubtitle,
          ),
       );
    }
@@ -981,7 +985,10 @@ WillPopScope makeNewFiltersScreens(
    Function onRangeChanged)
 {
    Widget wid;
-   Widget appBarTitleWidget = Text(txt.filterAppBarTitle);
+   Widget appBarTitleWidget = Text(
+      txt.filterAppBarTitle,
+      style: stl.appBarLtTitle,
+   );
 
    if (screen == 3) {
       wid = makeNewFiltersEndWidget(ctx, onSendFilters);
@@ -1047,12 +1054,12 @@ WillPopScope makeNewFiltersScreens(
             txt.filterAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.ltTitleOnPrimary,
+            style: stl.appBarLtTitle,
          ),
          subtitle: Text(menu[screen].getStackNames(),
             maxLines: 1,
             overflow: TextOverflow.clip,
-            style: stl.ltSubtitleOnPrimary,
+            style: stl.appBarLtSubtitle,
          ),
       );
    }
@@ -1263,7 +1270,7 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
 {
    return Card(
       color: Colors.grey[200],
-      elevation: 2.0,
+      elevation: 0.7,
       margin: const EdgeInsets.all(4.0),
       //shape: RoundedRectangleBorder(
       //   borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -1305,9 +1312,7 @@ Card makeChatMsgWidget(
    RichText msgAndDate = RichText(
       text: TextSpan(
          text: ch.msgs[i].msg,
-         style: Theme.of(ctx).textTheme.body1.copyWith(
-               color: txtColor,
-         ),
+         style: stl.textField.copyWith(color: txtColor),
          children: <TextSpan>
          [ TextSpan(
               text: '  ${makeDateString(ch.msgs[i].date)}',
@@ -1412,7 +1417,7 @@ Card makeChatMsgWidget(
             top: 2.0,
             right: marginRight,
             bottom: 0.0),
-      elevation: 3.0,
+      elevation: 0.7,
       color: color,
       child: Center(
          widthFactor: 1.0,
@@ -1671,7 +1676,7 @@ Widget makeChatScreen(
    );
 
    TextField tf = TextField(
-       style: Theme.of(ctx).textTheme.body1,
+       style: stl.textField,
        controller: ctrl,
        keyboardType: TextInputType.multiline,
        maxLines: null,
@@ -1833,14 +1838,14 @@ Widget makeChatScreen(
           title: Text(ch.getChatDisplayName(),
              maxLines: 1,
              overflow: TextOverflow.clip,
-             style: stl.ltTitleOnPrimary,
+             style: stl.appBarLtTitle,
           ),
           dense: true,
           subtitle:
              Text(cps.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.clip,
-                style: stl.ltSubtitleOnPrimary.copyWith(color: cps.color),
+                style: stl.appBarLtSubtitle.copyWith(color: cps.color),
              ),
        );
    }
