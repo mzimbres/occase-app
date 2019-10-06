@@ -1423,7 +1423,7 @@ Card makeChatMsgWidget(
          widthFactor: 1.0,
          child: ConstrainedBox(
             constraints: BoxConstraints(
-               maxWidth: 0.80 * screenWidth,
+               maxWidth: 0.75 * screenWidth,
                minWidth: 0.20 * screenWidth,
             ),
             child: ww)));
@@ -2293,11 +2293,16 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
-         style: stl.ltTitle.copyWith(color: stl.infoKeyColor),
+         style: stl.ltTitle.copyWith(
+            color: stl.infoKeyColor,
+            fontWeight: FontWeight.normal,
+         ),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.ltTitle.copyWith(color: stl.infoValueColor),
+              style: stl.ltTitle.copyWith(
+                 color: stl.infoValueColor
+              ),
            ),
          ],
       ),

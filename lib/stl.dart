@@ -33,7 +33,7 @@ const ColorScheme colorScheme = const ColorScheme.light(
       onPrimary: onPrimaryColor,
 );
 
-final Color infoKeyColor = Colors.grey[500];
+final Color infoKeyColor = Colors.grey[700];
 final Color infoKeyArrowColor = infoKeyColor;
 final Color infoValueColor = primaryColor;
 
@@ -108,7 +108,7 @@ final TextStyle appBarLtSubtitle = TextStyle(
 
 // Text style of TextFields.
 const TextStyle textField = TextStyle(
-   fontSize: subheadFontSize,
+   fontSize: 15.0,
    color: Colors.black,
 );
 
