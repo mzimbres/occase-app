@@ -1410,7 +1410,7 @@ Card makeChatMsgWidget(
       marginRight = tmp;
    }
 
-   // TODO: Use media query to provide widget with in percentage.
+   final double screenWidth = MediaQuery.of(ctx).size.width;
    Card w1 = Card(
       margin: EdgeInsets.only(
             left: marginLeft,
@@ -1423,8 +1423,9 @@ Card makeChatMsgWidget(
          widthFactor: 1.0,
          child: ConstrainedBox(
             constraints: BoxConstraints(
-               maxWidth: 290.0,
-               minWidth: 35.0),
+               maxWidth: 0.80 * screenWidth,
+               minWidth: 0.20 * screenWidth,
+            ),
             child: ww)));
 
    Row r;
@@ -2292,32 +2293,26 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
-         style: stl.tt.subhead.copyWith(
-            color: stl.infoKeyColor,
-         ),
+         style: stl.ltTitle.copyWith(color: stl.infoKeyColor),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.tt.subhead.copyWith(
-                 //fontWeight: FontWeight.w500,
-                 color: stl.infoValueColor,
-              ),
+              style: stl.ltTitle.copyWith(color: stl.infoValueColor),
            ),
          ],
       ),
    );
 
-   // TODO: Use ConstrainedBox with aspect ratio.
+   final double width = MediaQuery.of(ctx).size.width;
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-      [ Icon(Icons.arrow_right,
-           color: Theme.of(ctx).colorScheme.primary,
-        )
+      [ Icon(Icons.arrow_right, color: stl.infoKeyArrowColor)
       , ConstrainedBox(
          constraints: BoxConstraints(
-            maxWidth: 300.0,
-            minWidth: 300.0),
+            maxWidth: 0.80 * width,
+            minWidth: 0.80 * width,
+         ),
          child: left)
       ]
    );
@@ -2540,17 +2535,17 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
 
 Widget makePostDescription(BuildContext ctx, String desc)
 {
-   // TODO: How to determine the ideal width? If we do not set the
-   // width the text overflow is not handled properly. If we do not
-   // set the width the text overflow is not handled properly.
+   final double width = MediaQuery.of(ctx).size.width;
+
    return ConstrainedBox(
       constraints: BoxConstraints(
-         maxWidth: 350.0,
-         minWidth: 350.0,
+         maxWidth: stl.infoWidthFactor * width,
+         minWidth: stl.infoWidthFactor * width,
       ),
       child: Text(
          desc,
          overflow: TextOverflow.clip,
+         style: stl.textField,
       ),
    );
 }

@@ -33,8 +33,9 @@ const ColorScheme colorScheme = const ColorScheme.light(
       onPrimary: onPrimaryColor,
 );
 
-Color infoKeyColor = primaryColor;
-final Color infoValueColor = Colors.blueGrey[800];
+final Color infoKeyColor = Colors.grey[500];
+final Color infoKeyArrowColor = infoKeyColor;
+final Color infoValueColor = primaryColor;
 
 const double titleFontSize = 20.0;
 const double subheadFontSize = 16.0;
@@ -165,4 +166,6 @@ List<Color> priceColors = <Color>
 // color and white backckground. It is also used for the title and
 // forward arrow in redirected messages.
 final Color chatDateColor = Colors.grey[500];
+
+const double infoWidthFactor = 0.94;
 
