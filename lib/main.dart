@@ -1631,11 +1631,13 @@ Widget makeChatSecondLayer(
       color: stl.colorScheme.primary,
    );
 
+   // At the moment we do not support sending of multimedia files
+   // through the chat, so I will remove the button attachmentButton.
    return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[Row(
          mainAxisSize: MainAxisSize.min,
-         children: <Widget>[attachmentButton, sendButton],
+         children: <Widget>[sendButton],
       )],
    );
 }
@@ -1645,7 +1647,7 @@ Widget makeChatScreen(
    Function onWillPopScope,
    ChatMetadata ch,
    TextEditingController ctrl,
-   Function onChatSend,
+   Function onSendChatMsg,
    ScrollController scrollCtrl,
    Function onChatMsgLongPressed,
    int nLongPressed,
@@ -1664,7 +1666,7 @@ Widget makeChatScreen(
 {
    Column secondLayer = makeChatSecondLayer(
       ctx,
-      onChatSend,
+      ctrl.text.isEmpty ? null : onSendChatMsg,
       onAttachment,
    );
 
@@ -4273,6 +4275,14 @@ class MenuChatState extends State<MenuChat>
    {
       assert(_chat != null);
       assert(_post != null);
+
+      // When the chat input text field was empty and the user types
+      // in some text, we have to call set state to enable the send
+      // button. If the user erases all the text we have to disable
+      // the button. To simplify the implementation I will call
+      // setState on every change, since this does not significantly
+      // decreases performance.
+      setState((){});
 
       final int now = DateTime.now().millisecondsSinceEpoch;
       final int last = _chat.lastPresenceSent + cts.presenceInterval;
