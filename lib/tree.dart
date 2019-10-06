@@ -10,11 +10,12 @@ class MenuElem {
    int leafReach;
    int index;
 
-   MenuElem({this.code = '',
-             this.name = '',
-             this.depth = -1,
-             this.leafReach = -1,
-             this.index = -1,
+   MenuElem({
+      this.code = '',
+      this.name = '',
+      this.depth = -1,
+      this.leafReach = -1,
+      this.index = -1,
    });
 }
 
@@ -239,9 +240,10 @@ class MenuItem {
    // the stack and the element is treated a the root of the subtree.
    List<MenuNode> root;
 
-   MenuItem({this.filterDepth = 0,
-             this.version = 0})
-   {
+   MenuItem({
+      this.filterDepth = 0,
+      this.version = 0,
+   }) {
       root = List<MenuNode>();
    }
 

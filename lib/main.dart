@@ -2520,7 +2520,7 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
    return Card(
       elevation: 0.0,
       //color: Theme.of(ctx).colorScheme.background,
-      color: Colors.grey[200],
+      color: Colors.white,
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
@@ -2575,12 +2575,31 @@ List<Widget> assemblePostRows(
    return all;
 }
 
-String makePostSummaryStr(MenuNode root, Post post)
+String makePostSummaryStr(List<MenuItem> menu, Post post)
 {
-   final List<String> names = loadNames(root, post.channel[1][0]);
-   assert(names.length >= 3);
-   return '${names[1]}, ${names[2]} - 2019';
-   //return names.join(', ');
+   assert(menu.length == 2);
+
+   final List<String> names0 = loadNames(
+      menu[0].root.first,
+      post.channel[0][0],
+   );
+
+   assert(names0.length >= 3);
+
+   final List<String> names1 = loadNames(
+      menu[1].root.first,
+      post.channel[1][0],
+   );
+
+   assert(names1.length >= 4);
+
+   final String a = names1[2];
+   final String b = names1[3];
+
+   final String c = names0[2];
+   final String d = names0[1];
+
+   return '$a - $b, $c - $d';
 }
 
 ThemeData makeExpTileThemeData(BuildContext ctx)
@@ -2818,7 +2837,7 @@ Widget makeNewPost(
    Function onExpandImg)
 {
    Widget title = Text(
-      makePostSummaryStr(menu[1].root.first, post),
+      makePostSummaryStr(menu, post),
       maxLines: 1,
       overflow: TextOverflow.clip,
    );
@@ -3367,7 +3386,7 @@ Widget makeChatTab(
          );
 
          Widget title = Text(
-            makePostSummaryStr(menu[1].root.first, posts[i]),
+            makePostSummaryStr(menu, posts[i]),
             maxLines: 1,
             overflow: TextOverflow.clip,
          );
@@ -5822,7 +5841,7 @@ class MenuChatState extends State<MenuChat>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            makePostSummaryStr(_productsMenu[1].root.first, _post),
+            makePostSummaryStr(_productsMenu, _post),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLPChatMsg,

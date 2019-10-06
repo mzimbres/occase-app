@@ -50,8 +50,21 @@ const List<String> postAppBarMsg = <String>
 // The name of the fields at each menu depth.
 const List<List<String>> menuDepthNames = <List<String>>
 [
-   <String>['Regiao', 'Estado', 'Cidade', 'Bairro'],
-   <String>['Veículo', 'Marca',  'Tipo', 'Ano', 'Modelo', 'Combustível', 'Preco Fipe'],
+   <String>
+   [ 'Regiao'
+   , 'Estado'
+   , 'Cidade'
+   , 'Bairro'
+   ]
+, <String>
+   [ 'Veículo'
+   , 'Marca'
+   , 'Tipo'
+   , 'Ano (Fipe)'
+   , 'Modelo'
+   , 'Combustível'
+   , 'Preco Fipe'
+   ]
 ];
 
 // The text in the post description field.
