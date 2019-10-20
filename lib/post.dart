@@ -501,8 +501,8 @@ class Post {
       return
       {
          'from': from,
-         'to': tree.toChannelHashCodeD3(channel[0][0]),
-         'filter': tree.toChannelHashCodeD3(channel[1][0]),
+         'to': tree.toChannelHashCodeD3(channel[1][0]),
+         'filter': tree.toChannelHashCodeD3(channel[0][0]),
          'id': id,
          'features': exDetails.first,
          'body': body,

@@ -4576,7 +4576,7 @@ class MenuChatState extends State<MenuChat>
          var msgMap = {
             'cmd': 'delete',
             'id': delPost.id,
-            'to': delPost.channel,
+            'to': toChannelHashCodeD3(delPost.channel[1][0]),
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
