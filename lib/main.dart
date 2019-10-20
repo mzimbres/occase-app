@@ -2579,6 +2579,7 @@ String makePostSummaryStr(List<MenuItem> menu, Post post)
 {
    assert(menu.length == 2);
 
+   print('===========> ${post.channel[0][0]}');
    final List<String> names0 = loadNames(
       menu[0].root.first,
       post.channel[0][0],
@@ -5362,6 +5363,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onWSData(msg) async
    {
+      print(msg);
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
       if (isEmpty) {
@@ -5456,10 +5458,13 @@ class MenuChatState extends State<MenuChat>
       for (MenuItem item in _filtersMenu)
          channels.add(readHashCodes(item.root.first, item.filterDepth));
 
+      assert(channels.length == 2);
+
       var subCmd = {
          'cmd': 'subscribe',
          'last_post_id': lastPostId,
-         'channels': channels,
+         'channels': channels[0],
+         'filters': channels[1],
          'any_of_features': _cfg.anyOfFeatures,
          'ranges': convertToValues(_cfg.ranges),
       };

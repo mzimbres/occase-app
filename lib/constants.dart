@@ -61,10 +61,10 @@ const double onClickAvatarWidth = 200.0;
 //final String wshost = 'ws://10.0.2.2:80';
 
 // My public ip.
-const String wshost = 'ws://www.occase.de:80';
-const String httpImgHost = 'www.occase.de:81';
+const String wshost = 'wss://occase.de:443';
+const String httpImgHost = 'occase.de:444';
 const String httpImgPath = '/images/';
-const String httpImgTarget = 'http://www.occase.de:81/';
+const String httpImgTarget = 'http://occase.de:444/';
 
 const int maxImgsPerPost = 4;
 

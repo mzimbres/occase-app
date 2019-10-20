@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async' show Future;
 import 'package:occase/txt_pt.dart' as txt;
+import 'package:occase/tree.dart' as tree;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
@@ -440,14 +441,13 @@ class Post {
       return hist.lastChatItem.date;
    }
 
-   // This serialization is used to communicate with the server, not
-   // the one used in the sqlite localy.
+   // This serialization is used to communicate with the occase-db,
+   // not the one used in the sqlite localy.
    Post.fromJson(Map<String, dynamic> map)
    {
       dbId = -1;
       id = map['id'];
       from = map['from'];
-      channel = decodeChannel(map['to']);
       date = map['date'];
       pinDate = 0;
       status = -1;
@@ -461,6 +461,7 @@ class Post {
       description = bodyMap['msg'];
       exDetails = decodeList(cts.maxExDetailSize, 0, bodyMap['ex_details']);
       inDetails = decodeList(cts.maxInDetailSize, 0, bodyMap['in_details']);
+      channel = decodeChannel(bodyMap['channel']);
    }
 
    Map<String, dynamic> toJson()
@@ -483,6 +484,8 @@ class Post {
       // txt.exDetails[index].length) and similar to the inDetails
       // array.
 
+      assert(channel.length == 2);
+
       var subCmd = {
          'msg': description,
          'nick': nick,
@@ -490,6 +493,7 @@ class Post {
          'images': images,
          'ex_details': exDetails,
          'in_details': inDetails,
+         'channel': channel,
       };
 
       final String body = jsonEncode(subCmd);
@@ -497,7 +501,8 @@ class Post {
       return
       {
          'from': from,
-         'to': channel,
+         'to': tree.toChannelHashCodeD3(channel[0][0]),
+         'filter': tree.toChannelHashCodeD3(channel[1][0]),
          'id': id,
          'features': exDetails.first,
          'body': body,
