@@ -293,7 +293,7 @@ List<T> decodeList<T>(int size, T init, List<dynamic> details)
 }
 
 class Post {
-   // The auto increment sqlite rowid.
+   // The auto increment sqlite rowid. TODO: Rename this to rowid.
    int dbId = -1;
 
    // The post unique identifier.  Its value is sent back by the

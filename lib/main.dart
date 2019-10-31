@@ -4123,7 +4123,7 @@ class MenuChatState extends State<MenuChat>
          _favPosts.sort(compPosts);
 
       } else {
-         await _db.execute(sql.deletePost, [_posts[i].id]);
+         await _db.execute(sql.delPostWithId, [_posts[i].id]);
          // TODO: Send command to server to report if fav = 2.
       }
 
@@ -4530,13 +4530,14 @@ class MenuChatState extends State<MenuChat>
          assert(_outPostsQueue.isNotEmpty);
          Post post = _outPostsQueue.removeFirst();
          if (id == -1) {
+            batch.execute(sql.delPostWithRowid, [post.dbId]);
             setState(() {_newPostErrorCode = 0;});
             return;
          }
 
          // When working with the simulator I noticed on my machine
          // that it replies before the post could be moved from the
-         // output queue to the _ownPosts. In normal cases users won't
+         // output queue to the . In normal cases users won't
          // be so fast. But since this is my test condition, I will
          // cope with that by inserting the post in _ownPosts and only
          // after that removing from the queue.
@@ -4567,10 +4568,10 @@ class MenuChatState extends State<MenuChat>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         await _db.execute(sql.deletePost, [_favPosts[i].id]);
+         await _db.execute(sql.delPostWithId, [_favPosts[i].id]);
          _favPosts.removeAt(i);
       } else {
-         await _db.execute(sql.deletePost, [_ownPosts[i].id]);
+         await _db.execute(sql.delPostWithId, [_ownPosts[i].id]);
          final Post delPost = _ownPosts.removeAt(i);
 
          var msgMap = {
@@ -5594,7 +5595,7 @@ class MenuChatState extends State<MenuChat>
       if (_isOnFav()) {
          for (Post o in _favPosts)
             if (o.chats.isEmpty)
-               await _db.execute(sql.deletePost, [o.id]);
+               await _db.execute(sql.delPostWithId, [o.id]);
 
          _favPosts.removeWhere((e) { return e.chats.isEmpty; });
       } else {

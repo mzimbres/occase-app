@@ -457,9 +457,11 @@ class MenuTraversal {
 }
 
 // NOTE: Keep this in sync with server code.
+// FIXME: We should not hardcode 3 below but use the value defined in
+// contants.dart: filterDepths.
 int toChannelHashCodeD3(List<int> c)
 {
-   if (c.length != 3)
+   if (c.length < 3)
       return 0;
 
    int ca = c[0];
