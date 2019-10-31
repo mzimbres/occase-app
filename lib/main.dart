@@ -915,8 +915,14 @@ WillPopScope makeNewPostScreens(
    );
 
    List<Widget> ww = <Widget>[wid];
-   if (filenamesTimerActive)
+   if (filenamesTimerActive) {
+      ModalBarrier mb = ModalBarrier(
+         color: Colors.grey.withOpacity(0.4),
+         dismissible: false,
+      );
+      ww.add(mb);
       ww.add(Center(child: CircularProgressIndicator()));
+   }
 
    Stack stack = Stack(children: ww);
 
