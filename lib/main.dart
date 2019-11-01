@@ -2707,6 +2707,17 @@ Widget makeNewPostImpl(
    List<File> imgFiles,
    Function onExpandImg)
 {
+   IconButton inapropriate = IconButton(
+      iconSize: stl.newPostIconSize,
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPressed(2);},
+      //color: stl.colorScheme.primary,
+      icon: Icon(
+         Icons.report,
+         color: Colors.grey,
+      ),
+   );
+
    IconButton icon1 = IconButton(
       iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
@@ -2726,7 +2737,8 @@ Widget makeNewPostImpl(
    );
 
    Row row = Row(children: <Widget>
-   [ Expanded(child: icon1)
+   [ Expanded(child: inapropriate)
+   , Expanded(child: icon1)
    , Expanded(child: icon2)
    ]);
 
@@ -2856,19 +2868,6 @@ Widget makeNewPost(
       exDetailsMenu,
       inDetailsMenu,
    );
-
-   IconButton inapropriate = IconButton(
-      iconSize: stl.newPostIconSize,
-      padding: EdgeInsets.all(0.0),
-      onPressed: () {onPostSelection(2);},
-      color: stl.colorScheme.primary,
-      icon: Icon(Icons.report,
-         color: stl.colorScheme.primary,
-         size: 30.0
-      ),
-   );
-
-   rows.add(inapropriate);
 
    Widget infoExpansion = makePostInfoExpansion(
       ctx,
