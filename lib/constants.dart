@@ -15,9 +15,9 @@ const int imgQuality = 50;
 
 // In the array below the range min is followed by the range max.
 const List<int> rangesMinMax = <int>
-[    0, 1000000 // Price
-, 1930,    2030 // Year.
-,    0, 1000000 // km.
+[    0, 300000 // Price
+, 1930,   2030 // Year.
+,    0, 500000 // km.
 ];
 
 const List<int> rangeDivs = <int>
@@ -53,6 +53,7 @@ const String chatFilePrefix = 'chat';
 
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';
 
+// Use media query instead of this.
 const double onClickAvatarWidth = 200.0;
 
 // WARNING: localhost or 127.0.0.1 is the emulator or the phone
@@ -78,4 +79,8 @@ const int pongTimeout = 30 * 1000;
 // Interval used to send presence messages to the peer in
 // milliseconds.
 const int presenceInterval = 5 * 1000;
+
+// The number of that are shown to the user when he clicks the
+// download button. 
+const int maxPostsOnDownload = 10;
 

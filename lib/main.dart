@@ -4151,13 +4151,25 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _onShowNewPosts() async
    {
-      _nNewPosts = 0;
+      // The number of posts that will be shown to the user when he
+      // clicks the download button. It is at most maxPostsOnDownload.
+      // If it is less than that number we show all.
+      final int n = _nNewPosts >= cts.maxPostsOnDownload
+            ? cts.maxPostsOnDownload : _nNewPosts;
+
+      _nNewPosts -= n;
+
+      final int l = _posts.length;
+
+      assert(l >= _nNewPosts);
+
+      // The index of the last post already shown to the user.
+      final int idx = l == _nNewPosts ? 0 : l - _nNewPosts - 1;
 
       if (_posts.isEmpty) {
          print('===> This should not happen');
       } else {
-         await _db.execute(sql.updateLastSeenPostId,
-                           [_posts.last.id]);
+         await _db.execute(sql.updateLastSeenPostId, [_posts[idx].id]);
       }
 
       setState(() { });
