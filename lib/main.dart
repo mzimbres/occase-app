@@ -5341,10 +5341,16 @@ class MenuChatState extends State<MenuChat>
    void _onPublishAck(Map<String, dynamic> ack, Batch batch)
    {
       final String res = ack['result'];
-      if (res == 'ok')
-         _handlePublishAck(ack['id'], ack['date'], batch);
-      else
+      if (res == 'ok') {
+         // The server sends the post date in seconds.
+         _handlePublishAck(
+            ack['id'],
+            1000 * ack['date'],
+            batch,
+         );
+      } else {
          _handlePublishAck(-1, -1, batch);
+      }
    }
 
    Future<void> _onWSDataImpl(Batch batch) async
