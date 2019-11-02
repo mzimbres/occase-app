@@ -1,208 +1,257 @@
 import 'package:occase/constants.dart' as cts;
+import 'dart:convert';
 
-const String appName = "Occase";
+List<String> decodeList2(List<dynamic> l)
+{
+   return List.generate(l.length, (int i) { return l[i]; });
+}
 
-// Text used for the main tabs.
-const List<String> tabNames = <String>
-[ "POSTS"
-, "NOVOS"
-, "CHATS"
-];
+List<List<String>> decodeList3(List<dynamic> l)
+{
+   return List.generate(l.length, (int i) {
+      return decodeList2(l[i]);
+   });
+}
 
-// Text used in the *new post screens* on the bottom navigation bar.
-const List<String> newPostTabNames = <String>
-[ 'Localizacao'
-, 'Modelo'
-, 'Detalhes'
-, 'Publicar'
-];
+class Txt {
+   String appName;
+   String delOwnChatTitleStr;
+   String delFavChatTitleStr;
+   String devChatOkStr;
+   String delChatCancelStr;
+   String newPostAppBarTitle;
+   String filterAppBarTitle;
+   String postRefSectionTitle;
+   String postExDetailsTitle;
+   String postDescTitle;
+   String newPostTextFieldHist;
+   String chatTextFieldHint;
+   String nickHint;
+   String emailHint;
+   String msgOnRedirectingChat;
+   String msgOnRedirectedChat;
+   String msgOnEmptyChat;
+   String deleteChat;
+   String pinChat;
+   String clearPosts;
+   String notificationsButton;
+   String unknownNick;
+   String selectAll;
+   String changeNichHint;
+   String dissmissedPost;
+   String dismissedChat;
+   String ok;
+   String cancel;
+   String cancelNewPost;
+   String doNotShowAgain;
+   String next;
+   String rangesTitle;
+   String paymentTitle;
+   String onEmptyNickTitle;
+   String onEmptyNickContent;
+   String addImgMsg;
+   String unreachableImgError;
+   String clearPostsTitle;
+   String clearPostsContent;
+   String localeName;
+   String typing;
 
-const String delOwnChatTitleStr = 'Remover conversas?';
-const String delFavChatTitleStr = 'Remover de Favoritos?';
-const String devChatOkStr = 'Remover';
-const String delChatCancelStr = 'Cancelar';
-const String userInfo = 'Usuário';
-const String newPostAppBarTitle = 'Publicar novo post';
-const String filterAppBarTitle = 'Restringir notificacoes';
+   List<String> tabNames;
+   List<String> newPostTabNames;
+   List<String> filterTabNames;
+   List<String> descList;
+   List<String> dialogTitles;
+   List<String> dialogBodies;
+   List<String> rangePrefixes;
+   List<String> rangeUnits;
+   List<String> newPostErrorTitles;
+   List<String> newPostErrorBodies;
+   List<String> newFiltersFinalScreenButton;
 
-const List<String> filterTabNames = <String>
-[ 'Localizacao'
-, 'Modelo'
-, 'Condicoes'
-, 'Enviar'
-];
+   List<List<String>> menuDepthNames;
+   List<List<String>> payments;
 
-// Text used in the chat screen.
-const List<String> chatIconTexts = <String>
-[ 'Meus posts'
-, 'Favoritos'
-];
-
-// The text shown on the app bar for each tab on the *new
-// post screen.*
-const List<String> postAppBarMsg = <String>
-[ "Escolha uma localizacao"
-, "Escolha um Modelo"
-, "Adicione detalhes"
-, "Verificacao e envio"
-];
-
-// The name of the fields at each menu depth.
-const List<List<String>> menuDepthNames = <List<String>>
-[
-   <String>
-   [ 'Regiao'
-   , 'Estado'
-   , 'Cidade'
-   , 'Bairro'
+   Txt(
+   { this.appName = ''
+   , this.delOwnChatTitleStr = ''
+   , this.delFavChatTitleStr = ''
+   , this.devChatOkStr = ''
+   , this.delChatCancelStr = ''
+   , this.newPostAppBarTitle = ''
+   , this.filterAppBarTitle = ''
+   , this.postRefSectionTitle = ''
+   , this.postExDetailsTitle = ''
+   , this.postDescTitle = ''
+   , this.newPostTextFieldHist = ''
+   , this.chatTextFieldHint = ""
+   , this.nickHint = ""
+   , this.emailHint = ""
+   , this.msgOnRedirectingChat = '...'
+   , this.msgOnRedirectedChat = ''
+   , this.msgOnEmptyChat = ''
+   , this.deleteChat = ""
+   , this.pinChat = ""
+   , this.clearPosts = ""
+   , this.notificationsButton = ""
+   , this.unknownNick = ''
+   , this.selectAll = ''
+   , this.changeNichHint = ''
+   , this.dissmissedPost = ''
+   , this.dismissedChat = ''
+   , this.ok = ''
+   , this.cancel = ''
+   , this.cancelNewPost = ''
+   , this.doNotShowAgain = ''
+   , this.next = ''
+   , this.rangesTitle = ''
+   , this.paymentTitle = ''
+   , this.onEmptyNickTitle = ''
+   , this.onEmptyNickContent = ''
+   , this.addImgMsg = ''
+   , this.unreachableImgError = ''
+   , this.clearPostsTitle = ''
+   , this.clearPostsContent = ''
+   , this.localeName = ''
+   , this.typing = ''
+   , this.tabNames = const <String>['' ,'' , '']
+   , this.newPostTabNames = const <String>['', '', '', '']
+   , this.filterTabNames = const <String>['', '', '', '']
+   , this.descList = const <String>['', '', '', '', '']
+   , this.dialogTitles = const <String>['' ,'' ,'' ,'' , '']
+   , this.dialogBodies = const <String>['', '', '', '', '']
+   , this.rangePrefixes = const <String>['','' ,'' ]
+   , this.rangeUnits = const <String>['', '', '', '', '', '']
+   , this.newPostErrorTitles = const <String>[ '', '']
+   , this.newPostErrorBodies = const <String> ['' , '']
+   , this.newFiltersFinalScreenButton = const <String>['', '', '']
+   , this.menuDepthNames = const <List<String>>
+   [ <String> [ '' , '' , '' , '' ]
+   , <String> [ '' , '' , '' , '' , '' , '' , '' ]
    ]
-, <String>
-   [ 'Veículo'
-   , 'Marca'
-   , 'Tipo'
-   , 'Ano (Fipe)'
-   , 'Modelo'
-   , 'Combustível'
-   , 'Preco Fipe'
+   , this.payments = const <List<String>>
+   [ <String>[ '' , '' , '' ]
+   , <String>[ '', '', '.']
+   , <String> [ '' , '' , '']
    ]
-];
+   });
 
-// The text in the post description field.
-const List<String> descList = <String>
-[ 'Anunciante'
-, 'Id do anunc.'
-, 'Id do post'
-, 'Data'
-, "Descricao"
-];
+   Txt.fromJson(Map<String, dynamic> map)
+   {
+      appName                     = map['appName'];
+      delOwnChatTitleStr          = map['delOwnChatTitleStr'];
+      delFavChatTitleStr          = map['delFavChatTitleStr'];
+      devChatOkStr                = map['devChatOkStr'];
+      delChatCancelStr            = map['delChatCancelStr'];
+      newPostAppBarTitle          = map['newPostAppBarTitle'];
+      filterAppBarTitle           = map['filterAppBarTitle'];
+      postRefSectionTitle         = map['postRefSectionTitle'];
+      postExDetailsTitle          = map['postExDetailsTitle'];
+      postDescTitle               = map['postDescTitle'];
+      newPostTextFieldHist        = map['newPostTextFieldHist'];
+      chatTextFieldHint           = map['chatTextFieldHint'];
+      nickHint                    = map['nickHint'];
+      emailHint                   = map['emailHint'];
+      msgOnRedirectingChat        = map['msgOnRedirectingChat'];
+      msgOnRedirectedChat         = map['msgOnRedirectedChat'];
+      msgOnEmptyChat              = map['msgOnEmptyChat'];
+      deleteChat                  = map['deleteChat'];
+      pinChat                     = map['pinChat'];
+      clearPosts                  = map['clearPosts'];
+      notificationsButton         = map['notificationsButton'];
+      unknownNick                 = map['unknownNick'];
+      selectAll                   = map['selectAll'];
+      changeNichHint              = map['changeNichHint'];
+      dissmissedPost              = map['dissmissedPost'];
+      dismissedChat               = map['dismissedChat'];
+      ok                          = map['ok'];
+      cancel                      = map['cancel'];
+      cancelNewPost               = map['cancelNewPost'];
+      doNotShowAgain              = map['doNotShowAgain'];
+      next                        = map['next'];
+      rangesTitle                 = map['rangesTitle'];
+      paymentTitle                = map['paymentTitle'];
+      onEmptyNickTitle            = map['onEmptyNickTitle'];
+      onEmptyNickContent          = map['onEmptyNickContent'];
+      addImgMsg                   = map['addImgMsg'];
+      unreachableImgError         = map['unreachableImgError'];
+      clearPostsTitle             = map['clearPostsTitle'];
+      clearPostsContent           = map['clearPostsContent'];
+      localeName                  = map['localeName'];
+      typing                      = map['typing'];
+      tabNames                    = decodeList2(map['tabNames']);
+      newPostTabNames             = decodeList2(map['newPostTabNames']);
+      filterTabNames              = decodeList2(map['filterTabNames']);
+      descList                    = decodeList2(map['descList']);
+      dialogTitles                = decodeList2(map['dialogTitles']);
+      dialogBodies                = decodeList2(map['dialogBodies']);
+      rangePrefixes               = decodeList2(map['rangePrefixes']);
+      rangeUnits                  = decodeList2(map['rangeUnits']);
+      newPostErrorTitles          = decodeList2(map['newPostErrorTitles']);
+      newPostErrorBodies          = decodeList2(map['newPostErrorBodies']);
+      newFiltersFinalScreenButton = decodeList2(map['newFiltersFinalScreenButton']);
+      menuDepthNames              = decodeList3(map['menuDepthNames']);
+      payments                    = decodeList3(map['payments']);
+   }
 
-const String postRefSectionTitle = 'Referências do post';
-
-// NOTE: The strings in the array must have size at least two. I
-// won't check that in code.
-
-// Consider inserting dummy entries in the array for future expansion.
-
-// This is the title that will be used to present the exclusive
-// details in the post
-const String postExDetailsTitle = 'Detalhes Adicionais';
-const String postDescTitle = 'Mensagem do usuário';
-
-const String newPostTextFieldHist = 'Adicione aqui outras informacoes';
-const String chatTextFieldHint = "Mensagem";
-const String nickHint = "Nome ou nick";
-const String emailHint = "Email gravatar (opcional)";
-
-const String msgOnRedirectingChat = 'Redirecionando ...';
-const String msgOnRedirectedChat = 'Redirecionada';
-const String msgOnEmptyChat = 'Conversa ainda nao iniciada ...';
-
-const String deleteChat = "Remover conversa";
-const String blockUser = "Bloquear usuário";
-const String pinChat = "Fixar conversa";
-const String clearPosts = "Deletar posts";
-const String notificationsButton = "Notificacaoes";
-
-// The texts showed on the dialog in the *Posts* screen
-const List<String> dialogTitles = <String>
-[ 'Deletar post?'
-, 'Mover para chats?'
-, 'Conteúdo inapropriado?'
-, 'Alteracoes aplicadas'
-, 'Remover Post?'
-];
-
-const List<String> dialogBodies = <String>
-[ 'O post será deletado definitivamente.'
-, 'O post será movido para a tela de chats para que vocês possam iniciar uma conversa.'
-, 'O post será removido de sua list e um report será criado.'
-, 'Novos posts serao encaminhados automaticamente pra você.'
-, 'Seu post será removido definitivamente.'
-];
-
-const String unknownNick = 'Desconhecido';
-const String selectAll = 'Selecionar todos';
-const String changeNichHint = 'Alterar apelido';
-const String changePhoto = 'Alterar foto';
-const String dissmissedPost = 'Post removido';
-const String dismissedChat = 'Chat removido';
-const String ok = 'Ok';
-const String cancel = 'Cancel';
-const String cancelNewPost = 'Operacao cancelada';
-const String doNotShowAgain = 'Nao mostrar novamente';
-const String next = 'Continuar';
-
-const List<String> rangePrefixes = <String>
-[ 'Preco'
-, 'Ano'
-, 'Kilometragem'
-];
-
-// The units a prefixed and suffixed to the values.
-const List<String> rangeUnits = <String>
-[ 'R\$',   ''
-,    '',   ''
-,    '', 'km'
-];
-
-// The String shown in the title to price, year, km etc.
-const String rangesTitle = 'Dados';
-
-const String paymentTitle = 'Escolha um plano';
-
-// Depending on the length of the text, change the function ListTile.
-// dense: true,
-// isThreeLine: false,
-const List<List<String>> payments =
-[ <String>
-  [ ' 0R\$'
-  , 'Grátis'
-  , 'Nossa opcao mais econômica.'
-  ]
-, <String>
-  [ ' 5R\$'
-  , 'Prioritário'
-  , 'Pra quem precisa de agilidade.'
-  ]
-, <String>
-  [ '10R\$'
-  , 'Prioridade máxima'
-  , 'O maior alcance para seu anúncio.'
-  ]
-];
-
-const List<String> newPostErrorTitles = <String>
-[ 'Error'
-, 'Post enviado.'
-];
-
-const List<String> newPostErrorBodies = <String>
-[ 'Falha na publicacao. Certifique-se que está conectado a internet e tente novamente.'
-, 'Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao.'
-];
-
-const String onEmptyNickTitle = 'Erro';
-const String onEmptyNickContent =
-   'Seu apelido deve conter um mínimo de ${cts.nickMinLength} letras.';
-
-const String addImgMsg = 'Adicione imagens do seu produto.';
-
-const String unreachableImgError = 'Imagem indisponível.';
-
-const String clearPostsTitle = 'Remover anúncios?';
-const String clearPostsContent = 'Todos os anúncios serao removidos.';
-
-const String minRangeStr = 'Mínimo';
-const String maxRangeStr = 'Máximo';
-
-const String localeName = 'pt_BR';
-
-const List<String> newFiltersFinalScreenButton = <String>
-[ 'Sair'
-, 'Todos'
-, 'Enviar'
-];
-
-// The message that appears on the list title when the peer is typing
-const String typing = 'Escrevendo ...';
+   Map<String, dynamic> toJson()
+   {
+      return
+      {
+         'appName':                     appName,
+         'delOwnChatTitleStr':          delOwnChatTitleStr,
+         'delFavChatTitleStr':          delFavChatTitleStr,
+         'devChatOkStr':                devChatOkStr,
+         'delChatCancelStr':            delChatCancelStr,
+         'newPostAppBarTitle':          newPostAppBarTitle,
+         'filterAppBarTitle':           filterAppBarTitle,
+         'postRefSectionTitle':         postRefSectionTitle,
+         'postExDetailsTitle':          postExDetailsTitle,
+         'postDescTitle':               postDescTitle,
+         'newPostTextFieldHist':        newPostTextFieldHist,
+         'chatTextFieldHint':           chatTextFieldHint,
+         'nickHint':                    nickHint,
+         'emailHint':                   emailHint,
+         'msgOnRedirectingChat':        msgOnRedirectingChat,
+         'msgOnRedirectedChat':         msgOnRedirectedChat,
+         'msgOnEmptyChat':              msgOnEmptyChat,
+         'deleteChat':                  deleteChat,
+         'pinChat':                     pinChat,
+         'clearPosts':                  clearPosts,
+         'notificationsButton':         notificationsButton,
+         'unknownNick':                 unknownNick,
+         'selectAll':                   selectAll,
+         'changeNichHint':              changeNichHint,
+         'dissmissedPost':              dissmissedPost,
+         'dismissedChat':               dismissedChat,
+         'ok':                          ok,
+         'cancel':                      cancel,
+         'cancelNewPost':               cancelNewPost,
+         'doNotShowAgain':              doNotShowAgain,
+         'next':                        next,
+         'rangesTitle':                 rangesTitle,
+         'paymentTitle':                paymentTitle,
+         'onEmptyNickTitle':            onEmptyNickTitle,
+         'onEmptyNickContent':          onEmptyNickContent,
+         'addImgMsg':                   addImgMsg,
+         'unreachableImgError':         unreachableImgError,
+         'clearPostsTitle':             clearPostsTitle,
+         'clearPostsContent':           clearPostsContent,
+         'localeName':                  localeName,
+         'typing':                      typing,
+         'tabNames':                    tabNames,
+         'newPostTabNames':             newPostTabNames,
+         'filterTabNames':              filterTabNames,
+         'descList':                    descList,
+         'dialogTitles':                dialogTitles,
+         'dialogBodies':                dialogBodies,
+         'rangePrefixes':               rangePrefixes,
+         'rangeUnits':                  rangeUnits,
+         'newPostErrorTitles':          newPostErrorTitles,
+         'newPostErrorBodies':          newPostErrorBodies,
+         'newFiltersFinalScreenButton': newFiltersFinalScreenButton,
+         'menuDepthNames':              menuDepthNames,
+         'payments':                    payments,
+      };
+   }
+}
 

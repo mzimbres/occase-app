@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:async' show Future;
-import 'package:occase/txt_pt.dart' as txt;
+import 'package:occase/globals.dart' as g;
 import 'package:occase/tree.dart' as tree;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
@@ -304,7 +304,7 @@ class Post {
    String from = '';
 
    // Publisher nick name.
-   String nick = txt.unknownNick;
+   String nick = g.txt.unknownNick;
 
    // Publisher avatar hash code from gravatar.
    String avatar = '';
@@ -455,7 +455,7 @@ class Post {
 
       final String body = map['body'];
       Map<String, dynamic> bodyMap = jsonDecode(body);
-      nick = bodyMap['nick'] ?? txt.unknownNick;
+      nick = bodyMap['nick'] ?? g.txt.unknownNick;
       avatar = bodyMap['avatar'] ?? '';
       images = decodeList(1, '', bodyMap['images']) ?? <String>[];
       description = bodyMap['msg'];

@@ -1,0 +1,84 @@
+{ "appName":                      "Occase"
+, "delOwnChatTitleStr":           "Remover conversas?"
+, "delFavChatTitleStr":           "Remover de Favoritos?"
+, "devChatOkStr":                 "Remover"
+, "delChatCancelStr":             "Cancelar"
+, "newPostAppBarTitle":           "Publicar novo post"
+, "filterAppBarTitle":            "Restringir notificacoes"
+, "postRefSectionTitle":          "Referências do post"
+, "postExDetailsTitle":           "Detalhes Adicionais"
+, "postDescTitle":                "Mensagem do usuário"
+, "newPostTextFieldHist":         "Adicione aqui outras informacoes"
+, "chatTextFieldHint":            "Mensagem"
+, "nickHint":                     "Nome ou nick"
+, "emailHint":                    "Email gravatar (opcional)"
+, "msgOnRedirectingChat":         "Redirecionando ..."
+, "msgOnRedirectedChat":          "Redirecionada"
+, "msgOnEmptyChat":               "Conversa ainda nao iniciada ..."
+, "deleteChat":                   "Remover conversa"
+, "pinChat":                      "Fixar conversa"
+, "clearPosts":                   "Deletar posts"
+, "notificationsButton":          "Notificacaoes"
+, "unknownNick":                  "Desconhecido"
+, "selectAll":                    "Selecionar todos"
+, "changeNichHint":               "Alterar apelido"
+, "dissmissedPost":               "Post removido"
+, "dismissedChat":                "Chat removido"
+, "ok":                           "Ok"
+, "cancel":                       "Cancel"
+, "cancelNewPost":                "Operacao cancelada"
+, "doNotShowAgain":               "Nao mostrar novamente"
+, "next":                         "Continuar"
+, "rangesTitle":                  "Dados"
+, "paymentTitle":                 "Escolha um plano"
+, "onEmptyNickTitle":             "Erro"
+, "onEmptyNickContent":           "Seu apelido deve conter um mínimo de 3 letras."
+, "addImgMsg":                    "Adicione imagens do seu produto."
+, "unreachableImgError":          "Imagem indisponível."
+, "clearPostsTitle":              "Remover anúncios?"
+, "clearPostsContent":            "Todos os anúncios serao removidos."
+, "localeName":                   "pt_BR"
+, "typing":                       "Escrevendo ..."
+, "tabNames":                     [ "POSTS"
+                                  , "NOVOS"
+                                  , "CHATS"]
+, "newPostTabNames":              [ "Localizacao"
+                                  , "Modelo"
+                                  , "Detalhes"
+                                  , "Publicar"]
+, "filterTabNames":               [ "Localizacao"
+                                  , "Modelo"
+                                  , "Condicoes"
+                                  , "Enviar"]
+, "descList":                     [ "Anunciante"
+                                  , "Id do anunc."
+                                  , "Id do post"
+                                  , "Data"
+                                  , "Descricao"]
+, "dialogTitles":                 [ "Deletar post?"
+                                  , "Mover para chats?"
+                                  , "Conteúdo inapropriado?"
+                                  , "Alteracoes aplicadas"
+                                  , "Remover Post?"]
+, "dialogBodies":                 [ "O post será deletado definitivamente."
+                                  , "O post será movido para a tela de chats para que vocês possam iniciar uma conversa."
+                                  , "O post será removido de sua list e um report será criado."
+                                  , "Novos posts serao encaminhados automaticamente pra você."
+                                  , "Seu post será removido definitivamente."]
+, "rangePrefixes":                [ "Preco"
+                                  , "Ano"
+                                  , "Kilometragem"]
+, "rangeUnits":                   ["R$","","","","","km"]
+, "newPostErrorTitles":           ["Error","Post enviado."]
+, "newPostErrorBodies":           [ "Falha na publicacao. Certifique-se que está conectado a internet e tente novamente."
+                                  , "Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao."]
+, "newFiltersFinalScreenButton":  [ "Sair","Todos","Enviar"]
+, "menuDepthNames":               [ ["Regiao","Estado","Cidade","Bairro"]
+                                  , ["Veículo","Marca","Tipo","Ano (Fipe)","Modelo","Combustível","Preco Fipe"]
+                                  ]
+, "payments":                     [ [" 0R$","Grátis","Nossa opcao mais econômica."]
+                                  , [" 5R$","Prioritário","Pra quem precisa de agilidade."]
+                                  , ["10R$","Prioridade máxima","O maior alcance para seu anúncio."]
+                                  ]
+}
+
