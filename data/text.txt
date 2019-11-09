@@ -1,84 +1,101 @@
 { "appName":                      "Occase"
-, "delOwnChatTitleStr":           "Remover conversas?"
-, "delFavChatTitleStr":           "Remover de Favoritos?"
-, "devChatOkStr":                 "Remover"
-, "delChatCancelStr":             "Cancelar"
-, "newPostAppBarTitle":           "Publicar novo post"
-, "filterAppBarTitle":            "Restringir notificacoes"
-, "postRefSectionTitle":          "Referências do post"
-, "postExDetailsTitle":           "Detalhes Adicionais"
-, "postDescTitle":                "Mensagem do usuário"
-, "newPostTextFieldHist":         "Adicione aqui outras informacoes"
-, "chatTextFieldHint":            "Mensagem"
-, "nickHint":                     "Nome ou nick"
-, "emailHint":                    "Email gravatar (opcional)"
-, "msgOnRedirectingChat":         "Redirecionando ..."
-, "msgOnRedirectedChat":          "Redirecionada"
-, "msgOnEmptyChat":               "Conversa ainda nao iniciada ..."
-, "deleteChat":                   "Remover conversa"
-, "pinChat":                      "Fixar conversa"
-, "clearPosts":                   "Deletar posts"
-, "notificationsButton":          "Notificacaoes"
-, "unknownNick":                  "Desconhecido"
-, "selectAll":                    "Selecionar todos"
-, "changeNichHint":               "Alterar apelido"
-, "dissmissedPost":               "Post removido"
-, "dismissedChat":                "Chat removido"
+, "delOwnChatTitleStr":           "Chats löschen?"
+, "delFavChatTitleStr":           "Löschen?"
+, "devChatOkStr":                 "Löschen"
+, "delChatCancelStr":             "Abbrechen"
+, "newPostAppBarTitle":           "Veroffentlichen"
+, "filterAppBarTitle":            "Benachrichtigung einschränken"
+, "postRefSectionTitle":          "Info"
+, "postExDetailsTitle":           "Zusätliche Details"
+, "postDescTitle":                "Beschreibung"
+, "newPostTextFieldHist":         "Füge hier weitere Infos hinzu"
+, "chatTextFieldHint":            "Nachricht"
+, "nickHint":                     "Name oder Nick"
+, "emailHint":                    "Email von Gravatar (optional)"
+, "msgOnRedirectingChat":         "Weiterleiten an ..."
+, "msgOnRedirectedChat":          "Weitergeleitet"
+, "msgOnEmptyChat":               "Keine Nachricht soweit ..."
+, "deleteChat":                   "Chat löschen"
+, "pinChat":                      "Chat anheften"
+, "clearPosts":                   "Posts löschen"
+, "notificationsButton":          "Benachrichtigungen"
+, "unknownNick":                  "Unbekannt"
+, "selectAll":                    "Alle auswählen"
+, "changeNichHint":               "Nick ändern"
+, "dissmissedPost":               "Post gelöscht"
+, "dismissedChat":                "Chat gelöscht"
 , "ok":                           "Ok"
-, "cancel":                       "Cancel"
-, "cancelNewPost":                "Operacao cancelada"
-, "doNotShowAgain":               "Nao mostrar novamente"
-, "next":                         "Continuar"
-, "rangesTitle":                  "Dados"
-, "paymentTitle":                 "Escolha um plano"
-, "onEmptyNickTitle":             "Erro"
-, "onEmptyNickContent":           "Seu apelido deve conter um mínimo de 3 letras."
-, "addImgMsg":                    "Adicione imagens do seu produto."
-, "unreachableImgError":          "Imagem indisponível."
-, "clearPostsTitle":              "Remover anúncios?"
-, "clearPostsContent":            "Todos os anúncios serao removidos."
-, "localeName":                   "pt_BR"
-, "typing":                       "Escrevendo ..."
+, "cancel":                       "Abbrechen"
+, "cancelNewPost":                "Abgebrochen"
+, "doNotShowAgain":               "Nicht mehr anzeigen"
+, "next":                         "Weiter"
+, "rangesTitle":                  "Daten"
+, "paymentTitle":                 "Plan wählen"
+, "onEmptyNickTitle":             "Fehler"
+, "onEmptyNickContent":           "Ein Nich muss mindesten Drei Zeichen haben."
+, "addImgMsg":                    "Füge Fotos hinzu."
+, "unreachableImgError":          "Foto nicht verfügbar."
+, "clearPostsTitle":              "Posts löschen?"
+, "clearPostsContent":            "Alle posts werden dadurch gelöscht."
+, "localeName":                   "de"
+, "typing":                       "Schreibt ..."
 , "tabNames":                     [ "POSTS"
-                                  , "NOVOS"
+                                  , "NEUE"
                                   , "CHATS"]
-, "newPostTabNames":              [ "Localizacao"
+, "newPostTabNames":              [ "Ort"
                                   , "Modelo"
-                                  , "Detalhes"
-                                  , "Publicar"]
-, "filterTabNames":               [ "Localizacao"
-                                  , "Modelo"
-                                  , "Condicoes"
-                                  , "Enviar"]
-, "descList":                     [ "Anunciante"
-                                  , "Id do anunc."
-                                  , "Id do post"
-                                  , "Data"
-                                  , "Descricao"]
-, "dialogTitles":                 [ "Deletar post?"
-                                  , "Mover para chats?"
-                                  , "Conteúdo inapropriado?"
-                                  , "Alteracoes aplicadas"
-                                  , "Remover Post?"]
-, "dialogBodies":                 [ "O post será deletado definitivamente."
-                                  , "O post será movido para a tela de chats para que vocês possam iniciar uma conversa."
-                                  , "O post será removido de sua list e um report será criado."
-                                  , "Novos posts serao encaminhados automaticamente pra você."
-                                  , "Seu post será removido definitivamente."]
-, "rangePrefixes":                [ "Preco"
-                                  , "Ano"
-                                  , "Kilometragem"]
-, "rangeUnits":                   ["R$","","","","","km"]
-, "newPostErrorTitles":           ["Error","Post enviado."]
-, "newPostErrorBodies":           [ "Falha na publicacao. Certifique-se que está conectado a internet e tente novamente."
-                                  , "Seu post poderá ser encontrado agora na tela \"Chats\" na aba \"Menus posts\" após a confirmacao."]
-, "newFiltersFinalScreenButton":  [ "Sair","Todos","Enviar"]
-, "menuDepthNames":               [ ["Regiao","Estado","Cidade","Bairro"]
-                                  , ["Veículo","Marca","Tipo","Ano (Fipe)","Modelo","Combustível","Preco Fipe"]
+                                  , "Details"
+                                  , "Veroffentlichen"]
+, "filterTabNames":               [ "Ort"
+                                  , "Model"
+                                  , "Bedingungen"
+                                  , "Abschicken"]
+, "descList":                     [ "Benutzer"
+                                  , "Benutzen Identifikation"
+                                  , "Post Identifikation"
+                                  , "Datum"
+                                  , "Beschreibung"]
+, "dialogTitles":                 [ "Post löschen?"
+                                  , "Zu CHATS schieben?"
+                                  , "Ungeeignet Inhalt?"
+                                  , "Änderung Wirksam"
+                                  , "Post löschen?"]
+, "dialogBodies":                 [ "Das Post wird endgültig gelöscht."
+                                  , "Das Post wird zu CHATS geschoben damit ihr eine Geschpräch anfangen könnt."
+                                  , "Das Post wird gelöscht und einen Bericht wird gesendet."
+                                  , "Neue Posts werden ihnen automatisch gesendet."
+                                  , "Das Post wird endgültig gelöscht."]
+, "rangePrefixes":                [ "Preis"
+                                  , "Jahr"
+                                  , "Alter"]
+, "rangeUnits":                   ["€","","","","","km"]
+, "newPostErrorTitles":           [ "Fehler aufgetreten"
+                                  , "Post gesendet."]
+, "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
+                                  , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
+, "newFiltersFinalScreenButton":  [ "Zurück"
+                                  , "Alle"
+                                  ,"Senden"]
+, "menuDepthNames":               [ [ "Land"
+                                    , "Bundesland"
+                                    , "Stadt"
+                                    , "Gemeinde"]
+                                  , [ "Tier"
+                                    , "Unterteilung"
+                                    , "Rasse"
+                                    , "a"
+                                    , "b"
+                                    , "c"
+                                    , "d"]
                                   ]
-, "payments":                     [ [" 0R$","Grátis","Nossa opcao mais econômica."]
-                                  , [" 5R$","Prioritário","Pra quem precisa de agilidade."]
-                                  , ["10R$","Prioridade máxima","O maior alcance para seu anúncio."]
+, "payments":                     [ [ " 0R$"
+                                    , "Kostenlos"
+                                    , "Eingeschränkt auf ein Post Pro Wochen."]
+                                  , [ " 5€"
+                                    , "Keine Einschränkung."
+                                    , "Pra quem precisa de agilidade."]
+                                  , [ "10R$","Prioridade máxima"
+                                    , "O maior alcance para seu anúncio."]
                                   ]
 }
 

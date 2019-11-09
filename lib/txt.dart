@@ -72,7 +72,7 @@ class Txt {
    List<List<String>> payments;
 
    Txt(
-   { this.appName = ''
+   { this.appName = 'Occase'
    , this.delOwnChatTitleStr = ''
    , this.delFavChatTitleStr = ''
    , this.devChatOkStr = ''
@@ -83,16 +83,16 @@ class Txt {
    , this.postExDetailsTitle = ''
    , this.postDescTitle = ''
    , this.newPostTextFieldHist = ''
-   , this.chatTextFieldHint = ""
-   , this.nickHint = ""
-   , this.emailHint = ""
-   , this.msgOnRedirectingChat = '...'
+   , this.chatTextFieldHint = ''
+   , this.nickHint = ''
+   , this.emailHint = ''
+   , this.msgOnRedirectingChat = ''
    , this.msgOnRedirectedChat = ''
    , this.msgOnEmptyChat = ''
-   , this.deleteChat = ""
-   , this.pinChat = ""
-   , this.clearPosts = ""
-   , this.notificationsButton = ""
+   , this.deleteChat = ''
+   , this.pinChat = ''
+   , this.clearPosts = ''
+   , this.notificationsButton = ''
    , this.unknownNick = ''
    , this.selectAll = ''
    , this.changeNichHint = ''

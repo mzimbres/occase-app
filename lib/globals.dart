@@ -1,4 +1,4 @@
-import 'package:occase/txt_pt.dart';
+import 'package:occase/txt.dart';
 
 String docDir = '';
 Txt txt = Txt();

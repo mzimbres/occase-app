@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
 import 'package:occase/tree.dart';
 import 'package:occase/constants.dart' as cts;
-import 'package:occase/txt_pt.dart';
+import 'package:occase/txt.dart';
 import 'package:occase/globals.dart' as g;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/stl.dart' as stl;
@@ -3886,6 +3886,9 @@ class MenuChatState extends State<MenuChat>
          version: 1);
 
       try {
+         final String text = await rootBundle.loadString('data/text.txt');
+         g.txt = Txt.fromJson(jsonDecode(text));
+
          String exDetailsStr =
             await rootBundle.loadString('data/ex_details_menu.txt');
          _exDetailsRoot =
@@ -3895,9 +3898,6 @@ class MenuChatState extends State<MenuChat>
             await rootBundle.loadString('data/in_details_menu.txt');
          _inDetailsRoot =
             menuReader(jsonDecode(inDetailsStr)).first.root.first;
-
-         final String text = await rootBundle.loadString('data/text.txt');
-         g.txt = Txt.fromJson(jsonDecode(text));
       } catch (e) {
          print(e);
       }
