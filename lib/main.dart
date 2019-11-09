@@ -252,10 +252,9 @@ Widget makeImgExpandScreen(
          // No idea why this is showing in reverse order, I will have
          // to manually reverse the indexes.
          final int idx = l - i - 1;
-         final String url = cts.httpImgTarget + post.images[idx];
          return PhotoViewGalleryPageOptions(
             //imageProvider: AssetImage(widget.galleryItems[idx].image),
-            imageProvider: CachedNetworkImageProvider(url),
+            imageProvider: CachedNetworkImageProvider(post.images[idx]),
             //initialScale: PhotoViewComputedScale.contained * 0.8,
             //minScale: PhotoViewComputedScale.contained * 0.8,
             //maxScale: PhotoViewComputedScale.covered * 1.1,
@@ -464,8 +463,6 @@ Widget makeImgListView2(
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         final String imgUrl = cts.httpImgTarget + post.images[i];
-
          FlatButton b = FlatButton(
             onPressed: (){onExpandImg(i);},
             child: Container(
@@ -486,7 +483,7 @@ Widget makeImgListView2(
          return Stack(
             alignment: Alignment(0.0, 0.0),
             children: <Widget>
-            [ makeNetImgBox(width, height, imgUrl, bf)
+            [ makeNetImgBox(width, height, post.images[i], bf)
             , b
             , Column(children: <Widget>[counters2, Spacer()]),
             ],
@@ -4629,49 +4626,22 @@ class MenuChatState extends State<MenuChat>
       final int l = l1 < l2 ? l1 : l2; // min
 
       for (int i = 0; i < l; ++i) {
-         String path = _imgFiles.first.path;
-         String basename = p.basename(path);
-         String extension = p.extension(basename);
+         final String path = _imgFiles[i].path;
+         final String basename = p.basename(path);
+         final String extension = p.extension(basename);
          //String newname = fnames[i] + '.' + extension;
-         String newname = fnames[i] + '.jpg';
+         final String newname = fnames[i] + '.jpg';
 
          print('=====> Path $path');
          print('=====> Image name $basename');
-         print('=====> Image type $extension');
+         print('=====> Image extention $extension');
          print('=====> New name $newname');
 
-         final String httpTarget = cts.httpImgTarget + newname;
-
-         print('=====> Http target $httpTarget');
-
-         //_____________________________________
-
-         //final List<int> bytes = await _imgFiles[i].readAsBytes();
-
-         //HttpClient client = HttpClient();
-
-         //Uri uri = Uri.http(cts.httpImgHost, cts.httpImgPath + newname);
-         //final String foo = uri.data.toString();
-         //print('=====> Http uri ${foo}');
-         //HttpClientRequest req = await client.postUrl(uri);
-
-         //req.add(bytes);
-
-         //HttpClientResponse resp = await req.close();
-         //      
-         //final int stCode = resp.statusCode;
-         //if (stCode != 200) {
-         //   _imgFiles = List<File>();
-         //   return 0;
-         //}
-
-         //_post.images.add(newname);
-
-         //_____________________________________
+         print('=====> Http target $newname');
 
          //var headers = {'Accept-Encoding': 'identity'};
 
-         var response = await http.post(httpTarget,
+         var response = await http.post(newname,
             //headers: headers,
             body: await _imgFiles[i].readAsBytes(),
          );
@@ -5272,9 +5242,7 @@ class MenuChatState extends State<MenuChat>
             });
 
             _newPostErrorCode = await _uploadImgs(fnames);
-            print('_uploadImgs: $_newPostErrorCode');
 
-            // Only uncomment for testing.
             if (_newPostErrorCode == -1)
                await _sendPost();
          }

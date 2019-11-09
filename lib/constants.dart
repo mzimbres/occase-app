@@ -61,11 +61,8 @@ const double onClickAvatarWidth = 200.0;
 // the computer can be found on 10.0.2.2.
 //final String wshost = 'ws://10.0.2.2:80';
 
-// My public ip.
 //const String wshost = 'wss://occase.de';
-//const String httpImgTarget = 'http://occase.de/';
 const String wshost = 'ws://10.0.2.2:8080';
-const String httpImgTarget = 'http://10.0.2.2:8081/';
 
 const int maxImgsPerPost = 4;
 
