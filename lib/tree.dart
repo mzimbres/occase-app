@@ -57,10 +57,12 @@ class MenuNode {
 
    List<MenuNode> children;
 
-   MenuNode({this.name = '',
-             this.leafReach = 0,
-             this.code,
-             this.leafCounter = 0})
+   MenuNode(
+   { this.name = ''
+   , this.leafReach = 0
+   , this.code
+   , this.leafCounter = 0
+   })
    {
       children = List<MenuNode>();
    }
@@ -233,17 +235,13 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
 
 class MenuItem {
    int filterDepth;
-   int version;
 
    // The list below is used as a stack whose first element is the
    // menu root node. When a menu entries is selected it is pushed on
    // the stack and the element is treated a the root of the subtree.
    List<MenuNode> root;
 
-   MenuItem({
-      this.filterDepth = 0,
-      this.version = 0,
-   }) {
+   MenuItem({this.filterDepth = 0}) {
       root = List<MenuNode>();
    }
 
@@ -305,7 +303,6 @@ class MenuItem {
    MenuItem.fromJson(Map<String, dynamic> map)
    {
       filterDepth = map["depth"];
-      version = map["version"];
       root = List<MenuNode>();
 
       final String rawMenu = map["data"];
@@ -327,7 +324,6 @@ class MenuItem {
       return
       {
          'depth': filterDepth,
-         'version': version,
          'data': serializeMenuToStr(root.first),
       };
    }
@@ -583,19 +579,10 @@ List<MenuElem> makeMenuElems(final MenuNode root, int index, int maxDepth)
    return elems;
 }
 
-// TODO: I think this function can be remove since sending menu
-// versions to the server is not used anymore.
-List<int> makeMenuVersions(final List<MenuItem> menus)
-{
-   List<int> versions = List<int>();
-   for (MenuItem o in menus)
-      versions.add(o.version);
-
-   return versions;
-}
-
-Future<List<MenuItem>> loadMenuItems(final List<MenuElem> elems) async
-{
+Future<List<MenuItem>> loadMenuItems(
+   final List<MenuElem> elems,
+   final List<int> filterDepths,
+) async {
    // Here we have to load the menu table, load all leaf
    // counters and leaf reach. NOTE: When the user selects a
    // specific menu item in the filters screen, we save only
@@ -607,11 +594,8 @@ Future<List<MenuItem>> loadMenuItems(final List<MenuElem> elems) async
    menu[0] = MenuItem();
    menu[1] = MenuItem();
 
-   menu[0].filterDepth = cts.filterDepths[0];
-   menu[1].filterDepth = cts.filterDepths[1];
-
-   menu[0].version = cts.versions[0];
-   menu[1].version = cts.versions[1];
+   menu[0].filterDepth = filterDepths[0];
+   menu[1].filterDepth = filterDepths[1];
 
    List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
    tmp[0] = List<MenuElem>();

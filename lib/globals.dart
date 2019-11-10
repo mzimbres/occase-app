@@ -1,5 +1,5 @@
-import 'package:occase/txt.dart';
+import 'package:occase/parameters.dart';
 
 String docDir = '';
-Txt txt = Txt();
+Parameters param = Parameters();
 

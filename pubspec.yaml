@@ -52,7 +52,7 @@ flutter:
      - data/menu1.txt
      - data/ex_details_menu.txt
      - data/in_details_menu.txt
-     - data/text.txt
+     - data/parameters.txt
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
 

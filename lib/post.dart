@@ -304,7 +304,7 @@ class Post {
    String from = '';
 
    // Publisher nick name.
-   String nick = g.txt.unknownNick;
+   String nick = g.param.unknownNick;
 
    // Publisher avatar hash code from gravatar.
    String avatar = '';
@@ -346,8 +346,8 @@ class Post {
       channel = makeEmptyChannels();
       exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      rangeValues = List.generate(cts.rangeDivs.length, (int i) {
-         return cts.rangesMinMax[2 * i];
+      rangeValues = List.generate(g.param.rangeDivs.length, (int i) {
+         return g.param.rangesMinMax[2 * i];
       });
 
       avatar = '';
@@ -451,11 +451,11 @@ class Post {
       date = map['date'];
       pinDate = 0;
       status = -1;
-      rangeValues = decodeList(cts.rangeDivs.length, 0, map['range_values']);
+      rangeValues = decodeList(g.param.rangeDivs.length, 0, map['range_values']);
 
       final String body = map['body'];
       Map<String, dynamic> bodyMap = jsonDecode(body);
-      nick = bodyMap['nick'] ?? g.txt.unknownNick;
+      nick = bodyMap['nick'] ?? g.param.unknownNick;
       avatar = bodyMap['avatar'] ?? '';
       images = decodeList(1, '', bodyMap['images']) ?? <String>[];
       description = bodyMap['msg'];
@@ -577,7 +577,7 @@ Future<List<Post>> loadPosts(Database db) async
       );
 
       post.rangeValues = decodeList(
-         cts.rangeDivs.length,
+         g.param.rangeDivs.length,
          0,
          jsonDecode(bodyMap['range_values']),
       );
@@ -791,7 +791,7 @@ class Config {
    String showDialogOnDelPost;
 
    // Filter Ranges. There is one range for each value, see
-   // cts.rangesMinMax, cts.rangeDivs and txt. rangePrefixes.
+   // g.param.rangesMinMax, g.param.rangeDivs and txt. rangePrefixes.
    List<int> ranges;
 
    int anyOfFeatures;
@@ -811,12 +811,12 @@ class Config {
    })
    {
       if (ranges == null) {
-         final int l = cts.discreteRanges.length;
+         final int l = g.param.discreteRanges.length;
          ranges = List<int>(2 * l);
          for (int i = 0; i < l; ++i) {
-            assert(cts.discreteRanges[i].isNotEmpty);
+            assert(g.param.discreteRanges[i].isNotEmpty);
             ranges[2 * i + 0] = 0;
-            ranges[2 * i + 1] = cts.discreteRanges[i].length - 1;
+            ranges[2 * i + 1] = g.param.discreteRanges[i].length - 1;
          }
       }
    }
@@ -824,15 +824,15 @@ class Config {
 
 List<int> convertToValues(final List<int> ranges)
 {
-   final int l = cts.discreteRanges.length;
+   final int l = g.param.discreteRanges.length;
    List<int> rangeValues = List<int>(2 * l);
    assert(ranges.length == 2 * l);
 
    for (int i = 0; i < l; ++i) {
       final int idx1 = 2 * i + 0;
       final int idx2 = 2 * i + 1;
-      rangeValues[idx1] = cts.discreteRanges[i][ranges[idx1]];
-      rangeValues[idx2] = cts.discreteRanges[i][ranges[idx2]];
+      rangeValues[idx1] = g.param.discreteRanges[i][ranges[idx1]];
+      rangeValues[idx2] = g.param.discreteRanges[i][ranges[idx2]];
    }
 
    return rangeValues;

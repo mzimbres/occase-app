@@ -22,7 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
 import 'package:occase/tree.dart';
 import 'package:occase/constants.dart' as cts;
-import 'package:occase/txt.dart';
+import 'package:occase/parameters.dart';
 import 'package:occase/globals.dart' as g;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/stl.dart' as stl;
@@ -187,7 +187,7 @@ Widget makeAppBarVertAction(Function onSelected)
         [
            PopupMenuItem<ConfigActions>(
              value: ConfigActions.ChangeNick,
-             child: Text(g.txt.changeNichHint),
+             child: Text(g.param.changeNichHint),
            ),
         ];
      }
@@ -203,14 +203,14 @@ List<Widget> makeOnLongPressedActions(
 
    IconButton pinChatBut = IconButton(
       icon: Icon(Icons.place, color: Colors.white),
-      tooltip: g.txt.pinChat,
+      tooltip: g.param.pinChat,
       onPressed: pinChat);
 
    actions.add(pinChatBut);
 
    IconButton delChatBut = IconButton(
       icon: Icon(Icons.delete_forever, color: Colors.white),
-      tooltip: g.txt.deleteChat,
+      tooltip: g.param.deleteChat,
       onPressed: () { deleteChatEntryDialog(ctx); });
 
    actions.add(delChatBut);
@@ -221,7 +221,7 @@ List<Widget> makeOnLongPressedActions(
 Scaffold makeWaitMenuScreen(BuildContext ctx)
 {
    return Scaffold(
-      appBar: AppBar(title: Text(g.txt.appName)),
+      appBar: AppBar(title: Text(g.param.appName)),
       body: Center(child: CircularProgressIndicator()),
       backgroundColor: Theme.of(ctx).colorScheme.background,
    );
@@ -266,7 +266,7 @@ Widget makeImgExpandScreen(
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
       child: Scaffold(
-         //appBar: AppBar(title: Text(g.txt.appName)),
+         //appBar: AppBar(title: Text(g.param.appName)),
          body: Center(child: foo),
          backgroundColor: Theme.of(ctx).colorScheme.primary,
       ),
@@ -328,7 +328,7 @@ Scaffold makeRegisterScreen(
 
    TextField emailTf = makeNickTxtField(
       ctx, emailCtrl, Icon(Icons.email),
-      cts.emailMaxLength, g.txt.emailHint,
+      cts.emailMaxLength, g.param.emailHint,
    );
 
    if (previousNick.isNotEmpty)
@@ -336,12 +336,12 @@ Scaffold makeRegisterScreen(
 
    TextField nickTf = makeNickTxtField(
       ctx, nickCtrl, Icon(Icons.person),
-      cts.nickMaxLength, g.txt.nickHint,
+      cts.nickMaxLength, g.param.nickHint,
    );
 
    Widget button = createRaisedButton(
       ctx, onContinue,
-      g.txt.next,
+      g.param.next,
    );
 
    Column col = Column(
@@ -387,7 +387,7 @@ Widget makeNetImgBox(
       errorWidget: (ctx, url, error) {
          print('====> $error $url $error');
          //Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
-         Widget w = Text(g.txt.unreachableImgError,
+         Widget w = Text(g.param.unreachableImgError,
             overflow: TextOverflow.clip,
             style: TextStyle(
                color: stl.colorScheme.background,
@@ -737,14 +737,14 @@ List<Widget> makeNewPostDetailScreen(
       all.add(foo);
    }
 
-   for (int i = 0; i < cts.rangeDivs.length; ++i) {
+   for (int i = 0; i < g.param.rangeDivs.length; ++i) {
       final int j = 2 * i;
 
       List<Widget> col = makeSliderList(
          value: post.rangeValues[i].toDouble(),
-         min: cts.rangesMinMax[j + 0].toDouble(),
-         max: cts.rangesMinMax[j + 1].toDouble(),
-         divisions: cts.rangeDivs[i],
+         min: g.param.rangesMinMax[j + 0].toDouble(),
+         max: g.param.rangesMinMax[j + 1].toDouble(),
+         divisions: g.param.rangeDivs[i],
          onValueChanged: (double v) {onRangeValueChanged(i, v);}
       );
 
@@ -754,7 +754,7 @@ List<Widget> makeNewPostDetailScreen(
             ctx,
             makeExpTileTitle(
                ctx,
-               g.txt.rangePrefixes[i],
+               g.param.rangePrefixes[i],
                post.rangeValues[i].toString(),
                ':',
                false,
@@ -773,7 +773,7 @@ List<Widget> makeNewPostDetailScreen(
       maxLength: 200,
       style: stl.textField,
       decoration: InputDecoration.collapsed(
-         hintText: g.txt.newPostTextFieldHist,
+         hintText: g.param.newPostTextFieldHist,
       ),
    );
 
@@ -784,7 +784,7 @@ List<Widget> makeNewPostDetailScreen(
 
    all.add(wrapOnDetailExpTitle(
          ctx,
-         Text(g.txt.postDescTitle),
+         Text(g.param.postDescTitle),
          <Widget>[wrapDetailRowOnCard(ctx, pad)],
          false,
       ),
@@ -794,7 +794,7 @@ List<Widget> makeNewPostDetailScreen(
       createRaisedButton(
          ctx,
          (){onNewPostExDetails(-1, -1);},
-         g.txt.next,
+         g.param.next,
       ),
    );
 
@@ -823,7 +823,7 @@ WillPopScope makeNewPostScreens(
 {
    Widget wid;
    Widget appBarTitleWidget = Text(
-      g.txt.newPostAppBarTitle,
+      g.param.newPostAppBarTitle,
       style: stl.appBarLtTitle,
    );
 
@@ -847,7 +847,7 @@ WillPopScope makeNewPostScreens(
                exDetailsMenu,
                inDetailsMenu,
                stl.pubIcon,
-               g.txt.cancelNewPost,
+               g.param.cancelNewPost,
                onAddPhoto,
                imgFiles,
                (int j){ print('Error. abab');},
@@ -888,7 +888,7 @@ WillPopScope makeNewPostScreens(
 
       appBarTitleWidget = ListTile(
          title: Text(
-            g.txt.newPostAppBarTitle,
+            g.param.newPostAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
             style: stl.appBarLtTitle,
@@ -930,7 +930,7 @@ WillPopScope makeNewPostScreens(
           body: stack,
           bottomNavigationBar: makeBottomBarItems(
              stl.newPostTabIcons,
-             g.txt.newPostTabNames,
+             g.param.newPostTabNames,
              onNewPostBotBarTapped,
              screen,
           ),
@@ -952,21 +952,21 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
           child: createRaisedButton(
              ctx,
              () {onPressed(ctx, 0);},
-             g.txt.newFiltersFinalScreenButton[0],
+             g.param.newFiltersFinalScreenButton[0],
           ))
       //, Padding(
       //    padding: const EdgeInsets.symmetric(vertical: 40.0),
       //    child: createRaisedButton(
       //       ctx,
       //       () {onPressed(ctx, 1);},
-      //       g.txt.newFiltersFinalScreenButton[1],
+      //       g.param.newFiltersFinalScreenButton[1],
       //    ))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
              ctx,
              () {onPressed(ctx, 2);},
-             g.txt.newFiltersFinalScreenButton[2],
+             g.param.newFiltersFinalScreenButton[2],
           ))
       ]
    );
@@ -989,7 +989,7 @@ WillPopScope makeNewFiltersScreens(
 {
    Widget wid;
    Widget appBarTitleWidget = Text(
-      g.txt.filterAppBarTitle,
+      g.param.filterAppBarTitle,
       style: stl.appBarLtTitle,
    );
 
@@ -1008,28 +1008,28 @@ WillPopScope makeNewFiltersScreens(
 
       foo.add(vv);
 
-      for (int i = 0; i < cts.discreteRanges.length; ++i) {
+      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
          final int j = 2 * i;
          final int vmin = ranges[j + 0];
          final int vmax = ranges[j + 1];
 
-         final int l = cts.discreteRanges[i].length - 1;
+         final int l = g.param.discreteRanges[i].length - 1;
 
          final Widget rs = RangeSlider(
             min: 0,
             max: l.toDouble(),
-            divisions: cts.discreteRanges[i].length,
+            divisions: g.param.discreteRanges[i].length,
             onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
             values: RangeValues(vmin.toDouble(), vmax.toDouble()),
          );
 
-         final int vmin2 = cts.discreteRanges[i][vmin];
-         final int vmax2 = cts.discreteRanges[i][vmax];
+         final int vmin2 = g.param.discreteRanges[i][vmin];
+         final int vmax2 = g.param.discreteRanges[i][vmax];
 
          final String rangeTitle = '$vmin2 até $vmax2';
          final RichText rt = makeExpTileTitle(
             ctx,
-            g.txt.rangePrefixes[i],
+            g.param.rangePrefixes[i],
             rangeTitle,
             ':',
             false,
@@ -1054,7 +1054,7 @@ WillPopScope makeNewFiltersScreens(
       appBarTitleWidget = ListTile(
          dense: true,
          title: Text(
-            g.txt.filterAppBarTitle,
+            g.param.filterAppBarTitle,
             maxLines: 1,
             overflow: TextOverflow.clip,
             style: stl.appBarLtTitle,
@@ -1082,7 +1082,7 @@ WillPopScope makeNewFiltersScreens(
            body: wid,
            bottomNavigationBar: makeBottomBarItems(
               stl.filterTabIcons,
-              g.txt.filterTabNames,
+              g.param.filterTabNames,
               onBotBarTaped,
               screen)));
 }
@@ -1144,7 +1144,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     return MaterialApp(
-      title: g.txt.appName,
+      title: g.param.appName,
       theme: ThemeData(
           colorScheme: stl.colorScheme,
           brightness: stl.colorScheme.brightness,
@@ -1167,12 +1167,12 @@ makeTabBar(BuildContext ctx,
    if (isFwd)
       return null;
 
-   List<Widget> tabs = List<Widget>(g.txt.tabNames.length);
+   List<Widget> tabs = List<Widget>(g.param.tabNames.length);
 
    for (int i = 0; i < tabs.length; ++i) {
       tabs[i] = Tab(
          child: makeTabWidget( ctx,
-            counters[i], g.txt.tabNames[i], opacity[i]));
+            counters[i], g.param.tabNames[i], opacity[i]));
    }
 
    return TabBar(controller: tabCtrl,
@@ -1362,7 +1362,7 @@ Card makeChatMsgWidget(
          textBaseline: TextBaseline.alphabetic,
          children: <Widget>
          [ Icon(Icons.forward, color: stl.chatDateColor)
-         , Text(g.txt.msgOnRedirectedChat,
+         , Text(g.param.msgOnRedirectedChat,
             style: TextStyle(color: redirTitleColor,
                fontSize: stl.listTileSubtitleFontSize,
                fontStyle: FontStyle.italic),
@@ -1688,7 +1688,7 @@ Widget makeChatScreen(
        focusNode: chatFocusNode,
        onChanged: onWritingChat,
        decoration:
-          InputDecoration.collapsed(hintText: g.txt.chatTextFieldHint),
+          InputDecoration.collapsed(hintText: g.param.chatTextFieldHint),
     );
 
    Scrollbar sb = Scrollbar(
@@ -2065,7 +2065,7 @@ Widget makePaymentChoiceWidget(
    List<Widget> widgets = List<Widget>();
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
-      child: Text(g.txt.paymentTitle, style: stl.tsSubheadPrimary),
+      child: Text(g.param.paymentTitle, style: stl.tsSubheadPrimary),
    );
 
    widgets.add(title);
@@ -2078,12 +2078,12 @@ Widget makePaymentChoiceWidget(
    , (){print('===> pay1');}
    , (){print('===> pay2');}
    ];
-   for (int i = 0; i < g.txt.payments.length; ++i) {
+   for (int i = 0; i < g.param.payments.length; ++i) {
       Widget p = makePayPriceListTile(
          ctx,
-         g.txt.payments[i][0],
-         g.txt.payments[i][1],
-         g.txt.payments[i][2],
+         g.param.payments[i][0],
+         g.param.payments[i][1],
+         g.param.payments[i][2],
          payments[i],
          stl.priceColors[i],
 
@@ -2207,7 +2207,7 @@ ListView makeNewFilterListView(
       {
          if (shift == 1 && i == 0)
             return makeFilterSelectAllItem(
-               ctx, g.txt.selectAll,
+               ctx, g.param.selectAll,
                () { onLeafPressed(0); },
             );
 
@@ -2385,7 +2385,7 @@ List<Widget> makeMenuInfo(
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < post.channel.length; ++i) {
-      list.add(makePostSectionTitle(ctx, g.txt.newPostTabNames[i]));
+      list.add(makePostSectionTitle(ctx, g.param.newPostTabNames[i]));
 
       List<String> names = loadNames(
          menus[i].root.first,
@@ -2396,7 +2396,7 @@ List<Widget> makeMenuInfo(
       {
          return makePostRowElem(
             ctx,
-            g.txt.menuDepthNames[i][j],
+            g.param.menuDepthNames[i][j],
             names[j],
          );
       });
@@ -2411,18 +2411,18 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 {
    List<Widget> list = List<Widget>();
 
-   list.add(makePostSectionTitle(ctx, g.txt.rangesTitle));
+   list.add(makePostSectionTitle(ctx, g.param.rangesTitle));
 
-   List<Widget> items = List.generate(cts.rangeDivs.length, (int i)
+   List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
    {
       final int j = 2 * i;
-      final String str = g.txt.rangeUnits[j + 0]
+      final String str = g.param.rangeUnits[j + 0]
                        + post.rangeValues[i].toString()
-                       + g.txt.rangeUnits[j + 1];
+                       + g.param.rangeUnits[j + 1];
 
       return makePostRowElem(
          ctx,
-         g.txt.rangePrefixes[i],
+         g.param.rangePrefixes[i],
          str,
       );
    });
@@ -2435,14 +2435,14 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 List<Widget> makePostExDetails(
    BuildContext ctx,
    Post post,
-   MenuNode exDetailsMenu)
-{
+   MenuNode exDetailsMenu,
+) {
    // Post details varies according to the first index of the products
    // entry in the menu.
    final int idx = post.getProductDetailIdx();
 
    List<Widget> list = List<Widget>();
-   list.add(makePostSectionTitle(ctx, g.txt.postExDetailsTitle));
+   list.add(makePostSectionTitle(ctx, g.param.postExDetailsTitle));
 
    final int l1 = exDetailsMenu.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
@@ -2460,7 +2460,7 @@ List<Widget> makePostExDetails(
       );
    }
 
-   list.add(makePostSectionTitle(ctx, g.txt.postRefSectionTitle));
+   list.add(makePostSectionTitle(ctx, g.param.postRefSectionTitle));
 
    List<String> values = List<String>();
    values.add(post.nick);
@@ -2477,11 +2477,11 @@ List<Widget> makePostExDetails(
       date = DateTime.fromMillisecondsSinceEpoch(post.date);
    }
 
-   DateFormat df = Intl(g.txt.localeName).date().add_yMEd().add_jm();
+   DateFormat df = Intl(g.param.localeName).date().add_yMEd().add_jm();
    values.add(df.format(date));
 
    for (int i = 0; i < values.length; ++i)
-      list.add(makePostRowElem(ctx, g.txt.descList[i], values[i]));
+      list.add(makePostRowElem(ctx, g.param.descList[i], values[i]));
 
    return list;
 }
@@ -2574,7 +2574,7 @@ List<Widget> assemblePostRows(
    all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
    all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
    if (post.description.isNotEmpty) {
-      all.add(makePostSectionTitle(ctx, g.txt.postDescTitle));
+      all.add(makePostSectionTitle(ctx, g.param.postDescTitle));
       all.add(makePostDescription(ctx, post.description));
    }
 
@@ -2773,7 +2773,7 @@ Widget makeNewPostImpl(
          post,
       );
    } else {
-      Widget w = makeImgTextPlaceholder(g.txt.addImgMsg);
+      Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
       imgLv = makeImgPlaceholder(
          makeImgWidth(ctx),
          makeImgHeight(ctx),
@@ -2930,7 +2930,7 @@ ListView makeNewPostLv(
             exDetailsMenu,
             inDetailsMenu,
             stl.favIcon,
-            g.txt.dissmissedPost,
+            g.param.dissmissedPost,
             (BuildContext dummy, int i) {print('Error: Please fix aaab');},
             List<File>(),
             (int k) {onExpandImg(j, k);},
@@ -3036,7 +3036,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
 
    if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
-         subtitle: g.txt.typing,
+         subtitle: g.param.typing,
          color: stl.colorScheme.secondary,
       );
    }
@@ -3054,7 +3054,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
    // Chats that are empty have always prevalence
    if (str.isEmpty) {
       return Text(
-         g.txt.msgOnEmptyChat,
+         g.param.msgOnEmptyChat,
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
@@ -3459,7 +3459,7 @@ Widget makeChatTab(
                onDelPost(i);
                Scaffold.of(ctx)
                   .showSnackBar(SnackBar(
-                     content: Text(g.txt.dismissedChat)));
+                     content: Text(g.param.dismissedChat)));
             },
             background: Container(color: Colors.red),
             child: w,
@@ -3512,7 +3512,7 @@ class DialogWithOpState extends State<DialogWithOp> {
    Widget build(BuildContext ctx)
    {
       final SimpleDialogOption ok = SimpleDialogOption(
-         child: Text(g.txt.ok,
+         child: Text(g.param.ok,
             style: TextStyle(color: Colors.blue, fontSize: 16.0),
          ),
          onPressed: () async
@@ -3523,7 +3523,7 @@ class DialogWithOpState extends State<DialogWithOp> {
       );
 
       final SimpleDialogOption cancel = SimpleDialogOption(
-         child: Text(g.txt.cancel,
+         child: Text(g.param.cancel,
             style: TextStyle(color: Colors.blue, fontSize: 16.0),
          ),
          onPressed: () { Navigator.of(ctx).pop(); },
@@ -3538,7 +3538,7 @@ class DialogWithOpState extends State<DialogWithOp> {
       //);
 
       CheckboxListTile tile = CheckboxListTile(
-         title: Text(g.txt.doNotShowAgain),
+         title: Text(g.param.doNotShowAgain),
          value: !_getValueFunc(),
          onChanged: (bool v) { setState(() {_setValueFunc(!v);}); },
          controlAffinity: ListTileControlAffinity.leading,
@@ -3848,7 +3848,7 @@ class MenuChatState extends State<MenuChat>
          elems.addAll(makeMenuElems(
                _productsMenu[i].root.first,
                i,
-               cts.filterDepths[i],
+               g.param.filterDepths[i],
             ),
          );
       }
@@ -3874,7 +3874,7 @@ class MenuChatState extends State<MenuChat>
 
    Future<void> _load(final String docDir) async
    {
-       await initializeDateFormatting(g.txt.localeName, null);
+       await initializeDateFormatting(g.param.localeName, null);
 
       _db = await openDatabase(
          p.join(await getDatabasesPath(), 'main.db'),
@@ -3883,8 +3883,9 @@ class MenuChatState extends State<MenuChat>
          version: 1);
 
       try {
-         final String text = await rootBundle.loadString('data/text.txt');
-         g.txt = Txt.fromJson(jsonDecode(text));
+         final String text =
+            await rootBundle.loadString('data/parameters.txt');
+         g.param = Parameters.fromJson(jsonDecode(text));
 
          String exDetailsStr =
             await rootBundle.loadString('data/ex_details_menu.txt');
@@ -3915,7 +3916,11 @@ class MenuChatState extends State<MenuChat>
          _productsMenu = await readMenuItemsFromAsset();
 
       if (_filtersMenu.isEmpty)
-         _filtersMenu = await loadMenuItems(await loadMenu(_db));
+         _filtersMenu =
+            await loadMenuItems(
+               await loadMenu(_db),
+               g.param.filterDepths,
+            );
 
       try {
          final List<Post> posts = await loadPosts(_db);
@@ -3972,11 +3977,11 @@ class MenuChatState extends State<MenuChat>
          onDone: _onWSDone,
       );
 
-      final String cmd = _makeConnCmd(cts.versions);
+      final String cmd = _makeConnCmd();
       channel.sink.add(cmd);
    }
 
-   String _makeConnCmd(final List<int> versions)
+   String _makeConnCmd()
    {
       if (_cfg.appId.isEmpty) {
          // This is the first time we are connecting to the server (or
@@ -3989,7 +3994,6 @@ class MenuChatState extends State<MenuChat>
          'cmd': 'login',
          'user': _cfg.appId,
          'password': _cfg.appPwd,
-         'menu_versions': versions,
       };
 
       return jsonEncode(loginCmd);
@@ -4025,8 +4029,8 @@ class MenuChatState extends State<MenuChat>
                () {return _dialogPrefs[fav];},
                (bool v) async {await _setDialogPref(fav, v);},
                () async {await _onPostSelection(i, fav);},
-               g.txt.dialogTitles[fav],
-               g.txt.dialogBodies[fav]);
+               g.param.dialogTitles[fav],
+               g.param.dialogBodies[fav]);
             
          },
       );
@@ -4043,8 +4047,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          () async { await _clearPosts(); },
-         g.txt.clearPostsTitle,
-         Text(g.txt.clearPostsContent),
+         g.param.clearPostsTitle,
+         Text(g.param.clearPostsContent),
       );
    }
 
@@ -4729,8 +4733,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          () async { await _onRemovePost(i);},
-         g.txt.dialogTitles[4],
-         Text(g.txt.dialogBodies[4]),
+         g.param.dialogTitles[4],
+         Text(g.param.dialogBodies[4]),
       );
    }
 
@@ -5443,8 +5447,8 @@ class MenuChatState extends State<MenuChat>
       _showSimpleDial(
          ctx,
          _onOkDialAfterSendFilters,
-         g.txt.dialogTitles[3],
-         Text(g.txt.dialogBodies[3]),
+         g.param.dialogTitles[3],
+         Text(g.param.dialogBodies[3]),
       );
    }
 
@@ -5611,7 +5615,7 @@ class MenuChatState extends State<MenuChat>
          {
             final FlatButton ok = FlatButton(
                      child: Text(
-                        g.txt.devChatOkStr,
+                        g.param.devChatOkStr,
                         style: TextStyle(
                            color: Theme.of(ctx).colorScheme.secondary,
                         ),
@@ -5623,7 +5627,7 @@ class MenuChatState extends State<MenuChat>
                      });
 
             final FlatButton cancel = FlatButton(
-               child: Text(g.txt.delChatCancelStr,
+               child: Text(g.param.delChatCancelStr,
                   style: TextStyle(
                      color: Theme.of(ctx).colorScheme.secondary,
                   ),
@@ -5638,12 +5642,12 @@ class MenuChatState extends State<MenuChat>
             actions[1] = ok;
 
             Text text = Text(
-               g.txt.delOwnChatTitleStr,
+               g.param.delOwnChatTitleStr,
                style: TextStyle(color: Colors.black));
 
             if (_isOnFav()) {
                text = Text(
-                  g.txt.delFavChatTitleStr,
+                  g.param.delFavChatTitleStr,
                   style: TextStyle(color: Colors.black));
             }
 
@@ -5678,8 +5682,8 @@ class MenuChatState extends State<MenuChat>
             _showSimpleDial(
                ctx,
                (){},
-               g.txt.onEmptyNickTitle,
-               Text(g.txt.onEmptyNickContent),
+               g.param.onEmptyNickTitle,
+               Text(g.param.onEmptyNickContent),
             );
             return;
          }
@@ -5738,7 +5742,14 @@ class MenuChatState extends State<MenuChat>
    @override
    Widget build(BuildContext ctx)
    {
-      if (_productsMenu.isEmpty)
+      final bool mustWait =
+         _productsMenu.isEmpty    ||
+         _filtersMenu.isEmpty     ||
+         (_exDetailsRoot == null) ||
+         (_inDetailsRoot == null) ||
+         (g.param == null);
+
+      if (mustWait)
          return makeWaitMenuScreen(ctx);
 
       if (_goToRegScreen) {
@@ -5747,7 +5758,7 @@ class MenuChatState extends State<MenuChat>
             _txtCtrl2,
             _txtCtrl,
             (){_onRegisterContinue(ctx);},
-            g.txt.appName,
+            g.param.appName,
             _cfg.email,
             _cfg.nick,
          );
@@ -5759,8 +5770,8 @@ class MenuChatState extends State<MenuChat>
       if (_newPostErrorCode != -1) {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            String title = g.txt.newPostErrorTitles[_newPostErrorCode];
-            String body = g.txt.newPostErrorBodies[_newPostErrorCode];
+            String title = g.param.newPostErrorTitles[_newPostErrorCode];
+            String body = g.param.newPostErrorBodies[_newPostErrorCode];
             _showSimpleDial(ctx, (){},
                title,
                Text(body)
@@ -5855,14 +5866,14 @@ class MenuChatState extends State<MenuChat>
          );
       }
 
-      List<Function> onWillPops = List<Function>(g.txt.tabNames.length);
+      List<Function> onWillPops = List<Function>(g.param.tabNames.length);
       onWillPops[0] = _onChatsBackPressed;
       onWillPops[1] = (){return false;};
       onWillPops[2] = _onChatsBackPressed;
 
-      String appBarTitle = g.txt.appName;
+      String appBarTitle = g.param.appName;
 
-      List<Widget> fltButtons = List<Widget>(g.txt.tabNames.length);
+      List<Widget> fltButtons = List<Widget>(g.param.tabNames.length);
 
       fltButtons[0] = makeFaButton(
          ctx,
@@ -5886,7 +5897,7 @@ class MenuChatState extends State<MenuChat>
          _lpChatMsgs.length
       );
 
-      List<Widget> bodies = List<Widget>(g.txt.tabNames.length);
+      List<Widget> bodies = List<Widget>(g.param.tabNames.length);
 
       bodies[0] = makeChatTab(
          ctx,
@@ -5933,7 +5944,7 @@ class MenuChatState extends State<MenuChat>
 
       Widget appBarLeading;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
-         appBarTitle = g.txt.msgOnRedirectingChat;
+         appBarTitle = g.param.msgOnRedirectingChat;
          appBarLeading = IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: _onBackFromChatMsgRedirect
@@ -5953,7 +5964,7 @@ class MenuChatState extends State<MenuChat>
                Icons.delete_forever,
                color: Theme.of(ctx).colorScheme.onPrimary,
             ),
-            tooltip: g.txt.deleteChat,
+            tooltip: g.param.deleteChat,
             onPressed: () { _deleteChatDialog(ctx); }
          );
 
@@ -5964,7 +5975,7 @@ class MenuChatState extends State<MenuChat>
                Icons.delete_forever,
                color: Theme.of(ctx).colorScheme.onPrimary,
             ),
-            tooltip: g.txt.clearPosts,
+            tooltip: g.param.clearPosts,
             onPressed: () { _clearPostsDialog(ctx); }
          );
 
@@ -5980,7 +5991,7 @@ class MenuChatState extends State<MenuChat>
                Icons.search,
                color: Theme.of(ctx).colorScheme.onPrimary,
             ),
-            tooltip: g.txt.notificationsButton,
+            tooltip: g.param.notificationsButton,
             onPressed: () { _onNotificationsPressed(); }
          );
 
@@ -5988,7 +5999,7 @@ class MenuChatState extends State<MenuChat>
          actions.add(makeAppBarVertAction(_onAppBarVertPressed));
       }
 
-      List<int> newMsgsCounters = List<int>(g.txt.tabNames.length);
+      List<int> newMsgsCounters = List<int>(g.param.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
       newMsgsCounters[1] = _nNewPosts;
       newMsgsCounters[2] = _getNUnreadFavChats();

@@ -1,6 +1,3 @@
-const List<int> filterDepths = <int>[3, 3];
-const List<int> versions = <int>[3, 3];
-
 // The image width will be determined by the device screen width times
 // this factor.
 const double imgWidthFactor = 1.0;
@@ -12,26 +9,6 @@ const double imgHeightFactor = 1.0;
 // Quality of the image, see
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
 const int imgQuality = 50;
-
-// In the array below the range min is followed by the range max.
-const List<int> rangesMinMax = <int>
-[    0, 300000 // Price
-, 1930,   2030 // Year.
-,    0, 500000 // km.
-];
-
-const List<int> rangeDivs = <int>
-[ 100 // price
-, 100 // year
-, 100 // km
-];
-
-const List<List<int>> discreteRanges = <List<int>>
-[ <int>[0, 5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000, 5120000]
-, <int>[0, 1950, 1980, 1990, 2000, 2010, 2015, 2018, 2030]
-, <int>[0, 5000, 10000, 20000, 40000, 80000, 160000, 320000, 640000, 1280000, 5120000]
-];
-
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
 const int emailMaxLength = 50;
@@ -49,8 +26,6 @@ const int maxExDetailSize = 10;
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 5;
 
-const String chatFilePrefix = 'chat';
-
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';
 
 // Use media query instead of this.
@@ -59,7 +34,6 @@ const double onClickAvatarWidth = 200.0;
 // WARNING: localhost or 127.0.0.1 is the emulator or the phone
 // address. If the phone is connected (via USB) to a computer
 // the computer can be found on 10.0.2.2.
-//final String wshost = 'ws://10.0.2.2:80';
 
 //const String wshost = 'wss://occase.de';
 const String wshost = 'ws://10.0.2.2:8080';

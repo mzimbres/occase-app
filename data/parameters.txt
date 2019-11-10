@@ -39,63 +39,35 @@
 , "clearPostsContent":            "Alle posts werden dadurch gelöscht."
 , "localeName":                   "de"
 , "typing":                       "Schreibt ..."
-, "tabNames":                     [ "POSTS"
-                                  , "NEUE"
-                                  , "CHATS"]
-, "newPostTabNames":              [ "Ort"
-                                  , "Modelo"
-                                  , "Details"
-                                  , "Veroffentlichen"]
-, "filterTabNames":               [ "Ort"
-                                  , "Model"
-                                  , "Bedingungen"
-                                  , "Abschicken"]
-, "descList":                     [ "Benutzer"
-                                  , "Benutzen Identifikation"
-                                  , "Post Identifikation"
-                                  , "Datum"
-                                  , "Beschreibung"]
-, "dialogTitles":                 [ "Post löschen?"
-                                  , "Zu CHATS schieben?"
-                                  , "Ungeeignet Inhalt?"
-                                  , "Änderung Wirksam"
-                                  , "Post löschen?"]
+, "filterDepths":                 [ 3 , 3]
+, "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 100000]
+, "rangeDivs":                    [ 100 , 40 , 100]
+, "tabNames":                     [ "POSTS" , "NEUE" , "CHATS"]
+, "newPostTabNames":              [ "Ort" , "Modelo" , "Details" , "Veroffentlichen"]
+, "filterTabNames":               [ "Ort" , "Model" , "Bedingungen" , "Abschicken"]
+, "descList":                     [ "Benutzer" , "Benutzen Identifikation" , "Post Identifikation" , "Datum" , "Beschreibung"]
+, "dialogTitles":                 [ "Post löschen?" , "Zu CHATS schieben?" , "Ungeeignet Inhalt?" , "Änderung Wirksam" , "Post löschen?"]
 , "dialogBodies":                 [ "Das Post wird endgültig gelöscht."
                                   , "Das Post wird zu CHATS geschoben damit ihr eine Geschpräch anfangen könnt."
                                   , "Das Post wird gelöscht und einen Bericht wird gesendet."
                                   , "Neue Posts werden ihnen automatisch gesendet."
                                   , "Das Post wird endgültig gelöscht."]
-, "rangePrefixes":                [ "Preis"
-                                  , "Jahr"
-                                  , "Alter"]
+, "rangePrefixes":                [ "Preis" , "Jahr" , "Alter"]
 , "rangeUnits":                   ["€","","","","","km"]
-, "newPostErrorTitles":           [ "Fehler aufgetreten"
-                                  , "Post gesendet."]
+, "newPostErrorTitles":           [ "Fehler aufgetreten", "Post gesendet."]
 , "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
                                   , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
-, "newFiltersFinalScreenButton":  [ "Zurück"
-                                  , "Alle"
-                                  ,"Senden"]
-, "menuDepthNames":               [ [ "Land"
-                                    , "Bundesland"
-                                    , "Stadt"
-                                    , "Gemeinde"]
-                                  , [ "Tier"
-                                    , "Unterteilung"
-                                    , "Rasse"
-                                    , "a"
-                                    , "b"
-                                    , "c"
-                                    , "d"]
+, "newFiltersFinalScreenButton":  [ "Zurück" , "Alle" ,"Senden"]
+, "menuDepthNames":               [ [ "Land" , "Bundesland" , "Stadt" , "Gemeinde"]
+                                  , [ "Tier" , "Unterteilung" , "Rasse" , "a" , "b" , "c" , "d"]
                                   ]
-, "payments":                     [ [ " 0R$"
-                                    , "Kostenlos"
-                                    , "Eingeschränkt auf ein Post Pro Wochen."]
-                                  , [ " 5€"
-                                    , "Keine Einschränkung."
-                                    , "Pra quem precisa de agilidade."]
-                                  , [ "10R$","Prioridade máxima"
-                                    , "O maior alcance para seu anúncio."]
+, "payments":                     [ [ " 0€" , "Kostenlos" , "Eingeschränkt auf ein Post Pro Wochen."]
+                                  , [ " 5€" , "Keine Einschränkung.", "Optimal für verkäufer."]
+                                  , [ "10€" , "Maximum Priorität", "Immer erst angezeigt."]
+                                  ]
+, "discreteRanges":               [ [0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 90000, 100000]
+                                  , [0, 1990, 1995, 2000, 2005, 2010, 2015, 2018, 2030]
+                                  , [0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 90000, 100000]
                                   ]
 }
 

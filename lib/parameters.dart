@@ -1,19 +1,19 @@
 import 'package:occase/constants.dart' as cts;
 import 'dart:convert';
 
-List<String> decodeList2(List<dynamic> l)
+List<T> decodeList2<T>(List<dynamic> l)
 {
    return List.generate(l.length, (int i) { return l[i]; });
 }
 
-List<List<String>> decodeList3(List<dynamic> l)
+List<List<T>> decodeList3<T>(List<dynamic> l)
 {
    return List.generate(l.length, (int i) {
-      return decodeList2(l[i]);
+      return decodeList2<T>(l[i]);
    });
 }
 
-class Txt {
+class Parameters {
    String appName;
    String delOwnChatTitleStr;
    String delFavChatTitleStr;
@@ -56,6 +56,10 @@ class Txt {
    String localeName;
    String typing;
 
+   List<int> filterDepths;
+   List<int> rangesMinMax;
+   List<int> rangeDivs;
+
    List<String> tabNames;
    List<String> newPostTabNames;
    List<String> filterTabNames;
@@ -71,7 +75,9 @@ class Txt {
    List<List<String>> menuDepthNames;
    List<List<String>> payments;
 
-   Txt(
+   List<List<int>> discreteRanges;
+
+   Parameters(
    { this.appName = 'Occase'
    , this.delOwnChatTitleStr = ''
    , this.delFavChatTitleStr = ''
@@ -113,6 +119,9 @@ class Txt {
    , this.clearPostsContent = ''
    , this.localeName = ''
    , this.typing = ''
+   , this.filterDepths = const <int>[3, 3]
+   , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
+   , this.rangeDivs = const <int>[100, 100, 100]
    , this.tabNames = const <String>['' ,'' , '']
    , this.newPostTabNames = const <String>['', '', '', '']
    , this.filterTabNames = const <String>['', '', '', '']
@@ -129,13 +138,18 @@ class Txt {
    , <String> [ '' , '' , '' , '' , '' , '' , '' ]
    ]
    , this.payments = const <List<String>>
-   [ <String>[ '' , '' , '' ]
+   [ <String>[ '', '', '' ]
    , <String>[ '', '', '.']
-   , <String> [ '' , '' , '']
+   , <String>[ '', '', '']
+   ]
+   , this.discreteRanges = const <List<int>>
+   [ <int>[0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000]
+   , <int>[0, 1990, 2000, 2010, 2015, 2018, 2030]
+   , <int>[0, 5000, 10000, 20000, 40000, 80000, 100000]
    ]
    });
 
-   Txt.fromJson(Map<String, dynamic> map)
+   Parameters.fromJson(Map<String, dynamic> map)
    {
       appName                     = map['appName'];
       delOwnChatTitleStr          = map['delOwnChatTitleStr'];
@@ -178,6 +192,9 @@ class Txt {
       clearPostsContent           = map['clearPostsContent'];
       localeName                  = map['localeName'];
       typing                      = map['typing'];
+      filterDepths                = decodeList2(map['filterDepths']);
+      rangesMinMax                = decodeList2(map['rangesMinMax']);
+      rangeDivs                   = decodeList2(map['rangeDivs']);
       tabNames                    = decodeList2(map['tabNames']);
       newPostTabNames             = decodeList2(map['newPostTabNames']);
       filterTabNames              = decodeList2(map['filterTabNames']);
@@ -191,6 +208,7 @@ class Txt {
       newFiltersFinalScreenButton = decodeList2(map['newFiltersFinalScreenButton']);
       menuDepthNames              = decodeList3(map['menuDepthNames']);
       payments                    = decodeList3(map['payments']);
+      discreteRanges              = decodeList3(map['discreteRanges']);
    }
 
    Map<String, dynamic> toJson()
@@ -238,6 +256,9 @@ class Txt {
          'clearPostsContent':           clearPostsContent,
          'localeName':                  localeName,
          'typing':                      typing,
+         'filterDepths':                filterDepths,
+         'rangesMinMax':                rangesMinMax,
+         'rangeDivs':                   rangeDivs,
          'tabNames':                    tabNames,
          'newPostTabNames':             newPostTabNames,
          'filterTabNames':              filterTabNames,
@@ -251,6 +272,7 @@ class Txt {
          'newFiltersFinalScreenButton': newFiltersFinalScreenButton,
          'menuDepthNames':              menuDepthNames,
          'payments':                    payments,
+         'discreteRanges':              discreteRanges,
       };
    }
 }
