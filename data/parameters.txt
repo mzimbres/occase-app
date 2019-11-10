@@ -40,11 +40,11 @@
 , "localeName":                   "de"
 , "typing":                       "Schreibt ..."
 , "filterDepths":                 [ 3 , 3]
-, "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 100000]
-, "rangeDivs":                    [ 100 , 40 , 100]
+, "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 300]
+, "rangeDivs":                    [ 100 , 40 , 300]
 , "tabNames":                     [ "POSTS" , "NEUE" , "CHATS"]
-, "newPostTabNames":              [ "Ort" , "Modelo" , "Details" , "Veroffentlichen"]
-, "filterTabNames":               [ "Ort" , "Model" , "Bedingungen" , "Abschicken"]
+, "newPostTabNames":              [ "Ort" , "Rasse" , "Details" , "Veroffentlichen"]
+, "filterTabNames":               [ "Ort" , "Rasse" , "Bedingungen" , "Abschicken"]
 , "descList":                     [ "Benutzer" , "Benutzen Identifikation" , "Post Identifikation" , "Datum" , "Beschreibung"]
 , "dialogTitles":                 [ "Post löschen?" , "Zu CHATS schieben?" , "Ungeeignet Inhalt?" , "Änderung Wirksam" , "Post löschen?"]
 , "dialogBodies":                 [ "Das Post wird endgültig gelöscht."
@@ -53,7 +53,7 @@
                                   , "Neue Posts werden ihnen automatisch gesendet."
                                   , "Das Post wird endgültig gelöscht."]
 , "rangePrefixes":                [ "Preis" , "Jahr" , "Alter"]
-, "rangeUnits":                   ["€","","","","","km"]
+, "rangeUnits":                   ["€","","","","","cm"]
 , "newPostErrorTitles":           [ "Fehler aufgetreten", "Post gesendet."]
 , "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
                                   , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
@@ -67,7 +67,7 @@
                                   ]
 , "discreteRanges":               [ [0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 90000, 100000]
                                   , [0, 1990, 1995, 2000, 2005, 2010, 2015, 2018, 2030]
-                                  , [0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 90000, 100000]
+                                  , [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
                                   ]
 }
 

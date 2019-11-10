@@ -452,31 +452,53 @@ class MenuTraversal {
    }
 }
 
-// NOTE: Keep this in sync with server code.
-// FIXME: We should not hardcode 3 below but use the value defined in
-// contants.dart: filterDepths.
-int toChannelHashCodeD3(List<int> c)
+int toChannelHashCodeD3(final List<int> c)
 {
-   if (c.length < 3)
-      return 0;
+   assert(c.length == 3);
 
    int ca = c[0];
    int cb = c[1];
    int cc = c[2];
 
-   int shift = 21;
+   const int shift = 21;
 
    ca <<= 2 * shift;
    cb <<= 1 * shift;
    return ca | cb | cc;
 }
 
+int toChannelHashCodeD2(final List<int> c)
+{
+   assert(c.length == 2);
+
+   int ca = c[0];
+   int cb = c[1];
+
+   const int shift = 32;
+
+   ca <<= shift;
+   return ca | cb;
+}
+
+int toChannelHashCodeD1(final List<int> c)
+{
+   assert(c.length == 1);
+   return c[0];
+}
+
+// NOTE: Keep this in sync with server code.
+int toChannelHashCode(final List<int> code, final int depth)
+{
+   switch (depth) {
+      case 1: return toChannelHashCodeD1(code);
+      case 2: return toChannelHashCodeD2(code);
+      case 3: return toChannelHashCodeD3(code);
+      default: return 0;
+   }
+}
+
 List<int> readHashCodes(MenuNode root, int depth)
 {
-   // At the moment only depth 3 is supported. For greater values
-   // refer to the hash function in the server code.
-   assert(depth == 3);
-
    MenuTraversal iter = MenuTraversal(root, depth);
    MenuNode current = iter.advanceToLeaf();
    List<int> hashCodes = List<int>();
@@ -491,7 +513,7 @@ List<int> readHashCodes(MenuNode root, int depth)
    return hashCodes;
 }
 
-// Serialize the menu in a way that it can be user as input in
+// Serialize the menu in a way that it can be used as input in
 // parseTree.
 class MenuTraversal2 {
    List<List<MenuNode>> st = List<List<MenuNode>>();

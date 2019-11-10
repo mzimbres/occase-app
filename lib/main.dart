@@ -534,7 +534,7 @@ Widget makeImgListView(
 
 int searchBitOn(int o, int n)
 {
-   assert(n < 64);
+   assert(n <= 64);
 
    while (--n > 0) {
       if (o & (1 << n) != 0)
@@ -2591,20 +2591,22 @@ String makePostSummaryStr(List<MenuItem> menu, Post post)
       post.channel[0][0],
    );
 
-   assert(names0.length >= 3);
+   final int l0 = names0.length;
+   assert(l0 >= 2);
 
    final List<String> names1 = loadNames(
       menu[1].root.first,
       post.channel[1][0],
    );
 
-   assert(names1.length >= 4);
+   final int l1 = names1.length;
+   assert(names1.length >= 2);
 
-   final String a = names1[2];
-   final String b = names1[3];
+   final String a = names1[l1 - 2];
+   final String b = names1[l1 - 1];
 
-   final String c = names0[2];
-   final String d = names0[1];
+   final String c = names0[l0 - 2];
+   final String d = names0[l0 - 1];
 
    return '$a - $b, $c - $d';
 }
