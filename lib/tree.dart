@@ -97,8 +97,16 @@ List<String> loadNames(MenuNode root, List<int> leafCode)
 
    List<String> names = List<String>();
    MenuNode iter = root;
-   for (int idx in leafCode) {
-      MenuNode next = iter.children[idx];
+   bool missing = false;
+   for (int i in leafCode) {
+      // An app that has not been updated may not contains some menu
+      // items so we have to check boundaries.
+      if (i >= iter.children.length || missing) {
+         missing = true;
+         names.add('');
+      }
+
+      MenuNode next = iter.children[i];
       names.add(next.name);
       iter = next;
    }
@@ -454,7 +462,7 @@ class MenuTraversal {
 
 int toChannelHashCodeD3(final List<int> c)
 {
-   assert(c.length == 3);
+   assert(c.length >= 3);
 
    int ca = c[0];
    int cb = c[1];
@@ -469,7 +477,7 @@ int toChannelHashCodeD3(final List<int> c)
 
 int toChannelHashCodeD2(final List<int> c)
 {
-   assert(c.length == 2);
+   assert(c.length >= 2);
 
    int ca = c[0];
    int cb = c[1];
@@ -482,7 +490,7 @@ int toChannelHashCodeD2(final List<int> c)
 
 int toChannelHashCodeD1(final List<int> c)
 {
-   assert(c.length == 1);
+   assert(c.length >= 1);
    return c[0];
 }
 
@@ -504,7 +512,7 @@ List<int> readHashCodes(MenuNode root, int depth)
    List<int> hashCodes = List<int>();
    while (current != null) {
       if (current.leafReach > 0)
-         hashCodes.add(toChannelHashCodeD3(current.code));
+         hashCodes.add(toChannelHashCode(current.code, depth));
 
       current = iter.nextLeafNode();
    }

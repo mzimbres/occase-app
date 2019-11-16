@@ -499,15 +499,18 @@ class Post {
       final String body = jsonEncode(subCmd);
 
       return
-      {
-         'from': from,
-         'to': tree.toChannelHashCodeD3(channel[1][0]),
-         'filter': tree.toChannelHashCodeD3(channel[0][0]),
-         'id': id,
-         'features': exDetails.first,
-         'body': body,
-         'date': date,
-         'range_values': rangeValues,
+      { 'from': from
+      , 'to': tree.toChannelHashCode(
+           channel[1][0],
+           g.param.filterDepths[1])
+      , 'filter': tree.toChannelHashCode(
+           channel[0][0],
+           g.param.filterDepths[0])
+      , 'id': id
+      , 'features': exDetails.first
+      , 'body': body
+      , 'date': date
+      , 'range_values': rangeValues
       };
    }
 }

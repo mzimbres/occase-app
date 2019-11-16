@@ -39,7 +39,7 @@
 , "clearPostsContent":            "Alle posts werden dadurch gelöscht."
 , "localeName":                   "de"
 , "typing":                       "Schreibt ..."
-, "filterDepths":                 [ 3 , 3]
+, "filterDepths":                 [ 2 , 2]
 , "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 300]
 , "rangeDivs":                    [ 100 , 40 , 300]
 , "tabNames":                     [ "POSTS" , "NEUE" , "CHATS"]

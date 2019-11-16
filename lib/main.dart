@@ -2628,14 +2628,16 @@ Widget makePostInfoExpansion(
    BuildContext ctx,
    Widget detailsCard,
    Widget title,
-   Widget leading)
+   Widget leading,
+   int postId)
 {
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           leading: leading,
-          key: GlobalKey(),
+          //key: GlobalKey(),
+          key: PageStorageKey<int>(postId),
           title: title,
           children: <Widget>[detailsCard],
       ),
@@ -2876,6 +2878,7 @@ Widget makeNewPost(
       putPostElemOnCard(ctx, rows),
       title,
       null,
+      post.id,
    );
 
    Widget w = makeNewPostImpl(
@@ -2889,18 +2892,19 @@ Widget makeNewPost(
       onExpandImg,
    );
 
-   return Dismissible(
-      key: GlobalKey(),
-      onDismissed: (direction) {
-         onPostSelection(0);
-         Scaffold.of(ctx).showSnackBar(
-               SnackBar(content: Text(snackbarStr))
-         );
-      },
+   return w;
+   //return Dismissible(
+   //   key: GlobalKey(),
+   //   onDismissed: (direction) {
+   //      onPostSelection(0);
+   //      Scaffold.of(ctx).showSnackBar(
+   //            SnackBar(content: Text(snackbarStr))
+   //      );
+   //   },
 
-      background: Container(color: Colors.red),
-      child: w,
-   );
+   //   background: Container(color: Colors.red),
+   //   child: w,
+   //);
 }
 
 ListView makeNewPostLv(
@@ -2918,7 +2922,7 @@ ListView makeNewPostLv(
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.builder(
-      //key: PageStorageKey<String>('aaaaaaa'), // This breaking the app
+      key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
@@ -3316,7 +3320,8 @@ Widget makeChatsExp(
          backgroundColor: Theme.of(ctx).colorScheme.primary,
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
-         key: GlobalKey(),
+         //key: GlobalKey(),
+         key: PageStorageKey<int>(post.id),
          title: title,
          children: list,
       ),
@@ -3431,6 +3436,7 @@ Widget makeChatTab(
             putPostElemOnCard(ctx, foo),
             title,
             leading,
+            posts[i].id
          );
 
          final int now = DateTime.now().millisecondsSinceEpoch;
@@ -3455,17 +3461,18 @@ Widget makeChatTab(
 
          Widget w = putPostOnFinalCard(ctx, expansions);
 
-         return Dismissible(
-            key: GlobalKey(),
-            onDismissed: (direction) {
-               onDelPost(i);
-               Scaffold.of(ctx)
-                  .showSnackBar(SnackBar(
-                     content: Text(g.param.dismissedChat)));
-            },
-            background: Container(color: Colors.red),
-            child: w,
-         );
+         return w;
+         //return Dismissible(
+         //   key: GlobalKey(),
+         //   onDismissed: (direction) {
+         //      onDelPost(i);
+         //      Scaffold.of(ctx)
+         //         .showSnackBar(SnackBar(
+         //            content: Text(g.param.dismissedChat)));
+         //   },
+         //   background: Container(color: Colors.red),
+         //   child: w,
+         //);
       },
    );
 }
@@ -4603,7 +4610,10 @@ class MenuChatState extends State<MenuChat>
          var msgMap = {
             'cmd': 'delete',
             'id': delPost.id,
-            'to': toChannelHashCodeD3(delPost.channel[1][0]),
+            'to': toChannelHashCode(
+               delPost.channel[1][0],
+               g.param.filterDepths[1]
+            ),
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
