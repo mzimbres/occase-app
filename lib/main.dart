@@ -1026,7 +1026,7 @@ WillPopScope makeNewFiltersScreens(
          final int vmin2 = g.param.discreteRanges[i][vmin];
          final int vmax2 = g.param.discreteRanges[i][vmax];
 
-         final String rangeTitle = '$vmin2 até $vmax2';
+         final String rangeTitle = '$vmin2 - $vmax2';
          final RichText rt = makeExpTileTitle(
             ctx,
             g.param.rangePrefixes[i],
@@ -2407,6 +2407,19 @@ List<Widget> makeMenuInfo(
    return list;
 }
 
+String makeRangeStr(Post post, int i)
+{
+   assert(i < post.rangeValues.length);
+
+   final int j = 2 * i;
+
+   assert((j + 1) < g.param.rangeUnits.length);
+
+   return g.param.rangeUnits[j + 0]
+        + post.rangeValues[i].toString()
+        + g.param.rangeUnits[j + 1];
+}
+
 List<Widget> makePostValues(BuildContext ctx, Post post)
 {
    List<Widget> list = List<Widget>();
@@ -2415,15 +2428,11 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
    {
-      final int j = 2 * i;
-      final String str = g.param.rangeUnits[j + 0]
-                       + post.rangeValues[i].toString()
-                       + g.param.rangeUnits[j + 1];
 
       return makePostRowElem(
          ctx,
          g.param.rangePrefixes[i],
-         str,
+         makeRangeStr(post, i),
       );
    });
 
@@ -2637,7 +2646,7 @@ Widget makePostInfoExpansion(
           backgroundColor: Theme.of(ctx).colorScheme.primary,
           leading: leading,
           //key: GlobalKey(),
-          key: PageStorageKey<int>(postId),
+          //key: PageStorageKey<int>(postId),
           title: title,
           children: <Widget>[detailsCard],
       ),
@@ -2811,11 +2820,8 @@ Widget makeNewPostImpl(
    , Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.secondary)
    ]);
 
-   final String priceStr = makePriceStr(post.getPrice());
-   Widget priceText = makeIgmInfoWidget(ctx, priceStr);
-
-   final String km = post.rangeValues[2].toString();
-   Widget kmText = makeIgmInfoWidget(ctx, km + 'km');
+   Widget priceText = makeIgmInfoWidget(ctx, makeRangeStr(post, 0));
+   Widget kmText = makeIgmInfoWidget(ctx, makeRangeStr(post, 2));
 
    Row row2 = Row(
       children: <Widget>[priceText, Spacer(), kmText]
@@ -2922,7 +2928,7 @@ ListView makeNewPostLv(
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.builder(
-      key: PageStorageKey<String>('aaaaaaa'),
+      //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
@@ -3298,14 +3304,14 @@ Widget makeChatsExp(
 
   Widget title;
    if (nUnredChats == 0) {
-      title = Text('${ch.length} conversa(s)');
+      title = Text('${ch.length} ${g.param.numberOfChatsSuffix}');
    } else {
       title = makeExpTileTitle(
          ctx,
-         '${ch.length} conversas',
-         '$nUnredChats nao lidas',
+         '${ch.length} ${g.param.numberOfChatsSuffix}',
+         '$nUnredChats ${g.param.numberOfUnreadChatsSuffix}',
          ', ',
-         false, // Any non zero number is enough.
+         false,
       );
    }
 
@@ -3321,7 +3327,7 @@ Widget makeChatsExp(
          initiallyExpanded: expState,
          leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
          //key: GlobalKey(),
-         key: PageStorageKey<int>(post.id),
+         //key: PageStorageKey<int>(post.id),
          title: title,
          children: list,
       ),
@@ -4053,7 +4059,7 @@ class MenuChatState extends State<MenuChat>
 
    void _clearPostsDialog(BuildContext ctx)
    {
-      _showSimpleDial(
+      _showSimpleDialog(
          ctx,
          () async { await _clearPosts(); },
          g.param.clearPostsTitle,
@@ -4072,8 +4078,8 @@ class MenuChatState extends State<MenuChat>
          if (i == -1) {
             File img = await ImagePicker.pickImage(
                source: ImageSource.gallery,
-               maxWidth: makeImgWidth(ctx),
-               maxHeight: makeImgHeight(ctx),
+               maxWidth: 2 * makeImgWidth(ctx),
+               maxHeight: 2 * makeImgHeight(ctx),
                //imageQuality: cts.imgQuality,
             );
 
@@ -4702,8 +4708,8 @@ class MenuChatState extends State<MenuChat>
    {
       // When the user sends a post, we start a timer and a circular
       // progress indicator on the screen. To prevent the user from
-      // interacting with the screen after clicking send we have to
-      // add the following check here.
+      // interacting with the screen after clicking we use a modal
+      // barrier.
       if (_filenamesTimer.isActive)
          return;
 
@@ -4713,9 +4719,16 @@ class MenuChatState extends State<MenuChat>
       }
 
       if (i == 0) {
-         _newPostPressed = false;
-         _post = null;
-         setState(() { });
+         _showSimpleDialog(
+            ctx,
+            (){
+               _newPostPressed = false;
+               _post = null;
+               setState((){});
+            },
+            g.param.cancelPost,
+            Text(g.param.cancelPostContent),
+         );
          return;
       }
 
@@ -4742,7 +4755,7 @@ class MenuChatState extends State<MenuChat>
 
    void _removePostDialog(BuildContext ctx, int i)
    {
-      _showSimpleDial(
+      _showSimpleDialog(
          ctx,
          () async { await _onRemovePost(i);},
          g.param.dialogTitles[4],
@@ -4826,7 +4839,7 @@ class MenuChatState extends State<MenuChat>
 
       final String url = cts.gravatarUrl + posts[i].avatar + '.jpg';
 
-      _showSimpleDial(
+      _showSimpleDialog(
          ctx,
          (){},
          title,
@@ -5406,7 +5419,7 @@ class MenuChatState extends State<MenuChat>
       setState(() { });
    }
 
-   void _showSimpleDial(
+   void _showSimpleDialog(
       BuildContext ctx,
       Function onOk,
       String title,
@@ -5456,7 +5469,7 @@ class MenuChatState extends State<MenuChat>
       // First send the hashes then show the dialog.
       _subscribeToChannels(lastPostId);
 
-      _showSimpleDial(
+      _showSimpleDialog(
          ctx,
          _onOkDialAfterSendFilters,
          g.param.dialogTitles[3],
@@ -5691,7 +5704,7 @@ class MenuChatState extends State<MenuChat>
    {
       try {
          if (_txtCtrl.text.length < cts.nickMinLength) {
-            _showSimpleDial(
+            _showSimpleDialog(
                ctx,
                (){},
                g.param.onEmptyNickTitle,
@@ -5784,7 +5797,7 @@ class MenuChatState extends State<MenuChat>
          {
             String title = g.param.newPostErrorTitles[_newPostErrorCode];
             String body = g.param.newPostErrorBodies[_newPostErrorCode];
-            _showSimpleDial(ctx, (){},
+            _showSimpleDialog(ctx, (){},
                title,
                Text(body)
             );

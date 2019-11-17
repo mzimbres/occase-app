@@ -55,6 +55,10 @@ class Parameters {
    String clearPostsContent;
    String localeName;
    String typing;
+   String cancelPost;
+   String cancelPostContent;
+   String numberOfChatsSuffix;
+   String numberOfUnreadChatsSuffix;
 
    List<int> filterDepths;
    List<int> rangesMinMax;
@@ -119,6 +123,10 @@ class Parameters {
    , this.clearPostsContent = ''
    , this.localeName = ''
    , this.typing = ''
+   , this.cancelPost = ''
+   , this.cancelPostContent = ''
+   , this.numberOfChatsSuffix = ''
+   , this.numberOfUnreadChatsSuffix = ''
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
@@ -192,6 +200,10 @@ class Parameters {
       clearPostsContent           = map['clearPostsContent'];
       localeName                  = map['localeName'];
       typing                      = map['typing'];
+      cancelPost                  = map['cancelPost'];
+      cancelPostContent           = map['cancelPostContent'];
+      numberOfChatsSuffix         = map['numberOfChatsSuffix'];
+      numberOfUnreadChatsSuffix   = map['numberOfUnreadChatsSuffix'];
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -256,6 +268,10 @@ class Parameters {
          'clearPostsContent':           clearPostsContent,
          'localeName':                  localeName,
          'typing':                      typing,
+         'cancelPost':                  cancelPost,
+         'cancelPostContent':           cancelPostContent,
+         'numberOfChatsSuffix':         numberOfChatsSuffix,
+         'numberOfUnreadChatsSuffix':   numberOfUnreadChatsSuffix,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,

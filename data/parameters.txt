@@ -39,6 +39,10 @@
 , "clearPostsContent":            "Alle posts werden dadurch gelöscht."
 , "localeName":                   "de"
 , "typing":                       "Schreibt ..."
+, "cancelPost":                   "Abbrechen?"
+, "cancelPostContent":            "Wenn Sie ok clicken, wird das Post nicht gesendet und Sie kommen zum Posts Bildschirm zurück."
+, "numberOfChatsSuffix":          "Chats"
+, "numberOfUnreadChatsSuffix":    "ungelesen"
 , "filterDepths":                 [ 2 , 2]
 , "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 300]
 , "rangeDivs":                    [ 100 , 40 , 300]
@@ -53,7 +57,7 @@
                                   , "Neue Posts werden ihnen automatisch gesendet."
                                   , "Das Post wird endgültig gelöscht."]
 , "rangePrefixes":                [ "Preis" , "Jahr" , "Alter"]
-, "rangeUnits":                   ["€","","","","","cm"]
+, "rangeUnits":                   ["","€","","","","cm"]
 , "newPostErrorTitles":           [ "Fehler aufgetreten", "Post gesendet."]
 , "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
                                   , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
