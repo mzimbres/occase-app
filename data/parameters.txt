@@ -5,8 +5,8 @@
 , "delChatCancelStr":             "Abbrechen"
 , "newPostAppBarTitle":           "Veroffentlichen"
 , "filterAppBarTitle":            "Benachrichtigung einschränken"
-, "postRefSectionTitle":          "Info"
-, "postExDetailsTitle":           "Zusätliche Details"
+, "postRefSectionTitle":          "Zusätliche Details"
+, "postExDetailsTitle":           "Details"
 , "postDescTitle":                "Beschreibung"
 , "newPostTextFieldHist":         "Füge hier weitere Infos hinzu"
 , "chatTextFieldHint":            "Nachricht"
@@ -49,23 +49,23 @@
 , "tabNames":                     [ "POSTS" , "NEUE" , "CHATS"]
 , "newPostTabNames":              [ "Ort" , "Rasse" , "Details" , "Veroffentlichen"]
 , "filterTabNames":               [ "Ort" , "Rasse" , "Bedingungen" , "Abschicken"]
-, "descList":                     [ "Benutzer" , "Benutzen Identifikation" , "Post Identifikation" , "Datum" , "Beschreibung"]
+, "descList":                     [ "Benutzer" , "Benutzen Identifikationsnummer" , "Post Identifikationsnummer" , "Datum" , "Beschreibung"]
 , "dialogTitles":                 [ "Post löschen?" , "Zu CHATS schieben?" , "Ungeeignet Inhalt?" , "Änderung Wirksam" , "Post löschen?"]
 , "dialogBodies":                 [ "Das Post wird endgültig gelöscht."
                                   , "Das Post wird zu CHATS geschoben damit ihr eine Geschpräch anfangen könnt."
                                   , "Das Post wird gelöscht und einen Bericht wird gesendet."
                                   , "Neue Posts werden ihnen automatisch gesendet."
                                   , "Das Post wird endgültig gelöscht."]
-, "rangePrefixes":                [ "Preis" , "Jahr" , "Alter"]
+, "rangePrefixes":                [ "Preis" , "Geburtsjahr" , "Größe"]
 , "rangeUnits":                   ["","€","","","","cm"]
 , "newPostErrorTitles":           [ "Fehler aufgetreten", "Post gesendet."]
 , "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
                                   , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
 , "newFiltersFinalScreenButton":  [ "Zurück" , "Alle" ,"Senden"]
-, "menuDepthNames":               [ [ "Land" , "Bundesland" , "Stadt" , "Gemeinde"]
-                                  , [ "Tier" , "Unterteilung" , "Rasse" , "a" , "b" , "c" , "d"]
+, "menuDepthNames":               [ [ "Land" , "Subregion" , "Stadt" , "Gemeinde"]
+                                  , [ "Unterteilung" , "Rasse" , "Subrasse" , "a" , "b" , "c" , "d"]
                                   ]
-, "payments":                     [ [ " 0€" , "Kostenlos" , "Eingeschränkt auf ein Post Pro Wochen."]
+, "payments":                     [ [ " 0€" , "Kostenlos" , "Einschränkung: ein Post Pro Wochen."]
                                   , [ " 5€" , "Keine Einschränkung.", "Optimal für verkäufer."]
                                   , [ "10€" , "Maximum Priorität", "Immer erst angezeigt."]
                                   ]
