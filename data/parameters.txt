@@ -1,4 +1,4 @@
-{ "appName":                      "Occase"
+{ "appName":                      "Occase Horses"
 , "delOwnChatTitleStr":           "Chats löschen?"
 , "delFavChatTitleStr":           "Löschen?"
 , "devChatOkStr":                 "Löschen"
