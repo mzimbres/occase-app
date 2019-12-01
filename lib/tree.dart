@@ -96,19 +96,19 @@ List<String> loadNames(MenuNode root, List<int> leafCode)
       return List<String>();
 
    List<String> names = List<String>();
-   MenuNode iter = root;
    bool missing = false;
    for (int i in leafCode) {
       // An app that has not been updated may not contains some menu
       // items so we have to check boundaries.
-      if (i >= iter.children.length || missing) {
+      if (i >= root.children.length || missing) {
          missing = true;
          names.add('');
+         continue;
       }
 
-      MenuNode next = iter.children[i];
+      MenuNode next = root.children[i];
       names.add(next.name);
-      iter = next;
+      root = next;
    }
 
    return names;

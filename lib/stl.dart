@@ -133,7 +133,7 @@ const Icon unknownPersonIcon = Icon(
 
 const List<IconData> newPostTabIcons = <IconData>
 [ Icons.home
-, Icons.directions_car
+, Icons.people
 , Icons.details
 , Icons.publish
 ];
@@ -143,7 +143,7 @@ const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
 
 const List<IconData> filterTabIcons = <IconData>
 [ Icons.home
-, Icons.directions_car
+, Icons.people
 , Icons.filter_list
 , Icons.send
 ];

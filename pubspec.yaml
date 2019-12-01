@@ -21,7 +21,7 @@ dependencies:
   intl: ^0.15.7
   sqflite: ^1.1.0
   path:
-  image_picker_modern: 0.4.12+2
+  image_picker: ^0.6.2+1
   cached_network_image: ^2.0.0-rc.1
   flutter_widgets: ^0.1.6-dev.1
   photo_view:

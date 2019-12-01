@@ -1,77 +1,76 @@
-{ "appName":                      "Occase Horses"
-, "delOwnChatTitleStr":           "Chats löschen?"
-, "delFavChatTitleStr":           "Löschen?"
-, "devChatOkStr":                 "Löschen"
-, "delChatCancelStr":             "Abbrechen"
-, "newPostAppBarTitle":           "Veroffentlichen"
-, "filterAppBarTitle":            "Benachrichtigung einschränken"
-, "postRefSectionTitle":          "Zusätliche Details"
+{ "appName":                      "Occase"
+, "delOwnChatTitleStr":           "Remove chat?"
+, "delFavChatTitleStr":           "Remove?"
+, "devChatOkStr":                 "Remove"
+, "delChatCancelStr":             "Cancel"
+, "newPostAppBarTitle":           "Publish"
+, "filterAppBarTitle":            "Restrict notifications"
+, "postRefSectionTitle":          "Additional details"
 , "postExDetailsTitle":           "Details"
-, "postDescTitle":                "Beschreibung"
-, "newPostTextFieldHist":         "Füge hier weitere Infos hinzu"
-, "chatTextFieldHint":            "Nachricht"
-, "nickHint":                     "Name oder Nick"
-, "emailHint":                    "Email von Gravatar (optional)"
-, "msgOnRedirectingChat":         "Weiterleiten an ..."
-, "msgOnRedirectedChat":          "Weitergeleitet"
-, "msgOnEmptyChat":               "Keine Nachricht soweit ..."
-, "deleteChat":                   "Chat löschen"
-, "pinChat":                      "Chat anheften"
-, "clearPosts":                   "Posts löschen"
-, "notificationsButton":          "Benachrichtigungen"
-, "unknownNick":                  "Unbekannt"
-, "selectAll":                    "Alle auswählen"
-, "changeNichHint":               "Nick ändern"
-, "dissmissedPost":               "Post gelöscht"
-, "dismissedChat":                "Chat gelöscht"
+, "postDescTitle":                "Description"
+, "newPostTextFieldHist":         "Add more information"
+, "chatTextFieldHint":            "Message"
+, "nickHint":                     "Name or nick"
+, "emailHint":                    "Gravatar email (optional)"
+, "msgOnRedirectingChat":         "Redirecting to ..."
+, "msgOnRedirectedChat":          "Redirected"
+, "msgOnEmptyChat":               "No messages yet ..."
+, "deleteChat":                   "Delete chat"
+, "pinChat":                      "Pin chat"
+, "clearPosts":                   "Delete posts"
+, "notificationsButton":          "Notifications"
+, "unknownNick":                  "Unknown"
+, "selectAll":                    "Select all"
+, "changeNichHint":               "Change nick"
+, "dissmissedPost":               "Post deleted"
+, "dismissedChat":                "Chat deleted"
 , "ok":                           "Ok"
-, "cancel":                       "Abbrechen"
-, "cancelNewPost":                "Abgebrochen"
-, "doNotShowAgain":               "Nicht mehr anzeigen"
-, "next":                         "Weiter"
-, "rangesTitle":                  "Daten"
-, "paymentTitle":                 "Plan wählen"
-, "onEmptyNickTitle":             "Fehler"
-, "onEmptyNickContent":           "Ein Nich muss mindesten Drei Zeichen haben."
-, "addImgMsg":                    "Füge Fotos hinzu."
-, "unreachableImgError":          "Foto nicht verfügbar."
-, "clearPostsTitle":              "Posts löschen?"
-, "clearPostsContent":            "Alle posts werden dadurch gelöscht."
-, "localeName":                   "de"
-, "typing":                       "Schreibt ..."
-, "cancelPost":                   "Abbrechen?"
-, "cancelPostContent":            "Wenn Sie ok clicken, wird das Post nicht gesendet und Sie kommen zum Posts Bildschirm zurück."
+, "cancel":                       "Cancel"
+, "cancelNewPost":                "Canceled"
+, "doNotShowAgain":               "Don't show again"
+, "next":                         "Continue"
+, "rangesTitle":                  "Data"
+, "paymentTitle":                 "Choose plan"
+, "onEmptyNickTitle":             "Error"
+, "onEmptyNickContent":           "The nick must have at least 3 character."
+, "addImgMsg":                    "Add Photo."
+, "unreachableImgError":          "Photo not available."
+, "clearPostsTitle":              "Delete posts?"
+, "clearPostsContent":            "All posts will be deleted."
+, "localeName":                   "en"
+, "typing":                       "Writing ..."
+, "cancelPost":                   "Cancel?"
+, "cancelPostContent":            "Cancel and return to Posts screen?"
 , "numberOfChatsSuffix":          "Chats"
-, "numberOfUnreadChatsSuffix":    "ungelesen"
-, "filterDepths":                 [ 2 , 2]
-, "rangesMinMax":                 [ 0 , 100000 , 1990 , 2030 , 0 , 300]
-, "rangeDivs":                    [ 100 , 40 , 300]
-, "tabNames":                     [ "POSTS" , "NEUE" , "CHATS"]
-, "newPostTabNames":              [ "Ort" , "Rasse" , "Details" , "Veroffentlichen"]
-, "filterTabNames":               [ "Ort" , "Rasse" , "Bedingungen" , "Abschicken"]
-, "descList":                     [ "Benutzer" , "Benutzen Identifikationsnummer" , "Post Identifikationsnummer" , "Datum" , "Beschreibung"]
-, "dialogTitles":                 [ "Post löschen?" , "Zu CHATS schieben?" , "Ungeeignet Inhalt?" , "Änderung Wirksam" , "Post löschen?"]
-, "dialogBodies":                 [ "Das Post wird endgültig gelöscht."
-                                  , "Das Post wird zu CHATS geschoben damit ihr eine Geschpräch anfangen könnt."
-                                  , "Das Post wird gelöscht und einen Bericht wird gesendet."
-                                  , "Neue Posts werden ihnen automatisch gesendet."
-                                  , "Das Post wird endgültig gelöscht."]
-, "rangePrefixes":                [ "Preis" , "Geburtsjahr" , "Größe"]
-, "rangeUnits":                   ["","€","","","","cm"]
-, "newPostErrorTitles":           [ "Fehler aufgetreten", "Post gesendet."]
-, "newPostErrorBodies":           [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben."
-                                  , "Nach der Bestätigung finden Sie das Post dem POSTS Bildschirm."]
-, "newFiltersFinalScreenButton":  [ "Zurück" , "Alle" ,"Senden"]
-, "menuDepthNames":               [ [ "Land" , "Subregion" , "Stadt" , "Gemeinde"]
-                                  , [ "Unterteilung" , "Rasse" , "Subrasse" , "a" , "b" , "c" , "d"]
+, "numberOfUnreadChatsSuffix":    "unread"
+, "filterDepths":                 [ 3 , 3]
+, "rangesMinMax":                 [ 0 , 100 , 20 , 100 , 0 , 300]
+, "rangeDivs":                    [ 100 , 80 , 300]
+, "tabNames":                     [ "POSTS" , "NEW" , "CHATS"]
+, "newPostTabNames":              [ "Home" , "Target people" , "Details" , "Publish"]
+, "filterTabNames":               [ "Home" , "Target people" , "Conditions" , "Send"]
+, "descList":                     [ "User" , "User id" , "Post id" , "Date" , "Description"]
+, "dialogTitles":                 [ "Delete post?" , "Move to CHATS?" , "Inappropriate content?" , "Changes applied" , "Delete post?"]
+, "dialogBodies":                 [ "The post was removed successfully."
+                                  , "The post will be moved to the CHATS screen where you can start a conversation."
+                                  , "The post will be removed and a report will be created."
+                                  , "New posts will be sent automatically to you."
+                                  , "The post will be removed."]
+, "rangePrefixes":                [ "Weight" , "Age" , "Height"]
+, "rangeUnits":                   ["","kg","","","","cm"]
+, "newPostErrorTitles":           [ "Error occurred", "Post has been sent."]
+, "newPostErrorBodies":           [ "Error occurred. Ensure you are connected to the internal."
+                                  , "After confirmation you can find the post in the POSTS screen."]
+, "newFiltersFinalScreenButton":  [ "Back" , "All" ,"Send"]
+, "menuDepthNames":               [ [ "Continent" , "Region", "Subregion" , "Subregion", "Subregion", "State", "Neighbourhood"]
+                                  , [ "Continent" , "Region", "Subregion" , "Subregion", "Subregion", "State", "Neighbourhood"]
                                   ]
-, "payments":                     [ [ " 0€" , "Kostenlos" , "Einschränkung: ein Post Pro Wochen."]
-                                  , [ " 5€" , "Keine Einschränkung.", "Optimal für verkäufer."]
-                                  , [ "10€" , "Maximum Priorität", "Immer erst angezeigt."]
+, "payments":                     [ [ " 0€" , "Gratis" , "Restriction: once a week."]
+                                  , [ " 5€" , "No limitation.", "Post whenever you want."]
                                   ]
-, "discreteRanges":               [ [0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 90000, 100000]
-                                  , [0, 1990, 1995, 2000, 2005, 2010, 2015, 2018, 2030]
-                                  , [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300]
+, "discreteRanges":               [ [50, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+                                  , [0, 18, 25, 30, 35, 45, 65, 85, 100]
+                                  , [0, 150, 155, 160, 165, 170, 180, 210, 240, 270, 300]
                                   ]
 }
 
