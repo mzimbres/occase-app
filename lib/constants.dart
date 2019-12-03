@@ -24,7 +24,7 @@ const int emailMaxLength = 50;
 const int maxExDetailSize = 10;
 
 // See the comment in maxExDetailSize
-const int maxInDetailSize = 5;
+const int maxInDetailSize = 20;
 
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';
 
