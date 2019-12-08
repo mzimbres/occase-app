@@ -2913,7 +2913,19 @@ Widget makeNewPost(
    //);
 }
 
-ListView makeNewPostLv(
+Widget makeEmptyScreenWidget()
+{
+   return Center(
+      child: Text(g.param.appName,
+         style: TextStyle(
+            color: Colors.grey,
+            fontSize: 30.0,
+         ),
+      ),
+   );
+}
+
+Widget makeNewPostLv(
    BuildContext ctx,
    List<Post> posts,
    Function onPostSelection,
@@ -2924,6 +2936,8 @@ ListView makeNewPostLv(
    Function onExpandImg,
 ) {
    final int l = posts.length - nNewPosts;
+   if (l == 0)
+      return makeEmptyScreenWidget();
 
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
@@ -3370,6 +3384,9 @@ Widget makeChatTab(
    MenuNode inDetailsMenu,
    Function onExpandImg,
 ) {
+   if (posts.length == 0)
+      return makeEmptyScreenWidget();
+
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.builder(
