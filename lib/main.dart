@@ -1152,7 +1152,7 @@ class MyApp extends StatelessWidget {
           accentColor: stl.colorScheme.secondary,
       ),
       debugShowCheckedModeBanner: false,
-      home: MenuChat(),
+      home: Occase(),
     );
   }
 }
@@ -3579,14 +3579,14 @@ class DialogWithOpState extends State<DialogWithOp> {
 
 //_____________________________________________________________________
 
-class MenuChat extends StatefulWidget {
-  MenuChat();
+class Occase extends StatefulWidget {
+  Occase();
 
   @override
-  MenuChatState createState() => MenuChatState();
+  OccaseState createState() => OccaseState();
 }
 
-class MenuChatState extends State<MenuChat>
+class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
    Config _cfg = Config();
@@ -3832,7 +3832,7 @@ class MenuChatState extends State<MenuChat>
       return opacities;
    }
 
-   MenuChatState()
+   OccaseState()
    {
       _newPostPressed = false;
       _newFiltersPressed = false;
@@ -4134,20 +4134,28 @@ class MenuChatState extends State<MenuChat>
       assert(_isOnPosts());
 
       if (fav == 1) {
-         _posts[i].status = 2;
-         final int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
+         // We have to prevent the user from adding a chat twice. This can
+         // happen when he makes a new search, since in that case the
+         // lastPostId will be updated to 0.
+         final int k = _favPosts.indexWhere((e)
+            { return e.id == _posts[i].id; });
 
-         Batch batch = _db.batch();
-         batch.rawInsert(sql.insertChatStOnPost,
-            makeChatUpdateSql(_posts[i].chats[j],
-                              _posts[i].id));
+         if (k == -1) {
+            _posts[i].status = 2;
+            final int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
 
-         batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
+            Batch batch = _db.batch();
+            batch.rawInsert(sql.insertChatStOnPost,
+               makeChatUpdateSql(_posts[i].chats[j],
+                                 _posts[i].id));
 
-         await batch.commit(noResult: true, continueOnError: true);
+            batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
 
-         _favPosts.add(_posts[i]);
-         _favPosts.sort(compPosts);
+            await batch.commit(noResult: true, continueOnError: true);
+
+            _favPosts.add(_posts[i]);
+            _favPosts.sort(compPosts);
+         }
 
       } else {
          await _db.execute(sql.delPostWithId, [_posts[i].id]);
@@ -5317,6 +5325,14 @@ class MenuChatState extends State<MenuChat>
 
    void _onPost(Map<String, dynamic> ack, Batch batch)
    {
+      // When we are receiving new posts here as a result of the user
+      // clicking the search buttom, we have to clear all old posts before
+      // showing the new posts to the user.
+      if (_cfg.lastPostId == 0) {
+         batch.execute(sql.clearPosts, [1]);
+         _posts.clear();
+      }
+
       for (var item in ack['items']) {
          Post post = Post.fromJson(item);
          post.status = 1;
@@ -5331,7 +5347,7 @@ class MenuChatState extends State<MenuChat>
             continue;
 
          batch.insert('posts', postToMap(post),
-            conflictAlgorithm: ConflictAlgorithm.replace);
+            conflictAlgorithm: ConflictAlgorithm.ignore);
 
          _posts.add(post);
          ++_nNewPosts;
@@ -5449,11 +5465,15 @@ class MenuChatState extends State<MenuChat>
       );
    }
 
-   // The variable i can assume the following values
-   // i = 0: Only leaves the screen.
-   // i = 1: Retrieve all posts from the server.
-   // i = 2: Most recent posts.
-   Future<void> _onSendFilters(BuildContext ctx, int i) async
+  /* The variable i can assume the following values
+   * 0: Only leaves the screen.
+   * 1: Retrieve all posts from the server. (I think we do not need this
+   *    option).
+   * 2: Notifications: When the user presses search we will zero the
+   *    lastPostId and search.
+   */
+   Future<void>
+   _onSendFilters(BuildContext ctx, int i) async
    {
       _newFiltersPressed = false;
       if (i == 0) {
@@ -5461,13 +5481,24 @@ class MenuChatState extends State<MenuChat>
          return;
       }
 
-      // See comment on _onPostSelection for why I am removing this
-      // for now.
       //final int lastPostId = i == 1 ? 0 : _cfg.lastPostId;
-      final int lastPostId = _cfg.lastPostId;
+      //final int lastPostId = _cfg.lastPostId;
 
-      // First send the hashes then show the dialog.
-      _subscribeToChannels(lastPostId);
+      // I changed my mind in 8.12.2019 and decided it is less confusing to
+      // the user if we always search for all posts not only for those that
+      // have a more recent post id than what is stored in the app. For
+      // that we rely on the fact that
+      //
+      // 1. When the user moves a post the chats screen it will not be
+      //    added twice.
+      // 2. Old posts will be cleared when we receive the answer to this
+      //    request.
+
+      _cfg.lastPostId = 0;
+
+      await _db.execute(sql.updateLastPostId, [0]);
+
+      _subscribeToChannels(0);
 
       _showSimpleDialog(
          ctx,
@@ -5480,6 +5511,7 @@ class MenuChatState extends State<MenuChat>
    void _subscribeToChannels(int lastPostId)
    {
       List<List<int>> channels = List<List<int>>();
+
       // An empty channels list means we do not want any filter for
       // that menu item.
       for (MenuItem item in _filtersMenu)
