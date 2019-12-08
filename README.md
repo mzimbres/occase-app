@@ -11,3 +11,7 @@ To generate the asset files
 similar to the other two assets.
 
 Font: Caesar Dressing.
+
+App Suggestions
+   Also change tab indicator color, bit invisible as white with same scaffold background
+   May be inactive to be very light grey and indicator with an accent color

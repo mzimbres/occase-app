@@ -1171,8 +1171,12 @@ makeTabBar(BuildContext ctx,
 
    for (int i = 0; i < tabs.length; ++i) {
       tabs[i] = Tab(
-         child: makeTabWidget( ctx,
-            counters[i], g.param.tabNames[i], opacity[i]));
+         child: makeTabWidget(ctx,
+            counters[i],
+            g.param.tabNames[i],
+            opacity[i]
+         ),
+      );
    }
 
    return TabBar(controller: tabCtrl,
@@ -1872,8 +1876,12 @@ Widget makeChatScreen(
     );
 }
 
-Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
-{
+Widget makeTabWidget(
+   BuildContext ctx,
+   int n,
+   String title,
+   double opacity
+) {
    if (n == 0)
       return Text(title);
 
@@ -1884,7 +1892,10 @@ Widget makeTabWidget(BuildContext ctx, int n, String title, double opacity)
    // for opacity values.
    widgets[1] = Opacity(
       child: makeUnreadMsgsCircle(
-         ctx, n, Colors.white, Theme.of(ctx).colorScheme.primary
+         ctx,
+         n,
+         Colors.white,
+         stl.colorScheme.primary,
       ),
       opacity: opacity,
    );
