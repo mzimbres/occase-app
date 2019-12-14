@@ -21,3 +21,17 @@ of
 
 with the new the new id. To change the name do it similar.
 
+Notes
+----------------------------------------------------------
+
+Last time I tried to clone and run I had to add the file
+
+   android/settings.gradle
+
+A new file was generated called
+
+   android/settings_aar.gradle
+
+I added this to the project just in case won't be automaticaly generated
+next time.
+
