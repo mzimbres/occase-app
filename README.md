@@ -5,13 +5,11 @@ To run the emulator
 
 To generate the asset files
 
-   ./load-tool menus/vehicle/ 3 3
-   cp menu0.txt menu1.txt ~/Public/menu_chat_app/data/
+```
+   $ cd occase-config
+   $ make carway
+   $ cp tmp/ path-to-occcase-app/data
+```
 
-similar to the other two assets.
+The font used in the icon was: Caesar Dressing.
 
-Font: Caesar Dressing.
-
-App Suggestions
-   Also change tab indicator color, bit invisible as white with same scaffold background
-   May be inactive to be very light grey and indicator with an accent color

@@ -5362,23 +5362,27 @@ class OccaseState extends State<Occase>
       }
 
       for (var item in ack['items']) {
-         Post post = Post.fromJson(item);
-         post.status = 1;
+         try {
+            Post post = Post.fromJson(item);
+            post.status = 1;
 
-         // Just in case the server sends us posts out of order I
-         // will check. It should however be considered a server
-         // error.
-         if (post.id > _cfg.lastPostId)
-            _cfg.lastPostId = post.id;
+            // Just in case the server sends us posts out of order I
+            // will check. It should however be considered a server
+            // error.
+            if (post.id > _cfg.lastPostId)
+               _cfg.lastPostId = post.id;
 
-         if (post.from == _cfg.appId)
-            continue;
+            if (post.from == _cfg.appId)
+               continue;
 
-         batch.insert('posts', postToMap(post),
-            conflictAlgorithm: ConflictAlgorithm.ignore);
+            batch.insert('posts', postToMap(post),
+               conflictAlgorithm: ConflictAlgorithm.ignore);
 
-         _posts.add(post);
-         ++_nNewPosts;
+            _posts.add(post);
+            ++_nNewPosts;
+         } catch (e) {
+            print("Error: Invalid post detected.");
+         }
       }
 
       batch.execute(sql.updateLastPostId, [_cfg.lastPostId]);
