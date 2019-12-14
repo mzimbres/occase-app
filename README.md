@@ -13,3 +13,11 @@ To generate the asset files
 
 The font used in the icon was: Caesar Dressing.
 
+To create an app with another app id substitute all occurrencies
+of 
+
+   $ grep -r com.occase.carway
+   $ find . -name carway
+
+with the new the new id. To change the name do it similar.
+

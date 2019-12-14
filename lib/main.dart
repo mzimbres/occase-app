@@ -1894,8 +1894,8 @@ Widget makeTabWidget(
       child: makeUnreadMsgsCircle(
          ctx,
          n,
-         Colors.white,
-         stl.colorScheme.primary,
+         stl.colorScheme.secondary,
+         stl.colorScheme.onSecondary,
       ),
       opacity: opacity,
    );
