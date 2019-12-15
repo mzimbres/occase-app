@@ -1,4 +1,4 @@
-package com.occase.car;
+package occase.car.br;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

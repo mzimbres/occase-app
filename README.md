@@ -16,7 +16,7 @@ The font used in the icon was: Caesar Dressing.
 To create an app with another app id substitute all occurrencies
 of 
 
-   $ grep -r com.occase.car
+   $ grep -r occase.car.br
    $ find . -name carway
 
 with the new the new id. To change the name do it similar.
@@ -25,6 +25,9 @@ App id and name
 ----------------------------------------------------------
 
 The script change_id.sh can help changing the app id and name.
+
+The google-services.json for the specific application id will be stored as
+google-services.json.occase.car.br
 
 Notes
 ----------------------------------------------------------
@@ -45,3 +48,7 @@ next time.
 
   https://stackoverflow.com/questions/55399209/update-flutter-dependencies-in-pub-cache
 
+Notifications
+-------------------------------------------------------------
+
+DATA='{"notification": {"body": "this is a body","title": "this is a title"}, "priority": "high", "data": {"click_action": "FLUTTER_NOTIFICATION_CLICK", "id": "1", "status": "done"}, "to": "<FCM TOKEN>"}' 

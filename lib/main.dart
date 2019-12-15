@@ -3758,10 +3758,13 @@ class OccaseState extends State<Occase>
    int _expPostIdx = -1;
    int _expImgIdx = -1;
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
    @override
    void initState()
    {
       super.initState();
+
       _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
       _txtCtrl = TextEditingController();
       _txtCtrl2 = TextEditingController();
@@ -3771,6 +3774,39 @@ class OccaseState extends State<Occase>
       _chatScrollCtrl.addListener(_chatScrollListener);
       _lastDisconnect = -1;
       WidgetsBinding.instance.addObserver(this);
+
+      _firebaseMessaging.configure(
+         onMessage: (Map<String, dynamic> message) async {
+           print("onMessage: $message");
+         },
+         onLaunch: (Map<String, dynamic> message) async {
+           print("onLaunch: $message");
+         },
+         onResume: (Map<String, dynamic> message) async {
+           print("onResume: $message");
+         },
+      );
+
+      //_firebaseMessaging.requestNotificationPermissions(
+      //   const IosNotificationSettings(
+      //      sound: true,
+      //      badge: true,
+      //      alert: true,
+      //      provisional: true
+      //   )
+      //);
+
+      //_firebaseMessaging.onIosSettingsRegistered
+      //    .listen((IosNotificationSettings settings) {
+      //  print("Settings registered: $settings");
+      //});
+
+      _firebaseMessaging.getToken().then((String token) {
+         //assert(token != null);
+         //setState(() {
+         //});
+         print('Token: $token');
+      });
    }
 
    @override
