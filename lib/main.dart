@@ -3787,20 +3787,6 @@ class OccaseState extends State<Occase>
          },
       );
 
-      //_firebaseMessaging.requestNotificationPermissions(
-      //   const IosNotificationSettings(
-      //      sound: true,
-      //      badge: true,
-      //      alert: true,
-      //      provisional: true
-      //   )
-      //);
-
-      //_firebaseMessaging.onIosSettingsRegistered
-      //    .listen((IosNotificationSettings settings) {
-      //  print("Settings registered: $settings");
-      //});
-
       _firebaseMessaging.getToken().then((String token) {
          //assert(token != null);
          //setState(() {
@@ -3935,8 +3921,15 @@ class OccaseState extends State<Occase>
 
       Batch batch = db.batch();
 
-      elems.forEach((MenuElem me)
-         { batch.insert('menu', menuElemToMap(me)); });
+      batch.insert(
+         'config',
+         configToMap(_cfg),
+         conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      elems.forEach((MenuElem me) {
+         batch.insert('menu', menuElemToMap(me));
+      });
 
       await batch.commit(noResult: true, continueOnError: true);
 
@@ -3987,6 +3980,8 @@ class OccaseState extends State<Occase>
       } catch (e) {
          print(e);
       }
+
+      _goToRegScreen = _cfg.nick.isEmpty;
 
       _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
@@ -5311,10 +5306,8 @@ class OccaseState extends State<Occase>
       _cfg.appId = ack["id"];
       _cfg.appPwd = ack["password"];
 
-      batch.insert(
-         'config',
-         configToMap(_cfg),
-         conflictAlgorithm: ConflictAlgorithm.replace);
+      _db.execute(sql.updateAppCredentials,
+                  [_cfg.appId, _cfg.appPwd]);
 
       // Retrieves some posts for the newly registered user.
       _subscribeToChannels(0);

@@ -64,6 +64,12 @@ CREATE TABLE config
 , any_of_features TEXT)
 ''';
 
+final String updateAppCredentials =
+'''
+UPDATE config
+SET app_id = ?, app_pwd = ?
+''';
+
 final String updateNick =
 '''
 UPDATE config SET nick = ?
