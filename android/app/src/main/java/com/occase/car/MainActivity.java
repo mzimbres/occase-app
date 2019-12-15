@@ -1,4 +1,4 @@
-package com.occase.carway;
+package com.occase.car;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
