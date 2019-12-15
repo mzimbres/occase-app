@@ -5987,7 +5987,7 @@ class OccaseState extends State<Occase>
 
       List<Function> onWillPops = List<Function>(g.param.tabNames.length);
       onWillPops[0] = _onChatsBackPressed;
-      onWillPops[1] = (){return false;};
+      onWillPops[1] = (){return true;};
       onWillPops[2] = _onChatsBackPressed;
 
       String appBarTitle = g.param.appName;
