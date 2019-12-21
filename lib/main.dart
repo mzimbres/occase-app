@@ -3758,7 +3758,10 @@ class OccaseState extends State<Occase>
    int _expPostIdx = -1;
    int _expImgIdx = -1;
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+   // Used to cache to fcmToken.
+   String _fcmToken;
+
+   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
    @override
    void initState()
@@ -3788,9 +3791,7 @@ class OccaseState extends State<Occase>
       );
 
       _firebaseMessaging.getToken().then((String token) {
-         //assert(token != null);
-         //setState(() {
-         //});
+         _fcmToken = token;
          print('Token: $token');
       });
    }
@@ -3827,7 +3828,7 @@ class OccaseState extends State<Occase>
 
       if (state == AppLifecycleState.resumed && doConnect) {
          print('Trying to reconnect.');
-         _stablishNewConnection();
+         _stablishNewConnection(_fcmToken);
       }
    }
 
@@ -4035,7 +4036,7 @@ class OccaseState extends State<Occase>
 
       _appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
 
-      _stablishNewConnection();
+      _stablishNewConnection(_fcmToken);
 
       print('Last post id: ${_cfg.lastPostId}.');
       print('Last post id seen: ${_cfg.lastSeenPostId}.');
@@ -4043,7 +4044,7 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   void _stablishNewConnection()
+   void _stablishNewConnection(String fcmToken)
    {
       channel = IOWebSocketChannel.connect(cts.wshost);
       channel.stream.listen(
@@ -4052,16 +4053,19 @@ class OccaseState extends State<Occase>
          onDone: _onWSDone,
       );
 
-      final String cmd = _makeConnCmd();
+      final String cmd = _makeConnCmd(fcmToken);
       channel.sink.add(cmd);
    }
 
-   String _makeConnCmd()
+   String _makeConnCmd(String fcmToken)
    {
       if (_cfg.appId.isEmpty) {
          // This is the first time we are connecting to the server (or
          // the login file is corrupted, etc.)
-         return jsonEncode({'cmd': 'register'});
+         return jsonEncode({
+            'cmd': 'register',
+            'token': fcmToken,
+         });
       }
 
       // We are already registered in the server.
@@ -4069,6 +4073,7 @@ class OccaseState extends State<Occase>
          'cmd': 'login',
          'user': _cfg.appId,
          'password': _cfg.appPwd,
+         'token': fcmToken,
       };
 
       return jsonEncode(loginCmd);
