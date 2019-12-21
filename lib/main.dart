@@ -5092,30 +5092,43 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _chatMsgHandler(Map<String, dynamic> ack, int type) async
+   Future<void>
+   _chatMsgHandler(Map<String, dynamic> ack, int type) async
    {
-      final int postId = ack['post_id'];
-      final bool isSenderPost = ack['is_sender_post'];
       final String to = ack['to'];
-      final String msg = ack['msg'];
-      final String peer = ack['from'];
-      final String nick = ack['nick'];
-      final int refersTo = ack['refers_to'];
-
       if (to != _cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
 
+      final int postId = ack['post_id'];
+      final String msg = ack['msg'];
+      final String peer = ack['from'];
+      final String nick = ack['nick'];
+      final int refersTo = ack['refers_to'];
+
+      final int favIdx = _favPosts.indexWhere((e) {
+         return e.id == postId;
+      });
+
       List<Post> posts;
+      final isSenderPost = favIdx != -1;
       if (isSenderPost)
          posts = _favPosts;
       else
          posts = _ownPosts;
 
-      await _chatMsgHandlerImpl(to, postId, msg, peer,
-                                nick, isSenderPost, posts,
-                                type, refersTo);
+      await _chatMsgHandlerImpl(
+         to,
+         postId,
+         msg,
+         peer,
+         nick,
+         isSenderPost,
+         posts,
+         type,
+         refersTo
+      );
    }
 
    Future<void> _chatMsgHandlerImpl(
