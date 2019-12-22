@@ -712,7 +712,7 @@ void markPresence(
    print('===> Setting presence in ${p.i} ${p.j} $now.');
 }
 
-void findAndMarkChatApp(
+bool findAndMarkChatApp(
    final List<Post> posts,
    final String peer,
    final int postId,
@@ -722,7 +722,7 @@ void findAndMarkChatApp(
    final IdxPair p = findChat(posts, peer, postId);
    if (isValidPair(p)) {
       print('===> Chat not found.');
-      return;
+      return false;
    }
 
    if (status == 1) {
@@ -730,7 +730,7 @@ void findAndMarkChatApp(
       posts[p.i].chats[p.j].serverAckEnd = idx;
       batch.rawUpdate(sql.updateServerAckEnd,
                      [idx, postId, peer]);
-      return;
+      return true;
    }
 
    if (status == 2) {
@@ -738,15 +738,14 @@ void findAndMarkChatApp(
       posts[p.i].chats[p.j].appAckReceivedEnd = idx;
       batch.rawUpdate(sql.updateAppAckReceivedEnd,
                      [idx, postId, peer]);
-      return;
+      return true;
    }
 
    if (status == 3) {
       // NOTE: To optimize the system, the app won't send an
-      // app_ack_received if the user is in the screen the
-      // app_ack_received belongs to, intead an app_ack_read will be
-      // sent directly. In such cases we have to update both the
-      // received and the read indexes.
+      // app_ack_received if the user is in the screen the app_ack_received
+      // belongs to, intead an app_ack_read will be sent directly. In such
+      // cases we have to update both the received and the read indexes.
       final int idx = posts[p.i].chats[p.j].serverAckEnd;
       posts[p.i].chats[p.j].appAckReceivedEnd = idx;
       posts[p.i].chats[p.j].appAckReadEnd = idx;
@@ -756,10 +755,11 @@ void findAndMarkChatApp(
 
       batch.rawUpdate(sql.updateAppAckReadEnd,
                       [idx, postId, peer]);
-      return;
+      return true;
    }
 
    assert(false);
+   return false;
 }
 
 List<List<List<int>>> decodeChannel(List<dynamic> to)

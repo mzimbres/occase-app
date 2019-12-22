@@ -5112,7 +5112,7 @@ class OccaseState extends State<Occase>
       });
 
       List<Post> posts;
-      final isSenderPost = favIdx != -1;
+      final bool isSenderPost = favIdx != -1;
       if (isSenderPost)
          posts = _favPosts;
       else
@@ -5269,19 +5269,19 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   void _chatAppAckHandler(Map<String, dynamic> ack,
-                           final int status,
-                           Batch batch)
-   {
+   void _chatAppAckHandler(
+      Map<String, dynamic> ack,
+      final int status,
+      Batch batch,
+   ) {
       final String from = ack['from'];
       final int postId = ack['post_id'];
-      final bool isSenderPost = ack['is_sender_post'];
 
-      if (isSenderPost) {
+      final bool b =
          findAndMarkChatApp(_favPosts, from, postId, status, batch);
-      } else {
+
+      if (!b)
          findAndMarkChatApp(_ownPosts, from, postId, status, batch);
-      }
    }
 
    void _onMessage(Map<String, dynamic> ack, Batch batch)
