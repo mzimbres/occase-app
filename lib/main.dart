@@ -3759,7 +3759,7 @@ class OccaseState extends State<Occase>
    int _expImgIdx = -1;
 
    // Used to cache to fcmToken.
-   String _fcmToken;
+   String _fcmToken = '';
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
