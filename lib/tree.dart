@@ -149,6 +149,10 @@ String genCode(List<int> codes, int depth)
 MenuElem parseFields(String line)
 {
    List<String> fields = line.split(";");
+   if (fields.length != 3) {
+      print('=====> $line');
+   }
+
    assert(fields.length == 3);
 
    return MenuElem(

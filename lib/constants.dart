@@ -21,7 +21,7 @@ const int emailMaxLength = 50;
 // carry and therefore we also do not know the size we need. For
 // backward compatibility it may be a good idea to make room for
 // further expansion.
-const int maxExDetailSize = 10;
+const int maxExDetailSize = 20;
 
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 20;
