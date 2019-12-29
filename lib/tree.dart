@@ -464,6 +464,24 @@ class MenuTraversal {
    }
 }
 
+int toChannelHashCodeD4(final List<int> c)
+{
+   assert(c.length >= 4);
+
+   int ca = c[0];
+   int cb = c[1];
+   int cc = c[2];
+   int cd = c[3];
+
+   const int shift = 16;
+
+   ca <<= 3 * shift;
+   cb <<= 2 * shift;
+   cc <<= 1 * shift;
+
+   return ca | cb | cc | cd;
+}
+
 int toChannelHashCodeD3(final List<int> c)
 {
    assert(c.length >= 3);
@@ -476,6 +494,7 @@ int toChannelHashCodeD3(final List<int> c)
 
    ca <<= 2 * shift;
    cb <<= 1 * shift;
+
    return ca | cb | cc;
 }
 
@@ -505,6 +524,7 @@ int toChannelHashCode(final List<int> code, final int depth)
       case 1: return toChannelHashCodeD1(code);
       case 2: return toChannelHashCodeD2(code);
       case 3: return toChannelHashCodeD3(code);
+      case 4: return toChannelHashCodeD4(code);
       default: return 0;
    }
 }
