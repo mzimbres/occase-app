@@ -1347,7 +1347,7 @@ Card makeChatMsgWidget(
             child: msgAndDate))
       , Padding(
             padding: EdgeInsets.all(2.0),
-            child: chooseMsgStatusIcon(ch, i))
+            child: chooseMsgStatusIcon(ch.msgs[i].status))
       ]);
    } else {
       msgAndStatus = Padding(
@@ -1489,7 +1489,7 @@ ListView makeChatMsgListView(
                       child: Padding(
                          padding: EdgeInsets.all(3.0),
                          child: Text(
-                            '${ch.divisorUnreadMsgs} nao lidas.',
+                            '${ch.divisorUnreadMsgs}',
                             style: TextStyle(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
@@ -2606,7 +2606,6 @@ String makePostSummaryStr(List<MenuItem> menu, Post post)
 {
    assert(menu.length == 2);
 
-   print('===========> ${post.channel[0][0]}');
    final List<String> names0 = loadNames(
       menu[0].root.first,
       post.channel[0][0],
@@ -3036,17 +3035,17 @@ ListView makeNewPostMenuListView(
 }
 
 // Returns an icon based on the message status.
-Widget chooseMsgStatusIcon(ChatMetadata ch, int i)
+Widget chooseMsgStatusIcon(int status)
 {
    final double s = 20.0;
 
    Icon icon = Icon(Icons.clear, color: Colors.grey, size: s);
 
-   if (i < ch.appAckReadEnd)
+   if (status == 3) {
       icon = Icon(Icons.done_all, color: Colors.green, size: s);
-   else if (i < ch.appAckReceivedEnd) {
+   } else if (status == 2) {
       icon = Icon(Icons.done_all, color: Colors.grey, size: s);
-   } else if (i < ch.serverAckEnd) {
+   } else if (status == 1) {
       icon = Icon(Icons.check, color: Colors.grey, size: s);
    }
 
@@ -3120,7 +3119,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       );
 
    return Row(children: <Widget>
-   [ chooseMsgStatusIcon(ch, ch.chatLength - 1)
+   [ chooseMsgStatusIcon(ch.lastChatItem.status)
    , Expanded(
         child: Text(cps.subtitle,
            maxLines: 1,
@@ -4207,12 +4206,16 @@ class OccaseState extends State<Occase>
 
          if (k == -1) {
             _posts[i].status = 2;
-            final int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
+
+            final
+            int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
 
             Batch batch = _db.batch();
-            batch.rawInsert(sql.insertChatStOnPost,
-               makeChatUpdateSql(_posts[i].chats[j],
-                                 _posts[i].id));
+
+            batch.rawInsert(
+               sql.insertChatStOnPost,
+               makeChatUpdateSql(_posts[i].chats[j], _posts[i].id),
+            );
 
             batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
 
@@ -4317,10 +4320,10 @@ class OccaseState extends State<Occase>
             );
             if (_isOnFav()) {
                await _onSendChatMsgImpl(
-                  _favPosts, c1.post.id, c1.chat.peer, false, ci);
+                  _favPosts, c1.post.id, c1.chat.peer, ci);
             } else {
                await _onSendChatMsgImpl(
-                  _ownPosts, c1.post.id, c1.chat.peer, true, ci);
+                  _ownPosts, c1.post.id, c1.chat.peer, ci);
             }
          }
       }
@@ -4339,8 +4342,10 @@ class OccaseState extends State<Occase>
 
    Future<bool> _onPopChat() async
    {
-      await _db.rawUpdate(sql.updateNUnreadMsgs,
-                         [0, _post.id, _chat.peer]);
+      await _db.rawUpdate(
+         sql.updateNUnreadMsgs,
+         [0, _post.id, _chat.peer],
+      );
 
       _showChatJumpDownButton = false;
       _dragedIdx = -1;
@@ -4371,24 +4376,20 @@ class OccaseState extends State<Occase>
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       List<Post> posts = _ownPosts;
-      bool isSenderPost = true;
-
-      if (_isOnFav()) {
+      if (_isOnFav())
          posts = _favPosts;
-         isSenderPost = false;
-      }
 
       _chat.nUnreadMsgs = 0;
       await _onSendChatMsgImpl(
          posts,
          _post.id,
          _chat.peer,
-         isSenderPost,
          ChatItem(
             type: 2,
             msg: _txtCtrl.text,
             date: now,
             refersTo: _dragedIdx,
+            status: 0,
          ),
       );
 
@@ -4407,7 +4408,7 @@ class OccaseState extends State<Occase>
       });
    }
 
-   // Called on user changes text in the chat text field.
+   // Called when the user changes text in the chat text field.
    void _onWritingChat(String v)
    {
       assert(_chat != null);
@@ -4433,7 +4434,6 @@ class OccaseState extends State<Occase>
          'cmd': 'presence',
          'to': _chat.peer,
          'type': 'writing',
-         'is_sender_post': _post.from == _cfg.appId,
          'post_id': _post.id,
       };
 
@@ -4838,7 +4838,6 @@ class OccaseState extends State<Occase>
 
    Future<void> _onChatPressedImpl(
       List<Post> posts,
-      bool isSenderPost,
       int i,
       int j) async
    {
@@ -4863,7 +4862,7 @@ class OccaseState extends State<Occase>
             'type': 'app_ack_read',
             'to': posts[i].chats[j].peer,
             'post_id': posts[i].id,
-            'is_sender_post': isSenderPost,
+            'id': -1,
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -4888,9 +4887,9 @@ class OccaseState extends State<Occase>
    Future<void> _onChatPressed(int i, int j) async
    {
       if (_isOnFav())
-         await _onChatPressedImpl(_favPosts, false, i, j);
+         await _onChatPressedImpl(_favPosts, i, j);
       else
-         await _onChatPressedImpl(_ownPosts, true, i, j);
+         await _onChatPressedImpl(_ownPosts, i, j);
    }
 
    void _onUserInfoPressed(BuildContext ctx, int postId, int j)
@@ -5006,9 +5005,9 @@ class OccaseState extends State<Occase>
       List<Post> posts,
       int postId,
       String peer,
-      bool isSenderPost,
-      ChatItem ci) async
-   {
+      ChatItem ci,
+   ) async {
+
       try {
          if (ci.msg.isEmpty)
             return;
@@ -5021,26 +5020,20 @@ class OccaseState extends State<Occase>
          final int j = posts[i].getChatHistIdx(peer);
          assert(j != -1);
 
-         posts[i].chats[j].addChatItem(ci, postId);
+         final int rowid = await _db.insert(
+            'chats',
+            makeChatItemToMap(postId, peer, ci),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+         );
 
-         await _db.transaction((txn) async {
-            Batch batch = txn.batch();
+         ci.rowid = rowid;
+         posts[i].chats[j].addChatItem(ci);
 
-            // Perhaps we should update only the last chat item here
-            // for performance?
-            batch.rawInsert(
-               sql.insertOrReplaceChatOnPost,
-               makeChatUpdateSql(posts[i].chats[j], postId),
-            );
-
-            batch.insert(
-               'chats',
-               makeChatItemToMap(postId, peer, ci),
-               conflictAlgorithm: ConflictAlgorithm.replace,
-            );
-
-            await batch.commit(noResult: true, continueOnError: true);
-         });
+         print('======> ${posts[i].chats[j].lastChatItem.msg}');
+         await _db.rawInsert(
+            sql.insertOrReplaceChatOnPost,
+            makeChatUpdateSql(posts[i].chats[j], postId),
+         );
 
          posts[i].chats.sort(compChats);
          posts.sort(compPosts);
@@ -5053,11 +5046,14 @@ class OccaseState extends State<Occase>
             'msg': ci.msg,
             'refers_to': ci.refersTo,
             'post_id': postId,
-            'is_sender_post': isSenderPost,
-            'nick': _cfg.nick
+            'nick': _cfg.nick,
+            'id': rowid,
          };
 
-         await _sendAppMsg(jsonEncode(msgMap), 1);
+         final
+         String payload = jsonEncode(msgMap);
+         print('====> $payload');
+         await _sendAppMsg(payload, 1);
 
       } catch(e) {
          print(e);
@@ -5069,10 +5065,13 @@ class OccaseState extends State<Occase>
       try {
          assert(_appMsgQueue.first.sent);
          assert(_appMsgQueue.isNotEmpty);
+
          final String res = ack['result'];
 
-         batch.rawDelete(sql.deleteOutChatMsg,
-                         [_appMsgQueue.first.rowid]);
+         batch.rawDelete(
+            sql.deleteOutChatMsg,
+            [_appMsgQueue.first.rowid]
+         );
 
          final bool isChat = _appMsgQueue.first.isChat == 1;
          _appMsgQueue.removeFirst();
@@ -5106,14 +5105,14 @@ class OccaseState extends State<Occase>
       final String peer = ack['from'];
       final String nick = ack['nick'];
       final int refersTo = ack['refers_to'];
+      final int ack_id = ack['id'];
 
       final int favIdx = _favPosts.indexWhere((e) {
          return e.id == postId;
       });
 
       List<Post> posts;
-      final bool isSenderPost = favIdx != -1;
-      if (isSenderPost)
+      if (favIdx != -1)
          posts = _favPosts;
       else
          posts = _ownPosts;
@@ -5124,10 +5123,10 @@ class OccaseState extends State<Occase>
          msg,
          peer,
          nick,
-         isSenderPost,
          posts,
          type,
-         refersTo
+         refersTo,
+         ack_id,
       );
    }
 
@@ -5137,10 +5136,10 @@ class OccaseState extends State<Occase>
       String msg,
       String peer,
       String nick,
-      bool isSenderPost,
       List<Post> posts,
       int type,
-      int refersTo) async
+      int refersTo,
+      int ack_id) async
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -5163,7 +5162,7 @@ class OccaseState extends State<Occase>
          refersTo: refersTo
       );
 
-      posts[i].chats[j].addChatItem(ci, postId);
+      posts[i].chats[j].addChatItem(ci);
 
       // If we are in the screen having chat with the user we can ack
       // it with app_ack_read and skip app_ack_received.
@@ -5174,7 +5173,7 @@ class OccaseState extends State<Occase>
 
       String ack;
       if (isOnPost && isOnChat) {
-         // We are on the chat screen with the peer.
+         // We are in the chat screen with the peer.
          ack = 'app_ack_read';
 
          // We are not currently showing the jump down button and can
@@ -5212,7 +5211,8 @@ class OccaseState extends State<Occase>
          'type': ack,
          'to': peer,
          'post_id': postId,
-         'is_sender_post': !isSenderPost,
+         'id': -1,
+         'ack_id': ack_id,
       };
 
       // Generating the payload before the async operation to avoid
@@ -5222,6 +5222,7 @@ class OccaseState extends State<Occase>
 
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
+
          batch.rawInsert(
             sql.insertOrReplaceChatOnPost,
             makeChatUpdateSql(chat, postId),
@@ -5233,17 +5234,19 @@ class OccaseState extends State<Occase>
             conflictAlgorithm: ConflictAlgorithm.replace,
          );
 
-         await batch.commit(noResult: true, continueOnError: true);
+         final List<dynamic> aaa = await batch.commit(
+            noResult: false,
+            continueOnError: true,
+         );
+         print('==========================> $aaa');
       });
 
-      // TODO: Include this in the transaction above.
       await _sendAppMsg(payload, 0);
    }
 
    void _onPresence(Map<String, dynamic> ack)
    {
       final String peer = ack['from'];
-      final bool isSenderPost = ack['is_sender_post'];
       final int postId = ack['post_id'];
 
       // We have to perform the following action
@@ -5251,12 +5254,13 @@ class OccaseState extends State<Occase>
       // 1. Search the chat from user from
       // 2. Set the presence timestamp.
       // 3. Call setState.
+      //
+      // We do not know if the post belongs to the sender or receiver, so
+      // we have to try both.
 
-      if (isSenderPost) {
-         markPresence(_favPosts, peer, postId);
-      } else {
+      final bool b = markPresence(_favPosts, peer, postId);
+      if (!b)
          markPresence(_ownPosts, peer, postId);
-      }
 
       // A timer that is launched after presence arrives. It is used
       // to call setState so that presence e.g. typing messages are
@@ -5276,12 +5280,25 @@ class OccaseState extends State<Occase>
    ) {
       final String from = ack['from'];
       final int postId = ack['post_id'];
+      final int rowid = ack['ack_id'];
 
-      final bool b =
-         findAndMarkChatApp(_favPosts, from, postId, status, batch);
+      final bool b = findAndMarkChatApp(
+         _favPosts,
+         from,
+         postId,
+         status,
+         rowid,
+         batch,
+      );
 
       if (!b)
-         findAndMarkChatApp(_ownPosts, from, postId, status, batch);
+         findAndMarkChatApp(
+            _ownPosts,
+            from,
+            postId,
+            status,
+            rowid,
+            batch);
    }
 
    void _onMessage(Map<String, dynamic> ack, Batch batch)
@@ -5472,7 +5489,6 @@ class OccaseState extends State<Occase>
          } else if (cmd == "publish_ack") {
             _onPublishAck(ack, batch);
          } else if (cmd == "delete_ack") {
-            print('delete_ack');
             _onServerAck(ack, batch);
          } else if (cmd == "register_ack") {
             _onRegisterAck(ack, msg, batch);

@@ -18,14 +18,11 @@ String convertChatMsgTypeToString(int type)
    return '';
 }
 
-enum MsgType
-{ fromPeer
-, fromPeerFwd
-, own
-, ownFwd
-}
-
 class ChatItem {
+   // The auto increment sqlite rowid.
+   int rowid = -1;
+
+   // Informs if this is a message from this app or from the peer.
    int type;
 
    String msg;
@@ -35,13 +32,25 @@ class ChatItem {
    // message.
    int refersTo;
 
+   // When the message is from this app, we have to show the icond
+   //
+   // 0: Message unsent
+   // 1: The server has received the message.
+   // 2: The peer has received the message.
+   // 3: The peer has read the message.
+   //
+   // This field is only meaningfull when the message belongs to this app.
+   int status;
+
    bool isLongPressed;
 
    ChatItem(
-   { this.type = 2
+   { this.rowid = -1
+   , this.type = 2
    , this.msg = ''
    , this.date = 0
    , this.refersTo = -1
+   , this.status = 0
    , this.isLongPressed = false
    });
 
@@ -62,10 +71,12 @@ class ChatItem {
 
    ChatItem.fromJson(Map<String, dynamic> map)
    {
-      type = map["this_app"];
+      type = map["type"];
       msg = map['msg'];
       date = map['date'];
       refersTo = map['refers_to'];
+      status = map['status'];
+
       isLongPressed = false;
    }
 
@@ -73,10 +84,11 @@ class ChatItem {
    {
       return
       {
-         'this_app': type,
+         'type': type,
          'msg': msg,
          'date': date,
          'refers_to': refersTo,
+         'status': status,
       };
    }
 }
@@ -93,6 +105,7 @@ Map<String, dynamic> makeChatItemToMap(
       'date': ci.date,
       'msg': ci.msg,
       'refers_to': ci.refersTo,
+      'status': ci.refersTo,
     };
 }
 
@@ -101,9 +114,6 @@ class ChatMetadata {
    String nick;
    int date;
    int pinDate;
-   int appAckReadEnd;
-   int appAckReceivedEnd;
-   int serverAckEnd;
    int chatLength;
    int nUnreadMsgs;
    ChatItem lastChatItem;
@@ -132,9 +142,6 @@ class ChatMetadata {
    , this.nick = ''
    , this.date = 0
    , this.pinDate = 0
-   , this.appAckReadEnd = 0
-   , this.appAckReceivedEnd = 0
-   , this.serverAckEnd = 0
    , this.chatLength = 0
    , this.nUnreadMsgs = 0
    , this.lastChatItem
@@ -151,7 +158,7 @@ class ChatMetadata {
       return msgs != null;
    }
 
-   void addChatItem(ChatItem ci, int postId)
+   void addChatItem(ChatItem ci)
    {
       lastChatItem = ci;
       if (isLoaded()) {
@@ -159,6 +166,26 @@ class ChatMetadata {
          chatLength = msgs.length;
       } else {
          ++chatLength;
+      }
+   }
+
+   void setAckStatus(int rowid, int status)
+   {
+      if (lastChatItem.rowid == rowid)
+         lastChatItem.status = status;
+
+      if (isLoaded()) {
+         // Consider searching backwards to improve performance.
+         final int i = msgs.indexWhere((e) {
+            return e.rowid == rowid;
+         });
+
+         if (i == -1) {
+            print('Unable to find rowid $rowid');
+            return;
+         }
+
+         msgs[i].status = status;
       }
    }
 
@@ -196,11 +223,15 @@ class ChatMetadata {
 
          msgs = List.generate(maps.length, (i)
          {
+            final int status = maps[i]['status'];
+            print('1 ======> $status');
             return ChatItem(
+               rowid: maps[i]['rowid'],
                type: maps[i]['type'],
                date: maps[i]['date'],
                msg: maps[i]['msg'],
                refersTo: maps[i]['refers_to'],
+               status: status,
             );
          });
 
@@ -670,7 +701,7 @@ class IdxPair {
    IdxPair({this.i = -1, this.j = -1});
 }
 
-bool isValidPair(final IdxPair p)
+bool IsInvalidPair(final IdxPair p)
 {
    return p.i == -1 || p.j == -1;
 }
@@ -678,21 +709,17 @@ bool isValidPair(final IdxPair p)
 IdxPair findChat(final List<Post> posts, String peer, int postId)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
-   if (i == -1) {
-      print('findChat: Cannot find post id.');
+   if (i == -1)
       return IdxPair(i: -1, j: -1);
-   }
 
    final int j = posts[i].chats.indexWhere((e) {return e.peer == peer;});
-   if (i == -1) {
-      print('findChat: Cannot find user id.');
+   if (i == -1)
       return IdxPair(i: -1, j: -1);
-   }
 
    return IdxPair(i: i, j: j);
 }
 
-void markPresence(
+bool markPresence(
    final List<Post> posts,
    final String peer,
    final int postId,
@@ -702,14 +729,12 @@ void markPresence(
 
    final IdxPair p = findChat(posts, peer, postId);
 
-   if (isValidPair(p)) {
-      print('===> presence chat not found.');
-      return;
-   }
+   if (IsInvalidPair(p))
+      return false;
 
    final int now = DateTime.now().millisecondsSinceEpoch;
    posts[p.i].chats[p.j].lastPresenceReceived = now;
-   print('===> Setting presence in ${p.i} ${p.j} $now.');
+   return true;
 }
 
 bool findAndMarkChatApp(
@@ -717,49 +742,30 @@ bool findAndMarkChatApp(
    final String peer,
    final int postId,
    final int status,
+   final int rowid,
    Batch batch,
 ) {
    final IdxPair p = findChat(posts, peer, postId);
-   if (isValidPair(p)) {
+   if (IsInvalidPair(p)) {
       print('===> Chat not found.');
       return false;
    }
 
-   if (status == 1) {
-      final int idx = posts[p.i].chats[p.j].chatLength;
-      posts[p.i].chats[p.j].serverAckEnd = idx;
-      batch.rawUpdate(sql.updateServerAckEnd,
-                     [idx, postId, peer]);
-      return true;
-   }
+   posts[p.i].chats[p.j].setAckStatus(rowid, status);
+   posts[p.i].chats[p.j].lastChatItem.status = status;
 
-   if (status == 2) {
-      final int idx = posts[p.i].chats[p.j].serverAckEnd;
-      posts[p.i].chats[p.j].appAckReceivedEnd = idx;
-      batch.rawUpdate(sql.updateAppAckReceivedEnd,
-                     [idx, postId, peer]);
-      return true;
-   }
+   print('2 ====> $status $rowid');
+   batch.rawUpdate(
+      sql.updateAckStatus,
+      [status, rowid],
+   );
 
-   if (status == 3) {
-      // NOTE: To optimize the system, the app won't send an
-      // app_ack_received if the user is in the screen the app_ack_received
-      // belongs to, intead an app_ack_read will be sent directly. In such
-      // cases we have to update both the received and the read indexes.
-      final int idx = posts[p.i].chats[p.j].serverAckEnd;
-      posts[p.i].chats[p.j].appAckReceivedEnd = idx;
-      posts[p.i].chats[p.j].appAckReadEnd = idx;
+   batch.rawUpdate(
+      sql.updateLastChat,
+      [jsonEncode(posts[p.i].chats[p.j].lastChatItem), postId, peer],
+   );
 
-      batch.rawUpdate(sql.updateAppAckReceivedEnd,
-                     [idx, postId, peer]);
-
-      batch.rawUpdate(sql.updateAppAckReadEnd,
-                      [idx, postId, peer]);
-      return true;
-   }
-
-   assert(false);
-   return false;
+   return true;
 }
 
 List<List<List<int>>> decodeChannel(List<dynamic> to)
@@ -891,7 +897,8 @@ Future<List<Config>> loadConfig(Database db) async
   });
 }
 
-Future<List<ChatMetadata>> loadChatMetadata(Database db, int postId) async
+Future<List<ChatMetadata>>
+loadChatMetadata(Database db, int postId) async
 {
   final List<Map<String, dynamic>> maps =
      await db.rawQuery(sql.selectChatStatusItem, [postId]);
@@ -900,17 +907,17 @@ Future<List<ChatMetadata>> loadChatMetadata(Database db, int postId) async
   {
      final String str = maps[i]['last_chat_item'];
      ChatItem lastChatItem = ChatItem();
+     print('1a ====================> $str');
      if (str.isNotEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(str));
+
+     print('1b ====================> ${lastChatItem.msg}');
 
      return ChatMetadata(
         peer: maps[i]['user_id'],
         nick: maps[i]['nick'],
         date: maps[i]['date'],
         pinDate: maps[i]['pin_date'],
-        appAckReadEnd: maps[i]['app_ack_read_end'],
-        appAckReceivedEnd: maps[i]['app_ack_received_end'],
-        serverAckEnd: maps[i]['server_ack_end'],
         chatLength: maps[i]['chat_length'],
         nUnreadMsgs: maps[i]['n_unread_msgs'],
         lastChatItem: lastChatItem,
@@ -921,6 +928,7 @@ Future<List<ChatMetadata>> loadChatMetadata(Database db, int postId) async
 List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
 {
    final String payload = jsonEncode(chat.lastChatItem);
+         print('2 ======> ${payload}');
 
    return <dynamic>
    [ postId
@@ -928,9 +936,6 @@ List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
    , chat.date
    , chat.pinDate
    , chat.nick
-   , chat.appAckReadEnd
-   , chat.appAckReceivedEnd
-   , chat.serverAckEnd
    , chat.chatLength
    , chat.nUnreadMsgs
    , payload
