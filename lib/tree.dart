@@ -607,7 +607,8 @@ String serializeMenuToStr(final MenuNode root)
    return menu;
 }
 
-List<MenuElem> makeMenuElems(final MenuNode root, int index, int maxDepth)
+List<MenuElem>
+makeMenuElems(final MenuNode root, int index, int maxDepth)
 {
    // TODO: The depth is taken from the lenght of the code. Maybe we
    // should consider removing the depth from sqlite to avoid
@@ -654,6 +655,7 @@ Future<List<MenuItem>> loadMenuItems(
    List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
    tmp[0] = List<MenuElem>();
    tmp[1] = List<MenuElem>();
+
    elems.forEach((MenuElem me) {tmp[me.index].add(me);});
 
    for (int i = 0; i < tmp.length; ++i) {

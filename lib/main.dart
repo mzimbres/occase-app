@@ -2208,6 +2208,7 @@ ListView makeNewFilterListView(
    Function onNodePressed,
    bool makeLeaf)
 {
+   print('====> ${o.children.last.children}');
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
       shift = 1;
@@ -3909,6 +3910,7 @@ class OccaseState extends State<Occase>
       // default menu table.
       _productsMenu = await readMenuItemsFromAsset();
 
+      print('======> ${g.param.filterDepths}');
       List<MenuElem> elems = List<MenuElem>();
       for (int i = 0; i < _productsMenu.length; ++i) {
          elems.addAll(makeMenuElems(
@@ -3947,18 +3949,18 @@ class OccaseState extends State<Occase>
 
    Future<void> _load(final String docDir) async
    {
-       await initializeDateFormatting(g.param.localeName, null);
-
-      _db = await openDatabase(
-         p.join(await getDatabasesPath(), 'main.db'),
-         readOnly: false,
-         onCreate: _onCreateDb,
-         version: 1);
-
       try {
          final String text =
             await rootBundle.loadString('data/parameters.txt');
          g.param = Parameters.fromJson(jsonDecode(text));
+
+         await initializeDateFormatting(g.param.localeName, null);
+
+         _db = await openDatabase(
+            p.join(await getDatabasesPath(), 'main.db'),
+            readOnly: false,
+            onCreate: _onCreateDb,
+            version: 1);
 
          String exDetailsStr =
             await rootBundle.loadString('data/ex_details_menu.txt');
