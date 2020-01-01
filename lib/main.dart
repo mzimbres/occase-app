@@ -4731,7 +4731,6 @@ class OccaseState extends State<Occase>
          print('=====> Image name $basename');
          print('=====> Image extention $extension');
          print('=====> New name $newname');
-
          print('=====> Http target $newname');
 
          //var headers = {'Accept-Encoding': 'identity'};
@@ -4848,12 +4847,17 @@ class OccaseState extends State<Occase>
       }
 
       _showChatJumpDownButton = false;
-      _post = posts[i];
-      _chat = posts[i].chats[j];
+      Post post = posts[i];
+      ChatMetadata chat = posts[i].chats[j];
 
-      if (!_chat.isLoaded())
-         await _chat.loadMsgs(_post.id, _chat.peer,  _db);
+      if (!chat.isLoaded())
+         await chat.loadMsgs(post.id, chat.peer,  _db);
       
+      // These variables must be set after the chats are loaded. Otherwise
+      // chat.msgs may be called on null if a message arrives. 
+      _post = post;
+      _chat = chat;
+
       if (_chat.nUnreadMsgs != 0) {
          final int l = _chat.msgs.length;
          _chat.divisorUnreadMsgsIdx = l - _chat.nUnreadMsgs;
@@ -5029,7 +5033,6 @@ class OccaseState extends State<Occase>
          ci.rowid = rowid;
          posts[i].chats[j].addChatItem(ci);
 
-         print('======> ${posts[i].chats[j].lastChatItem.msg}');
          await _db.rawInsert(
             sql.insertOrReplaceChatOnPost,
             makeChatUpdateSql(posts[i].chats[j], postId),
@@ -5052,7 +5055,6 @@ class OccaseState extends State<Occase>
 
          final
          String payload = jsonEncode(msgMap);
-         print('====> $payload');
          await _sendAppMsg(payload, 1);
 
       } catch(e) {
@@ -5218,7 +5220,6 @@ class OccaseState extends State<Occase>
       // Generating the payload before the async operation to avoid
       // problems.
       final String payload = jsonEncode(msgMap);
-      print(payload);
 
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
@@ -5238,7 +5239,6 @@ class OccaseState extends State<Occase>
             noResult: false,
             continueOnError: true,
          );
-         print('==========================> $aaa');
       });
 
       await _sendAppMsg(payload, 0);
@@ -5333,7 +5333,6 @@ class OccaseState extends State<Occase>
 
       String appId = ack["id"];
       String appPwd = ack["password"];
-      print('====> register_ack: $appId:$appPwd');
 
       if (appId == null || appPwd == null)
          return;
@@ -5502,7 +5501,6 @@ class OccaseState extends State<Occase>
 
    Future<void> _onWSData(msg) async
    {
-      print(msg);
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
       if (isEmpty) {

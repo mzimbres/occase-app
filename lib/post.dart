@@ -223,15 +223,13 @@ class ChatMetadata {
 
          msgs = List.generate(maps.length, (i)
          {
-            final int status = maps[i]['status'];
-            print('1 ======> $status');
             return ChatItem(
                rowid: maps[i]['rowid'],
                type: maps[i]['type'],
                date: maps[i]['date'],
                msg: maps[i]['msg'],
                refersTo: maps[i]['refers_to'],
-               status: status,
+               status: maps[i]['status'],
             );
          });
 
@@ -754,7 +752,6 @@ bool findAndMarkChatApp(
    posts[p.i].chats[p.j].setAckStatus(rowid, status);
    posts[p.i].chats[p.j].lastChatItem.status = status;
 
-   print('2 ====> $status $rowid');
    batch.rawUpdate(
       sql.updateAckStatus,
       [status, rowid],
@@ -907,11 +904,8 @@ loadChatMetadata(Database db, int postId) async
   {
      final String str = maps[i]['last_chat_item'];
      ChatItem lastChatItem = ChatItem();
-     print('1a ====================> $str');
      if (str.isNotEmpty)
          lastChatItem = ChatItem.fromJson(jsonDecode(str));
-
-     print('1b ====================> ${lastChatItem.msg}');
 
      return ChatMetadata(
         peer: maps[i]['user_id'],
@@ -928,7 +922,6 @@ loadChatMetadata(Database db, int postId) async
 List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
 {
    final String payload = jsonEncode(chat.lastChatItem);
-         print('2 ======> ${payload}');
 
    return <dynamic>
    [ postId
