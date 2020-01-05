@@ -1308,7 +1308,7 @@ Card makeChatMsgWidget(
       color = Colors.lime[100];
    } else if (isNewMsg) {
       txtColor = stl.colorScheme.onPrimary;
-      color = stl.colorScheme.primary;
+      color = Color(0xFF0080CF);
    }
 
    if (ch.msgs[i].isLongPressed) {
@@ -1325,7 +1325,7 @@ Card makeChatMsgWidget(
          [ TextSpan(
               text: '  ${makeDateString(ch.msgs[i].date)}',
               style: Theme.of(ctx).textTheme.caption.copyWith(
-                 color: stl.chatDateColor,
+                 color: Colors.grey[700],
               ),
            ),
          ]

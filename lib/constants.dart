@@ -35,9 +35,9 @@ const double onClickAvatarWidth = 200.0;
 // address. If the phone is connected (via USB) to a computer
 // the computer can be found on 10.0.2.2.
 
-//const String wshost = 'wss://occase.de';
+const String wshost = 'wss://occase.de';
 //const String wshost = 'ws://10.0.2.2:80';
-const String wshost = 'ws://192.168.178.24:80';
+//const String wshost = 'ws://192.168.178.24:80';
 
 const int maxImgsPerPost = 4;
 
