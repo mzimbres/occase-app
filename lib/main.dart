@@ -1356,7 +1356,7 @@ Card makeChatMsgWidget(
    }
 
    Widget ww = msgAndStatus;
-   if (ch.msgs[i].isRedirected()) {
+   if (ch.msgs[i].redirected()) {
       final Color redirTitleColor =
          isNewMsg ? stl.colorScheme.secondary : Colors.blueGrey;
 
@@ -4316,15 +4316,16 @@ class OccaseState extends State<Occase>
       for (Coord c1 in _lpChats) {
          for (Coord c2 in _lpChatMsgs) {
             ChatItem ci = ChatItem(
-               type: 3,
+               isRedirected: 1,
                msg: c2.chat.msgs[c2.msgIdx].msg,
                date: now,
             );
             if (_isOnFav()) {
-               await _onSendChatMsgImpl(
+               print('1 Setting');
+               await _onSendChatImpl(
                   _favPosts, c1.post.id, c1.chat.peer, ci);
             } else {
-               await _onSendChatMsgImpl(
+               await _onSendChatImpl(
                   _ownPosts, c1.post.id, c1.chat.peer, ci);
             }
          }
@@ -4368,13 +4369,13 @@ class OccaseState extends State<Occase>
       return false;
    }
 
-   void _onCancelFwdLPChatMsg()
+   void _onCancelFwdLpChat()
    {
       _dragedIdx = -1;
       setState(() { });
    }
 
-   Future<void> _onSendChatMsg() async
+   Future<void> _onSendChat() async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       List<Post> posts = _ownPosts;
@@ -4382,12 +4383,12 @@ class OccaseState extends State<Occase>
          posts = _favPosts;
 
       _chat.nUnreadMsgs = 0;
-      await _onSendChatMsgImpl(
+      await _onSendChatImpl(
          posts,
          _post.id,
          _chat.peer,
          ChatItem(
-            type: 2,
+            isRedirected: 0,
             msg: _txtCtrl.text,
             date: now,
             refersTo: _dragedIdx,
@@ -4861,14 +4862,19 @@ class OccaseState extends State<Occase>
       _chat = chat;
 
       if (_chat.nUnreadMsgs != 0) {
-         final int l = _chat.msgs.length;
-         _chat.divisorUnreadMsgsIdx = l - _chat.nUnreadMsgs;
+         _chat.divisorUnreadMsgsIdx =
+            _chat.msgs.length - _chat.nUnreadMsgs;
+
+         // We know the number of unread messages, now we have to generate
+         // the array with the messages peer rowid.
+
          var msgMap = {
             'cmd': 'message',
-            'type': 'app_ack_read',
+            'type': 'chat_ack_read',
             'to': posts[i].chats[j].peer,
             'post_id': posts[i].id,
             'id': -1,
+            'ack_ids': readPeerRowIdsToAck(_chat.msgs, _chat.nUnreadMsgs),
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -5007,7 +5013,7 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   Future<void> _onSendChatMsgImpl(
+   Future<void> _onSendChatImpl(
       List<Post> posts,
       int postId,
       String peer,
@@ -5043,10 +5049,10 @@ class OccaseState extends State<Occase>
          posts[i].chats.sort(compChats);
          posts.sort(compPosts);
 
-         final String type = convertChatMsgTypeToString(ci.type);
          var msgMap = {
             'cmd': 'message',
-            'type': type,
+            'type': 'chat',
+            'is_redirected': ci.isRedirected,
             'to': peer,
             'msg': ci.msg,
             'refers_to': ci.refersTo,
@@ -5074,14 +5080,20 @@ class OccaseState extends State<Occase>
 
          batch.rawDelete(
             sql.deleteOutChatMsg,
-            [_appMsgQueue.first.rowid]
+            [_appMsgQueue.first.rowid],
          );
 
          final bool isChat = _appMsgQueue.first.isChat == 1;
          _appMsgQueue.removeFirst();
 
          if (res == 'ok' && isChat) {
-            _chatAppAckHandler(ack, 1, batch);
+            _onChatAck(
+               ack['from'],
+               ack['post_id'],
+               <int>[ack['ack_id']],
+               1,
+               batch,
+            );
             setState(() { });
          }
 
@@ -5095,21 +5107,22 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void>
-   _chatMsgHandler(Map<String, dynamic> ack, int type) async
-   {
+   Future<void> _onChat(
+      final Map<String, dynamic> ack,
+      final String peer,
+      final int postId,
+      int isRedirected,
+   ) async {
       final String to = ack['to'];
       if (to != _cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
 
-      final int postId = ack['post_id'];
       final String msg = ack['msg'];
-      final String peer = ack['from'];
       final String nick = ack['nick'];
       final int refersTo = ack['refers_to'];
-      final int ack_id = ack['id'];
+      final int peerRowid = ack['id'];
 
       final int favIdx = _favPosts.indexWhere((e) {
          return e.id == postId;
@@ -5121,29 +5134,29 @@ class OccaseState extends State<Occase>
       else
          posts = _ownPosts;
 
-      await _chatMsgHandlerImpl(
+      await _onChatImpl(
          to,
          postId,
          msg,
          peer,
          nick,
          posts,
-         type,
+         isRedirected,
          refersTo,
-         ack_id,
+         peerRowid,
       );
    }
 
-   Future<void> _chatMsgHandlerImpl(
+   Future<void> _onChatImpl(
       String to,
       int postId,
       String msg,
       String peer,
       String nick,
       List<Post> posts,
-      int type,
+      int isRedirected,
       int refersTo,
-      int ack_id) async
+      int peerRowid) async
    {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -5160,16 +5173,17 @@ class OccaseState extends State<Occase>
       final int now = DateTime.now().millisecondsSinceEpoch;
 
       final ChatItem ci = ChatItem(
-         type: type,
+         isRedirected: isRedirected,
          msg: msg,
          date: now,
-         refersTo: refersTo
+         refersTo: refersTo,
+         peerRowid: peerRowid,
       );
 
       posts[i].chats[j].addChatItem(ci);
 
       // If we are in the screen having chat with the user we can ack
-      // it with app_ack_read and skip app_ack_received.
+      // it with chat_ack_read and skip chat_ack_received.
       final bool isOnPost = _post != null && _post.id == postId; 
       final bool isOnChat = _chat != null && _chat.peer == peer; 
 
@@ -5178,7 +5192,7 @@ class OccaseState extends State<Occase>
       String ack;
       if (isOnPost && isOnChat) {
          // We are in the chat screen with the peer.
-         ack = 'app_ack_read';
+         ack = 'chat_ack_read';
 
          // We are not currently showing the jump down button and can
          // animate to the bottom.
@@ -5198,7 +5212,7 @@ class OccaseState extends State<Occase>
          }
 
       } else {
-         ack = 'app_ack_received';
+         ack = 'chat_ack_received';
          final int n = posts[i].chats[j].nUnreadMsgs;
          posts[i].chats[j].divisorUnreadMsgs = n;
          final int l = posts[i].chats[j].chatLength;
@@ -5210,13 +5224,13 @@ class OccaseState extends State<Occase>
       posts[i].chats.sort(compChats);
       posts.sort(compPosts);
 
-      var msgMap = {
-         'cmd': 'message',
-         'type': ack,
-         'to': peer,
-         'post_id': postId,
-         'id': -1,
-         'ack_id': ack_id,
+      var msgMap =
+      { 'cmd': 'message'
+      , 'type': ack
+      , 'to': peer
+      , 'post_id': postId
+      , 'id': -1
+      , 'ack_ids': <int>[peerRowid],
       };
 
       // Generating the payload before the async operation to avoid
@@ -5275,58 +5289,65 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   void _chatAppAckHandler(
-      Map<String, dynamic> ack,
+   void _onChatAck(
+      final String from,
+      final int postId,
+      final List<int> rowids,
       final int status,
       Batch batch,
    ) {
-      final String from = ack['from'];
-      final int postId = ack['post_id'];
-      final int rowid = ack['ack_id'];
-
-      final bool b = findAndMarkChatApp(
-         _favPosts,
-         from,
-         postId,
-         status,
-         rowid,
-         batch,
-      );
-
-      if (!b)
-         findAndMarkChatApp(
-            _ownPosts,
+      for (int rowid in rowids) {
+         bool b = findAndMarkChatApp(
+            _favPosts,
             from,
             postId,
             status,
             rowid,
-            batch);
+            batch,
+         );
+
+         if (!b) {
+            b = findAndMarkChatApp(
+               _ownPosts,
+               from,
+               postId,
+               status,
+               rowid,
+               batch,
+            );
+         }
+
+         if (!b)
+            print('Chat not found: from = $from, postId = $postId');
+      }
    }
 
    void _onMessage(Map<String, dynamic> ack, Batch batch)
    {
+      final String from = ack['from'];
       final String type = ack['type'];
-      if (type == 'server_ack') {
+      final int postId = ack['post_id'];
+
+      if (type == 'chat') {
+         _onChat(ack, from, postId, ack['is_redirected']);
+      } else if (type == 'server_ack') {
          _onServerAck(ack, batch);
-      } else if (type == 'chat') {
-         _chatMsgHandler(ack, 0);
-      }  else if (type == 'chat_redirected') {
-         _chatMsgHandler(ack, 1);
-      } else if (type == 'app_ack_received') {
-         _chatAppAckHandler(ack, 2, batch);
-      } else if (type == 'app_ack_read') {
-         _chatAppAckHandler(ack, 3, batch);
+      } else if (type == 'chat_ack_received') {
+         final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
+         _onChatAck(from, postId, rowids, 2, batch);
+      } else if (type == 'chat_ack_read') {
+         final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
+         _onChatAck(from, postId, rowids, 3, batch);
       }
 
-      // TODO: Move this to the individual functions above.
       setState((){});
    }
 
    void _onRegisterAck(
       Map<String, dynamic> ack,
       final String msg,
-      Batch batch)
-   {
+      Batch batch,
+   ) {
       final String res = ack["result"];
       if (res == 'fail') {
          print("register_ack: fail.");
@@ -5503,6 +5524,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onWSData(msg) async
    {
+      print(msg);
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
       if (isEmpty) {
@@ -6000,7 +6022,7 @@ class OccaseState extends State<Occase>
             _onPopChat,
             _chat,
             _txtCtrl,
-            _onSendChatMsg,
+            _onSendChat,
             _chatScrollCtrl,
             _toggleLPChatMsgs,
             _lpChatMsgs.length,
@@ -6011,7 +6033,7 @@ class OccaseState extends State<Occase>
             makePostSummaryStr(_productsMenu, _post),
             _onChatAttachment,
             _dragedIdx,
-            _onCancelFwdLPChatMsg,
+            _onCancelFwdLpChat,
             _showChatJumpDownButton,
             _onChatJumpDown,
             _post.avatar,

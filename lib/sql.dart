@@ -172,7 +172,8 @@ final String createChats =
 CREATE TABLE chats
 ( post_id INTEGER
 , user_id TEXT
-, type INTEGER
+, peer_rowid INTEGER
+, is_redirected INTEGER
 , date INTEGER
 , msg TEXT
 , refers_to INTEGER

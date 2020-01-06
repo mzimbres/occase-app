@@ -6,27 +6,17 @@ import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
 
-String convertChatMsgTypeToString(int type)
-{
-   if (type == 2)
-      return 'chat';
-
-   if (type == 3)
-      return 'chat_redirected';
-
-   assert(false);
-   return '';
-}
-
 class ChatItem {
    // The auto increment sqlite rowid.
    int rowid = -1;
 
-   // Informs if this is a message from this app or from the peer.
-   int type;
+   // This field is -1 if the message belongs to this app or the peer row id
+   // if it belongs to the peer.
+   int peerRowid = -1;
 
-   String msg;
-   int date;
+   // If the message is redirected, be it from this app or from the peer, this
+   // field will be set to 1.
+   int isRedirected = 0;
 
    // A value different from -1 means this message refers to another
    // message.
@@ -42,26 +32,30 @@ class ChatItem {
    // This field is only meaningfull when the message belongs to this app.
    int status;
 
+   String msg;
+   int date;
+
    bool isLongPressed;
 
    ChatItem(
    { this.rowid = -1
-   , this.type = 2
-   , this.msg = ''
-   , this.date = 0
+   , this.peerRowid = -1
+   , this.isRedirected = 0
    , this.refersTo = -1
    , this.status = 0
    , this.isLongPressed = false
+   , this.msg = ''
+   , this.date = 0
    });
 
-   bool isRedirected()
+   bool redirected()
    {
-      return type == 1 || type == 3;
+      return isRedirected != 0;
    }
 
    bool isFromThisApp()
    {
-      return type == 2 || type == 3;
+      return peerRowid == -1;
    }
 
    bool refersToOther()
@@ -69,13 +63,16 @@ class ChatItem {
       return refersTo != -1;
    }
 
+   // Used only by ChatMetadata to store the last chat message that is shown
+   // without requiring load of all messages.
    ChatItem.fromJson(Map<String, dynamic> map)
    {
-      type = map["type"];
-      msg = map['msg'];
-      date = map['date'];
+      peerRowid = map["peer_rowid"];
       refersTo = map['refers_to'];
       status = map['status'];
+      isRedirected = map['is_redirected'];
+      msg = map['msg'];
+      date = map['date'];
 
       isLongPressed = false;
    }
@@ -83,14 +80,29 @@ class ChatItem {
    Map<String, dynamic> toJson()
    {
       return
-      {
-         'type': type,
-         'msg': msg,
-         'date': date,
-         'refers_to': refersTo,
-         'status': status,
+      { 'peer_rowid': peerRowid
+      , 'refers_to': refersTo
+      , 'status': status
+      , 'is_redirected': isRedirected
+      , 'msg': msg
+      , 'date': date
       };
    }
+}
+
+// To be able to ack unread chat messages as the user clicks on the chat,
+// we need the peer rowids.
+List<int> readPeerRowIdsToAck(
+   final List<ChatItem> chats,
+   final int n,
+) {
+   
+   List<int> res = List<int>();
+   final int l = chats.length;
+   for (int i = l - n; i < l; ++i)
+      res.add(chats[i].peerRowid);
+
+   return res;
 }
 
 Map<String, dynamic> makeChatItemToMap(
@@ -98,15 +110,31 @@ Map<String, dynamic> makeChatItemToMap(
    String userId,
    ChatItem ci,
 ) {
-    return {
-      'post_id': postId,
-      'user_id': userId,
-      'type': ci.type,
-      'date': ci.date,
-      'msg': ci.msg,
-      'refers_to': ci.refersTo,
-      'status': ci.refersTo,
+    return
+    { 'post_id': postId
+    , 'user_id': userId
+    , 'peer_rowid': ci.peerRowid
+    , 'is_redirected': ci.isRedirected
+    , 'refers_to': ci.refersTo
+    , 'status': ci.refersTo
+    , 'date': ci.date
+    , 'msg': ci.msg
     };
+}
+
+int indexWhereBackwards(final List<ChatItem> list, int rowid)
+{
+   int l = list.length;
+   print('Length $l');
+   while (l != 0) {
+      --l;
+      if (list[l].rowid == rowid)
+         return l;
+
+      print('${list[l].rowid} != $rowid');
+   }
+
+   return -1;
 }
 
 class ChatMetadata {
@@ -160,8 +188,10 @@ class ChatMetadata {
 
    void addChatItem(ChatItem ci)
    {
+      print('aaa ===> ${ci.rowid}');
       lastChatItem = ci;
       if (isLoaded()) {
+         print('bbb ===> ${ci.rowid}');
          msgs.add(ci);
          chatLength = msgs.length;
       } else {
@@ -175,17 +205,14 @@ class ChatMetadata {
          lastChatItem.status = status;
 
       if (isLoaded()) {
-         // Consider searching backwards to improve performance.
-         final int i = msgs.indexWhere((e) {
-            return e.rowid == rowid;
-         });
-
-         if (i == -1) {
-            print('Unable to find rowid $rowid');
-            return;
+         // Searching backwards to improve performance. We may also want to
+         // add a limit on how many messages back we are willing to search.
+         final int i = indexWhereBackwards(msgs, rowid);
+         if (i != -1) {
+            msgs[i].status = status;
+         } else {
+            print('===> rowid $rowid not found.');
          }
-
-         msgs[i].status = status;
       }
    }
 
@@ -225,7 +252,8 @@ class ChatMetadata {
          {
             return ChatItem(
                rowid: maps[i]['rowid'],
-               type: maps[i]['type'],
+               peerRowid: maps[i]['peer_rowid'],
+               isRedirected: maps[i]['is_redirected'],
                date: maps[i]['date'],
                msg: maps[i]['msg'],
                refersTo: maps[i]['refers_to'],
@@ -744,10 +772,8 @@ bool findAndMarkChatApp(
    Batch batch,
 ) {
    final IdxPair p = findChat(posts, peer, postId);
-   if (IsInvalidPair(p)) {
-      print('===> Chat not found.');
+   if (IsInvalidPair(p))
       return false;
-   }
 
    posts[p.i].chats[p.j].setAckStatus(rowid, status);
    posts[p.i].chats[p.j].lastChatItem.status = status;
