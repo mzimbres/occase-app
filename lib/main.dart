@@ -602,7 +602,7 @@ Widget wrapOnDetailExpTitle(
 Widget makeNewPostDetailExpTile(
    BuildContext ctx,
    Function onNewPostInDetails,
-   MenuNode titleNode,
+   Node titleNode,
    int state,
    String strDisplay)
 {
@@ -696,8 +696,8 @@ List<Widget> makeNewPostDetailScreen(
    Function onNewPostExDetails,
    Function onNewPostInDetails,
    Post post,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
    TextEditingController txtCtrl,
    Function onRangeValueChanged)
 {
@@ -815,8 +815,8 @@ WillPopScope makeNewPostScreens(
    Function onWillPopMenu,
    Function onNewPostBotBarTapped,
    Function onNewPostInDetails,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
    Function onRangeValueChanged,
    Function onAddPhoto,
    List<File> imgFiles,
@@ -984,7 +984,7 @@ WillPopScope makeNewFiltersScreens(
    final List<MenuItem> menu,
    int filter,
    int screen,
-   MenuNode exDetailsFilterNodes,
+   Node exDetailsFilterNodes,
    List<int> ranges,
    Function onRangeChanged)
 {
@@ -1107,7 +1107,7 @@ List<Widget> makeNewPostDetailElemList(
    BuildContext ctx,
    Function proceed,
    int filter,
-   List<MenuNode> list)
+   List<Node> list)
 {
    List<Widget> widgets = List<Widget>();
 
@@ -2125,7 +2125,7 @@ Widget makePaymentChoiceWidget(
 
 ListTile makeFilterListTitle(
    BuildContext ctx,
-   MenuNode child,
+   Node child,
    Function onTap,
    Icon trailing)
 {
@@ -2203,7 +2203,7 @@ ListTile makeFilterListTitle(
  */
 ListView makeNewFilterListView(
    BuildContext ctx,
-   MenuNode o,
+   Node o,
    Function onLeafPressed,
    Function onNodePressed,
    bool makeLeaf)
@@ -2224,7 +2224,7 @@ ListView makeNewFilterListView(
             );
 
          if (shift == 1) {
-            MenuNode child = o.children[i - 1];
+            Node child = o.children[i - 1];
 
             Widget icon = Icon(Icons.check_box_outline_blank);
             if (child.leafReach > 0)
@@ -2344,7 +2344,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
 //ababab
 List<Widget> makePostInRows(
    BuildContext ctx,
-   List<MenuNode> nodes,
+   List<Node> nodes,
    int state)
 {
    List<Widget> list = List<Widget>();
@@ -2456,7 +2456,7 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 List<Widget> makePostExDetails(
    BuildContext ctx,
    Post post,
-   MenuNode exDetailsMenu,
+   Node exDetailsMenu,
 ) {
    // Post details varies according to the first index of the products
    // entry in the menu.
@@ -2510,7 +2510,7 @@ List<Widget> makePostExDetails(
 List<Widget> makePostInDetails(
    BuildContext ctx,
    Post post,
-   MenuNode inDetailsMenu)
+   Node inDetailsMenu)
 {
    List<Widget> all = List<Widget>();
 
@@ -2586,8 +2586,8 @@ List<Widget> assemblePostRows(
    BuildContext ctx,
    Post post,
    List<MenuItem> menu,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
 ) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
@@ -2868,8 +2868,8 @@ Widget makeNewPost(
    Post post,
    Function onPostSelection,
    List<MenuItem> menu,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
    Icon ic,
    String snackbarStr,
    Function onAddPhoto,
@@ -2941,8 +2941,8 @@ Widget makeNewPostLv(
    List<Post> posts,
    Function onPostSelection,
    List<MenuItem> menu,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
    int nNewPosts,
    Function onExpandImg,
 ) {
@@ -2978,7 +2978,7 @@ Widget makeNewPostLv(
 
 ListView makeNewPostMenuListView(
    BuildContext ctx,
-   MenuNode o,
+   Node o,
    Function onLeafPressed,
    Function onNodePressed)
 {
@@ -2986,7 +2986,7 @@ ListView makeNewPostMenuListView(
       itemCount: o.children.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-         MenuNode child = o.children[i];
+         Node child = o.children[i];
 
          if (child.isLeaf()) {
             return ListTile(
@@ -3391,8 +3391,8 @@ Widget makeChatTab(
    bool isFwdChatMsgs,
    Function onUserInfoPressed,
    bool isFav,
-   MenuNode exDetailsMenu,
-   MenuNode inDetailsMenu,
+   Node exDetailsMenu,
+   Node inDetailsMenu,
    Function onExpandImg,
 ) {
    if (posts.length == 0)
@@ -3608,18 +3608,14 @@ class OccaseState extends State<Occase>
 {
    Config _cfg = Config();
 
-   // Array with the length equal to the number of menus there
-   // are. Used for the filters screen.
-   List<MenuItem> _filtersMenu = List<MenuItem>();
-
-   // Similar to _FilterMenu but for the new screen.
-   List<MenuItem> _productsMenu = List<MenuItem>();
+   // The trees holding the locations and products trees.
+   List<MenuItem> _trees = List<MenuItem>();
 
    // The ex details tree root node.
-   MenuNode _exDetailsRoot;
+   Node _exDetailsRoot;
 
    // The in details tree root node.
-   MenuNode _inDetailsRoot;
+   Node _inDetailsRoot;
 
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
@@ -3896,15 +3892,14 @@ class OccaseState extends State<Occase>
 
       // When the database is created, we also have to create the
       // default menu table.
-      _productsMenu = await readMenuItemsFromAsset();
+      _trees = await readMenuItemsFromAsset();
 
-      print('======> ${g.param.filterDepths}');
       List<MenuElem> elems = List<MenuElem>();
-      for (int i = 0; i < _productsMenu.length; ++i) {
+      for (int i = 0; i < _trees.length; ++i) {
          elems.addAll(makeMenuElems(
-               _productsMenu[i].root.first,
+               _trees[i].root.first,
                i,
-               g.param.filterDepths[i],
+               1000, // Large enough to include nodes at all depths.
             ),
          );
       }
@@ -3977,15 +3972,11 @@ class OccaseState extends State<Occase>
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
       _dialogPrefs[2] = _cfg.showDialogOnReportPost == 'yes';
 
-      if (_productsMenu.isEmpty)
-         _productsMenu = await readMenuItemsFromAsset();
-
-      if (_filtersMenu.isEmpty)
-         _filtersMenu =
-            await loadMenuItems(
-               await loadMenu(_db),
-               g.param.filterDepths,
-            );
+      if (_trees.isEmpty)
+         _trees = loadMenuItems(
+            await loadMenu(_db),
+            g.param.filterDepths,
+         );
 
       try {
          final List<Post> posts = await loadPosts(_db);
@@ -4234,8 +4225,8 @@ class OccaseState extends State<Occase>
       _newPostPressed = true;
       _post = Post();
       _post.images = List<String>(); // TODO: remove this later.
-      _productsMenu[0].restoreMenuStack();
-      _productsMenu[1].restoreMenuStack();
+      _trees[0].restoreMenuStack();
+      _trees[1].restoreMenuStack();
       _botBarIdx = 0;
       setState(() { });
    }
@@ -4498,8 +4489,8 @@ class OccaseState extends State<Occase>
 
    void _onBotBarTapped(int i)
    {
-      if (_botBarIdx < _productsMenu.length)
-         _productsMenu[_botBarIdx].restoreMenuStack();
+      if (_botBarIdx < _trees.length)
+         _trees[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -4526,7 +4517,7 @@ class OccaseState extends State<Occase>
 
       do {
          --_botBarIdx;
-         _productsMenu[_botBarIdx].restoreMenuStack();
+         _trees[_botBarIdx].restoreMenuStack();
       } while (_botBarIdx != i);
 
       setState(() { });
@@ -4534,16 +4525,16 @@ class OccaseState extends State<Occase>
 
    void _onPostLeafPressed(int i)
    {
-      MenuNode o = _productsMenu[_botBarIdx].root.last.children[i];
-      _productsMenu[_botBarIdx].root.add(o);
+      Node o = _trees[_botBarIdx].root.last.children[i];
+      _trees[_botBarIdx].root.add(o);
       _onPostLeafReached();
       setState(() { });
    }
 
    void _onPostLeafReached()
    {
-      _post.channel[_botBarIdx][0] = _productsMenu[_botBarIdx].root.last.code;
-      _productsMenu[_botBarIdx].restoreMenuStack();
+      _post.channel[_botBarIdx][0] = _trees[_botBarIdx].root.last.code;
+      _trees[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
@@ -4552,12 +4543,12 @@ class OccaseState extends State<Occase>
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
-         MenuNode o = _productsMenu[_botBarIdx].root.last.children[i];
-         _productsMenu[_botBarIdx].root.add(o);
+         Node o = _trees[_botBarIdx].root.last.children[i];
+         _trees[_botBarIdx].root.add(o);
          i = 0;
-      } while (_productsMenu[_botBarIdx].root.last.children.length == 1);
+      } while (_trees[_botBarIdx].root.last.children.length == 1);
 
-      final int length = _productsMenu[_botBarIdx].root.last.children.length;
+      final int length = _trees[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -4570,8 +4561,8 @@ class OccaseState extends State<Occase>
 
    void _onFilterNodePressed(int i)
    {
-      MenuNode o = _filtersMenu[_botBarIdx].root.last.children[i];
-      _filtersMenu[_botBarIdx].root.add(o);
+      Node o = _trees[_botBarIdx].root.last.children[i];
+      _trees[_botBarIdx].root.add(o);
 
       setState(() { });
    }
@@ -4581,7 +4572,7 @@ class OccaseState extends State<Occase>
       // k = 0 means the *check all fields*.
       if (k == 0) {
          Batch batch = _db.batch();
-         _filtersMenu[_botBarIdx].updateLeafReachAll(batch, _botBarIdx);
+         _trees[_botBarIdx].updateLeafReachAll(batch, _botBarIdx);
          await batch.commit(noResult: true, continueOnError: true);
          setState(() { });
          return;
@@ -4590,7 +4581,7 @@ class OccaseState extends State<Occase>
       --k; // Accounts for the Todos index.
 
       Batch batch = _db.batch();
-      _filtersMenu[_botBarIdx].updateLeafReach(k, batch, _botBarIdx);
+      _trees[_botBarIdx].updateLeafReach(k, batch, _botBarIdx);
       await batch.commit(noResult: true, continueOnError: true);
       setState(() { });
    }
@@ -5625,7 +5616,7 @@ class OccaseState extends State<Occase>
 
       // An empty channels list means we do not want any filter for
       // that menu item.
-      for (MenuItem item in _filtersMenu)
+      for (MenuItem item in _trees)
          channels.add(readHashCodes(item.root.first, item.filterDepth));
 
       assert(channels.length == 2);
@@ -5723,8 +5714,8 @@ class OccaseState extends State<Occase>
    {
       setState(() {
          _newFiltersPressed = true;
-         _filtersMenu[0].restoreMenuStack();
-         _filtersMenu[1].restoreMenuStack();
+         _trees[0].restoreMenuStack();
+         _trees[1].restoreMenuStack();
          _botBarIdx = 0;
       });
    }
@@ -5911,8 +5902,8 @@ class OccaseState extends State<Occase>
    Widget build(BuildContext ctx)
    {
       final bool mustWait =
-         _productsMenu.isEmpty    ||
-         _filtersMenu.isEmpty     ||
+         _trees.isEmpty    ||
+         _trees.isEmpty     ||
          (_exDetailsRoot == null) ||
          (_inDetailsRoot == null) ||
          (g.param == null);
@@ -5952,14 +5943,14 @@ class OccaseState extends State<Occase>
          return makeNewPostScreens(
             ctx,
             _post,
-            _productsMenu,
+            _trees,
             _txtCtrl,
             _onSendNewPost,
             _botBarIdx,
             _onNewPostExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
-            () { return _onWillPopMenu(_productsMenu);},
+            () { return _onWillPopMenu(_trees);},
             _onNewPostBotBarTapped,
             _onNewPostInDetail,
             _exDetailsRoot,
@@ -5979,10 +5970,10 @@ class OccaseState extends State<Occase>
             _onSendFilters,
             _onFilterDetail,
             _onFilterNodePressed,
-            () { return _onWillPopMenu(_filtersMenu);},
+            () { return _onWillPopMenu(_trees);},
             _onBotBarTapped,
             _onFilterLeafNodePressed,
-            _filtersMenu,
+            _trees,
             _cfg.anyOfFeatures,
             _botBarIdx,
             _exDetailsRoot.children[0].children[0],
@@ -6023,7 +6014,7 @@ class OccaseState extends State<Occase>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            makePostSummaryStr(_productsMenu, _post),
+            makePostSummaryStr(_trees, _post),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLpChat,
@@ -6072,7 +6063,7 @@ class OccaseState extends State<Occase>
          _ownPosts,
          _onChatPressed,
          _onChatLP,
-         _productsMenu,
+         _trees,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _lpChatMsgs.isNotEmpty,
@@ -6087,7 +6078,7 @@ class OccaseState extends State<Occase>
          ctx,
          _posts,
          _alertUserOnPressed,
-         _productsMenu,
+         _trees,
          _exDetailsRoot,
          _inDetailsRoot,
          _nNewPosts,
@@ -6099,7 +6090,7 @@ class OccaseState extends State<Occase>
          _favPosts,
          _onChatPressed,
          _onChatLP,
-         _productsMenu,
+         _trees,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _lpChatMsgs.isNotEmpty,

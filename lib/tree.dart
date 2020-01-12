@@ -49,22 +49,22 @@ Future<List<MenuElem>> loadMenu(Database db) async
   });
 }
 
-class MenuNode {
+class Node {
    String name;
    List<int> code;
    int leafCounter;
    int leafReach;
 
-   List<MenuNode> children;
+   List<Node> children;
 
-   MenuNode(
+   Node(
    { this.name = ''
    , this.leafReach = 0
    , this.code
    , this.leafCounter = 0
    })
    {
-      children = List<MenuNode>();
+      children = List<Node>();
    }
 
    @override
@@ -90,7 +90,7 @@ class MenuNode {
 
 // Given a leaf code and the menu it corresponds to produces an array
 // with the names of the parent up until the root direct child.
-List<String> loadNames(MenuNode root, List<int> leafCode)
+List<String> loadNames(Node root, List<int> leafCode)
 {
    if (leafCode.isEmpty)
       return List<String>();
@@ -106,7 +106,7 @@ List<String> loadNames(MenuNode root, List<int> leafCode)
          continue;
       }
 
-      MenuNode next = root.children[i];
+      Node next = root.children[i];
       names.add(next.name);
       root = next;
    }
@@ -162,15 +162,15 @@ MenuElem parseFields(String line)
    );
 }
 
-MenuNode parseTree(List<MenuElem> elems, int menuDepth)
+Node parseTree(List<MenuElem> elems, int menuDepth)
 {
    List<int> codes = List<int>(menuDepth);
    for (int i = 0; i < codes.length; ++i)
       codes[i] = -1;
 
-   List<MenuNode> st = List<MenuNode>();
+   List<Node> st = List<Node>();
    int lastDepth = 0;
-   MenuNode root = MenuNode();
+   Node root = Node();
    for (MenuElem me in elems) {
       //print('${me.depth}; ${me.name}; ${me.code}; ${me.leafReach}; ${me.index}');
       if (st.isEmpty) {
@@ -194,11 +194,11 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
       if (me.depth > lastDepth) {
          if (lastDepth + 1 != me.depth) {
             print('Error on node: $lastDepth -- ${me.depth};${me.name};${me.leafReach}');
-            return MenuNode();
+            return Node();
          }
 
          // We found the child of the last node pushed on the stack.
-         MenuNode p = MenuNode(
+         Node p = Node(
             name: me.name,
             code: code,
             leafReach: me.leafReach,
@@ -218,7 +218,7 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          st.removeLast();
 
          // Now we can add the new node.
-         MenuNode p = MenuNode(
+         Node p = Node(
             name: me.name,
             code: code,
             leafReach: me.leafReach,
@@ -230,7 +230,7 @@ MenuNode parseTree(List<MenuElem> elems, int menuDepth)
          lastDepth = me.depth;
       } else {
          st.removeLast();
-         MenuNode p = MenuNode(
+         Node p = Node(
             name: me.name,
             code: code,
             leafReach: me.leafReach,
@@ -251,10 +251,10 @@ class MenuItem {
    // The list below is used as a stack whose first element is the
    // menu root node. When a menu entries is selected it is pushed on
    // the stack and the element is treated a the root of the subtree.
-   List<MenuNode> root;
+   List<Node> root;
 
    MenuItem({this.filterDepth = 0}) {
-      root = List<MenuNode>();
+      root = List<Node>();
    }
 
    // Returns the name of each node in the menu stack. 
@@ -269,7 +269,7 @@ class MenuItem {
    void updateLeafReach(int k, Batch batch, int idx)
    {
       int d = 0;
-      MenuNode node = root.last.children[k];
+      Node node = root.last.children[k];
       if (node.leafReach > 0) {
          d = - node.leafCounter;
          node.leafReach = 0;
@@ -315,7 +315,7 @@ class MenuItem {
    MenuItem.fromJson(Map<String, dynamic> map)
    {
       filterDepth = map["depth"];
-      root = List<MenuNode>();
+      root = List<Node>();
 
       final String rawMenu = map["data"];
       List<String> lines = rawMenu.split("=");
@@ -325,7 +325,7 @@ class MenuItem {
 
       final int menuDepth = findMenuDepth(elems);
       if (menuDepth != 0) {
-         MenuNode node = parseTree(elems, menuDepth);
+         Node node = parseTree(elems, menuDepth);
          loadLeafCounters(node);
          root.add(node);
       }
@@ -344,7 +344,7 @@ class MenuItem {
 /* Counts all leaf counters of the children. If the leaf counter of a
  * child is zero it is itself a leaf and contributes with one.
  */
-int accumulateLeafCounters(MenuNode node)
+int accumulateLeafCounters(Node node)
 {
    if (node.children.isEmpty)
       return 1;
@@ -359,18 +359,18 @@ int accumulateLeafCounters(MenuNode node)
 /* Traverses the tree and loads each node with number of leaf nodes it
  * is parent from. 
  */
-void loadLeafCounters(MenuNode root)
+void loadLeafCounters(Node root)
 {
    // Here I will choose a depth that is big enough.
    MenuTraversal iter = MenuTraversal(root, 1000);
-   MenuNode current = iter.advanceToLeaf();
+   Node current = iter.advanceToLeaf();
    while (current != null) {
       current.leafCounter = accumulateLeafCounters(current);
       current = iter.nextNode();
    }
 }
 
-int accumulateLeafReach(MenuNode node)
+int accumulateLeafReach(Node node)
 {
    int c = 0;
    for (int i = 0; i < node.children.length; ++i)
@@ -381,10 +381,10 @@ int accumulateLeafReach(MenuNode node)
 
 /* Traverses the tree accumulating the leaf reaches.
  */
-void loadLeafReaches(MenuNode root, int filterDepth)
+void loadLeafReaches(Node root, int filterDepth)
 {
    MenuTraversal iter = MenuTraversal(root, filterDepth - 1);
-   MenuNode current = iter.advanceToLeaf();
+   Node current = iter.advanceToLeaf();
    while (current != null) {
       current.leafReach = accumulateLeafReach(current);
       current = iter.nextNode();
@@ -406,42 +406,42 @@ List<MenuItem> menuReader(Map<String, dynamic> menusMap)
 }
 
 class MenuTraversal {
-   List<List<MenuNode>> st = List<List<MenuNode>>();
+   List<List<Node>> st = List<List<Node>>();
    int depth;
 
-   MenuTraversal(MenuNode root, int d)
+   MenuTraversal(Node root, int d)
    {
       depth = d;
 
       if (root != null)
-         st.add(<MenuNode>[root]);
+         st.add(<Node>[root]);
    }
 
-   MenuNode advanceToLeaf()
+   Node advanceToLeaf()
    {
       while (st.last.last.children.isNotEmpty && st.length <= depth) {
-         List<MenuNode> childrenCopy = List<MenuNode>();
-         for (MenuNode o in st.last.last.children)
+         List<Node> childrenCopy = List<Node>();
+         for (Node o in st.last.last.children)
             childrenCopy.add(o);
          st.add(childrenCopy);
       }
 
-      MenuNode tmp = st.last.last;
+      Node tmp = st.last.last;
       st.last.removeLast();
       return tmp;
    }
 
-   MenuNode nextInternal()
+   Node nextInternal()
    {
       st.removeLast();
       if (st.isEmpty)
          return null;
-      MenuNode tmp = st.last.last;
+      Node tmp = st.last.last;
       st.last.removeLast();
       return tmp;
    }
 
-   MenuNode nextLeafNode()
+   Node nextLeafNode()
    {
       while (st.last.isEmpty)
          if (nextInternal() == null)
@@ -450,7 +450,7 @@ class MenuTraversal {
       return advanceToLeaf();
    }
 
-   MenuNode nextNode()
+   Node nextNode()
    {
       if (st.last.isEmpty)
          return nextInternal();
@@ -529,10 +529,10 @@ int toChannelHashCode(final List<int> code, final int depth)
    }
 }
 
-List<int> readHashCodes(MenuNode root, int depth)
+List<int> readHashCodes(Node root, int depth)
 {
    MenuTraversal iter = MenuTraversal(root, depth);
-   MenuNode current = iter.advanceToLeaf();
+   Node current = iter.advanceToLeaf();
    List<int> hashCodes = List<int>();
    while (current != null) {
       if (current.leafReach > 0)
@@ -548,26 +548,26 @@ List<int> readHashCodes(MenuNode root, int depth)
 // Serialize the menu in a way that it can be used as input in
 // parseTree.
 class MenuTraversal2 {
-   List<List<MenuNode>> st = List<List<MenuNode>>();
+   List<List<Node>> st = List<List<Node>>();
 
-   MenuTraversal2(final MenuNode root)
+   MenuTraversal2(final Node root)
    {
       if (root != null)
-         st.add(<MenuNode>[root]);
+         st.add(<Node>[root]);
    }
 
-   MenuNode advance()
+   Node advance()
    {
-      final MenuNode node = st.last.last;
+      final Node node = st.last.last;
       st.last.removeLast();
       if (node.children.isNotEmpty) {
          // TODO: See the TODO in parseTree for why I am adding the
          // nodes here in reverse order. Once that function is fixed
          // the nodes have be added in same order they appear in the
          // childrem array.
-         List<MenuNode> childrenCopy = List<MenuNode>();
+         List<Node> childrenCopy = List<Node>();
          // This is correct.
-         //for (MenuNode o in node.children)
+         //for (Node o in node.children)
          //   childrenCopy.add(o);
 
          // Workaround, should be fixed once parseTree has been fixed.
@@ -579,7 +579,7 @@ class MenuTraversal2 {
       return node;
    }
 
-   MenuNode next()
+   Node next()
    {
       while (st.last.isEmpty) {
          st.removeLast();
@@ -591,10 +591,10 @@ class MenuTraversal2 {
    }
 }
 
-String serializeMenuToStr(final MenuNode root)
+String serializeMenuToStr(final Node root)
 {
    MenuTraversal2 iter = MenuTraversal2(root);
-   MenuNode current = iter.advance();
+   Node current = iter.advance();
    String menu = "";
    while (current != null) {
       final int depth = current.code.length;
@@ -608,7 +608,7 @@ String serializeMenuToStr(final MenuNode root)
 }
 
 List<MenuElem>
-makeMenuElems(final MenuNode root, int index, int maxDepth)
+makeMenuElems(final Node root, int index, int maxDepth)
 {
    // TODO: The depth is taken from the lenght of the code. Maybe we
    // should consider removing the depth from sqlite to avoid
@@ -616,7 +616,7 @@ makeMenuElems(final MenuNode root, int index, int maxDepth)
    // size fields.
    List<MenuElem> elems = List<MenuElem>();
    MenuTraversal2 iter = MenuTraversal2(root);
-   MenuNode current = iter.advance();
+   Node current = iter.advance();
    while (current != null) {
       if (current.code.length <= maxDepth) {
          MenuElem me = MenuElem(
@@ -634,16 +634,16 @@ makeMenuElems(final MenuNode root, int index, int maxDepth)
    return elems;
 }
 
-Future<List<MenuItem>> loadMenuItems(
+List<MenuItem> loadMenuItems(
    final List<MenuElem> elems,
    final List<int> filterDepths,
-) async {
-   // Here we have to load the menu table, load all leaf
-   // counters and leaf reach. NOTE: When the user selects a
-   // specific menu item in the filters screen, we save only
-   // that specific item's leaf reach on the database, the
-   // corrections in the leaf reach of parent nodes are kept in
-   // memory, that is why we have to load them here.
+) {
+   // Here we have to load all leaf counters and leaf reach.
+   //
+   // NOTE: When the user selects a specific tree node in the filters
+   // screen, we save only that specific node's leaf reach on the
+   // database, the corrections in the leaf reach of parent nodes are
+   // kept in memory, that is why we have to load them here.
 
    List<MenuItem> menu = List<MenuItem>(2);
    menu[0] = MenuItem();
@@ -661,7 +661,7 @@ Future<List<MenuItem>> loadMenuItems(
    for (int i = 0; i < tmp.length; ++i) {
       final int menuDepth = findMenuDepth(tmp[i]);
       if (menuDepth != 0) {
-         MenuNode node = parseTree(tmp[i], menuDepth);
+         Node node = parseTree(tmp[i], menuDepth);
          loadLeafCounters(node);
          loadLeafReaches(node, menu[i].filterDepth);
          menu[i].root.add(node);
