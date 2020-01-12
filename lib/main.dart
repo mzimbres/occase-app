@@ -1980,20 +1980,22 @@ RichText makeFilterListTileTitleWidget(
 
 ListTile makeFilterSelectAllItem(
    BuildContext ctx,
+   Node node,
    String title,
-   Function onTap)
-{
-   // Handles the *select all* button.
+   Function onTap,
+) {
    return ListTile(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
           color: Theme.of(ctx).colorScheme.secondaryVariant
        ),
-       title: Text(title, style: stl.ltTitle),
+       title: makeListTileTreeTitle(ctx, node, title),
+       subtitle: makeListTileTreeSubtitle(node),
        dense: true,
        onTap: onTap,
        enabled: true,
+       isThreeLine: true,
     );
 }
 
@@ -2123,50 +2125,60 @@ Widget makePaymentChoiceWidget(
    );
 }
 
-ListTile makeFilterListTitle(
+Widget makeListTileTreeTitle(
    BuildContext ctx,
-   Node child,
-   Function onTap,
-   Icon trailing)
-{
-   final int c = child.leafReach;
-   final int cs = child.leafCounter;
+   Node node,
+   String title,
+) {
+   final int c = node.leafReach;
+   final int cs = node.leafCounter;
 
    String s = ' ($c/$cs)';
    TextStyle counterTxtStl = Theme.of(ctx).textTheme.caption;
-   if (child.isLeaf() && child.leafCounter > 1) {
-      s = ' (${child.leafCounter})';
+   if (node.isLeaf() && node.leafCounter > 1) {
+      s = ' (${node.leafCounter})';
       counterTxtStl = Theme.of(ctx).textTheme.caption.copyWith(
          color: Theme.of(ctx).colorScheme.primary,
       );
    }
 
-   RichText title = RichText(
+   return RichText(
       text: TextSpan(
-         text: child.name,
+         text: title,
          style: stl.ltTitle,
          children: <TextSpan>
          [ TextSpan(text: s, style: counterTxtStl),
          ]
       )
    );
-         
-   Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
-   Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+}
 
-   if (c != 0) {
-      avatarBgColor = Theme.of(ctx).colorScheme.primary;
-      avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
-   }
-
-   Widget subtitle;
-   if (!child.isLeaf()) {
-      subtitle = Text(
-          child.getChildrenNames(),
+Widget makeListTileTreeSubtitle(Node node)
+{
+   if (!node.isLeaf())
+      return Text(
+          node.getChildrenNames(),
           style: stl.ltSubtitle,
           maxLines: 2,
           overflow: TextOverflow.clip,
-       );
+      );
+
+   Widget subtitle;
+   return subtitle;
+}
+
+ListTile makeFilterListTitle(
+   BuildContext ctx,
+   Node child,
+   Function onTap,
+   Icon trailing)
+{
+   Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
+   Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+
+   if (child.leafReach != 0) {
+      avatarBgColor = Theme.of(ctx).colorScheme.primary;
+      avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
    }
 
    return
@@ -2178,14 +2190,14 @@ ListTile makeFilterListTitle(
              ),
              backgroundColor: avatarBgColor,
           ),
-          title: title,
+          title: makeListTileTreeTitle(ctx, child, child.name),
           dense: true,
-          subtitle: subtitle,
+          subtitle: makeListTileTreeSubtitle(child),
           trailing: trailing,
           contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
           onTap: onTap,
           enabled: true,
-          selected: c != 0,
+          selected: child.leafReach != 0,
           isThreeLine: !child.isLeaf(),
        );
 }
@@ -2219,7 +2231,9 @@ ListView makeNewFilterListView(
       {
          if (shift == 1 && i == 0)
             return makeFilterSelectAllItem(
-               ctx, g.param.selectAll,
+               ctx,
+               o,
+               g.param.selectAll,
                () { onLeafPressed(0); },
             );
 
