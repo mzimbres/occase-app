@@ -188,10 +188,8 @@ class ChatMetadata {
 
    void addChatItem(ChatItem ci)
    {
-      print('aaa ===> ${ci.rowid}');
       lastChatItem = ci;
       if (isLoaded()) {
-         print('bbb ===> ${ci.rowid}');
          msgs.add(ci);
          chatLength = msgs.length;
       } else {

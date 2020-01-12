@@ -2208,7 +2208,6 @@ ListView makeNewFilterListView(
    Function onNodePressed,
    bool makeLeaf)
 {
-   print('====> ${o.children.last.children}');
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
       shift = 1;
@@ -3294,11 +3293,11 @@ Widget makeChatsExp(
 {
    List<Widget> list = List<Widget>(ch.length);
 
-   int nUnredChats = 0;
+   int nUnreadChats = 0;
    for (int i = 0; i < list.length; ++i) {
       final int n = ch[i].nUnreadMsgs;
       if (n > 0)
-         ++nUnredChats;
+         ++nUnreadChats;
 
       Card card = makeChatListTile(
          ctx,
@@ -3329,13 +3328,13 @@ Widget makeChatsExp(
   }
 
   Widget title;
-   if (nUnredChats == 0) {
+   if (nUnreadChats == 0) {
       title = Text('${ch.length} ${g.param.numberOfChatsSuffix}');
    } else {
       title = makeExpTileTitle(
          ctx,
          '${ch.length} ${g.param.numberOfChatsSuffix}',
-         '$nUnredChats ${g.param.numberOfUnreadChatsSuffix}',
+         '$nUnreadChats ${g.param.numberOfUnreadChatsSuffix}',
          ', ',
          false,
       );
@@ -3345,7 +3344,7 @@ Widget makeChatsExp(
       post.pinDate == 0 ? Icons.place : Icons.pin_drop;
 
    final bool expState = (ch.length < 6 && ch.length > 0)
-                       || nUnredChats != 0;
+                       || nUnreadChats != 0;
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
@@ -3497,17 +3496,6 @@ Widget makeChatTab(
          Widget w = putPostOnFinalCard(ctx, expansions);
 
          return w;
-         //return Dismissible(
-         //   key: GlobalKey(),
-         //   onDismissed: (direction) {
-         //      onDelPost(i);
-         //      Scaffold.of(ctx)
-         //         .showSnackBar(SnackBar(
-         //            content: Text(g.param.dismissedChat)));
-         //   },
-         //   background: Container(color: Colors.red),
-         //   child: w,
-         //);
       },
    );
 }
@@ -4120,7 +4108,11 @@ class OccaseState extends State<Occase>
    Future<void> _clearPosts() async
    {
       await _db.execute(sql.clearPosts, [1]);
-      setState((){_posts = List<Post>();});
+
+      setState((){
+         _posts = List<Post>();
+         _nNewPosts = 0;
+      });
    }
 
    void _clearPostsDialog(BuildContext ctx)
@@ -5607,12 +5599,13 @@ class OccaseState extends State<Occase>
       // have a more recent post id than what is stored in the app. For
       // that we rely on the fact that
       //
-      // 1. When the user moves a post the chats screen it will not be
+      // 1. When the user moves a post to the chats screen it will not be
       //    added twice.
       // 2. Old posts will be cleared when we receive the answer to this
       //    request.
 
       _cfg.lastPostId = 0;
+      _nNewPosts = 0;
 
       await _db.execute(sql.updateLastPostId, [0]);
 
@@ -5640,8 +5633,8 @@ class OccaseState extends State<Occase>
       var subCmd = {
          'cmd': 'subscribe',
          'last_post_id': lastPostId,
-         'channels': channels[0],
-         'filters': channels[1],
+         'filters': channels[0],
+         'channels': channels[1],
          'any_of_features': _cfg.anyOfFeatures,
          'ranges': convertToValues(_cfg.ranges),
       };
