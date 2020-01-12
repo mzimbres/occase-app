@@ -34,6 +34,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178977565766:android:a6b51669806bf6fe91ee47",
+        "android_client_info": {
+          "package_name": "occase.car.de"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178977565766-65k41lk6qhbk6eqv8jgj4u4qnm7n3p59.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5oZqHPBqNUSS2cZ4nb0BIOg6nDxoWzRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178977565766-65k41lk6qhbk6eqv8jgj4u4qnm7n3p59.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

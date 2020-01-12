@@ -21,10 +21,10 @@ The font used in the icon was: Caesar Dressing.
 To create an app with another app id substitute all occurrencies
 of 
 
-   $ grep -r occase.car.br
+   $ grep -r occase.car.de
    $ find . -name carway
 
-with the new the new id. To change the name do it similar.
+with the new id. To change the name do it similar.
 
 App id and name
 ----------------------------------------------------------
@@ -32,7 +32,7 @@ App id and name
 The script change_id.sh can help changing the app id and name.
 
 The google-services.json for the specific application id will be stored as
-google-services.json.occase.car.br
+google-services.json.occase.car.de
 
 Notes
 ----------------------------------------------------------

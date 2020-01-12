@@ -33,7 +33,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "occase.car.br"
+        applicationId "occase.car.de"
         minSdkVersion 22
         targetSdkVersion 27
         versionCode flutterVersionCode.toInteger()

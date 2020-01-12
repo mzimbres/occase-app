@@ -3,8 +3,8 @@
 # Below the strings that have to be adjusted.
 # WARNING: This script will change itself.
 
-app_id_old=occase.car.br
-app_id_new=occase.car.br
+app_id_old=occase.car.de
+app_id_new=occase.car.de
 old_label='label="Car"'
 
 new_app_name=$(grep appName data/parameters.txt | awk -F: '{print $2}' | tr -d '"' | tr -d ' ')
@@ -20,6 +20,6 @@ sed -i "s/$old_label/$new_label/g" android/app/src/main/AndroidManifest.xml
 
 # TODO: Rename all directories with the old app name.
 #
-# android/app/src/main/java/occase/car/brway/MainActivity.java
-# android/app/src/main/kotlin/occase/car/br/MainActivity.kt
+# android/app/src/main/java/occase/car/de/MainActivity.java
+# android/app/src/main/kotlin/occase/car/de/MainActivity.kt
 
