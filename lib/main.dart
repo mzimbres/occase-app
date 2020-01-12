@@ -1300,6 +1300,7 @@ Card makeChatMsgWidget(
    Function onChatMsgLongPressed,
    Function onDragChatMsg,
    bool isNewMsg,
+   String ownNick,
 ) {
    Color txtColor = Colors.black;
    Color color = Color(0xFFFFFFFF);
@@ -1391,6 +1392,7 @@ Card makeChatMsgWidget(
          refersTo,
          c1,
          isNewMsg,
+         ownNick,
       );
 
       Row refMsg = Row(
@@ -1465,7 +1467,8 @@ ListView makeChatMsgListView(
    ScrollController scrollCtrl,
    ChatMetadata ch,
    Function onChatMsgLongPressed,
-   Function onDragChatMsg)
+   Function onDragChatMsg,
+   String ownNick,)
 {
    final int nMsgs = ch.msgs.length;
    final int shift = ch.divisorUnreadMsgs == 0 ? 0 : 1;
@@ -1518,6 +1521,7 @@ ListView makeChatMsgListView(
             onChatMsgLongPressed,
             onDragChatMsg,
             isNewMsg,
+            ownNick,
          );
 
          return GestureDetector(
@@ -1586,6 +1590,7 @@ Widget makeRefChatMsgWidget(
    int i,
    Color cc,
    bool isNewMsg,
+   String ownNick,
 ) {
    Color titleColor = cc;
    Color bodyTxtColor = Colors.black;
@@ -1603,7 +1608,11 @@ Widget makeRefChatMsgWidget(
       ),
    );
 
-   Text title = Text(ch.nick,
+   String nick = ch.nick;
+   if (ch.msgs[i].isFromThisApp())
+      nick = ownNick;
+
+   Text title = Text(nick,
       maxLines: 1,
       overflow: TextOverflow.clip,
       style: TextStyle(
@@ -1676,8 +1685,9 @@ Widget makeChatScreen(
    bool showChatJumpDownButton,
    Function onChatJumpDown,
    String avatar,
-   Function onWritingChat)
-{
+   Function onWritingChat,
+   String ownNick,
+) {
    Column secondLayer = makeChatSecondLayer(
       ctx,
       ctrl.text.isEmpty ? null : onSendChatMsg,
@@ -1710,6 +1720,7 @@ Widget makeChatScreen(
       ch,
       onChatMsgLongPressed,
       onDragChatMsg,
+      ownNick,
    );
 
    List<Widget> cols = List<Widget>();
@@ -1767,6 +1778,7 @@ Widget makeChatScreen(
             dragedIdx,
             co1,
             false,
+            ownNick,
          ),
       );
 
@@ -6036,6 +6048,7 @@ class OccaseState extends State<Occase>
             _onChatJumpDown,
             _post.avatar,
             _onWritingChat,
+            _cfg.nick,
          );
       }
 
