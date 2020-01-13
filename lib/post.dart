@@ -399,7 +399,7 @@ class Post {
    Post()
    {
       channel = makeEmptyChannels();
-      exDetails = List.generate(cts.maxExDetailSize, (_) => 0);
+      exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
       rangeValues = List.generate(g.param.rangeDivs.length, (int i) {
          return g.param.rangesMinMax[2 * i];
@@ -514,7 +514,7 @@ class Post {
       avatar = bodyMap['avatar'] ?? '';
       images = decodeList(1, '', bodyMap['images']) ?? <String>[];
       description = bodyMap['msg'];
-      exDetails = decodeList(cts.maxExDetailSize, 0, bodyMap['ex_details']);
+      exDetails = decodeList(cts.maxExDetailSize, 1, bodyMap['ex_details']);
       inDetails = decodeList(cts.maxInDetailSize, 0, bodyMap['in_details']);
       channel = decodeChannel(bodyMap['channel']);
    }
@@ -624,7 +624,7 @@ Future<List<Post>> loadPosts(Database db) async
 
       post.exDetails = decodeList(
          cts.maxExDetailSize,
-         0,
+         1,
          jsonDecode(bodyMap['ex_details']),
       );
 

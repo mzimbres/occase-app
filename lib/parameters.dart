@@ -59,6 +59,8 @@ class Parameters {
    String cancelPostContent;
    String numberOfChatsSuffix;
    String numberOfUnreadChatsSuffix;
+   String postMinImgs;
+   String postMinImgsContent;
 
    List<int> filterDepths;
    List<int> rangesMinMax;
@@ -127,6 +129,8 @@ class Parameters {
    , this.cancelPostContent = ''
    , this.numberOfChatsSuffix = ''
    , this.numberOfUnreadChatsSuffix = ''
+   , this.postMinImgs = ''
+   , this.postMinImgsContent = ''
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
@@ -204,6 +208,8 @@ class Parameters {
       cancelPostContent           = map['cancelPostContent'];
       numberOfChatsSuffix         = map['numberOfChatsSuffix'];
       numberOfUnreadChatsSuffix   = map['numberOfUnreadChatsSuffix'];
+      postMinImgs                 = map['postMinImgs'];
+      postMinImgsContent          = map['postMinImgsContent'];
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -272,6 +278,8 @@ class Parameters {
          'cancelPostContent':           cancelPostContent,
          'numberOfChatsSuffix':         numberOfChatsSuffix,
          'numberOfUnreadChatsSuffix':   numberOfUnreadChatsSuffix,
+         'postMinImgs':                 postMinImgs,
+         'postMinImgsContent':          postMinImgsContent,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,

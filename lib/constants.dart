@@ -39,7 +39,8 @@ const String wshost = 'wss://occase.de';
 //const String wshost = 'ws://10.0.2.2:80';
 //const String wshost = 'ws://192.168.178.24:80';
 
-const int maxImgsPerPost = 4;
+const int maxImgsPerPost = 6;
+const int minImgsPerPost = 1;
 
 // The time we are willing to wait for the server to send us the
 // filenames.

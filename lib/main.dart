@@ -601,7 +601,7 @@ Widget wrapOnDetailExpTitle(
 
 Widget makeNewPostDetailExpTile(
    BuildContext ctx,
-   Function onNewPostInDetails,
+   Function onInDetail,
    Node titleNode,
    int state,
    String strDisplay)
@@ -609,7 +609,7 @@ Widget makeNewPostDetailExpTile(
    List<Widget> bar =
       makeNewPostDetailElemList(
          ctx,
-         onNewPostInDetails,
+         onInDetail,
          state,
          titleNode.children,
       );
@@ -693,11 +693,11 @@ List<Widget> makeSliderList({
 
 List<Widget> makeNewPostDetailScreen(
    BuildContext ctx,
-   Function onNewPostExDetails,
-   Function onNewPostInDetails,
+   Function onExDetail,
+   Function onInDetail,
    Post post,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Node exDetailsTree,
+   Node inDetailsTree,
    TextEditingController txtCtrl,
    Function onRangeValueChanged)
 {
@@ -705,32 +705,32 @@ List<Widget> makeNewPostDetailScreen(
 
    List<Widget> all = List<Widget>();
 
-   final int l1 = exDetailsMenu.children[idx].children.length;
+   final int l1 = exDetailsTree.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
 
       final int k = searchBitOn(
          post.exDetails[i],
-         exDetailsMenu.children[idx].children[i].children.length
+         exDetailsTree.children[idx].children[i].children.length
       );
 
       Widget foo = makeNewPostDetailExpTile(
          ctx,
-         (int j) {onNewPostExDetails(i, j);},
-         exDetailsMenu.children[idx].children[i],
+         (int j) {onExDetail(i, j);},
+         exDetailsTree.children[idx].children[i],
          post.exDetails[i],
-         exDetailsMenu.children[idx].children[i].children[k].name,
+         exDetailsTree.children[idx].children[i].children[k].name,
       );
 
       all.add(foo);
    }
 
-   final int l2 = inDetailsMenu.children[idx].children.length;
+   final int l2 = inDetailsTree.children[idx].children.length;
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
          ctx,
-         (int j) {onNewPostInDetails(i, j);},
-         inDetailsMenu.children[idx].children[i],
+         (int j) {onInDetail(i, j);},
+         inDetailsTree.children[idx].children[i],
          post.inDetails[i],
          '$nBitsSet items',
       );
@@ -794,7 +794,7 @@ List<Widget> makeNewPostDetailScreen(
    all.add(
       createRaisedButton(
          ctx,
-         (){onNewPostExDetails(-1, -1);},
+         (){onExDetail(-1, -1);},
          g.param.next,
       ),
    );
@@ -809,14 +809,14 @@ WillPopScope makeNewPostScreens(
    TextEditingController txtCtrl,
    Function onSendNewPost,
    int screen,
-   Function onNewPostExDetails,
+   Function onExDetail,
    Function onPostLeafPressed,
    Function onPostNodePressed,
    Function onWillPopMenu,
    Function onNewPostBotBarTapped,
-   Function onNewPostInDetails,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Function onInDetail,
+   Node exDetailsTree,
+   Node inDetailsTree,
    Function onRangeValueChanged,
    Function onAddPhoto,
    List<File> imgFiles,
@@ -845,8 +845,8 @@ WillPopScope makeNewPostScreens(
                post,
                (int j) { onSendNewPost(ctx, j); },
                menu,
-               exDetailsMenu,
-               inDetailsMenu,
+               exDetailsTree,
+               inDetailsTree,
                stl.pubIcon,
                g.param.cancelNewPost,
                onAddPhoto,
@@ -858,11 +858,11 @@ WillPopScope makeNewPostScreens(
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
          ctx,
-         onNewPostExDetails,
-         onNewPostInDetails,
+         onExDetail,
+         onInDetail,
          post,
-         exDetailsMenu,
-         inDetailsMenu,
+         exDetailsTree,
+         inDetailsTree,
          txtCtrl,
          onRangeValueChanged,
       );
@@ -2482,7 +2482,7 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 List<Widget> makePostExDetails(
    BuildContext ctx,
    Post post,
-   Node exDetailsMenu,
+   Node exDetailsTree,
 ) {
    // Post details varies according to the first index of the products
    // entry in the menu.
@@ -2491,18 +2491,18 @@ List<Widget> makePostExDetails(
    List<Widget> list = List<Widget>();
    list.add(makePostSectionTitle(ctx, g.param.postExDetailsTitle));
 
-   final int l1 = exDetailsMenu.children[idx].children.length;
+   final int l1 = exDetailsTree.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
       final int j = searchBitOn(
          post.exDetails[i],
-         exDetailsMenu.children[idx].children[i].children.length
+         exDetailsTree.children[idx].children[i].children.length
       );
       
       list.add(
          makePostRowElem(
             ctx,
-            exDetailsMenu.children[idx].children[i].name,
-            exDetailsMenu.children[idx].children[i].children[j].name,
+            exDetailsTree.children[idx].children[i].name,
+            exDetailsTree.children[idx].children[i].children[j].name,
          ),
       );
    }
@@ -2536,23 +2536,23 @@ List<Widget> makePostExDetails(
 List<Widget> makePostInDetails(
    BuildContext ctx,
    Post post,
-   Node inDetailsMenu)
+   Node inDetailsTree)
 {
    List<Widget> all = List<Widget>();
 
    final int i = post.getProductDetailIdx();
-   final int l1 = inDetailsMenu.children[i].children.length;
+   final int l1 = inDetailsTree.children[i].children.length;
    for (int j = 0; j < l1; ++j) {
       List<Widget> foo = makePostInRows(
          ctx,
-         inDetailsMenu.children[i].children[j].children,
+         inDetailsTree.children[i].children[j].children,
          post.inDetails[j],
       );
 
       if (foo.length != 0) {
          all.add(makePostSectionTitle(
                ctx,
-               inDetailsMenu.children[i].children[j].name,
+               inDetailsTree.children[i].children[j].name,
             ),
          );
          all.addAll(foo);
@@ -2612,14 +2612,14 @@ List<Widget> assemblePostRows(
    BuildContext ctx,
    Post post,
    List<MenuItem> menu,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Node exDetailsTree,
+   Node inDetailsTree,
 ) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
    all.addAll(makeMenuInfo(ctx, post, menu));
-   all.addAll(makePostExDetails(ctx, post, exDetailsMenu));
-   all.addAll(makePostInDetails(ctx, post, inDetailsMenu));
+   all.addAll(makePostExDetails(ctx, post, exDetailsTree));
+   all.addAll(makePostInDetails(ctx, post, inDetailsTree));
    if (post.description.isNotEmpty) {
       all.add(makePostSectionTitle(ctx, g.param.postDescTitle));
       all.add(makePostDescription(ctx, post.description));
@@ -2894,8 +2894,8 @@ Widget makeNewPost(
    Post post,
    Function onPostSelection,
    List<MenuItem> menu,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Node exDetailsTree,
+   Node inDetailsTree,
    Icon ic,
    String snackbarStr,
    Function onAddPhoto,
@@ -2912,8 +2912,8 @@ Widget makeNewPost(
       ctx,
       post,
       menu,
-      exDetailsMenu,
-      inDetailsMenu,
+      exDetailsTree,
+      inDetailsTree,
    );
 
    Widget infoExpansion = makePostInfoExpansion(
@@ -2967,8 +2967,8 @@ Widget makeNewPostLv(
    List<Post> posts,
    Function onPostSelection,
    List<MenuItem> menu,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Node exDetailsTree,
+   Node inDetailsTree,
    int nNewPosts,
    Function onExpandImg,
 ) {
@@ -2990,8 +2990,8 @@ Widget makeNewPostLv(
             posts[j],
             (int fav) {onPostSelection(ctx, j, fav);},
             menu,
-            exDetailsMenu,
-            inDetailsMenu,
+            exDetailsTree,
+            inDetailsTree,
             stl.favIcon,
             g.param.dissmissedPost,
             (BuildContext dummy, int i) {print('Error: Please fix aaab');},
@@ -3417,8 +3417,8 @@ Widget makeChatTab(
    bool isFwdChatMsgs,
    Function onUserInfoPressed,
    bool isFav,
-   Node exDetailsMenu,
-   Node inDetailsMenu,
+   Node exDetailsTree,
+   Node inDetailsTree,
    Function onExpandImg,
 ) {
    if (posts.length == 0)
@@ -3485,8 +3485,8 @@ Widget makeChatTab(
             ctx,
             posts[i],
             menu,
-            exDetailsMenu,
-            inDetailsMenu,
+            exDetailsTree,
+            inDetailsTree,
          );
 
          foo.addAll(rows);
@@ -4794,6 +4794,7 @@ class OccaseState extends State<Occase>
       // progress indicator on the screen. To prevent the user from
       // interacting with the screen after clicking we use a modal
       // barrier.
+
       if (_filenamesTimer.isActive)
          return;
 
@@ -4812,6 +4813,16 @@ class OccaseState extends State<Occase>
             },
             g.param.cancelPost,
             Text(g.param.cancelPostContent),
+         );
+         return;
+      }
+
+      if (_imgFiles.length < cts.minImgsPerPost) {
+         _showSimpleDialog(
+            ctx,
+            (){ },
+            g.param.postMinImgs,
+            Text(g.param.postMinImgsContent),
          );
          return;
       }
@@ -4877,13 +4888,14 @@ class OccaseState extends State<Occase>
          // We know the number of unread messages, now we have to generate
          // the array with the messages peer rowid.
 
-         var msgMap = {
-            'cmd': 'message',
-            'type': 'chat_ack_read',
-            'to': posts[i].chats[j].peer,
-            'post_id': posts[i].id,
-            'id': -1,
-            'ack_ids': readPeerRowIdsToAck(_chat.msgs, _chat.nUnreadMsgs),
+         var msgMap =
+         { 'cmd': 'message'
+         , 'type': 'chat_ack_read'
+         , 'to': posts[i].chats[j].peer
+         , 'post_id': posts[i].id
+         , 'id': -1
+         , 'ack_ids': readPeerRowIdsToAck(_chat.msgs, _chat.nUnreadMsgs)
+         ,  'notify': false
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -5058,16 +5070,17 @@ class OccaseState extends State<Occase>
          posts[i].chats.sort(compChats);
          posts.sort(compPosts);
 
-         var msgMap = {
-            'cmd': 'message',
-            'type': 'chat',
-            'is_redirected': ci.isRedirected,
-            'to': peer,
-            'msg': ci.msg,
-            'refers_to': ci.refersTo,
-            'post_id': postId,
-            'nick': _cfg.nick,
-            'id': rowid,
+         var msgMap =
+         { 'cmd': 'message'
+         , 'type': 'chat'
+         , 'is_redirected': ci.isRedirected
+         , 'to': peer
+         , 'msg': ci.msg
+         , 'refers_to': ci.refersTo
+         , 'post_id': postId
+         , 'nick': _cfg.nick
+         , 'id': rowid
+         , 'notify': true
          };
 
          final
@@ -5239,7 +5252,8 @@ class OccaseState extends State<Occase>
       , 'to': peer
       , 'post_id': postId
       , 'id': -1
-      , 'ack_ids': <int>[peerRowid],
+      , 'ack_ids': <int>[peerRowid]
+      , 'notify': false
       };
 
       // Generating the payload before the async operation to avoid
@@ -5893,7 +5907,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onNewPostExDetails(int i, int j)
+   void _onExDetails(int i, int j)
    {
       if (j == -1) {
          _post.description = _txtCtrl.text;
@@ -5973,7 +5987,7 @@ class OccaseState extends State<Occase>
             _txtCtrl,
             _onSendNewPost,
             _botBarIdx,
-            _onNewPostExDetails,
+            _onExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
             () { return _onWillPopMenu(_trees);},
