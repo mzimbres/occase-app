@@ -4895,7 +4895,6 @@ class OccaseState extends State<Occase>
          , 'post_id': posts[i].id
          , 'id': -1
          , 'ack_ids': readPeerRowIdsToAck(_chat.msgs, _chat.nUnreadMsgs)
-         ,  'notify': false
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -5080,7 +5079,6 @@ class OccaseState extends State<Occase>
          , 'post_id': postId
          , 'nick': _cfg.nick
          , 'id': rowid
-         , 'notify': true
          };
 
          final
@@ -5253,7 +5251,6 @@ class OccaseState extends State<Occase>
       , 'post_id': postId
       , 'id': -1
       , 'ack_ids': <int>[peerRowid]
-      , 'notify': false
       };
 
       // Generating the payload before the async operation to avoid
