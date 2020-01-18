@@ -3418,8 +3418,16 @@ Widget makeChatsExp(
    IconData pinIcon =
       post.pinDate == 0 ? Icons.place : Icons.pin_drop;
 
-   final bool expState = (ch.length < 6 && ch.length > 0)
+   bool expState = (ch.length < 6 && ch.length > 0)
                        || nUnreadChats != 0;
+
+   // I have observed that if the post has no chats and a chat
+   // arrives, the chat expansion will continue collapsed independent
+   // whether expState is true or not. This is undesireble, so I will
+   // add a special case to handle it below.
+   if (nUnreadChats == 0)
+      expState = true;
+
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
