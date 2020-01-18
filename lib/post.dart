@@ -10,6 +10,7 @@ String makeConnCmd(
    final String appId,
    final String appPwd,
    final String fcmToken,
+   final int notify,
 ) {
    if (appId.isEmpty)
       return jsonEncode(
@@ -22,6 +23,7 @@ String makeConnCmd(
    , 'user': appId
    , 'password': appPwd
    , 'token': fcmToken
+   , 'notify': notify
    };
 
    return jsonEncode(loginCmd);
@@ -838,6 +840,21 @@ class NtfConfig {
    { this.chat = true
    , this.post = true
    });
+
+   int getFlag()
+   {
+      // If the number of configurations increase we can use flags.
+      if (chat && post)
+         return 3;
+
+      if (post)
+         return 2;
+
+      if (chat)
+         return 1;
+
+      return 0;
+   }
 
    NtfConfig.fromJson(Map<String, dynamic> map)
    {

@@ -4116,6 +4116,7 @@ class OccaseState extends State<Occase>
          _cfg.appId,
          _cfg.appPwd,
          fcmToken,
+         _cfg.notifications.getFlag(),
       );
 
       channel.sink.add(cmd);
