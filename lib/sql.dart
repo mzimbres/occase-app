@@ -61,7 +61,8 @@ CREATE TABLE config
 , show_dialog_on_del_post TEXT
 , show_dialog_on_report_post TEXT
 , ranges TEXT
-, any_of_features TEXT)
+, any_of_features TEXT
+, notifications TEXT)
 ''';
 
 final String updateAppCredentials =
@@ -88,6 +89,11 @@ UPDATE config SET last_post_id = ?
 final String updateLastSeenPostId =
 '''
 UPDATE config SET last_seen_post_id = ?
+''';
+
+final String updateNotifications =
+'''
+UPDATE config SET notifications = ?
 ''';
 
 final String updateShowDialogOnSelectPost =

@@ -174,7 +174,7 @@ String makePostPayload(final Post post)
 
 enum ConfigActions
 { ChangeNick
-, Filters
+, Notifications
 }
 
 Widget makeAppBarVertAction(Function onSelected)
@@ -185,11 +185,14 @@ Widget makeAppBarVertAction(Function onSelected)
      itemBuilder: (BuildContext ctx)
      {
         return <PopupMenuEntry<ConfigActions>>
-        [
-           PopupMenuItem<ConfigActions>(
+        [ PopupMenuItem<ConfigActions>(
              value: ConfigActions.ChangeNick,
-             child: Text(g.param.changeNichHint),
-           ),
+             child: Text(g.param.changeNickHint),
+          ),
+          PopupMenuItem<ConfigActions>(
+             value: ConfigActions.Notifications,
+             child: Text(g.param.changeNotifications),
+          ),
         ];
      }
    );
@@ -341,7 +344,8 @@ Scaffold makeRegisterScreen(
    );
 
    Widget button = createRaisedButton(
-      ctx, onContinue,
+      ctx,
+      onContinue,
       g.param.next,
    );
 
@@ -369,6 +373,51 @@ Scaffold makeRegisterScreen(
             child: col,
             padding: EdgeInsets.symmetric(horizontal: 20.0),
          ),
+      ),
+   );
+}
+
+Scaffold makeNtfScreen(
+   BuildContext ctx,
+   Function onChange,
+   final String appBarTitle,
+   final NtfConfig conf,
+   final List<String> titleDesc)
+{
+   assert(titleDesc.length >= 2);
+
+   CheckboxListTile chat = CheckboxListTile(
+      dense: true,
+      title: Text(titleDesc[0], style: stl.ltTitle),
+      subtitle: Text(titleDesc[1], style: stl.ltSubtitle),
+      value: conf.chat,
+      onChanged: (bool v) { onChange(0, v); },
+      activeColor: stl.colorScheme.primary,
+      isThreeLine: true,
+   );
+
+   Column col = Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Padding(
+           child: chat,
+           padding: EdgeInsets.only(bottom: 30.0),
+        ),
+        createRaisedButton(
+           ctx,
+           () {onChange(-1, false);},
+           g.param.ok,
+        ),
+      ]
+   );
+
+   return Scaffold(
+      appBar: AppBar(title: Text(appBarTitle)),
+      body: Padding(
+         child: col,
+         padding: EdgeInsets.symmetric(vertical: 20.0),
       ),
    );
 }
@@ -3647,9 +3696,13 @@ class OccaseState extends State<Occase>
    // the jump down button can be used
    bool _showChatJumpDownButton = true;
 
-   // Set to true when the user wants to change it email or nick or on
-   // the first time the user opens the app
+   // Set to true when the user wants to change his email or nick or on
+   // the first time the user opens the app.
    bool _goToRegScreen = false;
+
+   // Set to true when the user wants to change his notification
+   // settings.
+   bool _goToNtfScreen = false;
 
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen belongs to, if any.
@@ -4059,30 +4112,13 @@ class OccaseState extends State<Occase>
          onDone: _onWSDone,
       );
 
-      final String cmd = _makeConnCmd(fcmToken);
+      final String cmd = makeConnCmd(
+         _cfg.appId,
+         _cfg.appPwd,
+         fcmToken,
+      );
+
       channel.sink.add(cmd);
-   }
-
-   String _makeConnCmd(String fcmToken)
-   {
-      if (_cfg.appId.isEmpty) {
-         // This is the first time we are connecting to the server (or
-         // the login file is corrupted, etc.)
-         return jsonEncode({
-            'cmd': 'register',
-            'token': fcmToken,
-         });
-      }
-
-      // We are already registered in the server.
-      var loginCmd = {
-         'cmd': 'login',
-         'user': _cfg.appId,
-         'password': _cfg.appPwd,
-         'token': fcmToken,
-      };
-
-      return jsonEncode(loginCmd);
    }
 
    Future<void> _setDialogPref(final int i, bool v) async
@@ -5745,6 +5781,12 @@ class OccaseState extends State<Occase>
             _goToRegScreen = true;
          });
       }
+
+      if (ca == ConfigActions.Notifications) {
+         setState(() {
+            _goToNtfScreen = true;
+         });
+      }
    }
 
    void _onNotificationsPressed()
@@ -5904,6 +5946,27 @@ class OccaseState extends State<Occase>
       }
    }
 
+   Future<void> _onChangeNtf(int i, bool v) async
+   {
+      try {
+         if (i == 0)
+            _cfg.notifications.chat = v;
+
+         if (i == 1)
+            _cfg.notifications.post = v;
+
+         final String str = jsonEncode(_cfg.notifications.toJson());
+         await _db.execute(sql.updateNotifications, [str]);
+
+         if (i == -1)
+            _goToNtfScreen = false;
+
+         setState(() { });
+      } catch (e) {
+         print(e);
+      }
+   }
+
    void _onExDetails(int i, int j)
    {
       if (j == -1) {
@@ -5954,9 +6017,19 @@ class OccaseState extends State<Occase>
             _txtCtrl2,
             _txtCtrl,
             (){_onRegisterContinue(ctx);},
-            g.param.appName,
+            g.param.changeNickAppBarTitle,
             _cfg.email,
             _cfg.nick,
+         );
+      }
+
+      if (_goToNtfScreen) {
+         return makeNtfScreen(
+            ctx,
+            _onChangeNtf,
+            g.param.changeNtfAppBarTitle,
+            _cfg.notifications,
+            g.param.ntfTitleDesc,
          );
       }
 

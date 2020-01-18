@@ -37,7 +37,8 @@ class Parameters {
    String notificationsButton;
    String unknownNick;
    String selectAll;
-   String changeNichHint;
+   String changeNickHint;
+   String changeNotifications;
    String dissmissedPost;
    String dismissedChat;
    String ok;
@@ -61,6 +62,8 @@ class Parameters {
    String numberOfUnreadChatsSuffix;
    String postMinImgs;
    String postMinImgsContent;
+   String changeNickAppBarTitle;
+   String changeNtfAppBarTitle;
 
    List<int> filterDepths;
    List<int> rangesMinMax;
@@ -77,6 +80,7 @@ class Parameters {
    List<String> newPostErrorTitles;
    List<String> newPostErrorBodies;
    List<String> newFiltersFinalScreenButton;
+   List<String> ntfTitleDesc;
 
    List<List<String>> menuDepthNames;
    List<List<String>> payments;
@@ -107,7 +111,8 @@ class Parameters {
    , this.notificationsButton = ''
    , this.unknownNick = ''
    , this.selectAll = ''
-   , this.changeNichHint = ''
+   , this.changeNickHint = ''
+   , this.changeNotifications = ''
    , this.dissmissedPost = ''
    , this.dismissedChat = ''
    , this.ok = ''
@@ -131,6 +136,8 @@ class Parameters {
    , this.numberOfUnreadChatsSuffix = ''
    , this.postMinImgs = ''
    , this.postMinImgsContent = ''
+   , this.changeNickAppBarTitle = ''
+   , this.changeNtfAppBarTitle = ''
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
@@ -145,6 +152,7 @@ class Parameters {
    , this.newPostErrorTitles = const <String>[ '', '']
    , this.newPostErrorBodies = const <String> ['' , '']
    , this.newFiltersFinalScreenButton = const <String>['', '', '']
+   , this.ntfTitleDesc = const <String>['', '']
    , this.menuDepthNames = const <List<String>>
    [ <String> [ '' , '' , '' , '' ]
    , <String> [ '' , '' , '' , '' , '' , '' , '' ]
@@ -186,7 +194,8 @@ class Parameters {
       notificationsButton         = map['notificationsButton'];
       unknownNick                 = map['unknownNick'];
       selectAll                   = map['selectAll'];
-      changeNichHint              = map['changeNichHint'];
+      changeNickHint              = map['changeNickHint'];
+      changeNotifications         = map['changeNotifications'];
       dissmissedPost              = map['dissmissedPost'];
       dismissedChat               = map['dismissedChat'];
       ok                          = map['ok'];
@@ -210,6 +219,8 @@ class Parameters {
       numberOfUnreadChatsSuffix   = map['numberOfUnreadChatsSuffix'];
       postMinImgs                 = map['postMinImgs'];
       postMinImgsContent          = map['postMinImgsContent'];
+      changeNickAppBarTitle       = map['changeNickAppBarTitle'];
+      changeNtfAppBarTitle        = map['changeNtfAppBarTitle'];
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -224,6 +235,7 @@ class Parameters {
       newPostErrorTitles          = decodeList2(map['newPostErrorTitles']);
       newPostErrorBodies          = decodeList2(map['newPostErrorBodies']);
       newFiltersFinalScreenButton = decodeList2(map['newFiltersFinalScreenButton']);
+      ntfTitleDesc                = decodeList2(map['ntfTitleDesc']);
       menuDepthNames              = decodeList3(map['menuDepthNames']);
       payments                    = decodeList3(map['payments']);
       discreteRanges              = decodeList3(map['discreteRanges']);
@@ -256,7 +268,8 @@ class Parameters {
          'notificationsButton':         notificationsButton,
          'unknownNick':                 unknownNick,
          'selectAll':                   selectAll,
-         'changeNichHint':              changeNichHint,
+         'changeNickHint':              changeNickHint,
+         'changeNotifications':         changeNotifications,
          'dissmissedPost':              dissmissedPost,
          'dismissedChat':               dismissedChat,
          'ok':                          ok,
@@ -280,6 +293,8 @@ class Parameters {
          'numberOfUnreadChatsSuffix':   numberOfUnreadChatsSuffix,
          'postMinImgs':                 postMinImgs,
          'postMinImgsContent':          postMinImgsContent,
+         'changeNickAppBarTitle':       changeNickAppBarTitle,
+         'changeNtfAppBarTitle':        changeNtfAppBarTitle,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
@@ -294,6 +309,7 @@ class Parameters {
          'newPostErrorTitles':          newPostErrorTitles,
          'newPostErrorBodies':          newPostErrorBodies,
          'newFiltersFinalScreenButton': newFiltersFinalScreenButton,
+         'ntfTitleDesc':                ntfTitleDesc,
          'menuDepthNames':              menuDepthNames,
          'payments':                    payments,
          'discreteRanges':              discreteRanges,

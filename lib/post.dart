@@ -6,6 +6,27 @@ import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
 
+String makeConnCmd(
+   final String appId,
+   final String appPwd,
+   final String fcmToken,
+) {
+   if (appId.isEmpty)
+      return jsonEncode(
+      { 'cmd': 'register'
+      , 'token': fcmToken
+      });
+
+   var loginCmd =
+   { 'cmd': 'login'
+   , 'user': appId
+   , 'password': appPwd
+   , 'token': fcmToken
+   };
+
+   return jsonEncode(loginCmd);
+}
+
 class ChatItem {
    // The auto increment sqlite rowid.
    int rowid = -1;
@@ -809,6 +830,30 @@ List<List<List<int>>> decodeChannel(List<dynamic> to)
    return channel;
 }
 
+class NtfConfig {
+   bool chat;
+   bool post;
+
+   NtfConfig(
+   { this.chat = true
+   , this.post = true
+   });
+
+   NtfConfig.fromJson(Map<String, dynamic> map)
+   {
+      chat = map["chat"];
+      post = map['post'];
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      { 'chat': chat
+      , 'post': post
+      };
+   }
+}
+
 class Config {
    String appId;
    String appPwd;
@@ -819,6 +864,7 @@ class Config {
    String showDialogOnSelectPost;
    String showDialogOnReportPost;
    String showDialogOnDelPost;
+   NtfConfig notifications;
 
    // Filter Ranges. There is one range for each value, see
    // g.param.rangesMinMax, g.param.rangeDivs and txt. rangePrefixes.
@@ -838,6 +884,7 @@ class Config {
       this.showDialogOnDelPost = 'yes',
       this.ranges,
       this.anyOfFeatures = 0,
+      this.notifications,
    })
    {
       if (ranges == null) {
@@ -849,6 +896,9 @@ class Config {
             ranges[2 * i + 1] = g.param.discreteRanges[i].length - 1;
          }
       }
+
+      if (notifications == null) 
+         notifications = NtfConfig(chat: true, post: true);
    }
 }
 
@@ -870,18 +920,19 @@ List<int> convertToValues(final List<int> ranges)
 
 Map<String, dynamic> configToMap(Config cfg)
 {
-    return {
-      'app_id': cfg.appId,
-      'app_pwd': cfg.appPwd,
-      'email': cfg.email,
-      'nick': cfg.nick,
-      'last_post_id': cfg.lastPostId,
-      'last_seen_post_id': cfg.lastSeenPostId,
-      'show_dialog_on_select_post': cfg.showDialogOnSelectPost,
-      'show_dialog_on_report_post': cfg.showDialogOnReportPost,
-      'show_dialog_on_del_post': cfg.showDialogOnDelPost,
-      'ranges': cfg.ranges.join(' '),
-      'any_of_features': cfg.anyOfFeatures.toString(),
+    return
+    { 'app_id': cfg.appId
+    , 'app_pwd': cfg.appPwd
+    , 'email': cfg.email
+    , 'nick': cfg.nick
+    , 'last_post_id': cfg.lastPostId
+    , 'last_seen_post_id': cfg.lastSeenPostId
+    , 'show_dialog_on_select_post': cfg.showDialogOnSelectPost
+    , 'show_dialog_on_report_post': cfg.showDialogOnReportPost
+    , 'show_dialog_on_del_post': cfg.showDialogOnDelPost
+    , 'ranges': cfg.ranges.join(' ')
+    , 'any_of_features': cfg.anyOfFeatures.toString()
+    , 'notifications': jsonEncode(cfg.notifications.toJson())
     };
 }
 
@@ -912,6 +963,7 @@ Future<List<Config>> loadConfig(Database db) async
         showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
         ranges: ranges,
         anyOfFeatures: int.parse(maps[i]['any_of_features']),
+        notifications: NtfConfig.fromJson(jsonDecode(maps[i]['notifications'])),
      );
 
      return cfg;
