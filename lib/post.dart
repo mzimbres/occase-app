@@ -883,8 +883,19 @@ class Config {
    String showDialogOnDelPost;
    NtfConfig notifications;
 
-   // Filter Ranges. There is one range for each value, see
-   // g.param.rangesMinMax, g.param.rangeDivs and txt. rangePrefixes.
+   // Stores ranges as indexes of g.param.discreteRanges arrays. The
+   // min is followed by the max. For example, assume discreteRanges
+   // is
+   //
+   //    [0, 10, 20, 40, 80]
+   //    [0, 19, 20, 25, 40]
+   //
+   // and the range below is
+   //
+   //    [0, 3, 2, 4]
+   //
+   // This means the user wants the filter [0, 40] for the first and
+   // [25, 40] for the second.
    List<int> ranges;
 
    int anyOfFeatures;
@@ -919,20 +930,20 @@ class Config {
    }
 }
 
-List<int> convertToValues(final List<int> ranges)
+List<int> convertToValues(final List<int> rangeIdxs)
 {
    final int l = g.param.discreteRanges.length;
-   List<int> rangeValues = List<int>(2 * l);
-   assert(ranges.length == 2 * l);
+   List<int> ranges = List<int>(2 * l);
+   assert(rangeIdxs.length == 2 * l);
 
    for (int i = 0; i < l; ++i) {
       final int idx1 = 2 * i + 0;
       final int idx2 = 2 * i + 1;
-      rangeValues[idx1] = g.param.discreteRanges[i][ranges[idx1]];
-      rangeValues[idx2] = g.param.discreteRanges[i][ranges[idx2]];
+      ranges[idx1] = g.param.discreteRanges[i][rangeIdxs[idx1]];
+      ranges[idx2] = g.param.discreteRanges[i][rangeIdxs[idx2]];
    }
 
-   return rangeValues;
+   return ranges;
 }
 
 Map<String, dynamic> configToMap(Config cfg)

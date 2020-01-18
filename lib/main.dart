@@ -1022,7 +1022,7 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
    );
 }
 
-WillPopScope makeNewFiltersScreens(
+WillPopScope makeFiltersScreen(
    BuildContext ctx,
    Function onSendFilters,
    Function onFilterDetail,
@@ -1053,15 +1053,14 @@ WillPopScope makeNewFiltersScreens(
          onFilterDetail,
          exDetailsFilterNodes,
          filter,
-         ''
+         '',
       );
 
       foo.add(vv);
 
       for (int i = 0; i < g.param.discreteRanges.length; ++i) {
-         final int j = 2 * i;
-         final int vmin = ranges[j + 0];
-         final int vmax = ranges[j + 1];
+         final int vmin = ranges[2 * i + 0];
+         final int vmax = ranges[2 * i + 1];
 
          final int l = g.param.discreteRanges[i].length - 1;
 
@@ -4026,6 +4025,13 @@ class OccaseState extends State<Occase>
 
          await initializeDateFormatting(g.param.localeName, null);
 
+         // Warining: The construction of Config depends on the
+         // parameters that have been load above, but where not loaded
+         // by the time it was inititalized. Ideally we would remove
+         // the use of global variable from withing its constructor,
+         // for now I will construct it again before it is used to
+         // initialize the db.
+         _cfg = Config();
          _db = await openDatabase(
             p.join(await getDatabasesPath(), 'main.db'),
             readOnly: false,
@@ -4236,12 +4242,10 @@ class OccaseState extends State<Occase>
 
    Future<void> _onRangeChanged(int i, RangeValues rv) async
    {
-      final int j = 2 * i;
-
       setState(()
       {
-         _cfg.ranges[j + 0] = rv.start.round();
-         _cfg.ranges[j + 1] = rv.end.round();
+         _cfg.ranges[2 * i + 0] = rv.start.round();
+         _cfg.ranges[2 * i + 1] = rv.end.round();
       });
 
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
@@ -5703,13 +5707,13 @@ class OccaseState extends State<Occase>
 
       assert(channels.length == 2);
 
-      var subCmd = {
-         'cmd': 'subscribe',
-         'last_post_id': lastPostId,
-         'filters': channels[0],
-         'channels': channels[1],
-         'any_of_features': _cfg.anyOfFeatures,
-         'ranges': convertToValues(_cfg.ranges),
+      var subCmd =
+      { 'cmd': 'subscribe'
+      , 'last_post_id': lastPostId
+      , 'filters': channels[0]
+      , 'channels': channels[1]
+      , 'any_of_features': _cfg.anyOfFeatures
+      , 'ranges': convertToValues(_cfg.ranges)
       };
 
       final String payload = jsonEncode(subCmd);
@@ -6082,9 +6086,9 @@ class OccaseState extends State<Occase>
       }
 
       if (_newFiltersPressed) {
-         // NOTE: Below we use txt.exDetails[0][0], because the filter
-         // is common to all products.
-         return makeNewFiltersScreens(
+         // Below we use txt.exDetails[0][0], because the filter is
+         // common to all products.
+         return makeFiltersScreen(
             ctx,
             _onSendFilters,
             _onFilterDetail,
