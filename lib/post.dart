@@ -642,7 +642,7 @@ Future<List<Post>> loadPosts(Database db) async
 
       post.from = bodyMap['from'];
       post.nick = bodyMap['nick'];
-      post.avatar = bodyMap['nick'];
+      post.avatar = bodyMap['avatar'];
       post.channel = decodeChannel(jsonDecode(bodyMap['channel']));
 
       post.exDetails = decodeList(

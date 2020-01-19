@@ -4251,8 +4251,6 @@ class OccaseState extends State<Occase>
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
-   // If we ever allow the user to retrieve old posts we have to
-   // adjust this function so that it does add a post twice.
    Future<void> _onPostSelection(int i, int fav) async
    {
       assert(_isOnPosts());
