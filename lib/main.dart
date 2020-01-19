@@ -4119,7 +4119,7 @@ class OccaseState extends State<Occase>
 
    void _stablishNewConnection(String fcmToken)
    {
-      channel = IOWebSocketChannel.connect(cts.wshost);
+      channel = IOWebSocketChannel.connect(cts.dbHost);
       channel.stream.listen(
          _onWSData,
          onError: _onWSError,

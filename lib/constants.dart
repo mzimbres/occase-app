@@ -31,13 +31,16 @@ const String gravatarUrl = 'https://www.gravatar.com/avatar/';
 // Use media query instead of this.
 const double onClickAvatarWidth = 200.0;
 
-// WARNING: localhost or 127.0.0.1 is the emulator or the phone
-// address. If the phone is connected (via USB) to a computer
-// the computer can be found on 10.0.2.2.
+// The localhost or 127.0.0.1 is the emulator or the phone address. If
+// the phone is connected (via USB) to a computer the computer can be
+// found on 10.0.2.2.
+//const String dbHost = 'ws://10.0.2.2:80';
 
-const String wshost = 'wss://occase.de';
-//const String wshost = 'ws://10.0.2.2:80';
-//const String wshost = 'ws://192.168.178.24:80';
+// This domain points to the production servers.
+const String dbHost = 'wss://db.occase.de';
+
+// This domain points to my home public ip address.
+//const String dbHost = 'wss://occase.de';
 
 const int maxImgsPerPost = 6;
 const int minImgsPerPost = 1;
