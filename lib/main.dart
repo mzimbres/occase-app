@@ -1297,8 +1297,21 @@ FloatingActionButton makeFaButton(
 Widget makeFAButtonMiddleScreen(
    BuildContext ctx,
    Function onLoadNewPosts,
-   int nNewPosts)
-{
+   Function onSearch,
+   int nNewPosts,
+   int nPosts,
+) {
+   if (nPosts == 0) { // Implies nNewPosts = 0.
+      return FloatingActionButton(
+         onPressed: onSearch,
+         backgroundColor: stl.colorScheme.secondary,
+         child: Icon(
+            Icons.search,
+            color: stl.colorScheme.onSecondary,
+         ),
+      );
+   }
+
    if (nNewPosts == 0)
       return null;
 
@@ -2453,9 +2466,9 @@ Widget makePostSectionTitle(
       child: Padding(
          padding: EdgeInsets.all(stl.postSectionPadding),
          child: Text(str,
-            style: Theme.of(ctx).textTheme.title.copyWith(
-               color: Theme.of(ctx).colorScheme.primary,
-               fontWeight: FontWeight.w500,
+            style: TextStyle(
+               fontSize: stl.subheadFontSize,
+               color: stl.primaryColor,
             ),
          ),
       ),
@@ -2812,7 +2825,7 @@ Widget makeNewPostImpl(
       //color: stl.colorScheme.primary,
       icon: Icon(
          Icons.report,
-         color: Colors.grey,
+         color: Colors.red[400],
       ),
    );
 
@@ -4330,8 +4343,10 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   bool _onWillPopMenu(final List<MenuItem> menu)
-   {
+   bool _onWillPopMenu(
+      final List<MenuItem> menu,
+      int leaveIdx,
+   ) {
       // We may want to  split this function in two: One for the
       // filters and one for the new post screen.
       if (_botBarIdx >= menu.length) {
@@ -4341,7 +4356,7 @@ class OccaseState extends State<Occase>
       }
 
       if (menu[_botBarIdx].root.length == 1) {
-         if (_botBarIdx == 0){
+         if (_botBarIdx <= leaveIdx){
             _newPostPressed = false;
             _newFiltersPressed = false;
          } else {
@@ -5800,13 +5815,15 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onNotificationsPressed()
+   void _onSearchPressed()
    {
       setState(() {
          _newFiltersPressed = true;
          _trees[0].restoreMenuStack();
          _trees[1].restoreMenuStack();
-         _botBarIdx = 0;
+         // If you changes this, also change the index _onWillPopMenu
+         // will be called with.
+         _botBarIdx = 1;
       });
    }
 
@@ -6071,7 +6088,7 @@ class OccaseState extends State<Occase>
             _onExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
-            () { return _onWillPopMenu(_trees);},
+            () { return _onWillPopMenu(_trees, 0);},
             _onNewPostBotBarTapped,
             _onNewPostInDetail,
             _exDetailsRoot,
@@ -6091,7 +6108,7 @@ class OccaseState extends State<Occase>
             _onSendFilters,
             _onFilterDetail,
             _onFilterNodePressed,
-            () { return _onWillPopMenu(_trees);},
+            () { return _onWillPopMenu(_trees, 1);},
             _onBotBarTapped,
             _onFilterLeafNodePressed,
             _trees,
@@ -6167,7 +6184,9 @@ class OccaseState extends State<Occase>
       fltButtons[1] = makeFAButtonMiddleScreen(
          ctx,
          _onShowNewPosts,
+         _onSearchPressed,
          _nNewPosts,
+         _posts.length,
       );
 
       fltButtons[2] = makeFaButton(
@@ -6264,19 +6283,28 @@ class OccaseState extends State<Occase>
       }
 
       // We only add the global action buttons if
-      // 1. There is now chat selected for selection.
+      // 1. There is no chat selected for selection.
       // 2. We are not forwarding a message.
       if (!_hasLPChats() && !_hasLPChatMsgs()) {
-         IconButton notifcationsButton = IconButton(
+         IconButton searchButton = IconButton(
             icon: Icon(
                Icons.search,
-               color: Theme.of(ctx).colorScheme.onPrimary,
+               color: stl.colorScheme.onPrimary,
             ),
             tooltip: g.param.notificationsButton,
-            onPressed: () { _onNotificationsPressed(); }
+            onPressed: () { _onSearchPressed(); }
          );
 
-         actions.add(notifcationsButton);
+         IconButton publishButton = IconButton(
+            icon: Icon(
+               stl.newPostIcon,
+               color: stl.colorScheme.onPrimary,
+            ),
+            onPressed: () { _onNewPost(); },
+         );
+
+         actions.add(publishButton);
+         actions.add(searchButton);
          actions.add(makeAppBarVertAction(_onAppBarVertPressed));
       }
 

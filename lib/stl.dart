@@ -148,7 +148,7 @@ const List<IconData> filterTabIcons = <IconData>
 , Icons.search
 ];
 
-const IconData newPostIcon = Icons.add;
+const IconData newPostIcon = Icons.publish;
 
 const double imgInfoWidgetPadding = 10.0;
 
