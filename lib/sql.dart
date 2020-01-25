@@ -131,6 +131,7 @@ CREATE TABLE chat_status
 , date INTEGER
 , pin_date INTEGER
 , nick TEXT
+, avatar TEXT
 , chat_length INTEGER
 , n_unread_msgs INTEGER
 , last_chat_item TEXT
@@ -141,12 +142,12 @@ CREATE TABLE chat_status
 
 final String insertChatStOnPost =
 '''
-INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String insertOrReplaceChatOnPost =
 '''
-INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String selectChatStatusItem =

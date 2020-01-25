@@ -45,7 +45,6 @@ Future<List<MenuItem>> readMenuItemsFromAsset() async
 
 String emailToGravatarHash(String email)
 {
-   // Removes spaces.
    email = email.replaceAll(' ', '');
    email = email.toLowerCase();
    List<int> bytes = utf8.encode(email);
@@ -3314,8 +3313,8 @@ Card makeChatListTile(
    Function onLongPress,
    Function onPressed,
    bool isFwdChatMsgs,
-   String avatar)
-{
+   String avatar,
+) {
    Color bgColor;
    if (chat.isLongPressed) {
       bgColor = stl.chatLongPressendColor;
@@ -3394,7 +3393,7 @@ Widget makeChatsExp(
          () { onLongPressed(i); },
          () { onPressed(i); },
          isFwdChatMsgs,
-         post.avatar,
+         isFav ? post.avatar : ch[i].avatar,
       );
 
       list[i] = Padding(
@@ -4278,14 +4277,17 @@ class OccaseState extends State<Occase>
          if (k == -1) {
             _posts[i].status = 2;
 
-            final
-            int j = _posts[i].addChat(_posts[i].from, _posts[i].nick);
+            final int j = _posts[i].addChat(
+               _posts[i].from,
+               _posts[i].nick,
+               _posts[i].avatar,
+            );
 
             Batch batch = _db.batch();
 
             batch.rawInsert(
                sql.insertChatStOnPost,
-               makeChatUpdateSql(_posts[i].chats[j], _posts[i].id),
+               makeChatMetadataSql(_posts[i].chats[j], _posts[i].id),
             );
 
             batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
@@ -5101,7 +5103,6 @@ class OccaseState extends State<Occase>
       String peer,
       ChatItem ci,
    ) async {
-
       try {
          if (ci.msg.isEmpty)
             return;
@@ -5125,12 +5126,15 @@ class OccaseState extends State<Occase>
 
          await _db.rawInsert(
             sql.insertOrReplaceChatOnPost,
-            makeChatUpdateSql(posts[i].chats[j], postId),
+            makeChatMetadataSql(posts[i].chats[j], postId),
          );
 
          posts[i].chats.sort(compChats);
          posts.sort(compPosts);
 
+         // At a certain point in the future, I want to stop sending
+         // the user avatar on every message and deduced it from the
+         // user id instead.
          var msgMap =
          { 'cmd': 'message'
          , 'type': 'chat'
@@ -5141,6 +5145,7 @@ class OccaseState extends State<Occase>
          , 'post_id': postId
          , 'nick': _cfg.nick
          , 'id': rowid
+         , 'avatar': emailToGravatarHash(_cfg.email)
          };
 
          final
@@ -5203,6 +5208,7 @@ class OccaseState extends State<Occase>
 
       final String msg = ack['msg'];
       final String nick = ack['nick'];
+      final String avatar = ack['avatar'] ?? '';
       final int refersTo = ack['refers_to'];
       final int peerRowid = ack['id'];
 
@@ -5222,6 +5228,7 @@ class OccaseState extends State<Occase>
          msg,
          peer,
          nick,
+         avatar,
          posts,
          isRedirected,
          refersTo,
@@ -5235,23 +5242,19 @@ class OccaseState extends State<Occase>
       String msg,
       String peer,
       String nick,
+      String avatar,
       List<Post> posts,
       int isRedirected,
       int refersTo,
-      int peerRowid) async
-   {
+      int peerRowid,
+   ) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
          print('Ignoring message to postId $postId.');
          return;
       }
 
-      final int j = posts[i].getChatHistIdxOrCreate(peer, nick);
-      if (j == -1) {
-         print('Ignoring message to (postId, peer) = ($postId, $peer)');
-         return;
-      }
-
+      final int j = posts[i].getChatHistIdxOrCreate(peer, nick, avatar);
       final int now = DateTime.now().millisecondsSinceEpoch;
 
       final ChatItem ci = ChatItem(
@@ -5263,6 +5266,8 @@ class OccaseState extends State<Occase>
       );
 
       posts[i].chats[j].addChatItem(ci);
+      if (avatar.isNotEmpty)
+         posts[i].chats[j].avatar = avatar;
 
       // If we are in the screen having chat with the user we can ack
       // it with chat_ack_read and skip chat_ack_received.
@@ -5324,7 +5329,7 @@ class OccaseState extends State<Occase>
 
          batch.rawInsert(
             sql.insertOrReplaceChatOnPost,
-            makeChatUpdateSql(chat, postId),
+            makeChatMetadataSql(chat, postId),
          );
 
          batch.insert(
@@ -6158,7 +6163,7 @@ class OccaseState extends State<Occase>
             _onCancelFwdLpChat,
             _showChatJumpDownButton,
             _onChatJumpDown,
-            _post.avatar,
+            _isOnFavChat() ? _post.avatar : _chat.avatar,
             _onWritingChat,
             _cfg.nick,
          );

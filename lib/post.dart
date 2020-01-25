@@ -148,13 +148,10 @@ Map<String, dynamic> makeChatItemToMap(
 int indexWhereBackwards(final List<ChatItem> list, int rowid)
 {
    int l = list.length;
-   print('Length $l');
    while (l != 0) {
       --l;
       if (list[l].rowid == rowid)
          return l;
-
-      print('${list[l].rowid} != $rowid');
    }
 
    return -1;
@@ -163,6 +160,7 @@ int indexWhereBackwards(final List<ChatItem> list, int rowid)
 class ChatMetadata {
    String peer;
    String nick;
+   String avatar;
    int date;
    int pinDate;
    int chatLength;
@@ -191,6 +189,7 @@ class ChatMetadata {
    ChatMetadata(
    { this.peer = ''
    , this.nick = ''
+   , this.avatar = ''
    , this.date = 0
    , this.pinDate = 0
    , this.chatLength = 0
@@ -458,17 +457,19 @@ class Post {
       return ret;
    }
 
-   int addChat(String peer, String nick)
+   int addChat(String peer, String nick, String avatar)
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       final int l = chats.length;
       chats.add(ChatMetadata(
             peer: peer,
             nick: nick,
+            avatar: avatar,
             date: now,
             lastChatItem: ChatItem(date: now),
          ),
       );
+
       return l;
    }
 
@@ -477,12 +478,14 @@ class Post {
       return chats.indexWhere((e) {return e.peer == peer;});
    }
 
-   int getChatHistIdxOrCreate(final String peer,
-                              final String nick)
-   {
+   int getChatHistIdxOrCreate(
+      final String peer,
+      final String nick,
+      final String avatar,
+   ) {
       final int i = getChatHistIdx(peer);
       if (i == -1)
-         return addChat(peer, nick);
+         return addChat(peer, nick, avatar);
 
       return i;
    }
@@ -1014,6 +1017,7 @@ loadChatMetadata(Database db, int postId) async
      return ChatMetadata(
         peer: maps[i]['user_id'],
         nick: maps[i]['nick'],
+        avatar: maps[i]['avatar'],
         date: maps[i]['date'],
         pinDate: maps[i]['pin_date'],
         chatLength: maps[i]['chat_length'],
@@ -1023,7 +1027,7 @@ loadChatMetadata(Database db, int postId) async
   });
 }
 
-List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
+List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)
 {
    final String payload = jsonEncode(chat.lastChatItem);
 
@@ -1033,6 +1037,7 @@ List<dynamic> makeChatUpdateSql(ChatMetadata chat, int postId)
    , chat.date
    , chat.pinDate
    , chat.nick
+   , chat.avatar
    , chat.chatLength
    , chat.nUnreadMsgs
    , payload
