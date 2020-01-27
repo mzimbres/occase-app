@@ -3873,7 +3873,9 @@ class OccaseState extends State<Occase>
       );
 
       _firebaseMessaging.getToken().then((String token) {
-         _fcmToken = token;
+         if (_fcmToken != null)
+            _fcmToken = token;
+
          print('Token: $token');
       });
    }
