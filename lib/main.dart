@@ -3683,7 +3683,7 @@ class DialogWithOpState extends State<DialogWithOp> {
            )
          , tile
          , Padding( child: Row(children: actions)
-                  , padding: EdgeInsets.only(left: 105.0))
+                  , padding: EdgeInsets.only(left: 70.0))
          ]);
    }
 }
