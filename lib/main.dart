@@ -5007,7 +5007,10 @@ class OccaseState extends State<Occase>
       final String nick = posts[i].chats[j].nick;
       final String title = '$nick: $peer';
 
-      final String url = cts.gravatarUrl + posts[i].avatar + '.jpg';
+      final String avatar =
+         _isOnFav() ? posts[i].avatar : posts[i].chats[j].avatar;
+
+      final String url = cts.gravatarUrl + avatar + '.jpg';
 
       _showSimpleDialog(
          ctx,
