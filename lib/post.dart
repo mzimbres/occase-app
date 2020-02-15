@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async' show Future;
+import 'package:meta/meta.dart';
 import 'package:occase/globals.dart' as g;
 import 'package:occase/tree.dart' as tree;
 import 'package:occase/sql.dart' as sql;
@@ -371,20 +372,20 @@ List<T> decodeList<T>(int size, T init, List<dynamic> details)
 
 class Post {
    // The auto increment sqlite rowid. TODO: Rename this to rowid.
-   int dbId = -1;
+   int dbId;
 
    // The post unique identifier.  Its value is sent back by the
    // server when the post publication is acknowledged.
-   int id = -1;
+   int id;
 
    // The person that published this post.
-   String from = '';
+   String from;
 
    // Publisher nick name.
-   String nick = g.param.unknownNick;
+   String nick;
 
    // Publisher avatar hash code from gravatar.
-   String avatar = '';
+   String avatar;
 
    // Contains the channel this post was published in. It has the
    // follwing form
@@ -397,37 +398,49 @@ class Post {
    List<int> inDetails;
 
    // The publication date.
-   int date = 0;
+   int date;
 
    // The date this post has been pinned by the user.
-   int pinDate = 0;
+   int pinDate;
 
-   List<int> rangeValues = List<int>();
+   List<int> rangeValues;
 
    // Post status.
    //   0: Posts published by the app.
    //   1: Posts received
    //   2: Posts moved to favorites.
    //   3: Posts published by the app but still unacked by the server.
-   int status = -1;
+   int status;
 
    // The string *description* inputed when user writes an post.
-   String description = '';
+   String description;
 
-   List<String> images = List<String>();
+   List<String> images;
+   List<ChatMetadata> chats;
 
-   List<ChatMetadata> chats = List<ChatMetadata>();
-
-   Post()
+   Post(
+   { this.dbId = -1
+   , this.id = -1
+   , this.from = ''
+   , this.nick = ''
+   , this.avatar = ''
+   , this.date = 0
+   , this.pinDate = 0
+   , this.status = -1
+   , this.description = ''
+   , @required List<int> rangesMinMax // g.param.rangesMinMax
+   })
    {
+      final int rangeDivsLength = rangesMinMax.length >> 1;
       channel = makeEmptyChannels();
       exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
-      rangeValues = List.generate(g.param.rangeDivs.length, (int i) {
-         return g.param.rangesMinMax[2 * i];
+      rangeValues = List.generate(rangeDivsLength, (int i) {
+         return rangesMinMax[2 * i];
       });
 
-      avatar = '';
+      images = List<String>();
+      chats = List<ChatMetadata>();
    }
 
    int getPrice()
@@ -438,7 +451,7 @@ class Post {
 
    Post clone()
    {
-      Post ret = Post();
+      Post ret = Post(rangesMinMax: List<int>());
       ret.dbId = -1;
       ret.id = this.id;
       ret.from = this.from;
@@ -524,19 +537,26 @@ class Post {
 
    // This serialization is used to communicate with the occase-db,
    // not the one used in the sqlite localy.
-   Post.fromJson(Map<String, dynamic> map)
-   {
+   Post.fromJson(
+      Map<String, dynamic> map,
+      int rangeDivsLength, // g.param.rangeDivs.length,
+   ) {
       dbId = -1;
       id = map['id'];
       from = map['from'];
       date = map['date'];
       pinDate = 0;
       status = -1;
-      rangeValues = decodeList(g.param.rangeDivs.length, 0, map['range_values']);
+
+      rangeValues = decodeList(
+         rangeDivsLength,
+         0,
+         map['range_values']
+      );
 
       final String body = map['body'];
       Map<String, dynamic> bodyMap = jsonDecode(body);
-      nick = bodyMap['nick'] ?? g.param.unknownNick;
+      nick = bodyMap['nick'] ?? '';
       avatar = bodyMap['avatar'] ?? '';
       images = decodeList(1, '', bodyMap['images']) ?? <String>[];
       description = bodyMap['msg'];
@@ -626,13 +646,15 @@ Map<String, dynamic> postToMap(Post post)
    };
 }
 
-Future<List<Post>> loadPosts(Database db) async
+Future<List<Post>>
+loadPosts(Database db, List<int> rangesMinMax) async
 {
-   List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
+   List<Map<String, dynamic>> maps =
+      await db.rawQuery(sql.loadPosts);
 
    return List.generate(maps.length, (i)
    {
-      Post post = Post();
+      Post post = Post(rangesMinMax: rangesMinMax);
       post.dbId = maps[i]['rowid'];
       post.id = maps[i]['id'];
       post.date = maps[i]['date'];
@@ -660,8 +682,9 @@ Future<List<Post>> loadPosts(Database db) async
          jsonDecode(bodyMap['in_details']),
       );
 
+      final int rangeDivsLength = rangesMinMax.length >> 1;
       post.rangeValues = decodeList(
-         g.param.rangeDivs.length,
+         rangeDivsLength,
          0,
          jsonDecode(bodyMap['range_values']),
       );

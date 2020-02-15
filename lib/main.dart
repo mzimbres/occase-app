@@ -4086,7 +4086,8 @@ class OccaseState extends State<Occase>
          );
 
       try {
-         final List<Post> posts = await loadPosts(_db);
+         final List<Post> posts =
+            await loadPosts(_db, g.param.rangesMinMax);
          for (Post p in posts) {
             if (p.status == 0) {
                _ownPosts.add(p);
@@ -4313,7 +4314,7 @@ class OccaseState extends State<Occase>
    void _onNewPost()
    {
       _newPostPressed = true;
-      _post = Post();
+      _post = Post(rangesMinMax: g.param.rangesMinMax);
       _post.images = List<String>(); // TODO: remove this later.
       _trees[0].restoreMenuStack();
       _trees[1].restoreMenuStack();
@@ -5542,7 +5543,7 @@ class OccaseState extends State<Occase>
 
       for (var item in ack['items']) {
          try {
-            Post post = Post.fromJson(item);
+            Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
 
             // Just in case the server sends us posts out of order I
