@@ -18,6 +18,7 @@ import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -6040,6 +6041,9 @@ class OccaseState extends State<Occase>
    @override
    Widget build(BuildContext ctx)
    {
+      //Locale locale = Localizations.localeOf(ctx);
+      //print('-----> ${locale.languageCode}');
+
       final bool mustWait =
          _trees.isEmpty    ||
          _trees.isEmpty     ||
