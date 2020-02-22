@@ -66,25 +66,25 @@ class Parameters {
    List<String> _changeNickAppBarTitle = <String>[''];
    List<String> _changeNtfAppBarTitle = <String>[''];
 
-   List<int> filterDepths;
-   List<int> rangesMinMax;
-   List<int> rangeDivs;
-
-   List<String> tabNames;
-   List<String> newPostTabNames;
-   List<String> filterTabNames;
-   List<String> descList;
-   List<String> dialogTitles;
-   List<String> dialogBodies;
-   List<String> rangePrefixes;
-   List<String> rangeUnits;
-   List<String> newPostErrorTitles;
-   List<String> newPostErrorBodies;
-   List<String> newFiltersFinalScreenButton;
-   List<String> ntfTitleDesc;
+   List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
+   List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
+   List<List<String>> _filterTabNames = <List<String>>[<String>['', '', '', '']];
+   List<List<String>> _descList =  <List<String>>[<String>['', '', '', '', '']];
+   List<List<String>> _dialogTitles =  <List<String>>[<String>['' ,'' ,'' ,'' , '']];
+   List<List<String>> _dialogBodies =  <List<String>>[<String>['', '', '', '', '']];
+   List<List<String>> _rangePrefixes =  <List<String>>[<String>['','' ,'' ]];
+   List<List<String>> _rangeUnits =  <List<String>>[<String>['', '', '', '', '', '']];
+   List<List<String>> _newPostErrorTitles = <List<String>>[<String>[ '', '']];
+   List<List<String>> _newPostErrorBodies = <List<String>> [<String>['' , '']];
+   List<List<String>> _newFiltersFinalScreenButton = <List<String>>[<String>['', '', '']];
+   List<List<String>> _ntfTitleDesc =  <List<String>>[<String>['', '']];
 
    List<List<String>> menuDepthNames;
    List<List<String>> payments;
+
+   List<int> filterDepths;
+   List<int> rangesMinMax;
+   List<int> rangeDivs;
    List<List<int>> discreteRanges;
 
    Parameters(
@@ -92,18 +92,6 @@ class Parameters {
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
-   , this.tabNames = const <String>['' ,'' , '']
-   , this.newPostTabNames = const <String>['', '', '', '']
-   , this.filterTabNames = const <String>['', '', '', '']
-   , this.descList = const <String>['', '', '', '', '']
-   , this.dialogTitles = const <String>['' ,'' ,'' ,'' , '']
-   , this.dialogBodies = const <String>['', '', '', '', '']
-   , this.rangePrefixes = const <String>['','' ,'' ]
-   , this.rangeUnits = const <String>['', '', '', '', '', '']
-   , this.newPostErrorTitles = const <String>[ '', '']
-   , this.newPostErrorBodies = const <String> ['' , '']
-   , this.newFiltersFinalScreenButton = const <String>['', '', '']
-   , this.ntfTitleDesc = const <String>['', '']
    , this.menuDepthNames = const <List<String>>
    [ <String> [ '' , '' , '' , '' ]
    , <String> [ '' , '' , '' , '' , '' , '' , '' ]
@@ -175,6 +163,19 @@ class Parameters {
    String get changeNickAppBarTitle     => _changeNickAppBarTitle[_langIdx];
    String get changeNtfAppBarTitle      => _changeNtfAppBarTitle[_langIdx];
 
+   List<String> get tabNames                     => _tabNames[_langIdx];
+   List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
+   List<String> get filterTabNames               => _filterTabNames[_langIdx];
+   List<String> get descList                     => _descList[_langIdx];
+   List<String> get dialogTitles                 => _dialogTitles[_langIdx];
+   List<String> get dialogBodies                 => _dialogBodies[_langIdx];
+   List<String> get rangePrefixes                => _rangePrefixes[_langIdx];
+   List<String> get rangeUnits                   => _rangeUnits[_langIdx];
+   List<String> get newPostErrorTitles           => _newPostErrorTitles[_langIdx];
+   List<String> get newPostErrorBodies           => _newPostErrorBodies[_langIdx];
+   List<String> get newFiltersFinalScreenButton  => _newFiltersFinalScreenButton[_langIdx];
+   List<String> get ntfTitleDesc                 => _ntfTitleDesc[_langIdx];
+
    Parameters.fromJson(Map<String, dynamic> map)
    {
       appName                     = map['appName'];
@@ -228,23 +229,25 @@ class Parameters {
       _changeNickAppBarTitle       = decodeList2(map['changeNickAppBarTitle']);
       _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
 
+      _tabNames                    = decodeList3(map['tabNames']);
+      _newPostTabNames             = decodeList3(map['newPostTabNames']);
+      _filterTabNames              = decodeList3(map['filterTabNames']);
+      _descList                    = decodeList3(map['descList']);
+      _dialogTitles                = decodeList3(map['dialogTitles']);
+      _dialogBodies                = decodeList3(map['dialogBodies']);
+      _rangePrefixes               = decodeList3(map['rangePrefixes']);
+      _rangeUnits                  = decodeList3(map['rangeUnits']);
+      _newPostErrorTitles          = decodeList3(map['newPostErrorTitles']);
+      _newPostErrorBodies          = decodeList3(map['newPostErrorBodies']);
+      _newFiltersFinalScreenButton = decodeList3(map['newFiltersFinalScreenButton']);
+      _ntfTitleDesc                = decodeList3(map['ntfTitleDesc']);
+
+      menuDepthNames              = decodeList3(map['menuDepthNames']);
+      payments                    = decodeList3(map['payments']);
+
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
-      tabNames                    = decodeList2(map['tabNames']);
-      newPostTabNames             = decodeList2(map['newPostTabNames']);
-      filterTabNames              = decodeList2(map['filterTabNames']);
-      descList                    = decodeList2(map['descList']);
-      dialogTitles                = decodeList2(map['dialogTitles']);
-      dialogBodies                = decodeList2(map['dialogBodies']);
-      rangePrefixes               = decodeList2(map['rangePrefixes']);
-      rangeUnits                  = decodeList2(map['rangeUnits']);
-      newPostErrorTitles          = decodeList2(map['newPostErrorTitles']);
-      newPostErrorBodies          = decodeList2(map['newPostErrorBodies']);
-      newFiltersFinalScreenButton = decodeList2(map['newFiltersFinalScreenButton']);
-      ntfTitleDesc                = decodeList2(map['ntfTitleDesc']);
-      menuDepthNames              = decodeList3(map['menuDepthNames']);
-      payments                    = decodeList3(map['payments']);
       discreteRanges              = decodeList3(map['discreteRanges']);
    }
 
@@ -302,23 +305,23 @@ class Parameters {
          'postMinImgsContent':          _postMinImgsContent,
          'changeNickAppBarTitle':       _changeNickAppBarTitle,
          'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
+         'tabNames':                    _tabNames,
+         'newPostTabNames':             _newPostTabNames,
+         'filterTabNames':              _filterTabNames,
+         'descList':                    _descList,
+         'dialogTitles':                _dialogTitles,
+         'dialogBodies':                _dialogBodies,
+         'rangePrefixes':               _rangePrefixes,
+         'rangeUnits':                  _rangeUnits,
+         'newPostErrorTitles':          _newPostErrorTitles,
+         'newPostErrorBodies':          _newPostErrorBodies,
+         'newFiltersFinalScreenButton': _newFiltersFinalScreenButton,
+         'ntfTitleDesc':                _ntfTitleDesc,
+         'menuDepthNames':              menuDepthNames,
+         'payments':                    payments,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
-         'tabNames':                    tabNames,
-         'newPostTabNames':             newPostTabNames,
-         'filterTabNames':              filterTabNames,
-         'descList':                    descList,
-         'dialogTitles':                dialogTitles,
-         'dialogBodies':                dialogBodies,
-         'rangePrefixes':               rangePrefixes,
-         'rangeUnits':                  rangeUnits,
-         'newPostErrorTitles':          newPostErrorTitles,
-         'newPostErrorBodies':          newPostErrorBodies,
-         'newFiltersFinalScreenButton': newFiltersFinalScreenButton,
-         'ntfTitleDesc':                ntfTitleDesc,
-         'menuDepthNames':              menuDepthNames,
-         'payments':                    payments,
          'discreteRanges':              discreteRanges,
       };
    }
