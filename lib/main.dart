@@ -6041,9 +6041,6 @@ class OccaseState extends State<Occase>
    @override
    Widget build(BuildContext ctx)
    {
-      //Locale locale = Localizations.localeOf(ctx);
-      //print('-----> ${locale.languageCode}');
-
       final bool mustWait =
          _trees.isEmpty    ||
          _trees.isEmpty     ||
@@ -6053,6 +6050,10 @@ class OccaseState extends State<Occase>
 
       if (mustWait)
          return makeWaitMenuScreen(ctx);
+
+      Locale locale = Localizations.localeOf(ctx);
+      g.param.setLang(locale.languageCode);
+      //print('-----> ${locale.languageCode}');
 
       if (_goToRegScreen) {
          return makeRegisterScreen(

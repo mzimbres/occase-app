@@ -14,20 +14,21 @@ List<List<T>> decodeList3<T>(List<dynamic> l)
 }
 
 class Parameters {
+   int _langIdx = 1;
    String appName;
-   String delOwnChatTitleStr;
-   String delFavChatTitleStr;
-   String devChatOkStr;
-   String delChatCancelStr;
-   String newPostAppBarTitle;
-   String filterAppBarTitle;
-   String postRefSectionTitle;
-   String postExDetailsTitle;
-   String postDescTitle;
-   String newPostTextFieldHist;
-   String chatTextFieldHint;
-   String nickHint;
-   String emailHint;
+   List<String> _delOwnChatTitleStr = <String>[''];
+   List<String> _delFavChatTitleStr = <String>[''];
+   List<String> _devChatOkStr = <String>[''];
+   List<String> _delChatCancelStr = <String>[''];
+   List<String> _newPostAppBarTitle = <String>[''];
+   List<String> _filterAppBarTitle = <String>[''];
+   List<String> _postRefSectionTitle = <String>[''];
+   List<String> _postExDetailsTitle = <String>[''];
+   List<String> _postDescTitle = <String>[''];
+   List<String> _newPostTextFieldHist = <String>[''];
+   List<String> _chatTextFieldHint = <String>[''];
+   List<String> _nickHint = <String>[''];
+   List<String> _emailHint = <String>[''];
    String msgOnRedirectingChat;
    String msgOnRedirectedChat;
    String msgOnEmptyChat;
@@ -84,24 +85,10 @@ class Parameters {
 
    List<List<String>> menuDepthNames;
    List<List<String>> payments;
-
    List<List<int>> discreteRanges;
 
    Parameters(
    { this.appName = 'Occase'
-   , this.delOwnChatTitleStr = ''
-   , this.delFavChatTitleStr = ''
-   , this.devChatOkStr = ''
-   , this.delChatCancelStr = ''
-   , this.newPostAppBarTitle = ''
-   , this.filterAppBarTitle = ''
-   , this.postRefSectionTitle = ''
-   , this.postExDetailsTitle = ''
-   , this.postDescTitle = ''
-   , this.newPostTextFieldHist = ''
-   , this.chatTextFieldHint = ''
-   , this.nickHint = ''
-   , this.emailHint = ''
    , this.msgOnRedirectingChat = ''
    , this.msgOnRedirectedChat = ''
    , this.msgOnEmptyChat = ''
@@ -169,22 +156,41 @@ class Parameters {
    ]
    });
 
+   void setLang(String code)
+   {
+      _langIdx = 0;
+   }
+
+   String get delOwnChatTitleStr   => _delOwnChatTitleStr[_langIdx];
+   String get delFavChatTitleStr   => _delFavChatTitleStr[_langIdx];
+   String get devChatOkStr         => _devChatOkStr[_langIdx];
+   String get delChatCancelStr     => _delChatCancelStr[_langIdx];
+   String get newPostAppBarTitle   => _newPostAppBarTitle[_langIdx];
+   String get filterAppBarTitle    => _filterAppBarTitle[_langIdx];
+   String get postRefSectionTitle  => _postRefSectionTitle[_langIdx];
+   String get postExDetailsTitle   => _postExDetailsTitle[_langIdx];
+   String get postDescTitle        => _postDescTitle[_langIdx];
+   String get newPostTextFieldHist => _newPostTextFieldHist[_langIdx];
+   String get chatTextFieldHint    => _chatTextFieldHint[_langIdx];
+   String get nickHint             => _nickHint[_langIdx];
+   String get emailHint            => _emailHint[_langIdx];
+
    Parameters.fromJson(Map<String, dynamic> map)
    {
       appName                     = map['appName'];
-      delOwnChatTitleStr          = map['delOwnChatTitleStr'];
-      delFavChatTitleStr          = map['delFavChatTitleStr'];
-      devChatOkStr                = map['devChatOkStr'];
-      delChatCancelStr            = map['delChatCancelStr'];
-      newPostAppBarTitle          = map['newPostAppBarTitle'];
-      filterAppBarTitle           = map['filterAppBarTitle'];
-      postRefSectionTitle         = map['postRefSectionTitle'];
-      postExDetailsTitle          = map['postExDetailsTitle'];
-      postDescTitle               = map['postDescTitle'];
-      newPostTextFieldHist        = map['newPostTextFieldHist'];
-      chatTextFieldHint           = map['chatTextFieldHint'];
-      nickHint                    = map['nickHint'];
-      emailHint                   = map['emailHint'];
+      _delOwnChatTitleStr          = decodeList2(map['delOwnChatTitleStr']);
+      _delFavChatTitleStr          = decodeList2(map['delFavChatTitleStr']);
+      _devChatOkStr                = decodeList2(map['devChatOkStr']);
+      _delChatCancelStr            = decodeList2(map['delChatCancelStr']);
+      _newPostAppBarTitle          = decodeList2(map['newPostAppBarTitle']);
+      _filterAppBarTitle           = decodeList2(map['filterAppBarTitle']);
+      _postRefSectionTitle         = decodeList2(map['postRefSectionTitle']);
+      _postExDetailsTitle          = decodeList2(map['postExDetailsTitle']);
+      _postDescTitle               = decodeList2(map['postDescTitle']);
+      _newPostTextFieldHist        = decodeList2(map['newPostTextFieldHist']);
+      _chatTextFieldHint           = decodeList2(map['chatTextFieldHint']);
+      _nickHint                    = decodeList2(map['nickHint']);
+      _emailHint                   = decodeList2(map['emailHint']);
       msgOnRedirectingChat        = map['msgOnRedirectingChat'];
       msgOnRedirectedChat         = map['msgOnRedirectedChat'];
       msgOnEmptyChat              = map['msgOnEmptyChat'];
@@ -246,19 +252,19 @@ class Parameters {
       return
       {
          'appName':                     appName,
-         'delOwnChatTitleStr':          delOwnChatTitleStr,
-         'delFavChatTitleStr':          delFavChatTitleStr,
-         'devChatOkStr':                devChatOkStr,
-         'delChatCancelStr':            delChatCancelStr,
-         'newPostAppBarTitle':          newPostAppBarTitle,
-         'filterAppBarTitle':           filterAppBarTitle,
-         'postRefSectionTitle':         postRefSectionTitle,
-         'postExDetailsTitle':          postExDetailsTitle,
-         'postDescTitle':               postDescTitle,
-         'newPostTextFieldHist':        newPostTextFieldHist,
-         'chatTextFieldHint':           chatTextFieldHint,
-         'nickHint':                    nickHint,
-         'emailHint':                   emailHint,
+         'delOwnChatTitleStr':          _delOwnChatTitleStr,
+         'delFavChatTitleStr':          _delFavChatTitleStr,
+         'devChatOkStr':                _devChatOkStr,
+         'delChatCancelStr':            _delChatCancelStr,
+         'newPostAppBarTitle':          _newPostAppBarTitle,
+         'filterAppBarTitle':           _filterAppBarTitle,
+         'postRefSectionTitle':         _postRefSectionTitle,
+         'postExDetailsTitle':          _postExDetailsTitle,
+         'postDescTitle':               _postDescTitle,
+         'newPostTextFieldHist':        _newPostTextFieldHist,
+         'chatTextFieldHint':           _chatTextFieldHint,
+         'nickHint':                    _nickHint,
+         'emailHint':                   _emailHint,
          'msgOnRedirectingChat':        msgOnRedirectingChat,
          'msgOnRedirectedChat':         msgOnRedirectedChat,
          'msgOnEmptyChat':              msgOnEmptyChat,
