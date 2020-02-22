@@ -14,7 +14,7 @@ List<List<T>> decodeList3<T>(List<dynamic> l)
 }
 
 class Parameters {
-   int _langIdx = 1;
+   int _langIdx = 0;
    String appName;
    List<String> _delOwnChatTitleStr = <String>[''];
    List<String> _delFavChatTitleStr = <String>[''];
@@ -29,42 +29,42 @@ class Parameters {
    List<String> _chatTextFieldHint = <String>[''];
    List<String> _nickHint = <String>[''];
    List<String> _emailHint = <String>[''];
-   String msgOnRedirectingChat;
-   String msgOnRedirectedChat;
-   String msgOnEmptyChat;
-   String deleteChat;
-   String pinChat;
-   String clearPosts;
-   String notificationsButton;
-   String unknownNick;
-   String selectAll;
-   String changeNickHint;
-   String changeNotifications;
-   String dissmissedPost;
-   String dismissedChat;
-   String ok;
-   String cancel;
-   String cancelNewPost;
-   String doNotShowAgain;
-   String next;
-   String rangesTitle;
-   String paymentTitle;
-   String onEmptyNickTitle;
-   String onEmptyNickContent;
-   String addImgMsg;
-   String unreachableImgError;
-   String clearPostsTitle;
-   String clearPostsContent;
-   String localeName;
-   String typing;
-   String cancelPost;
-   String cancelPostContent;
-   String numberOfChatsSuffix;
-   String numberOfUnreadChatsSuffix;
-   String postMinImgs;
-   String postMinImgsContent;
-   String changeNickAppBarTitle;
-   String changeNtfAppBarTitle;
+   List<String> _msgOnRedirectingChat = <String>[''];
+   List<String> _msgOnRedirectedChat = <String>[''];
+   List<String> _msgOnEmptyChat = <String>[''];
+   List<String> _deleteChat = <String>[''];
+   List<String> _pinChat = <String>[''];
+   List<String> _clearPosts = <String>[''];
+   List<String> _notificationsButton = <String>[''];
+   List<String> _unknownNick = <String>[''];
+   List<String> _selectAll = <String>[''];
+   List<String> _changeNickHint = <String>[''];
+   List<String> _changeNotifications = <String>[''];
+   List<String> _dissmissedPost = <String>[''];
+   List<String> _dismissedChat = <String>[''];
+   List<String> _ok = <String>[''];
+   List<String> _cancel = <String>[''];
+   List<String> _cancelNewPost = <String>[''];
+   List<String> _doNotShowAgain = <String>[''];
+   List<String> _next = <String>[''];
+   List<String> _rangesTitle = <String>[''];
+   List<String> _paymentTitle = <String>[''];
+   List<String> _onEmptyNickTitle = <String>[''];
+   List<String> _onEmptyNickContent = <String>[''];
+   List<String> _addImgMsg = <String>[''];
+   List<String> _unreachableImgError = <String>[''];
+   List<String> _clearPostsTitle = <String>[''];
+   List<String> _clearPostsContent = <String>[''];
+   List<String> _localeName = <String>[''];
+   List<String> _typing = <String>[''];
+   List<String> _cancelPost = <String>[''];
+   List<String> _cancelPostContent = <String>[''];
+   List<String> _numberOfChatsSuffix = <String>[''];
+   List<String> _numberOfUnreadChatsSuffix = <String>[''];
+   List<String> _postMinImgs = <String>[''];
+   List<String> _postMinImgsContent = <String>[''];
+   List<String> _changeNickAppBarTitle = <String>[''];
+   List<String> _changeNtfAppBarTitle = <String>[''];
 
    List<int> filterDepths;
    List<int> rangesMinMax;
@@ -89,42 +89,6 @@ class Parameters {
 
    Parameters(
    { this.appName = 'Occase'
-   , this.msgOnRedirectingChat = ''
-   , this.msgOnRedirectedChat = ''
-   , this.msgOnEmptyChat = ''
-   , this.deleteChat = ''
-   , this.pinChat = ''
-   , this.clearPosts = ''
-   , this.notificationsButton = ''
-   , this.unknownNick = ''
-   , this.selectAll = ''
-   , this.changeNickHint = ''
-   , this.changeNotifications = ''
-   , this.dissmissedPost = ''
-   , this.dismissedChat = ''
-   , this.ok = ''
-   , this.cancel = ''
-   , this.cancelNewPost = ''
-   , this.doNotShowAgain = ''
-   , this.next = ''
-   , this.rangesTitle = ''
-   , this.paymentTitle = ''
-   , this.onEmptyNickTitle = ''
-   , this.onEmptyNickContent = ''
-   , this.addImgMsg = ''
-   , this.unreachableImgError = ''
-   , this.clearPostsTitle = ''
-   , this.clearPostsContent = ''
-   , this.localeName = ''
-   , this.typing = ''
-   , this.cancelPost = ''
-   , this.cancelPostContent = ''
-   , this.numberOfChatsSuffix = ''
-   , this.numberOfUnreadChatsSuffix = ''
-   , this.postMinImgs = ''
-   , this.postMinImgsContent = ''
-   , this.changeNickAppBarTitle = ''
-   , this.changeNtfAppBarTitle = ''
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
@@ -158,22 +122,58 @@ class Parameters {
 
    void setLang(String code)
    {
-      _langIdx = 0;
+      _langIdx = 1;
    }
 
-   String get delOwnChatTitleStr   => _delOwnChatTitleStr[_langIdx];
-   String get delFavChatTitleStr   => _delFavChatTitleStr[_langIdx];
-   String get devChatOkStr         => _devChatOkStr[_langIdx];
-   String get delChatCancelStr     => _delChatCancelStr[_langIdx];
-   String get newPostAppBarTitle   => _newPostAppBarTitle[_langIdx];
-   String get filterAppBarTitle    => _filterAppBarTitle[_langIdx];
-   String get postRefSectionTitle  => _postRefSectionTitle[_langIdx];
-   String get postExDetailsTitle   => _postExDetailsTitle[_langIdx];
-   String get postDescTitle        => _postDescTitle[_langIdx];
-   String get newPostTextFieldHist => _newPostTextFieldHist[_langIdx];
-   String get chatTextFieldHint    => _chatTextFieldHint[_langIdx];
-   String get nickHint             => _nickHint[_langIdx];
-   String get emailHint            => _emailHint[_langIdx];
+   String get delOwnChatTitleStr        => _delOwnChatTitleStr[_langIdx];
+   String get delFavChatTitleStr        => _delFavChatTitleStr[_langIdx];
+   String get devChatOkStr              => _devChatOkStr[_langIdx];
+   String get delChatCancelStr          => _delChatCancelStr[_langIdx];
+   String get newPostAppBarTitle        => _newPostAppBarTitle[_langIdx];
+   String get filterAppBarTitle         => _filterAppBarTitle[_langIdx];
+   String get postRefSectionTitle       => _postRefSectionTitle[_langIdx];
+   String get postExDetailsTitle        => _postExDetailsTitle[_langIdx];
+   String get postDescTitle             => _postDescTitle[_langIdx];
+   String get newPostTextFieldHist      => _newPostTextFieldHist[_langIdx];
+   String get chatTextFieldHint         => _chatTextFieldHint[_langIdx];
+   String get nickHint                  => _nickHint[_langIdx];
+   String get emailHint                 => _emailHint[_langIdx];
+   String get msgOnRedirectingChat      => _msgOnRedirectingChat[_langIdx];
+   String get msgOnRedirectedChat       => _msgOnRedirectedChat[_langIdx];
+   String get msgOnEmptyChat            => _msgOnEmptyChat[_langIdx];
+   String get deleteChat                => _deleteChat[_langIdx];
+   String get pinChat                   => _pinChat[_langIdx];
+   String get clearPosts                => _clearPosts[_langIdx];
+   String get notificationsButton       => _notificationsButton[_langIdx];
+   String get unknownNick               => _unknownNick[_langIdx];
+   String get selectAll                 => _selectAll[_langIdx];
+   String get changeNickHint            => _changeNickHint[_langIdx];
+   String get changeNotifications       => _changeNotifications[_langIdx];
+   String get dissmissedPost            => _dissmissedPost[_langIdx];
+   String get dismissedChat             => _dismissedChat[_langIdx];
+   String get ok                        => _ok[_langIdx];
+   String get cancel                    => _cancel[_langIdx];
+   String get cancelNewPost             => _cancelNewPost[_langIdx];
+   String get doNotShowAgain            => _doNotShowAgain[_langIdx];
+   String get next                      => _next[_langIdx];
+   String get rangesTitle               => _rangesTitle[_langIdx];
+   String get paymentTitle              => _paymentTitle[_langIdx];
+   String get onEmptyNickTitle          => _onEmptyNickTitle[_langIdx];
+   String get onEmptyNickContent        => _onEmptyNickContent[_langIdx];
+   String get addImgMsg                 => _addImgMsg[_langIdx];
+   String get unreachableImgError       => _unreachableImgError[_langIdx];
+   String get clearPostsTitle           => _clearPostsTitle[_langIdx];
+   String get clearPostsContent         => _clearPostsContent[_langIdx];
+   String get localeName                => _localeName[_langIdx];
+   String get typing                    => _typing[_langIdx];
+   String get cancelPost                => _cancelPost[_langIdx];
+   String get cancelPostContent         => _cancelPostContent[_langIdx];
+   String get numberOfChatsSuffix       => _numberOfChatsSuffix[_langIdx];
+   String get numberOfUnreadChatsSuffix => _numberOfUnreadChatsSuffix[_langIdx];
+   String get postMinImgs               => _postMinImgs[_langIdx];
+   String get postMinImgsContent        => _postMinImgsContent[_langIdx];
+   String get changeNickAppBarTitle     => _changeNickAppBarTitle[_langIdx];
+   String get changeNtfAppBarTitle      => _changeNtfAppBarTitle[_langIdx];
 
    Parameters.fromJson(Map<String, dynamic> map)
    {
@@ -191,42 +191,43 @@ class Parameters {
       _chatTextFieldHint           = decodeList2(map['chatTextFieldHint']);
       _nickHint                    = decodeList2(map['nickHint']);
       _emailHint                   = decodeList2(map['emailHint']);
-      msgOnRedirectingChat        = map['msgOnRedirectingChat'];
-      msgOnRedirectedChat         = map['msgOnRedirectedChat'];
-      msgOnEmptyChat              = map['msgOnEmptyChat'];
-      deleteChat                  = map['deleteChat'];
-      pinChat                     = map['pinChat'];
-      clearPosts                  = map['clearPosts'];
-      notificationsButton         = map['notificationsButton'];
-      unknownNick                 = map['unknownNick'];
-      selectAll                   = map['selectAll'];
-      changeNickHint              = map['changeNickHint'];
-      changeNotifications         = map['changeNotifications'];
-      dissmissedPost              = map['dissmissedPost'];
-      dismissedChat               = map['dismissedChat'];
-      ok                          = map['ok'];
-      cancel                      = map['cancel'];
-      cancelNewPost               = map['cancelNewPost'];
-      doNotShowAgain              = map['doNotShowAgain'];
-      next                        = map['next'];
-      rangesTitle                 = map['rangesTitle'];
-      paymentTitle                = map['paymentTitle'];
-      onEmptyNickTitle            = map['onEmptyNickTitle'];
-      onEmptyNickContent          = map['onEmptyNickContent'];
-      addImgMsg                   = map['addImgMsg'];
-      unreachableImgError         = map['unreachableImgError'];
-      clearPostsTitle             = map['clearPostsTitle'];
-      clearPostsContent           = map['clearPostsContent'];
-      localeName                  = map['localeName'];
-      typing                      = map['typing'];
-      cancelPost                  = map['cancelPost'];
-      cancelPostContent           = map['cancelPostContent'];
-      numberOfChatsSuffix         = map['numberOfChatsSuffix'];
-      numberOfUnreadChatsSuffix   = map['numberOfUnreadChatsSuffix'];
-      postMinImgs                 = map['postMinImgs'];
-      postMinImgsContent          = map['postMinImgsContent'];
-      changeNickAppBarTitle       = map['changeNickAppBarTitle'];
-      changeNtfAppBarTitle        = map['changeNtfAppBarTitle'];
+      _msgOnRedirectingChat        = decodeList2(map['msgOnRedirectingChat']);
+      _msgOnRedirectedChat         = decodeList2(map['msgOnRedirectedChat']);
+      _msgOnEmptyChat              = decodeList2(map['msgOnEmptyChat']);
+      _deleteChat                  = decodeList2(map['deleteChat']);
+      _pinChat                     = decodeList2(map['pinChat']);
+      _clearPosts                  = decodeList2(map['clearPosts']);
+      _notificationsButton         = decodeList2(map['notificationsButton']);
+      _unknownNick                 = decodeList2(map['unknownNick']);
+      _selectAll                   = decodeList2(map['selectAll']);
+      _changeNickHint              = decodeList2(map['changeNickHint']);
+      _changeNotifications         = decodeList2(map['changeNotifications']);
+      _dissmissedPost              = decodeList2(map['dissmissedPost']);
+      _dismissedChat               = decodeList2(map['dismissedChat']);
+      _ok                          = decodeList2(map['ok']);
+      _cancel                      = decodeList2(map['cancel']);
+      _cancelNewPost               = decodeList2(map['cancelNewPost']);
+      _doNotShowAgain              = decodeList2(map['doNotShowAgain']);
+      _next                        = decodeList2(map['next']);
+      _rangesTitle                 = decodeList2(map['rangesTitle']);
+      _paymentTitle                = decodeList2(map['paymentTitle']);
+      _onEmptyNickTitle            = decodeList2(map['onEmptyNickTitle']);
+      _onEmptyNickContent          = decodeList2(map['onEmptyNickContent']);
+      _addImgMsg                   = decodeList2(map['addImgMsg']);
+      _unreachableImgError         = decodeList2(map['unreachableImgError']);
+      _clearPostsTitle             = decodeList2(map['clearPostsTitle']);
+      _clearPostsContent           = decodeList2(map['clearPostsContent']);
+      _localeName                  = decodeList2(map['localeName']);
+      _typing                      = decodeList2(map['typing']);
+      _cancelPost                  = decodeList2(map['cancelPost']);
+      _cancelPostContent           = decodeList2(map['cancelPostContent']);
+      _numberOfChatsSuffix         = decodeList2(map['numberOfChatsSuffix']);
+      _numberOfUnreadChatsSuffix   = decodeList2(map['numberOfUnreadChatsSuffix']);
+      _postMinImgs                 = decodeList2(map['postMinImgs']);
+      _postMinImgsContent          = decodeList2(map['postMinImgsContent']);
+      _changeNickAppBarTitle       = decodeList2(map['changeNickAppBarTitle']);
+      _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
+
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -265,42 +266,42 @@ class Parameters {
          'chatTextFieldHint':           _chatTextFieldHint,
          'nickHint':                    _nickHint,
          'emailHint':                   _emailHint,
-         'msgOnRedirectingChat':        msgOnRedirectingChat,
-         'msgOnRedirectedChat':         msgOnRedirectedChat,
-         'msgOnEmptyChat':              msgOnEmptyChat,
-         'deleteChat':                  deleteChat,
-         'pinChat':                     pinChat,
-         'clearPosts':                  clearPosts,
-         'notificationsButton':         notificationsButton,
-         'unknownNick':                 unknownNick,
-         'selectAll':                   selectAll,
-         'changeNickHint':              changeNickHint,
-         'changeNotifications':         changeNotifications,
-         'dissmissedPost':              dissmissedPost,
-         'dismissedChat':               dismissedChat,
-         'ok':                          ok,
-         'cancel':                      cancel,
-         'cancelNewPost':               cancelNewPost,
-         'doNotShowAgain':              doNotShowAgain,
-         'next':                        next,
-         'rangesTitle':                 rangesTitle,
-         'paymentTitle':                paymentTitle,
-         'onEmptyNickTitle':            onEmptyNickTitle,
-         'onEmptyNickContent':          onEmptyNickContent,
-         'addImgMsg':                   addImgMsg,
-         'unreachableImgError':         unreachableImgError,
-         'clearPostsTitle':             clearPostsTitle,
-         'clearPostsContent':           clearPostsContent,
-         'localeName':                  localeName,
-         'typing':                      typing,
-         'cancelPost':                  cancelPost,
-         'cancelPostContent':           cancelPostContent,
-         'numberOfChatsSuffix':         numberOfChatsSuffix,
-         'numberOfUnreadChatsSuffix':   numberOfUnreadChatsSuffix,
-         'postMinImgs':                 postMinImgs,
-         'postMinImgsContent':          postMinImgsContent,
-         'changeNickAppBarTitle':       changeNickAppBarTitle,
-         'changeNtfAppBarTitle':        changeNtfAppBarTitle,
+         'msgOnRedirectingChat':        _msgOnRedirectingChat,
+         'msgOnRedirectedChat':         _msgOnRedirectedChat,
+         'msgOnEmptyChat':              _msgOnEmptyChat,
+         'deleteChat':                  _deleteChat,
+         'pinChat':                     _pinChat,
+         'clearPosts':                  _clearPosts,
+         'notificationsButton':         _notificationsButton,
+         'unknownNick':                 _unknownNick,
+         'selectAll':                   _selectAll,
+         'changeNickHint':              _changeNickHint,
+         'changeNotifications':         _changeNotifications,
+         'dissmissedPost':              _dissmissedPost,
+         'dismissedChat':               _dismissedChat,
+         'ok':                          _ok,
+         'cancel':                      _cancel,
+         'cancelNewPost':               _cancelNewPost,
+         'doNotShowAgain':              _doNotShowAgain,
+         'next':                        _next,
+         'rangesTitle':                 _rangesTitle,
+         'paymentTitle':                _paymentTitle,
+         'onEmptyNickTitle':            _onEmptyNickTitle,
+         'onEmptyNickContent':          _onEmptyNickContent,
+         'addImgMsg':                   _addImgMsg,
+         'unreachableImgError':         _unreachableImgError,
+         'clearPostsTitle':             _clearPostsTitle,
+         'clearPostsContent':           _clearPostsContent,
+         'localeName':                  _localeName,
+         'typing':                      _typing,
+         'cancelPost':                  _cancelPost,
+         'cancelPostContent':           _cancelPostContent,
+         'numberOfChatsSuffix':         _numberOfChatsSuffix,
+         'numberOfUnreadChatsSuffix':   _numberOfUnreadChatsSuffix,
+         'postMinImgs':                 _postMinImgs,
+         'postMinImgsContent':          _postMinImgsContent,
+         'changeNickAppBarTitle':       _changeNickAppBarTitle,
+         'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
