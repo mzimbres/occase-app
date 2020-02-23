@@ -181,6 +181,8 @@ class Parameters {
    List<String> get payments1                    => _payments1[_langIdx];
    List<String> get payments2                    => _payments2[_langIdx];
 
+   int get langIdx => _langIdx;
+
    Parameters.fromJson(Map<String, dynamic> map)
    {
       appName                      = map['appName'];

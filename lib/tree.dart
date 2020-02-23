@@ -50,27 +50,50 @@ Future<List<MenuElem>> loadMenu(Database db) async
 }
 
 class Node {
-   String name;
+   List<String> _name = <String>[''];
    List<int> code;
    int leafCounter;
    int leafReach;
 
    List<Node> children;
 
-   Node(
-   { this.name = ''
-   , this.leafReach = 0
+   int _langIdx = 0;
+
+   Node(String rawName, // In the form a:b:c
+   { this.leafReach = 0
    , this.code
    , this.leafCounter = 0
    })
    {
+      _name = rawName.split(':');
       children = List<Node>();
+   }
+
+   String makeRawName()
+   {
+      _name.join(':');
+   }
+
+   void setName(String rawName)
+   {
+      _name = rawName.split(':');
+   }
+
+   String name(int langIdx)
+   {
+      _langIdx = langIdx;
+
+      // Find a way to specify a default language.
+      if (_langIdx >= _name.length)
+         _langIdx = 0;
+
+      return _name[_langIdx];
    }
 
    @override
    String toString()
    {
-      return name;
+      return _name[_langIdx];
    }
 
    String getChildrenNames()
@@ -90,7 +113,10 @@ class Node {
 
 // Given a leaf code and the menu it corresponds to produces an array
 // with the names of the parent up until the root direct child.
-List<String> loadNames(Node root, List<int> leafCode)
+List<String>
+loadNames(Node root,
+          List<int> leafCode,
+          int langIdx)
 {
    if (leafCode.isEmpty)
       return List<String>();
@@ -107,7 +133,7 @@ List<String> loadNames(Node root, List<int> leafCode)
       }
 
       Node next = root.children[i];
-      names.add(next.name);
+      names.add(next.name(langIdx));
       root = next;
    }
 
@@ -170,11 +196,11 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
 
    List<Node> st = List<Node>();
    int lastDepth = 0;
-   Node root = Node();
+   Node root = Node('');
    for (MenuElem me in elems) {
       //print('${me.depth}; ${me.name}; ${me.code}; ${me.leafReach}; ${me.index}');
       if (st.isEmpty) {
-         root.name = me.name;
+         root.setName(me.name);
          root.code = List<int>();
          root.leafReach = 0;
          st.add(root);
@@ -194,12 +220,11 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
       if (me.depth > lastDepth) {
          if (lastDepth + 1 != me.depth) {
             print('Error on node: $lastDepth -- ${me.depth};${me.name};${me.leafReach}');
-            return Node();
+            return Node('');
          }
 
          // We found the child of the last node pushed on the stack.
-         Node p = Node(
-            name: me.name,
+         Node p = Node(me.name,
             code: code,
             leafReach: me.leafReach,
          );
@@ -218,8 +243,7 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
          st.removeLast();
 
          // Now we can add the new node.
-         Node p = Node(
-            name: me.name,
+         Node p = Node(me.name,
             code: code,
             leafReach: me.leafReach,
          );
@@ -230,8 +254,7 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
          lastDepth = me.depth;
       } else {
          st.removeLast();
-         Node p = Node(
-            name: me.name,
+         Node p = Node(me.name,
             code: code,
             leafReach: me.leafReach,
          );
@@ -621,7 +644,7 @@ makeMenuElems(final Node root, int index, int maxDepth)
       if (current.code.length <= maxDepth) {
          MenuElem me = MenuElem(
             code: current.code.join('.'),
-            name: current.name,
+            name: current.makeRawName(),
             depth: current.code.length, 
             leafReach: current.leafReach, 
             index: index, 

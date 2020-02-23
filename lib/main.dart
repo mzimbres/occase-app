@@ -665,7 +665,7 @@ Widget makeNewPostDetailExpTile(
 
    final RichText richTitle = makeExpTileTitle(
       ctx,
-      titleNode.name,
+      titleNode.name(g.param.langIdx),
       strDisplay,
       ':',
       state == 0,
@@ -767,7 +767,9 @@ List<Widget> makeNewPostDetailScreen(
          (int j) {onExDetail(i, j);},
          exDetailsTree.children[idx].children[i],
          post.exDetails[i],
-         exDetailsTree.children[idx].children[i].children[k].name,
+         exDetailsTree.children[idx]
+                      .children[i]
+                      .children[k].name(g.param.langIdx),
       );
 
       all.add(foo);
@@ -1172,12 +1174,12 @@ List<Widget> makeNewPostDetailElemList(
        CheckboxListTile cblt = CheckboxListTile(
          dense: true,
          secondary: CircleAvatar(
-            child: Text(makeStrAbbrev(list[i].name),
+            child: Text(makeStrAbbrev(list[i].name(g.param.langIdx)),
                style: TextStyle(color: avatarTxtColor)
             ),
             backgroundColor: avatarBgColor
          ),
-         title: Text(list[i].name, style: stl.ltTitle),
+         title: Text(list[i].name(g.param.langIdx), style: stl.ltTitle),
          value: v,
          onChanged: (bool v) { proceed(i); },
          activeColor: Theme.of(ctx).colorScheme.primary,
@@ -2268,12 +2270,13 @@ ListTile makeFilterListTitle(
       ListTile(
           leading: CircleAvatar(
              child: Text(
-                makeStrAbbrev(child.name),
+                makeStrAbbrev(child.name(g.param.langIdx)),
                 style: TextStyle(color: avatarTxtColor),
              ),
              backgroundColor: avatarBgColor,
           ),
-          title: makeListTileTreeTitle(ctx, child, child.name),
+          title: makeListTileTreeTitle(ctx, child,
+                child.name(g.param.langIdx)),
           dense: true,
           subtitle: makeListTileTreeSubtitle(child),
           trailing: trailing,
@@ -2450,7 +2453,7 @@ List<Widget> makePostInRows(
       if ((state & (1 << i)) == 0)
          continue;
 
-      Text text = Text(' ${nodes[i].name}',
+      Text text = Text(' ${nodes[i].name(g.param.langIdx)}',
          style: stl.tt.subhead.copyWith(
             color: stl.infoValueColor,
          ),
@@ -2499,6 +2502,7 @@ List<Widget> makeMenuInfo(
       List<String> names = loadNames(
          menus[i].root.first,
          post.channel[i][0],
+         g.param.langIdx,
       );
 
       List<Widget> items = List.generate(names.length, (int j)
@@ -2580,8 +2584,8 @@ List<Widget> makePostExDetails(
       list.add(
          makePostRowElem(
             ctx,
-            exDetailsTree.children[idx].children[i].name,
-            exDetailsTree.children[idx].children[i].children[j].name,
+            exDetailsTree.children[idx].children[i].name(g.param.langIdx),
+            exDetailsTree.children[idx].children[i].children[j].name(g.param.langIdx),
          ),
       );
    }
@@ -2631,7 +2635,7 @@ List<Widget> makePostInDetails(
       if (foo.length != 0) {
          all.add(makePostSectionTitle(
                ctx,
-               inDetailsTree.children[i].children[j].name,
+               inDetailsTree.children[i].children[j].name(g.param.langIdx),
             ),
          );
          all.addAll(foo);
@@ -2714,6 +2718,7 @@ String makePostSummaryStr(List<MenuItem> menu, Post post)
    final List<String> names0 = loadNames(
       menu[0].root.first,
       post.channel[0][0],
+      g.param.langIdx,
    );
 
    final int l0 = names0.length;
@@ -2722,6 +2727,7 @@ String makePostSummaryStr(List<MenuItem> menu, Post post)
    final List<String> names1 = loadNames(
       menu[1].root.first,
       post.channel[1][0],
+      g.param.langIdx,
    );
 
    final int l1 = names1.length;
@@ -3096,7 +3102,7 @@ ListView makeNewPostMenuListView(
          if (child.isLeaf()) {
             return ListTile(
                leading: CircleAvatar(
-                  child: Text(makeStrAbbrev(child.name),
+                  child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
                      style: TextStyle(
                         color: Theme.of(ctx).colorScheme.onSecondary
                      ),
@@ -3104,7 +3110,7 @@ ListView makeNewPostMenuListView(
                   backgroundColor:
                      Theme.of(ctx).colorScheme.secondary,
                ),
-               title: Text(child.name, style: stl.ltTitle),
+               title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
                dense: true,
                onTap: () { onLeafPressed(i);},
                enabled: true,
@@ -3115,14 +3121,14 @@ ListView makeNewPostMenuListView(
          return
             ListTile(
                leading: CircleAvatar(
-                  child: Text(makeStrAbbrev(child.name),
+                  child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
                      style: TextStyle(
                         color: Theme.of(ctx).colorScheme.onSecondary
                      ),
                   ),
                   backgroundColor: Theme.of(ctx).colorScheme.secondary,
                ),
-               title: Text(o.children[i].name, style: stl.ltTitle),
+               title: Text(o.children[i].name(g.param.langIdx), style: stl.ltTitle),
                dense: true,
                subtitle: Text(
                   o.children[i].getChildrenNames(),
