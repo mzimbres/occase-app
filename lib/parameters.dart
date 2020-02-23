@@ -78,8 +78,9 @@ class Parameters {
    List<List<String>> _newPostErrorBodies = <List<String>> [<String>['' , '']];
    List<List<String>> _newFiltersFinalScreenButton = <List<String>>[<String>['', '', '']];
    List<List<String>> _ntfTitleDesc =  <List<String>>[<String>['', '']];
+   List<List<String>> _menuDepthNames0 = <List<String>>[<String>['', '', '', '', '', '', '']];
+   List<List<String>> _menuDepthNames1 = <List<String>>[<String>['', '', '', '', '', '', '']];
 
-   List<List<String>> menuDepthNames;
    List<List<String>> payments;
 
    List<int> filterDepths;
@@ -92,10 +93,6 @@ class Parameters {
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
-   , this.menuDepthNames = const <List<String>>
-   [ <String> [ '' , '' , '' , '' ]
-   , <String> [ '' , '' , '' , '' , '' , '' , '' ]
-   ]
    , this.payments = const <List<String>>
    [ <String>[ '', '', '' ]
    , <String>[ '', '', '.']
@@ -175,10 +172,12 @@ class Parameters {
    List<String> get newPostErrorBodies           => _newPostErrorBodies[_langIdx];
    List<String> get newFiltersFinalScreenButton  => _newFiltersFinalScreenButton[_langIdx];
    List<String> get ntfTitleDesc                 => _ntfTitleDesc[_langIdx];
+   List<String> get menuDepthNames0              => _menuDepthNames0[_langIdx];
+   List<String> get menuDepthNames1              => _menuDepthNames1[_langIdx];
 
    Parameters.fromJson(Map<String, dynamic> map)
    {
-      appName                     = map['appName'];
+      appName                      = map['appName'];
       _delOwnChatTitleStr          = decodeList2(map['delOwnChatTitleStr']);
       _delFavChatTitleStr          = decodeList2(map['delFavChatTitleStr']);
       _devChatOkStr                = decodeList2(map['devChatOkStr']);
@@ -241,8 +240,8 @@ class Parameters {
       _newPostErrorBodies          = decodeList3(map['newPostErrorBodies']);
       _newFiltersFinalScreenButton = decodeList3(map['newFiltersFinalScreenButton']);
       _ntfTitleDesc                = decodeList3(map['ntfTitleDesc']);
-
-      menuDepthNames              = decodeList3(map['menuDepthNames']);
+      _menuDepthNames0             = decodeList3(map['menuDepthNames0']);
+      _menuDepthNames1             = decodeList3(map['menuDepthNames1']);
       payments                    = decodeList3(map['payments']);
 
       filterDepths                = decodeList2(map['filterDepths']);
@@ -317,7 +316,8 @@ class Parameters {
          'newPostErrorBodies':          _newPostErrorBodies,
          'newFiltersFinalScreenButton': _newFiltersFinalScreenButton,
          'ntfTitleDesc':                _ntfTitleDesc,
-         'menuDepthNames':              menuDepthNames,
+         'menuDepthNames0':             _menuDepthNames0,
+         'menuDepthNames1':             _menuDepthNames1,
          'payments':                    payments,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,

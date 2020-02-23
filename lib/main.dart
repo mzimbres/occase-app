@@ -2493,9 +2493,17 @@ List<Widget> makeMenuInfo(
 
       List<Widget> items = List.generate(names.length, (int j)
       {
+         assert(i == 0 || i == 1);
+
+         List<String> menuDepthNames;
+         if (i == 0)
+            menuDepthNames = g.param.menuDepthNames0;
+         else 
+            menuDepthNames = g.param.menuDepthNames1;
+
          return makePostRowElem(
             ctx,
-            g.param.menuDepthNames[i][j],
+            menuDepthNames[j],
             names[j],
          );
       });
