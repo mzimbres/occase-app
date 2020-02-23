@@ -1190,20 +1190,31 @@ List<Widget> makeNewPostDetailElemList(
 }
 
 class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext ctx) {
-    return MaterialApp(
-      title: g.param.appName,
-      theme: ThemeData(
-          colorScheme: stl.colorScheme,
-          brightness: stl.colorScheme.brightness,
-          primaryColor: stl.colorScheme.primary,
-          accentColor: stl.colorScheme.secondary,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: Occase(),
-    );
-  }
+   @override
+   Widget build(BuildContext ctx) {
+      return MaterialApp(
+         title: g.param.appName,
+         theme: ThemeData(
+            colorScheme: stl.colorScheme,
+            brightness: stl.colorScheme.brightness,
+            primaryColor: stl.colorScheme.primary,
+            accentColor: stl.colorScheme.secondary,
+         ),
+         debugShowCheckedModeBanner: false,
+         home: Occase(),
+            localizationsDelegates: [
+               GlobalMaterialLocalizations.delegate,
+               GlobalWidgetsLocalizations.delegate,
+               GlobalCupertinoLocalizations.delegate,
+            ],
+         supportedLocales: [
+            const Locale('de'),
+            const Locale('pt'),
+            const Locale('es'),
+            const Locale('fr'),
+         ],
+      );
+   }
 }
 
 TabBar
@@ -6060,7 +6071,7 @@ class OccaseState extends State<Occase>
 
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);
-      //print('-----> ${locale.languageCode}');
+      print('-----> ${locale.languageCode}');
 
       if (_goToRegScreen) {
          return makeRegisterScreen(

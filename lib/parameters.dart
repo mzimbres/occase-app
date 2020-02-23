@@ -101,9 +101,16 @@ class Parameters {
    ]
    });
 
-   void setLang(String code)
+   void setLang(String s)
    {
-      _langIdx = 1;
+      final String code = s.toLowerCase();
+
+      if (code == 'de') { _langIdx = 0; return; } // German
+      if (code == 'pt') { _langIdx = 1; return; } // Portuguese
+      if (code == 'es') { _langIdx = 1; return; } // Spanish
+      if (code == 'fr') { _langIdx = 0; return; } // French
+
+      _langIdx = 0;
    }
 
    String get delOwnChatTitleStr        => _delOwnChatTitleStr[_langIdx];
