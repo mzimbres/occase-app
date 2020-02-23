@@ -65,6 +65,7 @@ class Parameters {
    List<String> _postMinImgsContent = <String>[''];
    List<String> _changeNickAppBarTitle = <String>[''];
    List<String> _changeNtfAppBarTitle = <String>[''];
+   List<String> _payments0 = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -80,8 +81,8 @@ class Parameters {
    List<List<String>> _ntfTitleDesc =  <List<String>>[<String>['', '']];
    List<List<String>> _menuDepthNames0 = <List<String>>[<String>['', '', '', '', '', '', '']];
    List<List<String>> _menuDepthNames1 = <List<String>>[<String>['', '', '', '', '', '', '']];
-
-   List<List<String>> payments;
+   List<List<String>> _payments1 = <List<String>>[<String>['']];
+   List<List<String>> _payments2 = <List<String>>[<String>['']];
 
    List<int> filterDepths;
    List<int> rangesMinMax;
@@ -93,11 +94,6 @@ class Parameters {
    , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
-   , this.payments = const <List<String>>
-   [ <String>[ '', '', '' ]
-   , <String>[ '', '', '.']
-   , <String>[ '', '', '']
-   ]
    , this.discreteRanges = const <List<int>>
    [ <int>[0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000]
    , <int>[0, 1990, 2000, 2010, 2015, 2018, 2030]
@@ -174,6 +170,9 @@ class Parameters {
    List<String> get ntfTitleDesc                 => _ntfTitleDesc[_langIdx];
    List<String> get menuDepthNames0              => _menuDepthNames0[_langIdx];
    List<String> get menuDepthNames1              => _menuDepthNames1[_langIdx];
+   List<String> get payments0                    => _payments0;
+   List<String> get payments1                    => _payments1[_langIdx];
+   List<String> get payments2                    => _payments2[_langIdx];
 
    Parameters.fromJson(Map<String, dynamic> map)
    {
@@ -227,6 +226,7 @@ class Parameters {
       _postMinImgsContent          = decodeList2(map['postMinImgsContent']);
       _changeNickAppBarTitle       = decodeList2(map['changeNickAppBarTitle']);
       _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
+      _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
       _newPostTabNames             = decodeList3(map['newPostTabNames']);
@@ -242,7 +242,8 @@ class Parameters {
       _ntfTitleDesc                = decodeList3(map['ntfTitleDesc']);
       _menuDepthNames0             = decodeList3(map['menuDepthNames0']);
       _menuDepthNames1             = decodeList3(map['menuDepthNames1']);
-      payments                    = decodeList3(map['payments']);
+      _payments1                   = decodeList3(map['payments1']);
+      _payments2                   = decodeList3(map['payments2']);
 
       filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
@@ -304,6 +305,7 @@ class Parameters {
          'postMinImgsContent':          _postMinImgsContent,
          'changeNickAppBarTitle':       _changeNickAppBarTitle,
          'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
+         'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,
          'filterTabNames':              _filterTabNames,
@@ -318,7 +320,8 @@ class Parameters {
          'ntfTitleDesc':                _ntfTitleDesc,
          'menuDepthNames0':             _menuDepthNames0,
          'menuDepthNames1':             _menuDepthNames1,
-         'payments':                    payments,
+         'payments1':                   _payments1,
+         'payments2':                   _payments2,
          'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,

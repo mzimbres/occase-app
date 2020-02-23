@@ -2161,19 +2161,18 @@ Widget makePaymentChoiceWidget(
    // dense: true,
    // isThreeLine: false,
    List<Function> payments = <Function>
-   [ () { freePayment(ctx); }
-   , (){print('===> pay1');}
-   , (){print('===> pay2');}
+   [ () { freePayment(ctx);   }
+   , () { print('===> pay1'); }
+   , () { print('===> pay2'); }
    ];
-   for (int i = 0; i < g.param.payments.length; ++i) {
+   for (int i = 0; i < g.param.payments0.length; ++i) {
       Widget p = makePayPriceListTile(
          ctx,
-         g.param.payments[i][0],
-         g.param.payments[i][1],
-         g.param.payments[i][2],
+         g.param.payments0[i],
+         g.param.payments1[i],
+         g.param.payments2[i],
          payments[i],
          stl.priceColors[i],
-
       );
 
       widgets.add(p);
