@@ -108,7 +108,7 @@ class Parameters {
       if (code == 'de') { _langIdx = 0; return; } // German
       if (code == 'pt') { _langIdx = 1; return; } // Portuguese
       if (code == 'es') { _langIdx = 1; return; } // Spanish
-      if (code == 'fr') { _langIdx = 0; return; } // French
+      if (code == 'fr') { _langIdx = 2; return; } // French
 
       _langIdx = 0;
    }

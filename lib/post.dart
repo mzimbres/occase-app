@@ -416,7 +416,7 @@ class Post {
    String description;
 
    List<String> images;
-   List<ChatMetadata> chats;
+   List<ChatMetadata> chats = List<ChatMetadata>();
 
    Post(
    { this.dbId = -1

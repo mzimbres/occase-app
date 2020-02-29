@@ -45,7 +45,6 @@ Future<List<MenuElem>> loadMenu(Database db) async
      );
 
      return me;
-
   });
 }
 
@@ -71,7 +70,11 @@ class Node {
 
    String makeRawName()
    {
-      _name.join(':');
+      final String ret = _name.join(':');
+      if (ret == null)
+         print('a------> $_name');
+
+      return ret;
    }
 
    void setName(String rawName)
