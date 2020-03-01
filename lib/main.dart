@@ -2242,7 +2242,7 @@ Widget makeListTileTreeSubtitle(Node node)
 {
    if (!node.isLeaf())
       return Text(
-          node.getChildrenNames(),
+          node.getChildrenNames(g.param.langIdx),
           style: stl.ltSubtitle,
           maxLines: 2,
           overflow: TextOverflow.clip,
@@ -3131,7 +3131,7 @@ ListView makeNewPostMenuListView(
                title: Text(o.children[i].name(g.param.langIdx), style: stl.ltTitle),
                dense: true,
                subtitle: Text(
-                  o.children[i].getChildrenNames(),
+                  o.children[i].getChildrenNames(g.param.langIdx),
                   maxLines: 2,
                   overflow: TextOverflow.clip,
                   style: stl.ltSubtitle,

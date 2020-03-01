@@ -48,6 +48,9 @@ Future<List<MenuElem>> loadMenu(Database db) async
   });
 }
 
+// To avoid using global variable for the language index I will will
+// set them lazily as they are used. Unfourtunately we cannot store
+// the index only once as the toString method has no argument.
 class Node {
    List<String> _name = <String>[''];
    List<int> code;
@@ -71,9 +74,7 @@ class Node {
    String makeRawName()
    {
       final String ret = _name.join(':');
-      if (ret == null)
-         print('a------> $_name');
-
+      assert(ret != null);
       return ret;
    }
 
@@ -82,14 +83,18 @@ class Node {
       _name = rawName.split(':');
    }
 
-   String name(int langIdx)
+   void setLangIdx(int langIdx)
    {
       _langIdx = langIdx;
 
       // Find a way to specify a default language.
       if (_langIdx >= _name.length)
          _langIdx = 0;
+   }
 
+   String name(int langIdx)
+   {
+      setLangIdx(langIdx);
       return _name[_langIdx];
    }
 
@@ -99,8 +104,16 @@ class Node {
       return _name[_langIdx];
    }
 
-   String getChildrenNames()
+   void setLangIdxOnChildren()
    {
+      children.forEach((Node node) { node.setLangIdx(_langIdx); });
+   }
+
+   String getChildrenNames(int langIdx)
+   {
+      setLangIdx(langIdx);
+      setLangIdxOnChildren();
+
       String res = children.join(', ');
       if (children.isNotEmpty)
          return res + '.';
