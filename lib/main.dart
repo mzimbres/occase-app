@@ -19,6 +19,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:share/share.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -2849,7 +2850,7 @@ Widget makeNewPostImpl(
       //color: stl.colorScheme.primary,
       icon: Icon(
          Icons.report,
-         color: Colors.red[400],
+         color: Colors.grey,
       ),
    );
 
@@ -2863,6 +2864,16 @@ Widget makeNewPostImpl(
       ),
    );
 
+   IconButton share = IconButton(
+      iconSize: stl.newPostIconSize,
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPressed(3);},
+      color: Theme.of(ctx).colorScheme.primary,
+      icon: Icon(Icons.share,
+         color: stl.colorScheme.secondary,
+      ),
+   );
+
    IconButton icon2 = IconButton(
       iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
@@ -2873,6 +2884,7 @@ Widget makeNewPostImpl(
 
    Row row = Row(children: <Widget>
    [ Expanded(child: inapropriate)
+   , Expanded(child: share)
    , Expanded(child: icon1)
    , Expanded(child: icon2)
    ]);
@@ -3073,7 +3085,7 @@ Widget makeNewPostLv(
          return makeNewPost(
             ctx,
             posts[j],
-            (int fav) {onPostSelection(ctx, j, fav);},
+            (int k) {onPostSelection(ctx, j, k);},
             menu,
             exDetailsTree,
             inDetailsTree,
@@ -3808,7 +3820,7 @@ class OccaseState extends State<Occase>
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
-   List<bool> _dialogPrefs = List<bool>(3);
+   List<bool> _dialogPrefs = List<bool>(4);
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -4103,6 +4115,7 @@ class OccaseState extends State<Occase>
       _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
       _dialogPrefs[2] = _cfg.showDialogOnReportPost == 'yes';
+      _dialogPrefs[3] = false;
 
       if (_trees.isEmpty)
          _trees = loadMenuItems(
@@ -4186,15 +4199,15 @@ class OccaseState extends State<Occase>
          await _db.execute(sql.updateShowDialogOnDelPost, [str]);
       else if (i == 1)
          await _db.execute(sql.updateShowDialogOnSelectPost, [str]);
-      else 
+      else if (i == 2)
          await _db.execute(sql.updateShowDialogOnReportPost, [str]);
    }
 
    Future<void>
-   _alertUserOnPressed(BuildContext ctx, int i, int fav) async
+   _alertUserOnPressed(BuildContext ctx, int i, int j) async
    {
-      if (!_dialogPrefs[fav]) {
-         await _onPostSelection(i, fav);
+      if (!_dialogPrefs[j]) {
+         await _onPostSelection(i, j);
          return;
       }
 
@@ -4203,12 +4216,11 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             return DialogWithOp(
-               () {return _dialogPrefs[fav];},
-               (bool v) async {await _setDialogPref(fav, v);},
-               () async {await _onPostSelection(i, fav);},
-               g.param.dialogTitles[fav],
-               g.param.dialogBodies[fav]);
-            
+               () {return _dialogPrefs[j];},
+               (bool v) async {await _setDialogPref(j, v);},
+               () async {await _onPostSelection(i, j);},
+               g.param.dialogTitles[j],
+               g.param.dialogBodies[j]);
          },
       );
    }
@@ -4291,11 +4303,22 @@ class OccaseState extends State<Occase>
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
-   Future<void> _onPostSelection(int i, int fav) async
+   // For the meaning of the index j see makeNewPostImpl.
+   //
+   // j = 0: Ignore post.
+   // j = 1: Move to favorite.
+   // j = 2: Report inapropriate.
+   // j = 3: Share.
+   Future<void> _onPostSelection(int i, int j) async
    {
       assert(_isOnPosts());
 
-      if (fav == 1) {
+      if (j == 3) {
+         Share.share(g.param.share, subject: g.param.shareSubject);
+         return;
+      }
+
+      if (j == 1) {
          // We have to prevent the user from adding a chat twice. This can
          // happen when he makes a new search, since in that case the
          // lastPostId will be updated to 0.
@@ -4305,7 +4328,7 @@ class OccaseState extends State<Occase>
          if (k == -1) {
             _posts[i].status = 2;
 
-            final int j = _posts[i].addChat(
+            final int k = _posts[i].addChat(
                _posts[i].from,
                _posts[i].nick,
                _posts[i].avatar,
@@ -4315,7 +4338,7 @@ class OccaseState extends State<Occase>
 
             batch.rawInsert(
                sql.insertChatStOnPost,
-               makeChatMetadataSql(_posts[i].chats[j], _posts[i].id),
+               makeChatMetadataSql(_posts[i].chats[k], _posts[i].id),
             );
 
             batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
@@ -4328,7 +4351,7 @@ class OccaseState extends State<Occase>
 
       } else {
          await _db.execute(sql.delPostWithId, [_posts[i].id]);
-         // TODO: Send command to server to report if fav = 2.
+         // TODO: Send command to server to report if j = 2.
       }
 
       _posts.removeAt(i);

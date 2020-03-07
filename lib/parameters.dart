@@ -66,6 +66,8 @@ class Parameters {
    List<String> _changeNickAppBarTitle = <String>[''];
    List<String> _changeNtfAppBarTitle = <String>[''];
    List<String> _payments0 = <String>[''];
+   List<String> _share = <String>[''];
+   List<String> _shareSubject = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -162,6 +164,8 @@ class Parameters {
    String get postMinImgsContent        => _postMinImgsContent[_langIdx];
    String get changeNickAppBarTitle     => _changeNickAppBarTitle[_langIdx];
    String get changeNtfAppBarTitle      => _changeNtfAppBarTitle[_langIdx];
+   String get share                     => _share[_langIdx];
+   String get shareSubject              => _shareSubject[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
@@ -235,6 +239,8 @@ class Parameters {
       _postMinImgsContent          = decodeList2(map['postMinImgsContent']);
       _changeNickAppBarTitle       = decodeList2(map['changeNickAppBarTitle']);
       _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
+      _share                       = decodeList2(map['share']);
+      _shareSubject                = decodeList2(map['shareSubject']);
       _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
@@ -314,6 +320,8 @@ class Parameters {
          'postMinImgsContent':          _postMinImgsContent,
          'changeNickAppBarTitle':       _changeNickAppBarTitle,
          'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
+         'share':                       _share,
+         'shareSubject':                _shareSubject,
          'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,
