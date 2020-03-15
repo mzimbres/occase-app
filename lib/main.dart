@@ -47,6 +47,9 @@ Future<List<MenuItem>> readMenuItemsFromAsset() async
 
 String emailToGravatarHash(String email)
 {
+   if (email.isEmpty)
+      return '';
+
    email = email.replaceAll(' ', '');
    email = email.toLowerCase();
    List<int> bytes = utf8.encode(email);
@@ -3815,7 +3818,8 @@ class OccaseState extends State<Occase>
    // The current chat, if any.
    ChatMetadata _chat;
 
-   // The last post id seen by the user.
+   // The number of posts in the _posts array that hasn't been seen
+   // yet by the user.
    int _nNewPosts = 0;
 
    // Whether or not to show the dialog informing the user what
@@ -4043,6 +4047,7 @@ class OccaseState extends State<Occase>
 
       Batch batch = db.batch();
 
+      _cfg.nick = g.param.unknownNick;
       batch.insert(
          'config',
          configToMap(_cfg),
@@ -4054,8 +4059,6 @@ class OccaseState extends State<Occase>
       });
 
       await batch.commit(noResult: true, continueOnError: true);
-
-      _goToRegScreen = true;
    }
 
    void sendOfflinePosts()
@@ -4111,6 +4114,7 @@ class OccaseState extends State<Occase>
       }
 
       _goToRegScreen = _cfg.nick.isEmpty;
+      print('--------> $_goToRegScreen');
 
       _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
@@ -4370,13 +4374,17 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void> _onShowNewPosts() async
+   // This function has a side effect. It updates _nNewPosts.
+   int _makeLastSeenPostId()
    {
+      assert(_nNewPosts >= 0);
+
       // The number of posts that will be shown to the user when he
       // clicks the download button. It is at most maxPostsOnDownload.
       // If it is less than that number we show all.
-      final int n = _nNewPosts >= cts.maxPostsOnDownload
-            ? cts.maxPostsOnDownload : _nNewPosts;
+      int n = _nNewPosts;
+      if (n > cts.maxPostsOnDownload)
+         n = cts.maxPostsOnDownload;
 
       _nNewPosts -= n;
 
@@ -4384,15 +4392,17 @@ class OccaseState extends State<Occase>
 
       assert(l >= _nNewPosts);
 
+      if (l == _nNewPosts)
+         return 0;
+
       // The index of the last post already shown to the user.
-      final int idx = l == _nNewPosts ? 0 : l - _nNewPosts - 1;
+      return l - _nNewPosts - 1;
+   }
 
-      if (_posts.isEmpty) {
-         print('===> This should not happen');
-      } else {
-         await _db.execute(sql.updateLastSeenPostId, [_posts[idx].id]);
-      }
-
+   Future<void> _onShowNewPosts() async
+   {
+      final int idx = _makeLastSeenPostId();
+      await _db.execute(sql.updateLastSeenPostId, [_posts[idx].id]);
       setState(() { });
    }
 
@@ -5584,6 +5594,7 @@ class OccaseState extends State<Occase>
       // When we are receiving new posts here as a result of the user
       // clicking the search buttom, we have to clear all old posts before
       // showing the new posts to the user.
+      final bool showPosts = _cfg.lastPostId == 0 || _posts.isEmpty;
       if (_cfg.lastPostId == 0) {
          batch.execute(sql.clearPosts, [1]);
          _posts.clear();
@@ -5603,8 +5614,10 @@ class OccaseState extends State<Occase>
             if (post.from == _cfg.appId)
                continue;
 
-            batch.insert('posts', postToMap(post),
-               conflictAlgorithm: ConflictAlgorithm.ignore);
+            batch.insert('posts',
+               postToMap(post),
+               conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
 
             _posts.add(post);
             ++_nNewPosts;
@@ -5614,6 +5627,12 @@ class OccaseState extends State<Occase>
       }
 
       batch.execute(sql.updateLastPostId, [_cfg.lastPostId]);
+
+      if (showPosts) {
+         final int idx = _makeLastSeenPostId();
+         batch.execute(sql.updateLastSeenPostId, [_posts[idx].id]);
+      }
+
       setState(() { });
    }
 
@@ -6100,7 +6119,6 @@ class OccaseState extends State<Occase>
 
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);
-      print('-----> ${locale.languageCode}');
 
       if (_goToRegScreen) {
          return makeRegisterScreen(
