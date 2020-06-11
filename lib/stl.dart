@@ -138,7 +138,7 @@ const List<IconData> newPostTabIcons = <IconData>
 , Icons.publish
 ];
 
-const Icon favIcon = Icon(Icons.star, color: Colors.amber);
+const Icon favIcon = Icon(Icons.chat, color: primaryColor);
 const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
 
 const List<IconData> filterTabIcons = <IconData>

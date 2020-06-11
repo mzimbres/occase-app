@@ -418,6 +418,8 @@ class Post {
    List<String> images;
    List<ChatMetadata> chats = List<ChatMetadata>();
 
+   bool showDetails;
+
    Post(
    { this.dbId = -1
    , this.id = -1
@@ -428,6 +430,7 @@ class Post {
    , this.pinDate = 0
    , this.status = -1
    , this.description = ''
+   , this.showDetails = false
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
