@@ -2649,7 +2649,7 @@ List<Widget> makePostInDetails(
    return all;
 }
 
-Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
+Card putPostElemOnCard(BuildContext ctx, List<Widget> list, double padding)
 {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -2664,11 +2664,7 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list)
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
-         padding: EdgeInsets.only(
-            top: 8.0,
-            bottom: 8.0,
-            left: 8.0,
-         ),
+         padding: EdgeInsets.all(padding),
       ),
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
@@ -2753,7 +2749,7 @@ Widget makePostInfoExpansion(
    int postId)
 {
    return Card(
-         color: Colors.blue,
+         color: stl.colorScheme.primary,
          child: Theme(
          data: makeExpTileThemeData(ctx),
          child: ExpansionTile(
@@ -2830,19 +2826,7 @@ double makeImgHeight(BuildContext ctx, double r)
 List<Widget> makePostButtons(
    Function onPressed,
    Icon icon,
-   bool expandOrContract,
 ) {
-   IconButton inapropriate = IconButton(
-      //iconSize: stl.newPostIconSize,
-      padding: EdgeInsets.all(0.0),
-      onPressed: () {onPressed(2);},
-      //color: stl.colorScheme.primary,
-      icon: Icon(
-         Icons.report,
-         color: stl.colorScheme.primary,
-      ),
-   );
-
    // Unused at the moment.
    IconButton remove = IconButton(
       //iconSize: stl.newPostIconSize,
@@ -2850,18 +2834,6 @@ List<Widget> makePostButtons(
       onPressed: () {onPressed(0);},
       icon: Icon(
          Icons.cancel,
-         color: stl.colorScheme.primary,
-      ),
-   );
-
-   IconData expLessMore = expandOrContract ? Icons.expand_more : Icons.expand_less;
-
-   IconButton expand = IconButton(
-      //iconSize: stl.newPostIconSize,
-      padding: EdgeInsets.all(0.0),
-      onPressed: () {onPressed(4);},
-      icon: Icon(
-         expLessMore,
          color: stl.colorScheme.primary,
       ),
    );
@@ -2884,7 +2856,7 @@ List<Widget> makePostButtons(
       color: stl.colorScheme.primary,
    );
 
-   return <Widget>[inapropriate, share, chat, expand];
+   return <Widget>[share, chat];
 }
 
 Widget makeNewPostImpl(
@@ -2898,21 +2870,17 @@ Widget makeNewPostImpl(
    Function onExpandImg,
    List<MenuItem> menu,
 ) {
-   final List<Widget> buttons = makePostButtons(
-      onPressed,
-      icon,
-      !post.showDetails);
+   if (post.images.isEmpty) {
+      // If this is a new post details are shown by default.
+      post.showDetails = true;
+   }
+
+   final List<Widget> buttons = makePostButtons(onPressed, icon);
 
    Row row = Row(children: <Widget>
    [ Spacer()
-   , Flexible(child: buttons[0])
-   , Spacer()
+   , Expanded(child: buttons[0])
    , Flexible(child: buttons[1])
-   , Spacer()
-   , Flexible(child: buttons[2])
-   , Spacer()
-   , Flexible(child: buttons[3])
-   , Spacer()
    ]);
 
    final double imgWidth = 0.37 * makeImgWidth(ctx);
@@ -2946,26 +2914,26 @@ Widget makeNewPostImpl(
    }
 
    List<Widget> row1List = List<Widget>();
-   row1List.add(Padding(
-         child: imgWdg,
-         padding: EdgeInsets.only(left: 0.0, bottom: 0.0),
-      ),
-   );
 
-   // The add a photo buttom should appear only when this function is
+   // The add a photo button should appear only when this function is
    // called on the new posts screen. We determine that in the
    // following way.
-   final bool isNewPost = post.images.isEmpty;
+   if (post.images.isEmpty && (imgFiles.length < cts.maxImgsPerPost)) {
+      Widget addImgWidget = makeAddOrRemoveWidget(
+         () {onAddPhoto(ctx, -1);},
+         Icons.add_a_photo,
+         stl.colorScheme.primary,
+      );
 
-   //if (isNewPost && (imgFiles.length < cts.maxImgsPerPost)) {
-   //   Widget addImgWidget = makeAddOrRemoveWidget(
-   //      () {onAddPhoto(ctx, -1);},
-   //      Icons.add_a_photo,
-   //      stl.colorScheme.primary,
-   //   );
+      Stack st = Stack(
+	 alignment: Alignment(0.0, 0.0),
+	 children: <Widget>[imgWdg, addImgWidget],
+      );
 
-   //   row1List.add(addImgWidget);
-   //}
+      row1List.add(st);
+   } else {
+      row1List.add(imgWdg);
+   }
 
    final String locationStr = makeTreeItemStr(menu[0].root.first, post.channel[0][0]);
    final String modelStr = makeTreeItemStr(menu[1].root.first, post.channel[1][0]);
@@ -2996,12 +2964,12 @@ Widget makeNewPostImpl(
    if (post.showDetails)
       rows.add(detailsWidget);
 
-   // TODO: Remove the button.
-   return wrapPostOnButton(
-      ctx,
-      rows,
-      2.0,
-      (){print('aaaaaaaaaaaa');}
+   return RaisedButton(
+      color: Colors.white,
+      onPressed: () {onPressed(4);},
+      elevation: 2.0,
+      child: Column(children: rows),
+      padding: const EdgeInsets.all(0.0),
    );
 }
 
@@ -3028,14 +2996,26 @@ Widget makeNewPost(
 
    List<Widget> rows = List<Widget>();
 
-   rows.add(makeImgListView2(
-         makeImgWidth(ctx),
-         makeImgHeight(ctx, cts.imgHeightFactor),
-         post,
-         (int j){print('Noop.');},
-         BoxFit.cover,
+   Widget lv = makeImgListView2(
+      makeImgWidth(ctx),
+      makeImgHeight(ctx, cts.imgHeightFactor),
+      post,
+      (int j){onPostSelection(4);},
+      BoxFit.cover,
+   );
+
+   rows.add(lv);
+
+   IconButton inapropriate = IconButton(
+      padding: EdgeInsets.all(0.0),
+      onPressed: () {onPostSelection(2);},
+      icon: Icon(
+         Icons.report,
+         color: stl.colorScheme.primary,
       ),
    );
+
+   rows.add(inapropriate);
 
    List<Widget> tmp = assemblePostRows(
       ctx,
@@ -3045,11 +3025,11 @@ Widget makeNewPost(
       inDetailsTree,
    );
 
-   rows.addAll(tmp);
+   rows.add(putPostElemOnCard(ctx, tmp, 4.0));
 
    Widget w = makeNewPostImpl(
       ctx,
-      putPostElemOnCard(ctx, rows),
+      putPostElemOnCard(ctx, rows, 0.0),
       onPostSelection,
       ic,
       post,
@@ -3090,10 +3070,14 @@ Widget makeNewPostLv(
 
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
-   return ListView.builder(
+   return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
       itemCount: l,
+      separatorBuilder: (BuildContext context, int index)
+      {
+	 return Divider(color: Colors.black, height: 5.0);
+      },
       itemBuilder: (BuildContext ctx, int i)
       {
          final int j = l - i - 1;
@@ -3511,19 +3495,12 @@ Widget wrapPostOnButton(
    double elevation,
    Function onPressed)
 {
-   return Padding(
-      padding: const EdgeInsets.only(
-         left: 0.0,
-         right: 0.0,
-         bottom: stl.postCardBottomMargin,
-         top: stl.postCardBottomMargin,
-      ),
-      child: RaisedButton(
-         onPressed: onPressed,
-         elevation: elevation,
-         child: Column(children: wlist),
-         padding: const EdgeInsets.all(0.0),
-      ),
+   return RaisedButton(
+      color: Colors.white,
+      onPressed: onPressed,
+      elevation: elevation,
+      child: Column(children: wlist),
+      padding: const EdgeInsets.all(0.0),
    );
 }
 
@@ -3580,7 +3557,7 @@ Widget makeChatTab(
          );
 
          Widget title = Text(
-            makeTreeItemStr(menu[0].root.first, posts[i].channel[1][0]),
+            makeTreeItemStr(menu[0].root.first, posts[i].channel[0][0]),
             maxLines: 1,
             overflow: TextOverflow.clip,
          );
@@ -3614,13 +3591,11 @@ Widget makeChatTab(
 
          Widget infoExpansion = makePostInfoExpansion(
             ctx,
-            putPostElemOnCard(ctx, foo),
+            putPostElemOnCard(ctx, foo, 0.0),
             title,
             leading,
             posts[i].id
          );
-
-         final int now = DateTime.now().millisecondsSinceEpoch;
 
          Widget chatExpansion = makeChatsExp(
             ctx,
@@ -3630,23 +3605,20 @@ Widget makeChatTab(
             posts[i],
             isFwdChatMsgs,
             onUserInfoPressed,
-            now,
+            DateTime.now().millisecondsSinceEpoch,
             onPinPost2,
             isFav,
          );
 
-         List<Widget> expansions = <Widget>
-         [ infoExpansion
-         , chatExpansion
-         ];
-
-         Widget w = wrapPostOnButton(
-            ctx,
-	    expansions,
-	    2.0,
-	    (){print('aaaaaaaaaaaa');});
-
-         return w;
+         return Card(
+            elevation: 2.0,
+	    margin: EdgeInsets.only(bottom: 5.0),
+	    color: Colors.white,
+	    child: Column(children: <Widget>
+	       [ infoExpansion
+	       , chatExpansion
+	       ]),
+	 );
       },
    );
 }

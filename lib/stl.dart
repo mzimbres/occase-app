@@ -118,8 +118,7 @@ const TextStyle textField = TextStyle(
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
 
-const double postCardSideMargin = 1.0;
-const double postCardBottomMargin = 10.0;
+const double postCardBottomMargin = 4.0;
 
 const double cornerRadius = 8.0;
 
