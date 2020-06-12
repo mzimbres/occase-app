@@ -2770,17 +2770,23 @@ String makePriceStr(int price)
    return 'R\$$s';
 }
 
-Widget makeIgmInfoWidget(BuildContext ctx, String str, double padding, double fontSize)
-{
+Widget makeTextWdg(
+   String str,
+   double paddingTop,
+   double paddingBot,
+   double paddingLeft,
+   FontWeight fw,
+) {
    return Padding(
       child: Text(str,
-         style: Theme.of(ctx).textTheme.headline.copyWith(
+         style: TextStyle(
             color: Colors.black,
-	    fontSize: fontSize,
+	    fontSize: stl.subtitleFontSize,
+	    fontWeight: fw,
          ),
          overflow: TextOverflow.ellipsis,
       ),
-      padding: EdgeInsets.only(left: padding),
+      padding: EdgeInsets.only(left: paddingLeft, top: paddingTop, bottom: paddingBot),
    );
 }
 
@@ -2877,10 +2883,21 @@ Widget makeNewPostImpl(
 
    final List<Widget> buttons = makePostButtons(onPressed, icon);
 
+   Text owner = Text(
+      post.nick,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      style: TextStyle(
+	 fontSize: stl.listTileSubtitleFontSize,
+	 color: Colors.grey[600],
+	 fontWeight: FontWeight.normal,
+      ),
+   );
+
    Row row = Row(children: <Widget>
-   [ Spacer()
+   [ Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0)))
    , Expanded(child: buttons[0])
-   , Flexible(child: buttons[1])
+   , Expanded(child: buttons[1])
    ]);
 
    final double imgWidth = 0.37 * makeImgWidth(ctx);
@@ -2938,18 +2955,14 @@ Widget makeNewPostImpl(
    final String locationStr = makeTreeItemStr(menu[0].root.first, post.channel[0][0]);
    final String modelStr = makeTreeItemStr(menu[1].root.first, post.channel[1][0]);
 
-   Widget modelYear = Padding(
-      child: makeIgmInfoWidget(ctx, modelStr, 4.0, stl.subtitleFontSize),
-      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
-   );
-
-   Widget priceText = makeIgmInfoWidget(ctx, makeRangeStr(post, 0), 2.0, stl.subtitleFontSize);
-   Widget kmText = makeIgmInfoWidget(ctx, makeRangeStr(post, 2), 2.0, stl.subtitleFontSize);
-   Widget location = makeIgmInfoWidget(ctx, locationStr, 2.0, stl.subtitleFontSize);
+   Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, FontWeight.w500);
+   Widget priceText = makeTextWdg(makeRangeStr(post, 0), 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget kmText = makeTextWdg(makeRangeStr(post, 2), 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, FontWeight.normal);
 
    final double widthCol2 = 0.56 * makeImgWidth(ctx);
    Column col2 = Column(children: <Widget>
-   [ SizedBox(width: widthCol2, child: Center(child: modelYear))
+   [ SizedBox(width: widthCol2, child: Center(child: modelTitle))
    , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: priceText), Spacer()]))
    , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: kmText), Spacer()]))
    , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: location), Spacer()]))
