@@ -657,8 +657,8 @@ Widget makeNewPostDetailExpTile(
    Function onInDetail,
    Node titleNode,
    int state,
-   String strDisplay)
-{
+   String strDisplay,
+) {
    List<Widget> bar =
       makeNewPostDetailElemList(
          ctx,
@@ -744,6 +744,28 @@ List<Widget> makeSliderList({
    return <Widget>[sld2, sld1];
 }
 
+List<String> getExDetailsStrings(Node exDetailsTree, Post post)
+{
+   List<String> strs = List<String>();
+   final int idx = post.getProductDetailIdx();
+
+   final int l = exDetailsTree.children[idx].children.length;
+   for (int i = 0; i < l; ++i) {
+      final int k = searchBitOn(
+         post.exDetails[i],
+         exDetailsTree.children[idx].children[i].children.length
+      );
+
+      String str = exDetailsTree
+	              .children[idx]
+	              .children[i]
+		      .children[k].name(g.param.langIdx);
+      strs.add(str);
+   }
+
+   return strs;
+}
+
 List<Widget> makeNewPostDetailScreen(
    BuildContext ctx,
    Function onExDetail,
@@ -755,25 +777,18 @@ List<Widget> makeNewPostDetailScreen(
    Function onRangeValueChanged)
 {
    final int idx = post.getProductDetailIdx();
+   List<String> exDetailsNames = getExDetailsStrings(exDetailsTree, post);
 
    List<Widget> all = List<Widget>();
 
    final int l1 = exDetailsTree.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
-
-      final int k = searchBitOn(
-         post.exDetails[i],
-         exDetailsTree.children[idx].children[i].children.length
-      );
-
       Widget foo = makeNewPostDetailExpTile(
          ctx,
          (int j) {onExDetail(i, j);},
          exDetailsTree.children[idx].children[i],
          post.exDetails[i],
-         exDetailsTree.children[idx]
-                      .children[i]
-                      .children[k].name(g.param.langIdx),
+         exDetailsNames[i],
       );
 
       all.add(foo);
@@ -2877,6 +2892,7 @@ Widget makeNewPostImpl(
    Function onExpandImg,
    List<MenuItem> menu,
    bool showPostDetails,
+   Node exDetailsTree,
 ) {
    final List<Widget> buttons = makePostButtons(onPressed, icon);
 
@@ -2891,7 +2907,7 @@ Widget makeNewPostImpl(
       ),
    );
 
-   Row row = Row(children: <Widget>
+   Row buttonsRow = Row(children: <Widget>
    [ Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0)))
    , Expanded(child: buttons[0])
    , Expanded(child: buttons[1])
@@ -2901,7 +2917,7 @@ Widget makeNewPostImpl(
 
    Widget imgWdg;
    if (post.images.isNotEmpty) {
-      Container c = Container(
+      Container img = Container(
          //margin: const EdgeInsets.only(top: 10.0),
          margin: const EdgeInsets.all(0.0),
          child: makeNetImgBox(
@@ -2913,15 +2929,29 @@ Widget makeNewPostImpl(
       );
 
       Widget kmText = makeTextWdg(makeRangeStr(post, 2), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+      Widget priceText = makeTextWdg(makeRangeStr(post, 0), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
 
       imgWdg = Stack(
-	 alignment: Alignment.topLeft,
+	 //alignment: Alignment.topLeft,
 	 children: <Widget>
-	 [ c
-	 , Card(child: kmText,
-	      elevation: 0.0,
-	      color: Colors.white.withOpacity(0.7),
-	      margin: EdgeInsets.all(5.0),
+	 [ img
+	 , Positioned(
+	      left: 0.0,
+	      bottom: 0.0,
+	      child: Card(child: kmText,
+	         elevation: 0.0,
+	         color: Colors.white.withOpacity(0.7),
+	         margin: EdgeInsets.all(5.0),
+	      ),
+	   )
+	 , Positioned(
+	      left: 0.0,
+	      top: 0.0,
+	      child: Card(child: priceText,
+	         elevation: 0.0,
+	         color: Colors.white.withOpacity(0.7),
+	         margin: EdgeInsets.all(5.0),
+	      ),
 	   )
 	 ],
       );
@@ -2966,28 +2996,32 @@ Widget makeNewPostImpl(
    final String locationStr = makeTreeItemStr(menu[0].root.first, post.channel[0][0]);
    final String modelStr = makeTreeItemStr(menu[1].root.first, post.channel[1][0]);
    final String dateStr = makeDateString2(post.date);
+   List<String> exDetailsNames = getExDetailsStrings(exDetailsTree, post);
 
    Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
-   Widget priceText = makeTextWdg(makeRangeStr(post, 0), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
    Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
    Widget dataWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-   final double widthCol2 = 0.56 * makeImgWidth(ctx);
-   Column col2 = Column(children: <Widget>
-   [ SizedBox(width: widthCol2, child: Center(child: modelTitle))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: priceText)]))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)]))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)]))
-   , Spacer()
-   , SizedBox(width: widthCol2, child: row)
+   Widget s1 = makeTextWdg(exDetailsNames.first, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget s2 = makeTextWdg(exDetailsNames.last, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+
+   final double widthCol2 = 0.58 * makeImgWidth(ctx);
+
+   Column infoWdg = Column(children: <Widget>
+   [ Expanded(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
+   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
+   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
+   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
+   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
+   , Flexible(child: SizedBox(width: widthCol2, child: buttonsRow))
    ]);
 
-   row1List.add(SizedBox(height: imgWidth, child: col2));
+   row1List.add(SizedBox(height: imgWidth, child: infoWdg));
 
    List<Widget> rows = List<Widget>();
-   rows.add(Row(children: row1List));
    if (showPostDetails)
       rows.add(detailsWidget);
+   rows.add(Row(children: row1List));
 
    return RaisedButton(
       color: Colors.white,
@@ -3064,6 +3098,7 @@ Widget makeNewPost(
       onExpandImg,
       menu,
       showPostDetails,
+      exDetailsTree,
    );
 
    return w;
