@@ -418,8 +418,6 @@ class Post {
    List<String> images;
    List<ChatMetadata> chats = List<ChatMetadata>();
 
-   bool showDetails;
-
    Post(
    { this.dbId = -1
    , this.id = -1
@@ -430,7 +428,6 @@ class Post {
    , this.pinDate = 0
    , this.status = -1
    , this.description = ''
-   , this.showDetails = false
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
@@ -468,7 +465,6 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.description = this.description;
-      ret.showDetails = this.showDetails;
       ret.chats = List<ChatMetadata>.from(this.chats);
       ret.images = List<String>.from(this.images);
       return ret;
@@ -696,7 +692,6 @@ loadPosts(Database db, List<int> rangesMinMax) async
       post.images = decodeList(1, '', bodyMap['images']) ?? <String>[];
 
       post.description = bodyMap['description'] ?? '';
-      post.showDetails = false;
       return post;
    });
 }

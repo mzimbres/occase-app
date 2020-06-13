@@ -875,8 +875,9 @@ WillPopScope makeNewPostScreens(
    Function onRangeValueChanged,
    Function onAddPhoto,
    List<File> imgFiles,
-   bool filenamesTimerActive)
-{
+   bool filenamesTimerActive,
+   bool showPostDetails,
+) {
    Widget wid;
    Widget appBarTitleWidget = Text(
       g.param.newPostAppBarTitle,
@@ -907,6 +908,7 @@ WillPopScope makeNewPostScreens(
                onAddPhoto,
                imgFiles,
                (int j){ print('Error. abab');},
+	       showPostDetails,
             );
          },
       );
@@ -2600,19 +2602,17 @@ List<Widget> makePostExDetails(
    values.add(post.nick);
    values.add('${post.from}');
 
-   DateTime date;
+   int date;
    if (post.id == -1) {
       // We are publishing.
       values.add('');
-      final int now = DateTime.now().millisecondsSinceEpoch;
-      date = DateTime.fromMillisecondsSinceEpoch(now);
+      date = DateTime.now().millisecondsSinceEpoch;
    } else {
       values.add('${post.id}');
-      date = DateTime.fromMillisecondsSinceEpoch(post.date);
+      date = post.date;
    }
 
-   DateFormat df = Intl(g.param.localeName).date().add_yMEd().add_jm();
-   values.add(df.format(date));
+   values.add(makeDateString2(date));
 
    for (int i = 0; i < values.length; ++i)
       list.add(makePostRowElem(ctx, g.param.descList[i], values[i]));
@@ -2775,6 +2775,7 @@ Widget makeTextWdg(
    double paddingTop,
    double paddingBot,
    double paddingLeft,
+   double paddingRight,
    FontWeight fw,
 ) {
    return Padding(
@@ -2786,7 +2787,7 @@ Widget makeTextWdg(
          ),
          overflow: TextOverflow.ellipsis,
       ),
-      padding: EdgeInsets.only(left: paddingLeft, top: paddingTop, bottom: paddingBot),
+      padding: EdgeInsets.only(right: paddingRight, left: paddingLeft, top: paddingTop, bottom: paddingBot),
    );
 }
 
@@ -2875,12 +2876,8 @@ Widget makeNewPostImpl(
    List<File> imgFiles,
    Function onExpandImg,
    List<MenuItem> menu,
+   bool showPostDetails,
 ) {
-   if (post.images.isEmpty) {
-      // If this is a new post details are shown by default.
-      post.showDetails = true;
-   }
-
    final List<Widget> buttons = makePostButtons(onPressed, icon);
 
    Text owner = Text(
@@ -2904,7 +2901,7 @@ Widget makeNewPostImpl(
 
    Widget imgWdg;
    if (post.images.isNotEmpty) {
-      imgWdg = Container(
+      Container c = Container(
          //margin: const EdgeInsets.only(top: 10.0),
          margin: const EdgeInsets.all(0.0),
          child: makeNetImgBox(
@@ -2913,6 +2910,20 @@ Widget makeNewPostImpl(
             post.images.first,
             BoxFit.cover,
          ),
+      );
+
+      Widget kmText = makeTextWdg(makeRangeStr(post, 2), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+
+      imgWdg = Stack(
+	 alignment: Alignment.topLeft,
+	 children: <Widget>
+	 [ c
+	 , Card(child: kmText,
+	      elevation: 0.0,
+	      color: Colors.white.withOpacity(0.7),
+	      margin: EdgeInsets.all(5.0),
+	   )
+	 ],
       );
    } else if (imgFiles.isNotEmpty) {
       imgWdg = Image.file(imgFiles.first,
@@ -2954,18 +2965,19 @@ Widget makeNewPostImpl(
 
    final String locationStr = makeTreeItemStr(menu[0].root.first, post.channel[0][0]);
    final String modelStr = makeTreeItemStr(menu[1].root.first, post.channel[1][0]);
+   final String dateStr = makeDateString2(post.date);
 
-   Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, FontWeight.w500);
-   Widget priceText = makeTextWdg(makeRangeStr(post, 0), 0.0, 0.0, 0.0, FontWeight.normal);
-   Widget kmText = makeTextWdg(makeRangeStr(post, 2), 0.0, 0.0, 0.0, FontWeight.normal);
-   Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
+   Widget priceText = makeTextWdg(makeRangeStr(post, 0), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+   Widget dataWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
    final double widthCol2 = 0.56 * makeImgWidth(ctx);
    Column col2 = Column(children: <Widget>
    [ SizedBox(width: widthCol2, child: Center(child: modelTitle))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: priceText), Spacer()]))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: kmText), Spacer()]))
-   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Flexible(child: location), Spacer()]))
+   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: priceText)]))
+   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)]))
+   , SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)]))
    , Spacer()
    , SizedBox(width: widthCol2, child: row)
    ]);
@@ -2974,7 +2986,7 @@ Widget makeNewPostImpl(
 
    List<Widget> rows = List<Widget>();
    rows.add(Row(children: row1List));
-   if (post.showDetails)
+   if (showPostDetails)
       rows.add(detailsWidget);
 
    return RaisedButton(
@@ -2997,8 +3009,9 @@ Widget makeNewPost(
    String snackbarStr,
    Function onAddPhoto,
    List<File> imgFiles,
-   Function onExpandImg)
-{
+   Function onExpandImg,
+   bool showPostDetails,
+) {
    assert(menu.length == 2);
 
    Widget title = Text(
@@ -3050,6 +3063,7 @@ Widget makeNewPost(
       imgFiles,
       onExpandImg,
       menu,
+      showPostDetails,
    );
 
    return w;
@@ -3076,6 +3090,7 @@ Widget makeNewPostLv(
    Node inDetailsTree,
    int nNewPosts,
    Function onExpandImg,
+   int expandedPostIdx,
 ) {
    final int l = posts.length - nNewPosts;
    if (l == 0)
@@ -3106,6 +3121,7 @@ Widget makeNewPostLv(
             (BuildContext dummy, int i) {print('Error: Please fix aaab');},
             List<File>(),
             (int k) {onExpandImg(j, k);},
+	    expandedPostIdx == j,
          );
       },
    );
@@ -3271,6 +3287,13 @@ String makeDateString(int date)
 {
    DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
    DateFormat format = DateFormat.Hm();
+   return format.format(dateObj);
+}
+
+String makeDateString2(int date)
+{
+   DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
+   DateFormat format = Intl(g.param.localeName).date().add_yMEd().add_jm();
    return format.format(dateObj);
 }
 
@@ -3888,6 +3911,10 @@ class OccaseState extends State<Occase>
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
+   // The index of the post that the user has expanded.
+   int _expandedPostIdx = -1;
+   static const int _invalidPostIdx = 1000000;
+
    @override
    void initState()
    {
@@ -4323,7 +4350,18 @@ class OccaseState extends State<Occase>
 
       if (j == 4) {
 	 setState(() {
-	    _posts[i].showDetails = !_posts[i].showDetails;
+	    if (_expandedPostIdx == i) {
+	       // The user has clicked in the post that is expanded right now
+	       // to collapse it.
+	       _expandedPostIdx = -1;
+	    } else if (_expandedPostIdx == -1) {
+	       // The user wants to expand a post.
+	       _expandedPostIdx = i;
+	    } else if (_expandedPostIdx != _invalidPostIdx) {
+	       // The user want to expand another post, the already expanded
+	       // post must collapse.
+	       _expandedPostIdx = i;
+	    }
 	 });
          return;
       }
@@ -4376,13 +4414,17 @@ class OccaseState extends State<Occase>
 
    void _onNewPost()
    {
-      _newPostPressed = true;
-      _post = Post(rangesMinMax: g.param.rangesMinMax);
-      _post.images = List<String>(); // TODO: remove this later.
-      _trees[0].restoreMenuStack();
-      _trees[1].restoreMenuStack();
-      _botBarIdx = 0;
-      setState(() { });
+      setState(() {
+	 _newPostPressed = true;
+	 _post = Post(rangesMinMax: g.param.rangesMinMax);
+	 _post.images = List<String>(); // TODO: remove this later.
+	 _trees[0].restoreMenuStack();
+	 _trees[1].restoreMenuStack();
+	 _botBarIdx = 0;
+
+	 // Uses an arbitrary value that match no post and is different from -1.
+	 _expandedPostIdx = _invalidPostIdx;
+      });
    }
 
    // This function has a side effect. It updates _nNewPosts.
@@ -6188,6 +6230,7 @@ class OccaseState extends State<Occase>
             _onAddPhoto,
             _imgFiles,
             _filenamesTimer.isActive,
+	    _expandedPostIdx != -1,
          );
       }
 
@@ -6315,6 +6358,7 @@ class OccaseState extends State<Occase>
          _inDetailsRoot,
          _nNewPosts,
          _onExpandImg,
+	 _expandedPostIdx,
       );
 
       bodies[2] = makeChatTab(
