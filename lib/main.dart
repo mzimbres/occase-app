@@ -348,9 +348,9 @@ Scaffold makeRegisterScreen(
    );
 
    Widget button = createRaisedButton(
-      ctx,
       onContinue,
       g.param.next,
+      stl.colorScheme.secondary,
    );
 
    Column col = Column(
@@ -410,9 +410,9 @@ Scaffold makeNtfScreen(
            padding: EdgeInsets.only(bottom: 30.0),
         ),
         createRaisedButton(
-           ctx,
            () {onChange(-1, false);},
            g.param.ok,
+	   stl.colorScheme.secondary,
         ),
       ]
    );
@@ -500,15 +500,39 @@ Widget constrainBox(double width, double height, Widget lv)
    );
 }
 
+Widget makeWdgOverImg(Widget wdg)
+{
+   return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Card(child: wdg,
+	    elevation: 0.0,
+	    color: Colors.white.withOpacity(0.7),
+	    margin: EdgeInsets.all(5.0),
+      ),
+   );
+}
+
 // Generates the image list view of a post.
 Widget makeImgListView2(
-   double width,
-   double height,
+   BuildContext ctx,
    Post post,
    Function onExpandImg,
-   BoxFit bf)
-{
-   final int l = post.images.length;
+   BoxFit bf,
+   List<File> imgFiles,
+   Function addImg,
+) {
+   final int l1 = post.images.length;
+   final int l2 = imgFiles.length;
+
+   final double width = makeImgWidth(ctx);
+   if (l1 == 0 && l2 == 0) {
+      Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
+      return makeImgPlaceholder(width, width, w);
+   }
+
+   final double height = makeImgHeight(ctx, cts.imgHeightFactor);
+
+   final int l = l1 == 0 ? l2 : l1;
 
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
@@ -518,30 +542,52 @@ Widget makeImgListView2(
       itemBuilder: (BuildContext ctx, int i)
       {
          FlatButton b = FlatButton(
-            onPressed: (){onExpandImg(i);},
+            onPressed: (){onExpandImg(l -i -1);},
             child: Container(
                width: width * 0.9,
                height: height * 0.9,
             ),
          );
 
-         Widget counters2 = Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Text('$i/$l',
-               style: stl.tt.subhead.copyWith(
-                  color: Theme.of(ctx).colorScheme.onPrimary,
-               ),
-            ),
-         );
+	 Widget imgCounter = makeTextWdg('${i + 1}/$l', 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
 
-         return Stack(
-            alignment: Alignment(0.0, 0.0),
-            children: <Widget>
-            [ makeNetImgBox(width, height, post.images[i], bf)
-            , b
-            , Column(children: <Widget>[counters2, Spacer()]),
-            ],
-         );
+	 List<Widget> wdgs = List<Widget>();
+
+	 if (post.images.isNotEmpty) {
+	    Widget tmp = makeNetImgBox(width, height, post.images[l -i -1], bf);
+	    wdgs.add(tmp);
+	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
+	 } else if (imgFiles.isNotEmpty) {
+	    Widget tmp = Image.file(imgFiles[i],
+	       width: width,
+	       height: width,
+	       fit: BoxFit.cover,
+	       filterQuality: FilterQuality.high,
+	    );
+
+	    wdgs.add(tmp);
+
+	    IconButton add = IconButton(
+	       onPressed: (){addImg(ctx, -1);},
+	       icon: Icon(Icons.add_a_photo, color: stl.colorScheme.primary),
+	    );
+
+	    Widget addWdg = makeWdgOverImg(add);
+	    wdgs.add(Positioned(child: addWdg, bottom: 4.0, right: 4.0));
+
+	    IconButton remove = IconButton(
+	       onPressed: (){addImg(ctx, i);},
+	       icon: Icon(Icons.cancel, color: stl.colorScheme.primary),
+	    );
+
+	    Widget removeWdg = makeWdgOverImg(remove);
+	    wdgs.add(Positioned(child: removeWdg, top: 4.0, right: 4.0));
+	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0, left: 4.0));
+	 } else {
+	    assert(false);
+	 }
+
+         return Stack(children: wdgs);
       },
    );
 
@@ -863,9 +909,9 @@ List<Widget> makeNewPostDetailScreen(
 
    all.add(
       createRaisedButton(
-         ctx,
          (){onExDetail(-1, -1);},
          g.param.next,
+	 stl.colorScheme.secondary,
       ),
    );
 
@@ -893,40 +939,63 @@ WillPopScope makeNewPostScreens(
    bool filenamesTimerActive,
    bool showPostDetails,
 ) {
-   Widget wid;
    Widget appBarTitleWidget = Text(
       g.param.newPostAppBarTitle,
       style: stl.appBarLtTitle,
    );
 
+   List<Widget> ww = List<Widget>();
    if (screen == 3) {
       // NOTE: This ListView is used to provide a new context, so that
       // it is possible to show the snackbar using the scaffold.of on
       // the new context.
-      wid = ListView.builder(
+      ListView wid = ListView.builder(
          shrinkWrap: true,
          padding: const EdgeInsets.all(0.0),
-         itemCount: 1,
+         itemCount: 3,
          itemBuilder: (BuildContext ctx, int i)
          {
-            assert(i == 0);
+	    if (i == 0)
+	       return makeNewPost(
+		  ctx,
+		  post,
+		  (int j) { onSendNewPost(ctx, j); },
+		  menu,
+		  exDetailsTree,
+		  inDetailsTree,
+		  g.param.cancelNewPost,
+		  onAddPhoto,
+		  imgFiles,
+		  (int j){ print('Error. abab');},
+		  showPostDetails,
+	       );
 
-            return makeNewPost(
-               ctx,
-               post,
-               (int j) { onSendNewPost(ctx, j); },
-               menu,
-               exDetailsTree,
-               inDetailsTree,
-               stl.pubIcon,
-               g.param.cancelNewPost,
-               onAddPhoto,
-               imgFiles,
-               (int j){ print('Error. abab');},
-	       showPostDetails,
-            );
+	    if (i == 1) {
+	       return Padding(
+		     padding: EdgeInsets.only(top: 50.0),
+		     child: createRaisedButton(
+			() {onSendNewPost(ctx, 0);},
+			g.param.cancel,
+			Colors.grey[300],
+		  ),
+	       );
+	    }
+
+	    if (i == 2) {
+	       return Padding(
+		     padding: EdgeInsets.only(top: 50.0),
+		     child: createRaisedButton(
+			() {onSendNewPost(ctx, 1);},
+			g.param.newPostAppBarTitle,
+			stl.colorScheme.secondary,
+		  ),
+	       );
+	    }
          },
       );
+
+      ww.add(wid);
+
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
          ctx,
@@ -940,7 +1009,7 @@ WillPopScope makeNewPostScreens(
       );
 
       // Consider changing this to column.
-      wid = ListView.builder(
+      ListView wid = ListView.builder(
          padding: const EdgeInsets.only(
             left: stl.postListViewSidePadding,
             right: stl.postListViewSidePadding,
@@ -952,12 +1021,16 @@ WillPopScope makeNewPostScreens(
             return widgets[i];
          },
       );
+
+      ww.add(wid);
    } else {
-      wid = makeNewPostMenuListView(
+      ListView wid = makeNewPostMenuListView(
          ctx,
          menu[screen].root.last,
          onPostLeafPressed,
          onPostNodePressed);
+
+      ww.add(wid);
 
       appBarTitleWidget = ListTile(
          title: Text(
@@ -984,7 +1057,6 @@ WillPopScope makeNewPostScreens(
       ),
    );
 
-   List<Widget> ww = <Widget>[wid];
    if (filenamesTimerActive) {
       ModalBarrier mb = ModalBarrier(
          color: Colors.grey.withOpacity(0.4),
@@ -1023,23 +1095,16 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
       [ Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
-             ctx,
              () {onPressed(ctx, 0);},
              g.param.newFiltersFinalScreenButton[0],
+	     stl.colorScheme.secondary,
           ))
-      //, Padding(
-      //    padding: const EdgeInsets.symmetric(vertical: 40.0),
-      //    child: createRaisedButton(
-      //       ctx,
-      //       () {onPressed(ctx, 1);},
-      //       g.param.newFiltersFinalScreenButton[1],
-      //    ))
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
-             ctx,
              () {onPressed(ctx, 2);},
              g.param.newFiltersFinalScreenButton[2],
+	     stl.colorScheme.secondary,
           ))
       ]
    );
@@ -2370,19 +2435,19 @@ ListView makeNewFilterListView(
 }
 
 Widget createRaisedButton(
-   BuildContext ctx,
    Function onPressed,
-   final String txt)
-{
+   final String txt,
+   Color color,
+) {
    RaisedButton but = RaisedButton(
       child: Text(txt,
          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: stl.mainFontSize,
-            color: Theme.of(ctx).colorScheme.onSecondary,
+            color: stl.colorScheme.onSecondary,
          ),
       ),
-      color: Theme.of(ctx).colorScheme.secondary,
+      color: color,
       onPressed: onPressed,
    );
 
@@ -2819,7 +2884,7 @@ Widget makeAddOrRemoveWidget(
             color: color,
             size: 30.0,
          ),
-      )
+      ),
    );
 }
 
@@ -2845,10 +2910,8 @@ double makeImgHeight(BuildContext ctx, double r)
    return width * r;
 }
 
-List<Widget> makePostButtons(
-   Function onPressed,
-   Icon icon,
-) {
+List<Widget> makePostButtons(Function onPressed)
+{
    // Unused at the moment.
    IconButton remove = IconButton(
       //iconSize: stl.newPostIconSize,
@@ -2873,7 +2936,7 @@ List<Widget> makePostButtons(
    IconButton chat = IconButton(
       //iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
-      icon: icon,
+      icon: stl.favIcon,
       onPressed: () {onPressed(1);},
       color: stl.colorScheme.primary,
    );
@@ -2885,7 +2948,6 @@ Widget makeNewPostImpl(
    BuildContext ctx,
    Widget detailsWidget,
    Function onPressed,
-   Icon icon,
    Post post,
    Function onAddPhoto,
    List<File> imgFiles,
@@ -2894,7 +2956,7 @@ Widget makeNewPostImpl(
    bool showPostDetails,
    Node exDetailsTree,
 ) {
-   final List<Widget> buttons = makePostButtons(onPressed, icon);
+   final List<Widget> buttons = makePostButtons(onPressed);
 
    Text owner = Text(
       post.nick,
@@ -2956,7 +3018,7 @@ Widget makeNewPostImpl(
 	 ],
       );
    } else if (imgFiles.isNotEmpty) {
-      imgWdg = Image.file(imgFiles.first,
+      imgWdg = Image.file(imgFiles.last,
          width: imgWidth,
          height: imgWidth,
          fit: BoxFit.cover,
@@ -2985,7 +3047,14 @@ Widget makeNewPostImpl(
 
       Stack st = Stack(
 	 alignment: Alignment(0.0, 0.0),
-	 children: <Widget>[imgWdg, addImgWidget],
+	 children: <Widget>
+	 [ imgWdg
+	 , Card(child: addImgWidget,
+	         elevation: 0.0,
+	         color: Colors.white.withOpacity(0.7),
+	         margin: EdgeInsets.all(0.0),
+	      )
+	 ],
       );
 
       row1List.add(st);
@@ -3039,7 +3108,6 @@ Widget makeNewPost(
    List<MenuItem> menu,
    Node exDetailsTree,
    Node inDetailsTree,
-   Icon ic,
    String snackbarStr,
    Function onAddPhoto,
    List<File> imgFiles,
@@ -3057,11 +3125,12 @@ Widget makeNewPost(
    List<Widget> rows = List<Widget>();
 
    Widget lv = makeImgListView2(
-      makeImgWidth(ctx),
-      makeImgHeight(ctx, cts.imgHeightFactor),
+      ctx,
       post,
       (int j){onPostSelection(4);},
       BoxFit.cover,
+      imgFiles,
+      onAddPhoto,
    );
 
    rows.add(lv);
@@ -3091,7 +3160,6 @@ Widget makeNewPost(
       ctx,
       putPostElemOnCard(ctx, rows, 0.0),
       onPostSelection,
-      ic,
       post,
       onAddPhoto,
       imgFiles,
@@ -3151,7 +3219,6 @@ Widget makeNewPostLv(
             menu,
             exDetailsTree,
             inDetailsTree,
-            stl.favIcon,
             g.param.dissmissedPost,
             (BuildContext dummy, int i) {print('Error: Please fix aaab');},
             List<File>(),
@@ -3642,11 +3709,12 @@ Widget makeChatTab(
             onExpandImg2 = (int j){print('Error: post.images is empty.');};
 
          foo.add(makeImgListView2(
-               makeImgWidth(ctx),
-               makeImgHeight(ctx, cts.imgHeightFactor),
+	       ctx,
                posts[i],
                onExpandImg2,
                BoxFit.cover,
+	       List<File>(),
+	       (int i){print('noop');},
             ),
          );
 
@@ -3948,7 +4016,6 @@ class OccaseState extends State<Occase>
 
    // The index of the post that the user has expanded.
    int _expandedPostIdx = -1;
-   static const int _invalidPostIdx = 1000000;
 
    @override
    void initState()
@@ -4389,12 +4456,8 @@ class OccaseState extends State<Occase>
 	       // The user has clicked in the post that is expanded right now
 	       // to collapse it.
 	       _expandedPostIdx = -1;
-	    } else if (_expandedPostIdx == -1) {
+	    } else {
 	       // The user wants to expand a post.
-	       _expandedPostIdx = i;
-	    } else if (_expandedPostIdx != _invalidPostIdx) {
-	       // The user want to expand another post, the already expanded
-	       // post must collapse.
 	       _expandedPostIdx = i;
 	    }
 	 });
@@ -4458,7 +4521,7 @@ class OccaseState extends State<Occase>
 	 _botBarIdx = 0;
 
 	 // Uses an arbitrary value that match no post and is different from -1.
-	 _expandedPostIdx = _invalidPostIdx;
+	 _expandedPostIdx = -1;
       });
    }
 
@@ -5009,6 +5072,15 @@ class OccaseState extends State<Occase>
 
       if (_filenamesTimer.isActive)
          return;
+
+      print('------> $i');
+      if (i == 4) {
+         // User wants to expand the post.
+	 setState(() {
+	    _expandedPostIdx = _expandedPostIdx != -1 ? -1 : 0;
+	 });
+         return;
+      }
 
       if (i == 2) {
          // The report button is dummy in the new posts screen.
