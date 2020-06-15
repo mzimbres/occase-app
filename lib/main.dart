@@ -30,17 +30,19 @@ import 'package:occase/globals.dart' as g;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/stl.dart' as stl;
 
-Future<List<MenuItem>> readMenuItemsFromAsset() async
+typedef OnPressedFn = void Function();
+
+Future<List<Tree>> readTreeFromAsset() async
 {
    // When the database is created, we also have to create the
-   // default menu table.
-   List<MenuItem> l = List<MenuItem>(2);
+   // default tree table.
+   List<Tree> l = List<Tree>(2);
 
-   final String menu0 = await rootBundle.loadString('data/menu0.txt');
-   l[0] = menuReader(jsonDecode(menu0)).first;
+   final String tree0 = await rootBundle.loadString('data/menu0.txt');
+   l[0] = treeReader(jsonDecode(tree0)).first;
 
-   final String menu1 = await rootBundle.loadString('data/menu1.txt');
-   l[1] = menuReader(jsonDecode(menu1)).first;
+   final String tree1 = await rootBundle.loadString('data/menu1.txt');
+   l[1] = treeReader(jsonDecode(tree1)).first;
 
    return l;
 }
@@ -921,7 +923,7 @@ List<Widget> makeNewPostDetailScreen(
 WillPopScope makeNewPostScreens(
    BuildContext ctx,
    Post post,
-   final List<MenuItem> menu,
+   final List<Tree> menu,
    TextEditingController txtCtrl,
    Function onSendNewPost,
    int screen,
@@ -1118,7 +1120,7 @@ WillPopScope makeFiltersScreen(
    Function onWillPopMenu,
    Function onBotBarTaped,
    Function onFilterLeafNodePressed,
-   final List<MenuItem> menu,
+   final List<Tree> menu,
    int filter,
    int screen,
    Node exDetailsFilterNodes,
@@ -2578,7 +2580,7 @@ Widget makePostSectionTitle(
 List<Widget> makeMenuInfo(
    BuildContext ctx,
    Post post,
-   List<MenuItem> menus)
+   List<Tree> menus)
 {
    List<Widget> list = List<Widget>();
 
@@ -2774,7 +2776,7 @@ Widget makePostDescription(BuildContext ctx, String desc)
 List<Widget> assemblePostRows(
    BuildContext ctx,
    Post post,
-   List<MenuItem> menu,
+   List<Tree> menu,
    Node exDetailsTree,
    Node inDetailsTree,
 ) {
@@ -2811,11 +2813,11 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
 ThemeData makeExpTileThemeData(BuildContext ctx)
 {
    return ThemeData(
-      accentColor: Theme.of(ctx).colorScheme.onPrimary,
-      unselectedWidgetColor: Theme.of(ctx).colorScheme.onPrimary,
+      accentColor: stl.colorScheme.onPrimary,
+      unselectedWidgetColor: stl.colorScheme.onPrimary,
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: Theme.of(ctx).colorScheme.onPrimary,
+            color: stl.colorScheme.onPrimary,
          ),
       ),
    );
@@ -2952,7 +2954,7 @@ Widget makeNewPostImpl(
    Function onAddPhoto,
    List<File> imgFiles,
    Function onExpandImg,
-   List<MenuItem> menu,
+   List<Tree> menu,
    bool showPostDetails,
    Node exDetailsTree,
 ) {
@@ -3090,7 +3092,33 @@ Widget makeNewPostImpl(
    List<Widget> rows = List<Widget>();
    if (showPostDetails)
       rows.add(detailsWidget);
+
    rows.add(Row(children: row1List));
+
+   if (true) {
+      ChatMetadata cm = ChatMetadata(
+        peer: post.from,
+	nick: post.nick,
+	avatar: post.avatar,
+	date: DateTime.now().millisecondsSinceEpoch,
+	lastChatItem: ChatItem(),
+      );
+
+      Widget tmp = makeChatListTile(
+	 ctx,
+	 cm,
+	 0,
+	 false,
+	 '',
+	 stl.chatListTilePadding,
+	 2.0,
+	 (){print('aaaa');},
+	 (){print('bbbb');},
+	 (){print('cccc');},
+      );
+
+      rows.add(tmp);
+   }
 
    return RaisedButton(
       color: Colors.white,
@@ -3105,7 +3133,7 @@ Widget makeNewPost(
    BuildContext ctx,
    Post post,
    Function onPostSelection,
-   List<MenuItem> menu,
+   List<Tree> menu,
    Node exDetailsTree,
    Node inDetailsTree,
    String snackbarStr,
@@ -3188,7 +3216,7 @@ Widget makeNewPostLv(
    BuildContext ctx,
    List<Post> posts,
    Function onPostSelection,
-   List<MenuItem> menu,
+   List<Tree> trees,
    Node exDetailsTree,
    Node inDetailsTree,
    int nNewPosts,
@@ -3216,7 +3244,7 @@ Widget makeNewPostLv(
             ctx,
             posts[j],
             (int k) {onPostSelection(ctx, j, k);},
-            menu,
+            trees,
             exDetailsTree,
             inDetailsTree,
             g.param.dissmissedPost,
@@ -3479,15 +3507,17 @@ Color selectColor(int n)
    }
 }
 
-Card makeChatListTile(
+Widget makeChatListTile(
    BuildContext ctx,
    ChatMetadata chat,
    int now,
-   Function onLeadingPressed,
-   Function onLongPress,
-   Function onPressed,
    bool isFwdChatMsgs,
    String avatar,
+   double padding,
+   double elevation,
+   OnPressedFn onLeadingPressed,
+   OnPressedFn onLongPress,
+   OnPressedFn onPressed,
 ) {
    Color bgColor;
    if (chat.isLongPressed) {
@@ -3526,16 +3556,20 @@ Card makeChatListTile(
       ),
    );
 
-   return Card(
-      child: lt,
-      color: bgColor,
-      margin: EdgeInsets.all(0.0),
-      elevation: 0.0,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(
-            Radius.circular(stl.cornerRadius)
-         ),
-      ),
+   return Padding(
+	 padding: EdgeInsets.all(padding),
+	 child: Card(
+	    child: lt,
+	    color: bgColor,
+	    margin: EdgeInsets.all(0.0),
+	    elevation: elevation,
+	    shape: RoundedRectangleBorder(
+	       borderRadius: BorderRadius.all(
+		  Radius.circular(stl.cornerRadius)
+	       ),
+	       //side: BorderSide(width: 1.0, color: Colors.grey),
+	    ),
+	 ),
    );
 }
 
@@ -3559,15 +3593,17 @@ Widget makeChatsExp(
       if (n > 0)
          ++nUnreadChats;
 
-      Card card = makeChatListTile(
+      Widget card = makeChatListTile(
          ctx,
          ch[i],
          now,
+         isFwdChatMsgs,
+         isFav ? post.avatar : ch[i].avatar,
+	 0.0,
+	 0.0,
          (){onLeadingPressed(ctx, post.id, i);},
          () { onLongPressed(i); },
          () { onPressed(i); },
-         isFwdChatMsgs,
-         isFav ? post.avatar : ch[i].avatar,
       );
 
       list[i] = Padding(
@@ -3647,7 +3683,7 @@ Widget makeChatTab(
    List<Post> posts,
    Function onPressed,
    Function onLongPressed,
-   List<MenuItem> menu,
+   List<Tree> trees,
    Function onDelPost,
    Function onPinPost,
    bool isFwdChatMsgs,
@@ -3695,7 +3731,7 @@ Widget makeChatTab(
          );
 
          Widget title = Text(
-            makeTreeItemStr(menu[0].root.first, posts[i].channel[0][0]),
+            makeTreeItemStr(trees[0].root.first, posts[i].channel[0][0]),
             maxLines: 1,
             overflow: TextOverflow.clip,
          );
@@ -3721,7 +3757,7 @@ Widget makeChatTab(
          List<Widget> rows = assemblePostRows(
             ctx,
             posts[i],
-            menu,
+            trees,
             exDetailsTree,
             inDetailsTree,
          );
@@ -3752,7 +3788,7 @@ Widget makeChatTab(
          return Card(
             elevation: 2.0,
 	    margin: EdgeInsets.only(bottom: 5.0),
-	    color: Colors.white,
+	    color: stl.colorScheme.primary,
 	    child: Column(children: <Widget>
 	       [ infoExpansion
 	       , chatExpansion
@@ -3871,7 +3907,7 @@ class OccaseState extends State<Occase>
    Config _cfg = Config();
 
    // The trees holding the locations and products trees.
-   List<MenuItem> _trees = List<MenuItem>();
+   List<Tree> _trees = List<Tree>();
 
    // The ex details tree root node.
    Node _exDetailsRoot;
@@ -3940,7 +3976,7 @@ class OccaseState extends State<Occase>
 
    // The index of the tab we are currently in in the *new
    // post* or *Filters* screen. For example 0 for the localization
-   // menu, 1 for the models menu etc.
+   // tree, 1 for the models tree etc.
    int _botBarIdx = 0;
 
    // The current chat, if any.
@@ -4164,9 +4200,9 @@ class OccaseState extends State<Occase>
 
       // When the database is created, we also have to create the
       // default menu table.
-      _trees = await readMenuItemsFromAsset();
+      _trees = await readTreeFromAsset();
 
-      List<MenuElem> elems = List<MenuElem>();
+      List<NodeInfo> elems = List<NodeInfo>();
       for (int i = 0; i < _trees.length; ++i) {
          elems.addAll(makeMenuElems(
                _trees[i].root.first,
@@ -4185,7 +4221,7 @@ class OccaseState extends State<Occase>
          conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-      elems.forEach((MenuElem me) {
+      elems.forEach((NodeInfo me) {
          batch.insert('menu', menuElemToMap(me));
       });
 
@@ -4226,12 +4262,12 @@ class OccaseState extends State<Occase>
          String exDetailsStr =
             await rootBundle.loadString('data/ex_details_menu.txt');
          _exDetailsRoot =
-            menuReader(jsonDecode(exDetailsStr)).first.root.first;
+            treeReader(jsonDecode(exDetailsStr)).first.root.first;
 
          String inDetailsStr =
             await rootBundle.loadString('data/in_details_menu.txt');
          _inDetailsRoot =
-            menuReader(jsonDecode(inDetailsStr)).first.root.first;
+            treeReader(jsonDecode(inDetailsStr)).first.root.first;
       } catch (e) {
          print(e);
       }
@@ -4558,18 +4594,18 @@ class OccaseState extends State<Occase>
    }
 
    bool _onWillPopMenu(
-      final List<MenuItem> menu,
+      final List<Tree> trees,
       int leaveIdx,
    ) {
       // We may want to  split this function in two: One for the
       // filters and one for the new post screen.
-      if (_botBarIdx >= menu.length) {
+      if (_botBarIdx >= trees.length) {
          --_botBarIdx;
          setState(() { });
          return false;
       }
 
-      if (menu[_botBarIdx].root.length == 1) {
+      if (trees[_botBarIdx].root.length == 1) {
          if (_botBarIdx <= leaveIdx){
             _newPostPressed = false;
             _newFiltersPressed = false;
@@ -4581,7 +4617,7 @@ class OccaseState extends State<Occase>
          return false;
       }
 
-      menu[_botBarIdx].root.removeLast();
+      trees[_botBarIdx].root.removeLast();
       setState(() { });
       return false;
    }
@@ -5952,7 +5988,7 @@ class OccaseState extends State<Occase>
 
       // An empty channels list means we do not want any filter for
       // that menu item.
-      for (MenuItem item in _trees)
+      for (Tree item in _trees)
          channels.add(readHashCodes(item.root.first, item.filterDepth));
 
       assert(channels.length == 2);

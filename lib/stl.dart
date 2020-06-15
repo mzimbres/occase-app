@@ -117,6 +117,7 @@ const TextStyle textField = TextStyle(
 // The padding used around the posts and likes screens.
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
+const double chatListTilePadding = 6.0;
 
 const double postCardBottomMargin = 4.0;
 

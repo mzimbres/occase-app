@@ -3,14 +3,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 
-class MenuElem {
+class NodeInfo {
    String code;
    String name;
    int depth;
    int leafReach;
    int index;
 
-   MenuElem({
+   NodeInfo({
       this.code = '',
       this.name = '',
       this.depth = -1,
@@ -19,7 +19,7 @@ class MenuElem {
    });
 }
 
-Map<String, dynamic> menuElemToMap(MenuElem me)
+Map<String, dynamic> menuElemToMap(NodeInfo me)
 {
    return {
       'code': me.code,
@@ -30,13 +30,13 @@ Map<String, dynamic> menuElemToMap(MenuElem me)
    };
 }
 
-Future<List<MenuElem>> loadMenu(Database db) async
+Future<List<NodeInfo>> loadMenu(Database db) async
 {
   final List<Map<String, dynamic>> maps = await db.query('menu');
 
   return List.generate(maps.length, (i)
   {
-     MenuElem me = MenuElem(
+     NodeInfo me = NodeInfo(
         code: maps[i]['code'],
         depth: maps[i]['depth'],
         leafReach: maps[i]['leaf_reach'],
@@ -158,10 +158,10 @@ loadNames(Node root,
 
 // This function should have the same behaviour as its corresponding
 // C++ implementation.
-int findMenuDepth(List<MenuElem> elems)
+int findTreeDepth(List<NodeInfo> elems)
 {
    int maxDepth = 0;
-   for (MenuElem me in elems)
+   for (NodeInfo me in elems)
       if (maxDepth < me.depth)
          maxDepth = me.depth;
 
@@ -187,8 +187,8 @@ String genCode(List<int> codes, int depth)
    return code;
 }
 
-// This function does not fill all fields of menuElem.
-MenuElem parseFields(String line)
+// This function does not fill all fields of NodeInfo.
+NodeInfo parseFields(String line)
 {
    List<String> fields = line.split(";");
    if (fields.length != 3) {
@@ -197,14 +197,14 @@ MenuElem parseFields(String line)
 
    assert(fields.length == 3);
 
-   return MenuElem(
+   return NodeInfo(
       name: fields[1],
       depth: int.parse(fields.first),
       leafReach: int.parse(fields[2]), // Remove this later.
    );
 }
 
-Node parseTree(List<MenuElem> elems, int menuDepth)
+Node parseTree(List<NodeInfo> elems, int menuDepth)
 {
    List<int> codes = List<int>(menuDepth);
    for (int i = 0; i < codes.length; ++i)
@@ -213,7 +213,7 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
    List<Node> st = List<Node>();
    int lastDepth = 0;
    Node root = Node('');
-   for (MenuElem me in elems) {
+   for (NodeInfo me in elems) {
       //print('${me.depth}; ${me.name}; ${me.code}; ${me.leafReach}; ${me.index}');
       if (st.isEmpty) {
          root.setName(me.name);
@@ -284,7 +284,7 @@ Node parseTree(List<MenuElem> elems, int menuDepth)
    return root;
 }
 
-class MenuItem {
+class Tree {
    int filterDepth;
 
    // The list below is used as a stack whose first element is the
@@ -292,7 +292,7 @@ class MenuItem {
    // the stack and the element is treated a the root of the subtree.
    List<Node> root;
 
-   MenuItem({this.filterDepth = 0}) {
+   Tree({this.filterDepth = 0}) {
       root = List<Node>();
    }
 
@@ -351,7 +351,7 @@ class MenuItem {
          root.removeLast();
    }
 
-   MenuItem.fromJson(Map<String, dynamic> map)
+   Tree.fromJson(Map<String, dynamic> map)
    {
       filterDepth = map["depth"];
       root = List<Node>();
@@ -359,10 +359,10 @@ class MenuItem {
       final String rawMenu = map["data"];
       List<String> lines = rawMenu.split("=");
       lines.removeWhere((String o) {return o.isEmpty;});
-      final List<MenuElem> elems = List.generate(lines.length,
+      final List<NodeInfo> elems = List.generate(lines.length,
          (int i) { return parseFields(lines[i]); });
 
-      final int menuDepth = findMenuDepth(elems);
+      final int menuDepth = findTreeDepth(elems);
       if (menuDepth != 0) {
          Node node = parseTree(elems, menuDepth);
          loadLeafCounters(node);
@@ -375,7 +375,7 @@ class MenuItem {
       return
       {
          'depth': filterDepth,
-         'data': serializeMenuToStr(root.first),
+         'data': serializeTreeToStr(root.first),
       };
    }
 }
@@ -401,7 +401,7 @@ int accumulateLeafCounters(Node node)
 void loadLeafCounters(Node root)
 {
    // Here I will choose a depth that is big enough.
-   MenuTraversal iter = MenuTraversal(root, 1000);
+   TreeTraversal iter = TreeTraversal(root, 1000);
    Node current = iter.advanceToLeaf();
    while (current != null) {
       current.leafCounter = accumulateLeafCounters(current);
@@ -422,7 +422,7 @@ int accumulateLeafReach(Node node)
  */
 void loadLeafReaches(Node root, int filterDepth)
 {
-   MenuTraversal iter = MenuTraversal(root, filterDepth - 1);
+   TreeTraversal iter = TreeTraversal(root, filterDepth - 1);
    Node current = iter.advanceToLeaf();
    while (current != null) {
       current.leafReach = accumulateLeafReach(current);
@@ -430,25 +430,25 @@ void loadLeafReaches(Node root, int filterDepth)
    }
 }
 
-List<MenuItem> menuReader(Map<String, dynamic> menusMap)
+List<Tree> treeReader(Map<String, dynamic> menusMap)
 {
    List<dynamic> rawMenus = menusMap['menus'];
 
-   List<MenuItem> menus = List<MenuItem>();
+   List<Tree> menus = List<Tree>();
 
    for (var raw in rawMenus) {
-      MenuItem item = MenuItem.fromJson(raw);
+      Tree item = Tree.fromJson(raw);
       menus.add(item);
    }
 
    return menus;
 }
 
-class MenuTraversal {
+class TreeTraversal {
    List<List<Node>> st = List<List<Node>>();
    int depth;
 
-   MenuTraversal(Node root, int d)
+   TreeTraversal(Node root, int d)
    {
       depth = d;
 
@@ -570,7 +570,7 @@ int toChannelHashCode(final List<int> code, final int depth)
 
 List<int> readHashCodes(Node root, int depth)
 {
-   MenuTraversal iter = MenuTraversal(root, depth);
+   TreeTraversal iter = TreeTraversal(root, depth);
    Node current = iter.advanceToLeaf();
    List<int> hashCodes = List<int>();
    while (current != null) {
@@ -586,10 +586,10 @@ List<int> readHashCodes(Node root, int depth)
 
 // Serialize the menu in a way that it can be used as input in
 // parseTree.
-class MenuTraversal2 {
+class TreeTraversal2 {
    List<List<Node>> st = List<List<Node>>();
 
-   MenuTraversal2(final Node root)
+   TreeTraversal2(final Node root)
    {
       if (root != null)
          st.add(<Node>[root]);
@@ -630,9 +630,9 @@ class MenuTraversal2 {
    }
 }
 
-String serializeMenuToStr(final Node root)
+String serializeTreeToStr(final Node root)
 {
-   MenuTraversal2 iter = MenuTraversal2(root);
+   TreeTraversal2 iter = TreeTraversal2(root);
    Node current = iter.advance();
    String menu = "";
    while (current != null) {
@@ -646,19 +646,19 @@ String serializeMenuToStr(final Node root)
    return menu;
 }
 
-List<MenuElem>
+List<NodeInfo>
 makeMenuElems(final Node root, int index, int maxDepth)
 {
    // TODO: The depth is taken from the lenght of the code. Maybe we
    // should consider removing the depth from sqlite to avoid
    // redundancy. This may be difficult however if we do not use fixed
    // size fields.
-   List<MenuElem> elems = List<MenuElem>();
-   MenuTraversal2 iter = MenuTraversal2(root);
+   List<NodeInfo> elems = List<NodeInfo>();
+   TreeTraversal2 iter = TreeTraversal2(root);
    Node current = iter.advance();
    while (current != null) {
       if (current.code.length <= maxDepth) {
-         MenuElem me = MenuElem(
+         NodeInfo me = NodeInfo(
             code: current.code.join('.'),
             name: current.makeRawName(),
             depth: current.code.length, 
@@ -673,8 +673,8 @@ makeMenuElems(final Node root, int index, int maxDepth)
    return elems;
 }
 
-List<MenuItem> loadMenuItems(
-   final List<MenuElem> elems,
+List<Tree> loadMenuItems(
+   final List<NodeInfo> elems,
    final List<int> filterDepths,
 ) {
    // Here we have to load all leaf counters and leaf reach.
@@ -684,21 +684,21 @@ List<MenuItem> loadMenuItems(
    // database, the corrections in the leaf reach of parent nodes are
    // kept in memory, that is why we have to load them here.
 
-   List<MenuItem> menu = List<MenuItem>(2);
-   menu[0] = MenuItem();
-   menu[1] = MenuItem();
+   List<Tree> menu = List<Tree>(2);
+   menu[0] = Tree();
+   menu[1] = Tree();
 
    menu[0].filterDepth = filterDepths[0];
    menu[1].filterDepth = filterDepths[1];
 
-   List<List<MenuElem>> tmp = List<List<MenuElem>>(2);
-   tmp[0] = List<MenuElem>();
-   tmp[1] = List<MenuElem>();
+   List<List<NodeInfo>> tmp = List<List<NodeInfo>>(2);
+   tmp[0] = List<NodeInfo>();
+   tmp[1] = List<NodeInfo>();
 
-   elems.forEach((MenuElem me) {tmp[me.index].add(me);});
+   elems.forEach((NodeInfo me) {tmp[me.index].add(me);});
 
    for (int i = 0; i < tmp.length; ++i) {
-      final int menuDepth = findMenuDepth(tmp[i]);
+      final int menuDepth = findTreeDepth(tmp[i]);
       if (menuDepth != 0) {
          Node node = parseTree(tmp[i], menuDepth);
          loadLeafCounters(node);
