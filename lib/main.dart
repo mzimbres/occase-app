@@ -37,6 +37,8 @@ typedef OnPressedFn3 = void Function(int, int);
 typedef OnPressedFn4 = void Function(BuildContext);
 typedef OnPressedFn5 = void Function(BuildContext, int, int);
 
+enum Screen {posts, searches, favorites}
+
 bool expPost(int v)
 {
    return v & 1 != 0;
@@ -750,7 +752,7 @@ Widget wrapOnDetailExpTitle(
    //Key key = UniqueKey();
 
    return Card(
-      color: Theme.of(ctx).colorScheme.primary,
+      color: Colors.grey,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
@@ -1030,6 +1032,7 @@ WillPopScope makeNewPostScreens(
 	       return makeNewPost(
 		  ctx: ctx,
 		  postExpStatus: postExpStatus,
+		  screen: Screen.searches,
 		  snackbarStr: g.param.cancelNewPost,
 		  post: post,
 		  exDetailsTree: exDetailsTree,
@@ -1040,10 +1043,11 @@ WillPopScope makeNewPostScreens(
 		  onExpandImg: (int j){ print('Noop00'); },
 		  onExpandPost: () { onExpandPost(ctx); },
 		  onAddPostToFavorite: () { print('Noop01'); },
-		  onRemovePostPressed: () { print('Noop02');},
+		  onDelPost: () { print('Noop02');},
 		  onSharePostPressed: () { print('Noop03');},
 		  onStartChatPressed: () { print('Noop04');},
 		  onReportPostPressed: () { print('Noop05');},
+		  onPinPost: () { print('Noop06');},
 	       );
 
 	    if (i == 1) {
@@ -2887,36 +2891,13 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
 ThemeData makeExpTileThemeData(BuildContext ctx)
 {
    return ThemeData(
-      accentColor: stl.colorScheme.onPrimary,
-      unselectedWidgetColor: stl.colorScheme.onPrimary,
+      accentColor: stl.colorScheme.primary,
+      unselectedWidgetColor: stl.colorScheme.primary,
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: stl.colorScheme.onPrimary,
+            color: stl.colorScheme.primary,
          ),
       ),
-   );
-}
-
-Widget makePostInfoExpansion(
-   BuildContext ctx,
-   Widget detailsCard,
-   Widget title,
-   Widget leading,
-   int postId)
-{
-   return Card(
-         color: stl.colorScheme.primary,
-         child: Theme(
-         data: makeExpTileThemeData(ctx),
-         child: ExpansionTile(
-             backgroundColor: Theme.of(ctx).colorScheme.primary,
-             leading: leading,
-             //key: GlobalKey(),
-             //key: PageStorageKey<int>(postId),
-             title: title,
-             children: <Widget>[detailsCard],
-         ),
-      )
    );
 }
 
@@ -2987,15 +2968,15 @@ double makeImgHeight(BuildContext ctx, double r)
 }
 
 List<Widget> makePostButtons({
-   OnPressedFn0 onRemovePostPressed,
+   int pinDate,
+   OnPressedFn0 onDelPost,
    OnPressedFn0 onSharePostPressed,
    OnPressedFn0 onStartChatPressed,
+   OnPressedFn0 onPinPost,
 }) {
-   // Unused at the moment.
    IconButton remove = IconButton(
-      //iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
-      onPressed: onRemovePostPressed,
+      onPressed: onDelPost,
       icon: Icon(
          Icons.cancel,
          color: stl.colorScheme.primary,
@@ -3003,7 +2984,6 @@ List<Widget> makePostButtons({
    );
 
    IconButton share = IconButton(
-      //iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
       onPressed: onSharePostPressed,
       color: stl.colorScheme.primary,
@@ -3013,19 +2993,31 @@ List<Widget> makePostButtons({
    );
 
    IconButton chat = IconButton(
-      //iconSize: stl.newPostIconSize,
       padding: EdgeInsets.all(0.0),
       icon: stl.favIcon,
       onPressed: onStartChatPressed,
       color: stl.colorScheme.primary,
    );
 
-   return <Widget>[share, chat];
+   IconData pinIcon = pinDate == 0 ? Icons.place : Icons.pin_drop;
+
+   IconButton pin = IconButton(
+      padding: EdgeInsets.all(0.0),
+      onPressed: onPinPost,
+      icon: Icon(
+         pinIcon,
+         color: stl.colorScheme.primary,
+      ),
+   );
+
+
+   return <Widget>[remove, share, chat, pin];
 }
 
 Widget makeNewPostImpl(
    BuildContext ctx,
    int postExpStatus,
+   Screen screen,
    Post post,
    Node exDetailsTree,
    Widget detailsWidget,
@@ -3035,16 +3027,11 @@ Widget makeNewPostImpl(
    OnPressedFn1 onExpandImg,
    OnPressedFn0 onExpandPost,
    OnPressedFn0 onAddPostToFavorite,
-   OnPressedFn0 onRemovePostPressed,
-   OnPressedFn0 onSharePostPressed,
-   OnPressedFn0 onStartChatPressed,
+   OnPressedFn0 onDelPost,
+   OnPressedFn0 onSharePost,
+   OnPressedFn0 onStartChat,
+   OnPressedFn0 onPinPost,
 ) {
-   final List<Widget> buttons = makePostButtons(
-      onRemovePostPressed: onRemovePostPressed,
-      onSharePostPressed: onSharePostPressed,
-      onStartChatPressed: onStartChatPressed,
-   );
-
    Text owner = Text(
       post.nick,
       maxLines: 1,
@@ -3056,11 +3043,27 @@ Widget makeNewPostImpl(
       ),
    );
 
-   Row buttonsRow = Row(children: <Widget>
-   [ Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0)))
-   , Expanded(child: buttons[0])
-   , Expanded(child: buttons[1])
-   ]);
+   final List<Widget> buttons = makePostButtons(
+      pinDate: post.pinDate,
+      onDelPost: onDelPost,
+      onSharePostPressed: onSharePost,
+      onStartChatPressed: onStartChat,
+      onPinPost: onPinPost,
+   );
+
+   List<Widget> buttonWdgs = List<Widget>();
+   buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
+
+   if (screen == Screen.searches) {
+      buttonWdgs.add(Expanded(child: buttons[1]));
+      buttonWdgs.add(Expanded(child: buttons[2]));
+   } else {
+      buttonWdgs.add(Expanded(child: buttons[3]));
+      buttonWdgs.add(Expanded(child: buttons[0]));
+      buttonWdgs.add(Expanded(child: buttons[1]));
+   }
+
+   Row buttonsRow = Row(children: buttonWdgs);
 
    final double imgWidth = 0.37 * makeImgWidth(ctx);
 
@@ -3164,12 +3167,12 @@ Widget makeNewPostImpl(
    final double widthCol2 = 0.58 * makeImgWidth(ctx);
 
    Column infoWdg = Column(children: <Widget>
-   [ Expanded(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
-   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
-   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
-   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
-   , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
-   , Flexible(child: SizedBox(width: widthCol2, child: buttonsRow))
+   [ Flexible(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
+   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
+   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
+   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
+   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
+   , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
    ]);
 
    row1List.add(SizedBox(height: imgWidth, child: infoWdg));
@@ -3217,6 +3220,7 @@ Widget makeNewPostImpl(
 Widget makeNewPost({
    BuildContext ctx,
    final int postExpStatus,
+   final Screen screen,
    final String snackbarStr,
    final Post post,
    final Node exDetailsTree,
@@ -3227,10 +3231,11 @@ Widget makeNewPost({
    OnPressedFn1 onExpandImg,
    OnPressedFn0 onExpandPost,
    OnPressedFn0 onAddPostToFavorite,
-   OnPressedFn0 onRemovePostPressed,
+   OnPressedFn0 onDelPost,
    OnPressedFn0 onSharePostPressed,
    OnPressedFn0 onStartChatPressed,
    OnPressedFn0 onReportPostPressed,
+   OnPressedFn0 onPinPost,
 }) {
    assert(trees.length == 2);
 
@@ -3277,6 +3282,7 @@ Widget makeNewPost({
    Widget w = makeNewPostImpl(
       ctx,
       postExpStatus,
+      screen,
       post,
       exDetailsTree,
       putPostElemOnCard(ctx, rows, 0.0),
@@ -3286,9 +3292,10 @@ Widget makeNewPost({
       onExpandImg,
       onExpandPost,
       onAddPostToFavorite,
-      onRemovePostPressed,
+      onDelPost,
       onSharePostPressed,
       onStartChatPressed,
+      onPinPost,
    );
 
    return w;
@@ -3317,7 +3324,7 @@ Widget makeNewPostLv(
    OnPressedFn3 onExpandImg,
    OnPressedFn2 onExpandPost,
    OnPressedFn2 onAddPostToFavorite,
-   OnPressedFn2 onRemovePostPressed,
+   OnPressedFn2 onDelPost,
    OnPressedFn2 onSharePostPressed,
    OnPressedFn2 onStartChatPressed,
    OnPressedFn2 onReportPostPressed,
@@ -3342,6 +3349,7 @@ Widget makeNewPostLv(
          return makeNewPost(
             ctx: ctx,
 	    postExpStatus: expPost.thisPost(j),
+	    screen: Screen.searches,
             snackbarStr: g.param.dissmissedPost,
             post: posts[j],
             exDetailsTree: exDetailsTree,
@@ -3352,10 +3360,11 @@ Widget makeNewPostLv(
             onExpandImg: (int k) {onExpandImg(j, k);},
             onExpandPost: () {onExpandPost(ctx, j);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, j);},
-	    onRemovePostPressed: () {onRemovePostPressed(ctx, j);},
+	    onDelPost: () {onDelPost(ctx, j);},
 	    onSharePostPressed: () {onSharePostPressed(ctx, j);},
 	    onStartChatPressed: () {onStartChatPressed(ctx, j);},
 	    onReportPostPressed: () {onReportPostPressed(ctx, j);},
+	    onPinPost: (){print('Noop20');},
          );
       },
    );
@@ -3740,9 +3749,6 @@ Widget makeChatsExp(
       );
    }
 
-   IconData pinIcon =
-      post.pinDate == 0 ? Icons.place : Icons.pin_drop;
-
    bool expState = (ch.length < 6 && ch.length > 0)
                        || nUnreadChats != 0;
 
@@ -3756,9 +3762,9 @@ Widget makeChatsExp(
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-         backgroundColor: Theme.of(ctx).colorScheme.primary,
+         backgroundColor: Colors.grey,
          initiallyExpanded: expState,
-         leading: IconButton(icon: Icon(pinIcon), onPressed: onPinPost),
+         leading: Icon(Icons.chat, color: stl.colorScheme.primary),
          //key: GlobalKey(),
          //key: PageStorageKey<int>(post.id),
          title: title,
@@ -3784,18 +3790,21 @@ Widget wrapPostOnButton(
 
 Widget makeChatTab(
    BuildContext ctx,
-   final List<Post> posts,
-   final List<Tree> trees,
    final bool isFwdChatMsgs,
-   final bool isFav,
+   final Screen screen,
    final Node exDetailsTree,
    final Node inDetailsTree,
+   ExpandedPost expPost,
+   final List<Post> posts,
+   final List<Tree> trees,
    OnPressedFn3 onPressed,
    OnPressedFn3 onLongPressed,
-   OnPressedFn1 onDelPost,
-   OnPressedFn1 onPinPost,
+   OnPressedFn1 onDelPost1,
+   OnPressedFn1 onPinPost1,
    OnPressedFn5 onUserInfoPressed,
-   OnPressedFn3 onExpandImg,
+   OnPressedFn3 onExpandImg1,
+   OnPressedFn1 onExpandPost,
+   OnPressedFn1 onSharePost,
 ) {
    if (posts.length == 0)
       return makeEmptyScreenWidget();
@@ -3811,28 +3820,15 @@ Widget makeChatTab(
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-         Function onPinPost2 = () {onPinPost(i);};
-
-         Function onDelPost2 = () {onDelPost(i);};
-         IconData ic = Icons.delete_forever;
-         if (isFav) {
-            onDelPost2 = onPinPost2;
-            if (posts[i].pinDate == 0)
-               ic = Icons.place;
-            else
-               ic = Icons.pin_drop;
-         }
+         OnPressedFn0 onPinPost = () {onPinPost1(i);};
+         OnPressedFn0 onDelPost = () {onDelPost1(i);};
+         OnPressedFn1 onExpandImg = (int j) {onExpandImg1(i, j);};
 
          if (isFwdChatMsgs) {
             onUserInfoPressed = (var a, var b, var c){};
-            onPinPost2 = (){};
-            onDelPost2 = (){};
+            onPinPost = (){};
+            onDelPost = (){};
          }
-
-         Widget leading = IconButton(
-            icon: Icon(ic),
-            onPressed: onDelPost2,
-         );
 
          Widget title = Text(
             makeTreeItemStr(trees[0].root.first, posts[i].channel[0][0]),
@@ -3840,27 +3836,15 @@ Widget makeChatTab(
             overflow: TextOverflow.clip,
          );
 
-         List<Widget> foo = List<Widget>();
-
          // If the post contains no images, which should not happen,
          // we provide no expand image button.
-         Function onExpandImg2 = (int j) {onExpandImg(i, j);};
          if (posts[i].images.isEmpty)
-            onExpandImg2 = (int j){print('Error: post.images is empty.');};
-
-         foo.add(makeImgListView2(
-	       ctx,
-               posts[i],
-               BoxFit.cover,
-	       List<File>(),
-               onExpandImg2,
-	       (var ctx, int i){print('noop');},
-            ),
-         );
+            onExpandImg = (int j){print('Error: post.images is empty.');};
 
 	 Widget bbb = makeNewPost(
             ctx: ctx,
-            postExpStatus: 0,
+            postExpStatus: expPost.thisPost(i),
+	    screen: screen,
             snackbarStr: '',
             post: posts[i],
             exDetailsTree: exDetailsTree,
@@ -3868,36 +3852,19 @@ Widget makeChatTab(
             trees: trees,
             imgFiles: List<File>(),
             onAddPhoto: (var a, var b) {print('Noop10');},
-            onExpandImg: (var a) {print('Noop11');},
-            onExpandPost: () {print('Noop13');},
+            onExpandImg: onExpandImg,
+            onExpandPost: () {onExpandPost(i);},
             onAddPostToFavorite:() {print('Noop14');},
-	    onRemovePostPressed:() {print('Noop15');},
-	    onSharePostPressed: () {print('Noop16');},
+	    onDelPost: onDelPost,
+	    onSharePostPressed: () {onSharePost(i);},
 	    onStartChatPressed: () {print('Noop17');},
 	    onReportPostPressed:() {print('Noop18');},
+	    onPinPost: onPinPost,
 	 );
-
-         List<Widget> rows = assemblePostRows(
-            ctx,
-            posts[i],
-            trees,
-            exDetailsTree,
-            inDetailsTree,
-         );
-
-         foo.addAll(rows);
-
-         Widget infoExpansion = makePostInfoExpansion(
-            ctx,
-            putPostElemOnCard(ctx, foo, 0.0),
-            title,
-            leading,
-            posts[i].id
-         );
 
          Widget chatExpansion = makeChatsExp(
             ctx,
-            isFav,
+            screen == Screen.favorites,
             isFwdChatMsgs,
             DateTime.now().millisecondsSinceEpoch,
             posts[i],
@@ -3905,18 +3872,14 @@ Widget makeChatTab(
             (int j) {onPressed(i, j);},
             (int j) {onLongPressed(i, j);},
             (int a, int b) {onUserInfoPressed(ctx, a, b);},
-            onPinPost2,
+            onPinPost,
          );
 
          return Card(
             elevation: 2.0,
 	    margin: EdgeInsets.only(bottom: 15.0),
-	    color: stl.colorScheme.primary,
-	    child: Column(children: <Widget>
-	       //[ infoExpansion
-	       [ bbb
-	       , chatExpansion
-	       ]),
+	    color: Colors.grey,
+	    child: Column(children: <Widget> [bbb, chatExpansion ]),
 	 );
       },
    );
@@ -4600,6 +4563,36 @@ class OccaseState extends State<Occase>
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
+   void _onExpandChat(int i)
+   {
+      if (_expPost.index == i)
+	 _expPost.disableChat();
+      else
+	 _expPost.enableChat(i);
+   }
+
+   void _onExpandPostImpl(int i)
+   {
+      if (_expPost.index == i)
+	 _expPost.disablePost();
+      else
+	 _expPost.enablePost(i);
+   }
+
+   void _onClickOnPost(int i, int j)
+   {
+      if (j == 0) {
+	 setState(() { _onExpandPostImpl(i); });
+	 return;
+      }
+
+      if (j == 1) {
+	 print('Sharing post $i');
+         Share.share(g.param.share, subject: g.param.shareSubject);
+         return;
+      }
+   }
+
    // For the meaning of the index j see makeNewPostImpl.
    //
    // j = 0: Ignore post.
@@ -4613,22 +4606,12 @@ class OccaseState extends State<Occase>
       assert(_isOnPosts());
 
       if (j == 5) {
-	 setState(() {
-	    if (_expPost.index == i)
-	       _expPost.disableChat();
-	    else
-	       _expPost.enableChat(i);
-	 });
+	 setState(() { _onExpandChat(i); });
          return;
       }
 
       if (j == 4) {
-	 setState(() {
-	    if (_expPost.index == i)
-	       _expPost.disablePost();
-	    else
-	       _expPost.enablePost(i);
-	 });
+	 setState(() { _onExpandPostImpl(i); });
          return;
       }
 
@@ -6609,18 +6592,21 @@ class OccaseState extends State<Occase>
 
       bodies[0] = makeChatTab(
          ctx,
-         _ownPosts,
-         _trees,
          _lpChatMsgs.isNotEmpty,
-         false,
+	 Screen.posts,
          _exDetailsRoot,
          _inDetailsRoot,
+	 _expPost,
+         _ownPosts,
+         _trees,
          _onChatPressed,
          _onChatLP,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _onUserInfoPressed,
          _onExpandImg,
+	 (int i) {_onClickOnPost(i, 0);},
+	 (int i) {_onClickOnPost(i, 1);},
       );
 
       bodies[1] = makeNewPostLv(
@@ -6642,18 +6628,21 @@ class OccaseState extends State<Occase>
 
       bodies[2] = makeChatTab(
          ctx,
-         _favPosts,
-         _trees,
          _lpChatMsgs.isNotEmpty,
-         true,
+	 Screen.favorites,
          _exDetailsRoot,
          _inDetailsRoot,
+	 _expPost,
+         _favPosts,
+         _trees,
          _onChatPressed,
          _onChatLP,
          (int i) { _removePostDialog(ctx, i);},
          _onPinPost,
          _onUserInfoPressed,
          _onExpandImg,
+	 (int i) {_onClickOnPost(i, 0);},
+	 (int i) {_onClickOnPost(i, 1);},
       );
 
       Widget appBarLeading;
