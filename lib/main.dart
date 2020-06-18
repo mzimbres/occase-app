@@ -64,13 +64,27 @@ class ExpandedPost {
    void disablePost()
    {
       _type &= ~1;
-      _index = -1;
    }
 
    void disableChat()
    {
       _type &= ~2;
-      _index = -1;
+   }
+
+   void reversePostExp(int i)
+   {
+      if (_index == i && post())
+	 disablePost();
+      else
+	 enablePost(i);
+   }
+
+   void reverseChatExp(int i)
+   {
+      if (_index == i && chat())
+	 disableChat();
+      else
+	 enableChat(i);
    }
 
    void enablePost(int i)
@@ -752,7 +766,7 @@ Widget wrapOnDetailExpTitle(
    //Key key = UniqueKey();
 
    return Card(
-      color: Colors.grey,
+      color: stl.expTileCardColor,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
@@ -760,7 +774,7 @@ Widget wrapOnDetailExpTitle(
          data: makeExpTileThemeData(ctx),
          child: ExpansionTile(
              //key: key,
-             backgroundColor: Theme.of(ctx).colorScheme.primary,
+             backgroundColor: stl.expTileCardColor,
              title: title,
              children: children,
              initiallyExpanded: initiallyExpanded,
@@ -972,7 +986,7 @@ List<Widget> makeNewPostDetailScreen(
 
    all.add(wrapOnDetailExpTitle(
          ctx,
-         Text(g.param.postDescTitle),
+         Text(g.param.postDescTitle, style: stl.tsSubheadOnPrimary),
          <Widget>[wrapDetailRowOnCard(ctx, pad)],
          false,
       ),
@@ -2891,11 +2905,11 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
 ThemeData makeExpTileThemeData(BuildContext ctx)
 {
    return ThemeData(
-      accentColor: stl.colorScheme.primary,
+      accentColor: Colors.black,
       unselectedWidgetColor: stl.colorScheme.primary,
       textTheme: TextTheme(
          subhead: TextStyle(
-            color: stl.colorScheme.primary,
+            color: Colors.black,
          ),
       ),
    );
@@ -2978,8 +2992,8 @@ List<Widget> makePostButtons({
       padding: EdgeInsets.all(0.0),
       onPressed: onDelPost,
       icon: Icon(
-         Icons.cancel,
-         color: stl.colorScheme.primary,
+         Icons.clear,
+         color: Colors.grey,
       ),
    );
 
@@ -2988,7 +3002,7 @@ List<Widget> makePostButtons({
       onPressed: onSharePostPressed,
       color: stl.colorScheme.primary,
       icon: Icon(Icons.share,
-         color: stl.colorScheme.primary,
+         color: stl.colorScheme.secondary,
       ),
    );
 
@@ -3006,7 +3020,7 @@ List<Widget> makePostButtons({
       onPressed: onPinPost,
       icon: Icon(
          pinIcon,
-         color: stl.colorScheme.primary,
+         color: Colors.brown,
       ),
    );
 
@@ -3315,19 +3329,19 @@ Widget makeEmptyScreenWidget()
 
 Widget makeNewPostLv(
    BuildContext ctx,
-   int nNewPosts,
-   Node exDetailsTree,
-   Node inDetailsTree,
-   ExpandedPost expPost,
-   List<Post> posts,
-   List<Tree> trees,
-   OnPressedFn3 onExpandImg,
-   OnPressedFn2 onExpandPost,
-   OnPressedFn2 onAddPostToFavorite,
-   OnPressedFn2 onDelPost,
-   OnPressedFn2 onSharePostPressed,
-   OnPressedFn2 onStartChatPressed,
-   OnPressedFn2 onReportPostPressed,
+   final int nNewPosts,
+   final Node exDetailsTree,
+   final Node inDetailsTree,
+   final ExpandedPost expPost,
+   final List<Post> posts,
+   final List<Tree> trees,
+   final OnPressedFn3 onExpandImg,
+   final OnPressedFn2 onExpandPost,
+   final OnPressedFn2 onAddPostToFavorite,
+   final OnPressedFn2 onDelPost,
+   final OnPressedFn2 onSharePostPressed,
+   final OnPressedFn2 onStartChatPressed,
+   final OnPressedFn2 onReportPostPressed,
 ) {
    final int l = posts.length - nNewPosts;
    if (l == 0)
@@ -3762,9 +3776,9 @@ Widget makeChatsExp(
    return Theme(
       data: makeExpTileThemeData(ctx),
       child: ExpansionTile(
-         backgroundColor: Colors.grey,
+         backgroundColor: stl.expTileCardColor,
          initiallyExpanded: expState,
-         leading: Icon(Icons.chat, color: stl.colorScheme.primary),
+         leading: stl.favIcon,
          //key: GlobalKey(),
          //key: PageStorageKey<int>(post.id),
          title: title,
@@ -3878,7 +3892,7 @@ Widget makeChatTab(
          return Card(
             elevation: 2.0,
 	    margin: EdgeInsets.only(bottom: 15.0),
-	    color: Colors.grey,
+	    color: Colors.grey[200],
 	    child: Column(children: <Widget> [bbb, chatExpansion ]),
 	 );
       },
@@ -4565,18 +4579,12 @@ class OccaseState extends State<Occase>
 
    void _onExpandChat(int i)
    {
-      if (_expPost.index == i)
-	 _expPost.disableChat();
-      else
-	 _expPost.enableChat(i);
+      _expPost.reverseChatExp(i);
    }
 
    void _onExpandPostImpl(int i)
    {
-      if (_expPost.index == i)
-	 _expPost.disablePost();
-      else
-	 _expPost.enablePost(i);
+      _expPost.reversePostExp(i);
    }
 
    void _onClickOnPost(int i, int j)
@@ -4590,6 +4598,51 @@ class OccaseState extends State<Occase>
 	 print('Sharing post $i');
          Share.share(g.param.share, subject: g.param.shareSubject);
          return;
+      }
+   }
+
+   Future<void> _onMovePostToFav(int i) async
+   {
+      // We have to prevent the user from adding a chat twice. This can
+      // happen when he makes a new search, since in that case the
+      // lastPostId will be updated to 0.
+      final int k = _favPosts.indexWhere((e)
+	 { return e.id == _posts[i].id; });
+
+      if (k == -1) {
+	 _posts[i].status = 2;
+
+	 final int k = _posts[i].addChat(
+	    _posts[i].from,
+	    _posts[i].nick,
+	    _posts[i].avatar,
+	 );
+
+	 Batch batch = _db.batch();
+
+	 batch.rawInsert(
+	    sql.insertChatStOnPost,
+	    makeChatMetadataSql(_posts[i].chats[k], _posts[i].id),
+	 );
+
+	 batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
+
+	 await batch.commit(noResult: true, continueOnError: true);
+
+	 _favPosts.add(_posts[i]);
+	 _favPosts.sort(compPosts);
+
+	 // We should be using the animate function below, but there is no way
+	 // one can wait until the animation is ready. The is needed to be able to call
+	 // _onChatPressed(i, 0) correctly. I will let it commented out for now.
+
+	 // Use _tabCtrlChangeHandler() as listener
+	 //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
+
+	 _tabCtrl.index = 2;
+
+	 // The chat index in the fav screen is always zero.
+	 await _onChatPressed(i, 0);
       }
    }
 
@@ -4621,36 +4674,7 @@ class OccaseState extends State<Occase>
       }
 
       if (j == 1) {
-         // We have to prevent the user from adding a chat twice. This can
-         // happen when he makes a new search, since in that case the
-         // lastPostId will be updated to 0.
-         final int k = _favPosts.indexWhere((e)
-            { return e.id == _posts[i].id; });
-
-         if (k == -1) {
-            _posts[i].status = 2;
-
-            final int k = _posts[i].addChat(
-               _posts[i].from,
-               _posts[i].nick,
-               _posts[i].avatar,
-            );
-
-            Batch batch = _db.batch();
-
-            batch.rawInsert(
-               sql.insertChatStOnPost,
-               makeChatMetadataSql(_posts[i].chats[k], _posts[i].id),
-            );
-
-            batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
-
-            await batch.commit(noResult: true, continueOnError: true);
-
-            _favPosts.add(_posts[i]);
-            _favPosts.sort(compPosts);
-         }
-
+	 await _onMovePostToFav(i);
       } else {
          await _db.execute(sql.delPostWithId, [_posts[i].id]);
          // TODO: Send command to server to report if j = 2.
@@ -4742,6 +4766,8 @@ class OccaseState extends State<Occase>
 
       _lpChats.clear();
       _lpChatMsgs.clear();
+
+      _expPost.disableAll();
    }
 
    Future<void> _onFwdSendButton() async
@@ -5223,12 +5249,7 @@ class OccaseState extends State<Occase>
          return;
 
       if (i == 4) {
-	 setState(() {
-	    if (_expPost.post())
-	       _expPost.disablePost();
-	    else
-	       _expPost.enablePost(0);
-	 });
+	 setState(() { _expPost.reversePostExp(0); });
          return;
       }
 
@@ -6125,7 +6146,7 @@ class OccaseState extends State<Occase>
       // This function is meant to change the tab widgets when we
       // switch tab. This is needed to show the number of unread
       // messages.
-      setState(() { });
+      setState(() { print('Tab changed');});
    }
 
    int _getNUnreadFavChats()
@@ -6165,8 +6186,9 @@ class OccaseState extends State<Occase>
          return false;
       }
 
+      _tabCtrl.animateTo(1, duration: Duration(seconds: 1));
       setState(() { });
-      return true;
+      return false;
    }
 
    bool _hasLPChats()

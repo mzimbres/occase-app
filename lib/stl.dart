@@ -53,7 +53,7 @@ const TextStyle tsSubheadPrimary = TextStyle(
 
 const TextStyle tsSubheadOnPrimary = TextStyle(
    fontSize: subheadFontSize,
-   color: onPrimaryColor,
+   color: Colors.black,
 );
 
 //-------------------------------------------------------------------------
@@ -138,7 +138,7 @@ const List<IconData> newPostTabIcons = <IconData>
 , Icons.publish
 ];
 
-const Icon favIcon = Icon(Icons.chat, color: primaryColor);
+const Icon favIcon = Icon(Icons.chat, color: Colors.lightGreen);
 const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
 
 const List<IconData> filterTabIcons = <IconData>
@@ -168,4 +168,6 @@ List<Color> priceColors = <Color>
 final Color chatDateColor = Colors.grey[500];
 
 const double infoWidthFactor = 0.94;
+
+final Color expTileCardColor = Colors.grey[200];
 
