@@ -39,82 +39,6 @@ typedef OnPressedFn5 = void Function(BuildContext, int, int);
 
 enum Screen {posts, searches, favorites}
 
-bool expPost(int v)
-{
-   return v & 1 != 0;
-}
-
-bool expChat(int v)
-{
-   return v & 2 != 0;
-}
-
-class ExpandedPost {
-   int _index = -1;
-   int _type = 0;
-
-   int get index => _index;
-
-   void disableAll()
-   {
-      _type = 0;
-      _index = -1;
-   }
-
-   void disablePost()
-   {
-      _type &= ~1;
-   }
-
-   void disableChat()
-   {
-      _type &= ~2;
-   }
-
-   void reversePostExp(int i)
-   {
-      if (_index == i && post())
-	 disablePost();
-      else
-	 enablePost(i);
-   }
-
-   void reverseChatExp(int i)
-   {
-      if (_index == i && chat())
-	 disableChat();
-      else
-	 enableChat(i);
-   }
-
-   void enablePost(int i)
-   {
-      _type |= 1;
-      _index = i;
-   }
-
-   void enableChat(int i)
-   {
-      _type |= 2;
-      _index = i;
-   }
-
-   bool post()
-   {
-      return _index != -1 && (_type & 1) == 1;
-   }
-
-   bool chat()
-   {
-      return _index != -1 && (_type & 2) == 2;
-   }
-
-   int thisPost(int i)
-   {
-      return _index == i ? _type : 0;
-   }
-}
-
 Future<List<Tree>> readTreeFromAsset() async
 {
    // When the database is created, we also have to create the
@@ -1016,7 +940,6 @@ WillPopScope makeNewPostScreens(
    final Node inDetailsTree,
    final List<File> imgFiles,
    final bool filenamesTimerActive,
-   final int postExpStatus,
    Function onExDetail,
    Function onPostLeafPressed,
    Function onPostNodePressed,
@@ -1025,7 +948,6 @@ WillPopScope makeNewPostScreens(
    Function onInDetail,
    Function onRangeValueChanged,
    OnPressedFn2 onAddPhoto,
-   OnPressedFn4 onExpandPost,
    OnPressedFn4 onPublishPost,
    OnPressedFn4 onRemovePost,
 ) {
@@ -1048,7 +970,6 @@ WillPopScope makeNewPostScreens(
 	    if (i == 0)
 	       return makeNewPost(
 		  ctx: ctx,
-		  postExpStatus: postExpStatus,
 		  screen: Screen.searches,
 		  snackbarStr: g.param.cancelNewPost,
 		  post: post,
@@ -1058,12 +979,10 @@ WillPopScope makeNewPostScreens(
 		  imgFiles: imgFiles,
 		  onAddPhoto: onAddPhoto,
 		  onExpandImg: (int j){ print('Noop00'); },
-		  onExpandPost: () { onExpandPost(ctx); },
 		  onAddPostToFavorite: () { print('Noop01'); },
 		  onDelPost: () { print('Noop02');},
-		  onSharePostPressed: () { print('Noop03');},
-		  onStartChatPressed: () { print('Noop04');},
-		  onReportPostPressed: () { print('Noop05');},
+		  onSharePost: () { print('Noop03');},
+		  onReportPost: () { print('Noop05');},
 		  onPinPost: () { print('Noop06');},
 	       );
 
@@ -2996,8 +2915,8 @@ double makeImgHeight(BuildContext ctx, double r)
 List<Widget> makePostButtons({
    int pinDate,
    OnPressedFn0 onDelPost,
-   OnPressedFn0 onSharePostPressed,
-   OnPressedFn0 onStartChatPressed,
+   OnPressedFn0 onSharePost,
+   OnPressedFn0 onShowChatBox,
    OnPressedFn0 onPinPost,
 }) {
    IconButton remove = IconButton(
@@ -3011,7 +2930,7 @@ List<Widget> makePostButtons({
 
    IconButton share = IconButton(
       padding: EdgeInsets.all(0.0),
-      onPressed: onSharePostPressed,
+      onPressed: onSharePost,
       color: stl.colorScheme.primary,
       icon: Icon(Icons.share,
          color: stl.colorScheme.secondary,
@@ -3021,7 +2940,7 @@ List<Widget> makePostButtons({
    IconButton chat = IconButton(
       padding: EdgeInsets.all(0.0),
       icon: stl.favIcon,
-      onPressed: onStartChatPressed,
+      onPressed: onShowChatBox,
       color: stl.colorScheme.primary,
    );
 
@@ -3040,180 +2959,248 @@ List<Widget> makePostButtons({
    return <Widget>[remove, share, chat, pin];
 }
 
-Widget makeNewPostImpl(
-   BuildContext ctx,
-   int postExpStatus,
-   Screen screen,
-   Post post,
-   Node exDetailsTree,
-   Widget detailsWidget,
-   List<File> imgFiles,
-   List<Tree> trees,
-   OnPressedFn2 onAddPhoto,
-   OnPressedFn1 onExpandImg,
-   OnPressedFn0 onExpandPost,
-   OnPressedFn0 onAddPostToFavorite,
-   OnPressedFn0 onDelPost,
-   OnPressedFn0 onSharePost,
-   OnPressedFn0 onStartChat,
-   OnPressedFn0 onPinPost,
-) {
-   Text owner = Text(
-      post.nick,
-      maxLines: 1,
-      overflow: TextOverflow.clip,
-      style: TextStyle(
-	 fontSize: stl.listTileSubtitleFontSize,
-	 color: Colors.grey[600],
-	 fontWeight: FontWeight.normal,
-      ),
-   );
+class SizeAnimation extends StatefulWidget {
+   int milliseconds;
+   Screen screen;
+   Post post;
+   Node exDetailsTree;
+   Widget detailsWidget;
+   List<File> imgFiles;
+   List<Tree> trees;
+   OnPressedFn2 onAddPhoto;
+   OnPressedFn1 onExpandImg;
+   OnPressedFn0 onAddPostToFavorite;
+   OnPressedFn0 onDelPost;
+   OnPressedFn0 onSharePost;
+   OnPressedFn0 onPinPost;
 
-   final List<Widget> buttons = makePostButtons(
-      pinDate: post.pinDate,
-      onDelPost: onDelPost,
-      onSharePostPressed: onSharePost,
-      onStartChatPressed: onStartChat,
-      onPinPost: onPinPost,
-   );
+   @override
+   SizeAnimationState createState() => SizeAnimationState();
 
-   List<Widget> buttonWdgs = List<Widget>();
-   buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
+   SizeAnimation(
+   { @required this.milliseconds
+   , @required this.screen
+   , @required this.post
+   , @required this.exDetailsTree
+   , @required this.detailsWidget
+   , @required this.imgFiles
+   , @required this.trees
+   , @required this.onAddPhoto
+   , @required this.onExpandImg
+   , @required this.onAddPostToFavorite
+   , @required this.onDelPost
+   , @required this.onSharePost
+   , @required this.onPinPost
+   });
+}
 
-   if (screen == Screen.searches) {
-      buttonWdgs.add(Expanded(child: buttons[1]));
-      buttonWdgs.add(Expanded(child: buttons[2]));
-   } else {
-      buttonWdgs.add(Expanded(child: buttons[3]));
-      buttonWdgs.add(Expanded(child: buttons[0]));
-      buttonWdgs.add(Expanded(child: buttons[1]));
+class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMixin {
+   AnimationController _detailsCtrl;
+   AnimationController _chatCtrl;
+
+   @override
+   void dispose()
+   {
+      _detailsCtrl.dispose();
+      _chatCtrl.dispose();
+      super.dispose();
    }
 
-   Row buttonsRow = Row(children: buttonWdgs);
-
-   final double imgWidth = 0.37 * makeImgWidth(ctx);
-
-   Widget imgWdg;
-   if (post.images.isNotEmpty) {
-      Container img = Container(
-         //margin: const EdgeInsets.only(top: 10.0),
-         margin: const EdgeInsets.all(0.0),
-         child: makeNetImgBox(
-            imgWidth,
-            imgWidth,
-            post.images.first,
-            BoxFit.cover,
-         ),
+   @override
+   void initState()
+   {
+      super.initState();
+      _detailsCtrl = AnimationController(
+	 vsync: this,
+	 duration: Duration(milliseconds: widget.milliseconds),
       );
 
-      Widget kmText = makeTextWdg(makeRangeStr(post, 2), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
-      Widget priceText = makeTextWdg(makeRangeStr(post, 0), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+      _chatCtrl = AnimationController(
+	 vsync: this,
+	 duration: Duration(milliseconds: widget.milliseconds),
+      );
 
-      imgWdg = Stack(
-	 //alignment: Alignment.topLeft,
-	 children: <Widget>
-	 [ img
-	 , Positioned(
-	      left: 0.0,
-	      bottom: 0.0,
-	      child: Card(child: kmText,
-	         elevation: 0.0,
-	         color: Colors.white.withOpacity(0.7),
-	         margin: EdgeInsets.all(5.0),
-	      ),
-	   )
-	 , Positioned(
-	      left: 0.0,
-	      top: 0.0,
-	      child: Card(child: priceText,
-	         elevation: 0.0,
-	         color: Colors.white.withOpacity(0.7),
-	         margin: EdgeInsets.all(5.0),
-	      ),
-	   )
-	 ],
-      );
-   } else if (imgFiles.isNotEmpty) {
-      imgWdg = Image.file(imgFiles.last,
-         width: imgWidth,
-         height: imgWidth,
-         fit: BoxFit.cover,
-         filterQuality: FilterQuality.high,
-      );
-   } else {
-      Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
-      imgWdg = makeImgPlaceholder(
-         imgWidth,
-         imgWidth,
-         w,
-      );
+      _detailsCtrl.reverse();
+      _chatCtrl.reverse();
    }
 
-   List<Widget> row1List = List<Widget>();
+   void _onPressed(int i)
+   {
+      setState((){
+	 if (i == 0 || i == 1) {
+	    if (_detailsCtrl.status == AnimationStatus.dismissed) {
+	       _detailsCtrl.forward();
+	    } else if (_detailsCtrl.status == AnimationStatus.completed) {
+	       _detailsCtrl.reverse();
+	    }
+	 }
 
-   // The add a photo button should appear only when this function is
-   // called on the new posts screen. We determine that in the
-   // following way.
-   if (post.images.isEmpty && (imgFiles.length < cts.maxImgsPerPost)) {
-      Widget addImgWidget = makeAddOrRemoveWidget(
-         () {onAddPhoto(ctx, -1);},
-         Icons.add_a_photo,
-         stl.colorScheme.primary,
+	 if (i == 2) {
+	    if (_chatCtrl.status == AnimationStatus.dismissed) {
+	       _chatCtrl.forward();
+	    } else if (_chatCtrl.status == AnimationStatus.completed) {
+	       _chatCtrl.reverse();
+	    }
+	 }
+      });
+   }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      Text owner = Text(
+	 widget.post.nick,
+	 maxLines: 1,
+	 overflow: TextOverflow.clip,
+	 style: TextStyle(
+	    fontSize: stl.listTileSubtitleFontSize,
+	    color: Colors.grey[600],
+	    fontWeight: FontWeight.normal,
+	 ),
       );
 
-      Stack st = Stack(
-	 alignment: Alignment(0.0, 0.0),
-	 children: <Widget>
-	 [ imgWdg
-	 , Card(child: addImgWidget,
-	         elevation: 0.0,
-	         color: Colors.white.withOpacity(0.7),
-	         margin: EdgeInsets.all(0.0),
+      final List<Widget> buttons = makePostButtons(
+	 pinDate: widget.post.pinDate,
+	 onDelPost: widget.onDelPost,
+	 onSharePost: widget.onSharePost,
+	 onShowChatBox: () {_onPressed(2);},
+	 onPinPost: widget.onPinPost,
+      );
+
+      List<Widget> buttonWdgs = List<Widget>();
+      buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
+
+      if (widget.screen == Screen.searches) {
+	 buttonWdgs.add(Expanded(child: buttons[1]));
+	 buttonWdgs.add(Expanded(child: buttons[2]));
+      } else {
+	 buttonWdgs.add(Expanded(child: buttons[3]));
+	 buttonWdgs.add(Expanded(child: buttons[0]));
+	 buttonWdgs.add(Expanded(child: buttons[1]));
+      }
+
+      Row buttonsRow = Row(children: buttonWdgs);
+
+      final double imgWidth = 0.37 * makeImgWidth(ctx);
+
+      Widget imgWdg;
+      if (widget.post.images.isNotEmpty) {
+	 Container img = Container(
+	    //margin: const EdgeInsets.only(top: 10.0),
+	    margin: const EdgeInsets.all(0.0),
+	    child: makeNetImgBox(
+	       imgWidth,
+	       imgWidth,
+	       widget.post.images.first,
+	       BoxFit.cover,
+	    ),
+	 );
+
+	 Widget kmText = makeTextWdg(makeRangeStr(widget.post, 2), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+	 Widget priceText = makeTextWdg(makeRangeStr(widget.post, 0), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+
+	 imgWdg = Stack(
+	    //alignment: Alignment.topLeft,
+	    children: <Widget>
+	    [ img
+	    , Positioned(
+		 left: 0.0,
+		 bottom: 0.0,
+		 child: Card(child: kmText,
+		    elevation: 0.0,
+		    color: Colors.white.withOpacity(0.7),
+		    margin: EdgeInsets.all(5.0),
+		 ),
 	      )
-	 ],
-      );
+	    , Positioned(
+		 left: 0.0,
+		 top: 0.0,
+		 child: Card(child: priceText,
+		    elevation: 0.0,
+		    color: Colors.white.withOpacity(0.7),
+		    margin: EdgeInsets.all(5.0),
+		 ),
+	      )
+	    ],
+	 );
+      } else if (widget.imgFiles.isNotEmpty) {
+	 imgWdg = Image.file(widget.imgFiles.last,
+	    width: imgWidth,
+	    height: imgWidth,
+	    fit: BoxFit.cover,
+	    filterQuality: FilterQuality.high,
+	 );
+      } else {
+	 Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
+	 imgWdg = makeImgPlaceholder(
+	    imgWidth,
+	    imgWidth,
+	    w,
+	 );
+      }
 
-      row1List.add(st);
-   } else {
-      row1List.add(imgWdg);
-   }
+      List<Widget> row1List = List<Widget>();
 
-   final String locationStr = makeTreeItemStr(trees[0].root.first, post.channel[0][0]);
-   final String modelStr = makeTreeItemStr(trees[1].root.first, post.channel[1][0]);
-   final String dateStr = makeDateString2(post.date);
-   List<String> exDetailsNames = getExDetailsStrings(exDetailsTree, post);
+      // The add a photo button should appear only when this function is
+      // called on the new posts screen. We determine that in the
+      // following way.
+      if (widget.post.images.isEmpty && (widget.imgFiles.length < cts.maxImgsPerPost)) {
+	 Widget addImgWidget = makeAddOrRemoveWidget(
+	    () {widget.onAddPhoto(ctx, -1);},
+	    Icons.add_a_photo,
+	    stl.colorScheme.primary,
+	 );
 
-   Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
-   Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
-   Widget dataWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+	 Stack st = Stack(
+	    alignment: Alignment(0.0, 0.0),
+	    children: <Widget>
+	    [ imgWdg
+	    , Card(child: addImgWidget,
+		    elevation: 0.0,
+		    color: Colors.white.withOpacity(0.7),
+		    margin: EdgeInsets.all(0.0),
+		 )
+	    ],
+	 );
 
-   Widget s1 = makeTextWdg(exDetailsNames.first, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
-   Widget s2 = makeTextWdg(exDetailsNames.last, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+	 row1List.add(st);
+      } else {
+	 row1List.add(imgWdg);
+      }
 
-   final double widthCol2 = 0.58 * makeImgWidth(ctx);
+      final String locationStr = makeTreeItemStr(widget.trees[0].root.first, widget.post.channel[0][0]);
+      final String modelStr = makeTreeItemStr(widget.trees[1].root.first, widget.post.channel[1][0]);
+      final String dateStr = makeDateString2(widget.post.date);
+      List<String> exDetailsNames = getExDetailsStrings(widget.exDetailsTree, widget.post);
 
-   Column infoWdg = Column(children: <Widget>
-   [ Flexible(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
-   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
-   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
-   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
-   , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
-   , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
-   ]);
+      Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
+      Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget dataWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-   row1List.add(SizedBox(height: imgWidth, child: infoWdg));
+      Widget s1 = makeTextWdg(exDetailsNames.first, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget s2 = makeTextWdg(exDetailsNames.last, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-   List<Widget> rows = List<Widget>();
-   if (expPost(postExpStatus))
-      rows.add(detailsWidget);
+      final double widthCol2 = 0.58 * makeImgWidth(ctx);
 
-   rows.add(Row(children: row1List));
+      Column infoWdg = Column(children: <Widget>
+      [ Flexible(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
+      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
+      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
+      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
+      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
+      , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
+      ]);
 
-   if (expChat(postExpStatus)) {
+      row1List.add(SizedBox(height: imgWidth, child: infoWdg));
+
+      List<Widget> rows = List<Widget>();
+      rows.add(widget.detailsWidget);
+      rows.add(Row(children: row1List));
+
       ChatMetadata cm = ChatMetadata(
-        peer: post.from,
-	nick: post.nick,
-	avatar: post.avatar,
+	peer: widget.post.from,
+	nick: widget.post.nick,
+	avatar: widget.post.avatar,
 	date: DateTime.now().millisecondsSinceEpoch,
 	lastChatItem: ChatItem(),
       );
@@ -3226,26 +3213,56 @@ Widget makeNewPostImpl(
 	 '',
 	 stl.chatListTilePadding,
 	 2.0,
-	 onAddPostToFavorite,
-	 onAddPostToFavorite,
-	 onAddPostToFavorite,
+	 widget.onAddPostToFavorite,
+	 widget.onAddPostToFavorite,
+	 widget.onAddPostToFavorite,
       );
 
       rows.add(tmp);
-   }
 
-   return RaisedButton(
-      color: Colors.white,
-      onPressed: onExpandPost,
-      elevation: 2.0,
-      child: Column(children: rows),
-      padding: const EdgeInsets.all(0.0),
-   );
+      List<Widget> sss = List<Widget>();
+
+      Widget detailsWgd = SizeTransition(
+	 child: RaisedButton(
+	    color: Colors.white,
+	    onPressed: () {_onPressed(0);},
+	    elevation: 0.0,
+	    child: rows[0],
+	    padding: const EdgeInsets.all(0.0),
+	 ),
+	 sizeFactor: CurvedAnimation(
+	       curve: Curves.fastOutSlowIn,
+	       parent: _detailsCtrl,
+	 ),
+      );
+
+      sss.add(detailsWgd);
+
+      Widget postWdg = RaisedButton(
+	 color: Colors.white,
+	 onPressed: () {_onPressed(1);},
+	 elevation: 0.0,
+	 child: rows[1],
+	 padding: const EdgeInsets.all(0.0),
+      );
+
+      sss.add(postWdg);
+
+      Widget chatWdg = SizeTransition(
+	 child: rows[2],
+	 sizeFactor: CurvedAnimation(
+	       curve: Curves.fastOutSlowIn,
+	       parent: _chatCtrl,
+	 ),
+      );
+
+      sss.add(chatWdg);
+      return Column(children: sss);
+   }
 }
 
 Widget makeNewPost({
    BuildContext ctx,
-   final int postExpStatus,
    final Screen screen,
    final String snackbarStr,
    final Post post,
@@ -3255,12 +3272,10 @@ Widget makeNewPost({
    final List<File> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
-   OnPressedFn0 onExpandPost,
    OnPressedFn0 onAddPostToFavorite,
    OnPressedFn0 onDelPost,
-   OnPressedFn0 onSharePostPressed,
-   OnPressedFn0 onStartChatPressed,
-   OnPressedFn0 onReportPostPressed,
+   OnPressedFn0 onSharePost,
+   OnPressedFn0 onReportPost,
    OnPressedFn0 onPinPost,
 }) {
    assert(trees.length == 2);
@@ -3278,7 +3293,7 @@ Widget makeNewPost({
       post,
       BoxFit.cover,
       imgFiles,
-      (int j){onExpandPost();},
+      (int j){onExpandImg(j);},
       onAddPhoto,
    );
 
@@ -3286,7 +3301,7 @@ Widget makeNewPost({
 
    IconButton inapropriate = IconButton(
       padding: EdgeInsets.all(0.0),
-      onPressed: onReportPostPressed,
+      onPressed: onReportPost,
       icon: Icon(
          Icons.report,
          color: stl.colorScheme.primary,
@@ -3305,26 +3320,21 @@ Widget makeNewPost({
 
    rows.add(putPostElemOnCard(ctx, tmp, 4.0));
 
-   Widget w = makeNewPostImpl(
-      ctx,
-      postExpStatus,
-      screen,
-      post,
-      exDetailsTree,
-      putPostElemOnCard(ctx, rows, 0.0),
-      imgFiles,
-      trees,
-      onAddPhoto,
-      onExpandImg,
-      onExpandPost,
-      onAddPostToFavorite,
-      onDelPost,
-      onSharePostPressed,
-      onStartChatPressed,
-      onPinPost,
+   return SizeAnimation(
+     milliseconds: 1000,
+     screen: screen,
+     post: post,
+     exDetailsTree: exDetailsTree,
+     detailsWidget: putPostElemOnCard(ctx, rows, 0.0),
+     imgFiles: imgFiles,
+     trees: trees,
+     onAddPhoto: onAddPhoto,
+     onExpandImg: onExpandImg,
+     onAddPostToFavorite: onAddPostToFavorite,
+     onDelPost: onDelPost,
+     onSharePost: onSharePost,
+     onPinPost: onPinPost,
    );
-
-   return w;
 }
 
 Widget makeEmptyScreenWidget()
@@ -3344,16 +3354,13 @@ Widget makeNewPostLv(
    final int nNewPosts,
    final Node exDetailsTree,
    final Node inDetailsTree,
-   final ExpandedPost expPost,
    final List<Post> posts,
    final List<Tree> trees,
    final OnPressedFn3 onExpandImg,
-   final OnPressedFn2 onExpandPost,
    final OnPressedFn2 onAddPostToFavorite,
    final OnPressedFn2 onDelPost,
-   final OnPressedFn2 onSharePostPressed,
-   final OnPressedFn2 onStartChatPressed,
-   final OnPressedFn2 onReportPostPressed,
+   final OnPressedFn2 onSharePost,
+   final OnPressedFn2 onReportPost,
 ) {
    final int l = posts.length - nNewPosts;
    if (l == 0)
@@ -3374,7 +3381,6 @@ Widget makeNewPostLv(
          final int j = l - i - 1;
          return makeNewPost(
             ctx: ctx,
-	    postExpStatus: expPost.thisPost(j),
 	    screen: Screen.searches,
             snackbarStr: g.param.dissmissedPost,
             post: posts[j],
@@ -3384,12 +3390,10 @@ Widget makeNewPostLv(
             imgFiles: List<File>(),
             onAddPhoto: (var ctx, var i) {print('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(j, k);},
-            onExpandPost: () {onExpandPost(ctx, j);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, j);},
 	    onDelPost: () {onDelPost(ctx, j);},
-	    onSharePostPressed: () {onSharePostPressed(ctx, j);},
-	    onStartChatPressed: () {onStartChatPressed(ctx, j);},
-	    onReportPostPressed: () {onReportPostPressed(ctx, j);},
+	    onSharePost: () {onSharePost(ctx, j);},
+	    onReportPost: () {onReportPost(ctx, j);},
 	    onPinPost: (){print('Noop20');},
          );
       },
@@ -3684,7 +3688,7 @@ Widget makeChatListTile(
       leading: makeChatListTileLeading(
          chat.isLongPressed,
          avatar,
-         selectColor(int.parse(chat.peer)),
+         selectColor(chat.peer.length),
          onChatLeadingPressed,
       ),
       title: Text(
@@ -3820,7 +3824,6 @@ Widget makeChatTab(
    final Screen screen,
    final Node exDetailsTree,
    final Node inDetailsTree,
-   ExpandedPost expPost,
    final List<Post> posts,
    final List<Tree> trees,
    OnPressedFn3 onPressed,
@@ -3829,7 +3832,6 @@ Widget makeChatTab(
    OnPressedFn1 onPinPost1,
    OnPressedFn5 onUserInfoPressed,
    OnPressedFn3 onExpandImg1,
-   OnPressedFn1 onExpandPost,
    OnPressedFn1 onSharePost,
 ) {
    if (posts.length == 0)
@@ -3869,7 +3871,6 @@ Widget makeChatTab(
 
 	 Widget bbb = makeNewPost(
             ctx: ctx,
-            postExpStatus: expPost.thisPost(i),
 	    screen: screen,
             snackbarStr: '',
             post: posts[i],
@@ -3879,12 +3880,10 @@ Widget makeChatTab(
             imgFiles: List<File>(),
             onAddPhoto: (var a, var b) {print('Noop10');},
             onExpandImg: onExpandImg,
-            onExpandPost: () {onExpandPost(i);},
             onAddPostToFavorite:() {print('Noop14');},
 	    onDelPost: onDelPost,
-	    onSharePostPressed: () {onSharePost(i);},
-	    onStartChatPressed: () {print('Noop17');},
-	    onReportPostPressed:() {print('Noop18');},
+	    onSharePost: () {onSharePost(i);},
+	    onReportPost:() {print('Noop18');},
 	    onPinPost: onPinPost,
 	 );
 
@@ -4162,9 +4161,6 @@ class OccaseState extends State<Occase>
    String _fcmToken = '';
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-
-   // The index of the post that the user has expanded.
-   ExpandedPost _expPost = ExpandedPost();
 
    @override
    void initState()
@@ -4589,23 +4585,8 @@ class OccaseState extends State<Occase>
       await _db.execute(sql.updateRanges, [_cfg.ranges.join(' ')]);
    }
 
-   void _onExpandChat(int i)
-   {
-      _expPost.reverseChatExp(i);
-   }
-
-   void _onExpandPostImpl(int i)
-   {
-      _expPost.reversePostExp(i);
-   }
-
    void _onClickOnPost(int i, int j)
    {
-      if (j == 0) {
-	 setState(() { _onExpandPostImpl(i); });
-	 return;
-      }
-
       if (j == 1) {
 	 print('Sharing post $i');
          Share.share(g.param.share, subject: g.param.shareSubject);
@@ -4664,21 +4645,10 @@ class OccaseState extends State<Occase>
    // j = 1: Move to favorite.
    // j = 2: Report inapropriate.
    // j = 3: Share.
-   // j = 4: Show details widget.
-   // j = 5: Show chat box.
    Future<void> _onPostSelection(int i, int j) async
    {
+      print('$i $j');
       assert(_isOnPosts());
-
-      if (j == 5) {
-	 setState(() { _onExpandChat(i); });
-         return;
-      }
-
-      if (j == 4) {
-	 setState(() { _onExpandPostImpl(i); });
-         return;
-      }
 
       if (j == 3) {
          Share.share(g.param.share, subject: g.param.shareSubject);
@@ -4706,7 +4676,6 @@ class OccaseState extends State<Occase>
 	 _trees[0].restoreMenuStack();
 	 _trees[1].restoreMenuStack();
 	 _botBarIdx = 0;
-	 _expPost.disableAll();
       });
    }
 
@@ -4778,8 +4747,6 @@ class OccaseState extends State<Occase>
 
       _lpChats.clear();
       _lpChatMsgs.clear();
-
-      _expPost.disableAll();
    }
 
    Future<void> _onFwdSendButton() async
@@ -5259,11 +5226,6 @@ class OccaseState extends State<Occase>
 
       if (_filenamesTimer.isActive)
          return;
-
-      if (i == 4) {
-	 setState(() { _expPost.reversePostExp(0); });
-         return;
-      }
 
       assert(i != 2);
 
@@ -6510,7 +6472,6 @@ class OccaseState extends State<Occase>
             _inDetailsRoot,
             _imgFiles,
             _filenamesTimer.isActive,
-	    _expPost.thisPost(0),
             _onExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
@@ -6519,7 +6480,6 @@ class OccaseState extends State<Occase>
             _onNewPostInDetail,
             _onRangeValueChanged,
             _onAddPhoto,
-	    (var a) { _onSendNewPost(a, 4); },
 	    (var a) { _onSendNewPost(a, 1); },
 	    (var a) { _onSendNewPost(a, 0); },
          );
@@ -6630,7 +6590,6 @@ class OccaseState extends State<Occase>
 	 Screen.posts,
          _exDetailsRoot,
          _inDetailsRoot,
-	 _expPost,
          _ownPosts,
          _trees,
          _onChatPressed,
@@ -6639,7 +6598,6 @@ class OccaseState extends State<Occase>
          _onPinPost,
          _onUserInfoPressed,
          _onExpandImg,
-	 (int i) {_onClickOnPost(i, 0);},
 	 (int i) {_onClickOnPost(i, 1);},
       );
 
@@ -6648,15 +6606,12 @@ class OccaseState extends State<Occase>
          _nNewPosts,
          _exDetailsRoot,
          _inDetailsRoot,
-	 _expPost,
          _posts,
          _trees,
          _onExpandImg,
-	 (var a, int j) {_alertUserOnPressed(a, j, 4);},
 	 (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	 (var a, int j) {_alertUserOnPressed(a, j, 0);},
 	 (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 5);},
 	 (var a, int j) {_alertUserOnPressed(a, j, 2);},
       );
 
@@ -6666,7 +6621,6 @@ class OccaseState extends State<Occase>
 	 Screen.favorites,
          _exDetailsRoot,
          _inDetailsRoot,
-	 _expPost,
          _favPosts,
          _trees,
          _onChatPressed,
@@ -6675,7 +6629,6 @@ class OccaseState extends State<Occase>
          _onPinPost,
          _onUserInfoPressed,
          _onExpandImg,
-	 (int i) {_onClickOnPost(i, 0);},
 	 (int i) {_onClickOnPost(i, 1);},
       );
 
