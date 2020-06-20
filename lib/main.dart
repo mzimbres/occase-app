@@ -436,6 +436,7 @@ Scaffold makeRegisterScreen(
       onContinue,
       g.param.next,
       stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
    );
 
    Column col = Column(
@@ -498,6 +499,7 @@ Scaffold makeNtfScreen(
            () {onChange(-1, false);},
            g.param.ok,
 	   stl.colorScheme.secondary,
+	   stl.colorScheme.onSecondary,
         ),
       ]
    );
@@ -997,6 +999,7 @@ List<Widget> makeNewPostDetailScreen(
          (){onExDetail(-1, -1);},
          g.param.next,
 	 stl.colorScheme.secondary,
+	 stl.colorScheme.onSecondary,
       ),
    );
 
@@ -1070,7 +1073,8 @@ WillPopScope makeNewPostScreens(
 		     child: createRaisedButton(
 			() {onRemovePost(ctx);},
 			g.param.cancel,
-			Colors.grey[300],
+			stl.expTileCardColor,
+			Colors.black,
 		  ),
 	       );
 	    }
@@ -1082,6 +1086,7 @@ WillPopScope makeNewPostScreens(
 			() { onPublishPost(ctx); },
 			g.param.newPostAppBarTitle,
 			stl.colorScheme.secondary,
+			stl.colorScheme.onSecondary,
 		  ),
 	       );
 	    }
@@ -1191,14 +1196,16 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
           child: createRaisedButton(
              () {onPressed(ctx, 0);},
              g.param.newFiltersFinalScreenButton[0],
-	     stl.colorScheme.secondary,
-          ))
+	     stl.expTileCardColor,
+	     Colors.black,
+          ),)
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
              () {onPressed(ctx, 2);},
              g.param.newFiltersFinalScreenButton[2],
 	     stl.colorScheme.secondary,
+	     stl.colorScheme.onSecondary,
           ))
       ]
    );
@@ -1465,6 +1472,7 @@ FloatingActionButton makeFaButton(
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
          backgroundColor: Theme.of(ctx).colorScheme.secondary,
+	 mini: true,
          child: Icon(
             Icons.send,
             color: Theme.of(ctx).colorScheme.onSecondary,
@@ -1481,10 +1489,12 @@ FloatingActionButton makeFaButton(
 
    return FloatingActionButton(
       backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      mini: true,
       child: Icon(id,
          color: Theme.of(ctx).colorScheme.onSecondary,
       ),
-      onPressed: onNewPost);
+      onPressed: onNewPost,
+   );
 }
 
 Widget makeFAButtonMiddleScreen(
@@ -1498,6 +1508,7 @@ Widget makeFAButtonMiddleScreen(
       return FloatingActionButton(
          onPressed: onSearch,
          backgroundColor: stl.colorScheme.secondary,
+	 mini: true,
          child: Icon(
             Icons.search,
             color: stl.colorScheme.onSecondary,
@@ -2532,13 +2543,14 @@ Widget createRaisedButton(
    Function onPressed,
    final String txt,
    Color color,
+   Color textColor,
 ) {
    RaisedButton but = RaisedButton(
       child: Text(txt,
          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: stl.mainFontSize,
-            color: stl.colorScheme.onSecondary,
+            color: textColor,
          ),
       ),
       color: color,
@@ -3743,7 +3755,7 @@ Widget makeChatsExp(
       );
    }
 
-  if (isFav) {
+  if (ch.length < 5) {
      return Padding(
         child: Column(children: list),
         padding: EdgeInsets.only(top: stl.chatTilePadding),
@@ -3892,7 +3904,7 @@ Widget makeChatTab(
          return Card(
             elevation: 2.0,
 	    margin: EdgeInsets.only(bottom: 15.0),
-	    color: Colors.grey[200],
+	    color: Colors.grey[300],
 	    child: Column(children: <Widget> [bbb, chatExpansion ]),
 	 );
       },
