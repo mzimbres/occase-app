@@ -3321,7 +3321,7 @@ Widget makeNewPost({
    rows.add(putPostElemOnCard(ctx, tmp, 4.0));
 
    return SizeAnimation(
-     milliseconds: 1000,
+     milliseconds: 500,
      screen: screen,
      post: post,
      exDetailsTree: exDetailsTree,
@@ -4599,44 +4599,49 @@ class OccaseState extends State<Occase>
       // We have to prevent the user from adding a chat twice. This can
       // happen when he makes a new search, since in that case the
       // lastPostId will be updated to 0.
-      final int k = _favPosts.indexWhere((e)
-	 { return e.id == _posts[i].id; });
 
-      if (k == -1) {
-	 _posts[i].status = 2;
+      final int postId = _posts[i].id;
+      var f = (e) { return e.id == postId; };
 
-	 final int k = _posts[i].addChat(
-	    _posts[i].from,
-	    _posts[i].nick,
-	    _posts[i].avatar,
-	 );
+      if (_favPosts.indexWhere(f) != -1)
+	 return;
 
-	 Batch batch = _db.batch();
+      _posts[i].status = 2;
 
-	 batch.rawInsert(
-	    sql.insertChatStOnPost,
-	    makeChatMetadataSql(_posts[i].chats[k], _posts[i].id),
-	 );
+      final int k = _posts[i].addChat(
+	 _posts[i].from,
+	 _posts[i].nick,
+	 _posts[i].avatar,
+      );
 
-	 batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
+      Batch batch = _db.batch();
 
-	 await batch.commit(noResult: true, continueOnError: true);
+      batch.rawInsert(
+	 sql.insertChatStOnPost,
+	 makeChatMetadataSql(_posts[i].chats[k], _posts[i].id),
+      );
 
-	 _favPosts.add(_posts[i]);
-	 _favPosts.sort(compPosts);
+      batch.execute(sql.updatePostStatus, [2, _posts[i].id]);
 
-	 // We should be using the animate function below, but there is no way
-	 // one can wait until the animation is ready. The is needed to be able to call
-	 // _onChatPressed(i, 0) correctly. I will let it commented out for now.
+      await batch.commit(noResult: true, continueOnError: true);
 
-	 // Use _tabCtrlChangeHandler() as listener
-	 //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
+      _favPosts.add(_posts[i]);
+      _favPosts.sort(compPosts);
 
-	 _tabCtrl.index = 2;
+      // We should be using the animate function below, but there is no way
+      // one can wait until the animation is ready. The is needed to be able to call
+      // _onChatPressed(i, 0) correctly. I will let it commented out for now.
 
-	 // The chat index in the fav screen is always zero.
-	 await _onChatPressed(i, 0);
-      }
+      // Use _tabCtrlChangeHandler() as listener
+      //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
+
+      _tabCtrl.index = 2;
+
+      final int h = _favPosts.indexWhere(f);
+      assert(h != -1);
+
+      // The chat index in the fav screen is always zero.
+      await _onChatPressed(h, 0);
    }
 
    // For the meaning of the index j see makeNewPostImpl.
@@ -5287,8 +5292,8 @@ class OccaseState extends State<Occase>
    Future<void> _onChatPressedImpl(
       List<Post> posts,
       int i,
-      int j) async
-   {
+      int j,
+   ) async {
       if (_lpChats.isNotEmpty || _lpChatMsgs.isNotEmpty) {
          _onChatLPImpl(posts, i, j);
          setState(() { });
@@ -5296,6 +5301,7 @@ class OccaseState extends State<Occase>
       }
 
       _showChatJumpDownButton = false;
+      print('----> $i $j');
       Post post = posts[i];
       ChatMetadata chat = posts[i].chats[j];
 
