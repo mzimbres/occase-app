@@ -36,6 +36,8 @@ typedef OnPressedFn2 = void Function(BuildContext, int);
 typedef OnPressedFn3 = void Function(int, int);
 typedef OnPressedFn4 = void Function(BuildContext);
 typedef OnPressedFn5 = void Function(BuildContext, int, int);
+typedef OnPressedFn6 = void Function(int, RangeValues);
+typedef OnPressedFn7 = bool Function();
 
 enum Screen {posts, searches, favorites}
 
@@ -1130,30 +1132,51 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
    );
 }
 
-WillPopScope makeFiltersScreen(
-   BuildContext ctx,
-   Function onSendFilters,
-   Function onFilterDetail,
-   Function onFilterNodePressed,
-   Function onWillPopMenu,
-   Function onBotBarTaped,
-   Function onFilterLeafNodePressed,
-   final List<Tree> menu,
-   int filter,
-   int screen,
-   Node exDetailsFilterNodes,
-   List<int> ranges,
-   Function onRangeChanged)
-{
-   Widget wid;
-   Widget appBarTitleWidget = Text(
-      g.param.filterAppBarTitle,
-      style: stl.appBarLtTitle,
-   );
+Widget makePostAppBarWdg({
+   final int screen,
+   final List<Tree> trees,
+}) {
+   assert(screen < 4);
 
-   if (screen == 3) {
-      wid = makeNewFiltersEndWidget(ctx, onSendFilters);
-   } else if (screen == 2) {
+   if (screen == 3 || screen == 2)
+      return Text(
+	 g.param.filterAppBarTitle,
+	 style: stl.appBarLtTitle,
+      );
+
+   return ListTile(
+      dense: true,
+      title: Text(
+	 g.param.filterAppBarTitle,
+	 maxLines: 1,
+	 overflow: TextOverflow.clip,
+	 style: stl.appBarLtTitle,
+      ),
+      subtitle: Text(trees[screen].getStackNames(),
+	 maxLines: 1,
+	 overflow: TextOverflow.clip,
+	 style: stl.appBarLtSubtitle,
+      ),
+   );
+}
+
+Widget makeSearchScreenWdg({
+   BuildContext ctx,
+   final int filter,
+   final int screen,
+   final Node exDetailsFilterNodes,
+   final List<Tree> trees,
+   final List<int> ranges,
+   final OnPressedFn2 onSendFilters,
+   final OnPressedFn1 onFilterDetail,
+   final OnPressedFn1 onFilterNodePressed,
+   final OnPressedFn1 onFilterLeafNodePressed,
+   final OnPressedFn6 onRangeChanged,
+}) {
+   if (screen == 3)
+      return makeNewFiltersEndWidget(ctx, onSendFilters);
+
+   if (screen == 2) {
       List<Widget> foo = List<Widget>();
 
       final Widget vv = makeNewPostDetailExpTile(
@@ -1195,53 +1218,20 @@ WillPopScope makeFiltersScreen(
          foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], false));
       }
 
-      wid = ListView.builder(
+      return ListView.builder(
          padding: const EdgeInsets.all(3.0),
          itemCount: foo.length,
          itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
       );
-   } else {
-      wid = makeNewFilterListView(
-         ctx,
-         menu[screen].root.last,
-         onFilterLeafNodePressed,
-         onFilterNodePressed,
-         menu[screen].isFilterLeaf());
-
-      appBarTitleWidget = ListTile(
-         dense: true,
-         title: Text(
-            g.param.filterAppBarTitle,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: stl.appBarLtTitle,
-         ),
-         subtitle: Text(menu[screen].getStackNames(),
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: stl.appBarLtSubtitle,
-         ),
-      );
    }
 
-   AppBar appBar = AppBar(
-      title: appBarTitleWidget,
-      leading: IconButton(
-         icon: Icon(Icons.arrow_back),
-         onPressed: onWillPopMenu
-      ),
+   return makeNewFilterListView(
+      ctx,
+      trees[screen].root.last,
+      onFilterLeafNodePressed,
+      onFilterNodePressed,
+      trees[screen].isFilterLeaf(),
    );
-
-   return WillPopScope(
-       onWillPop: () async { return onWillPopMenu();},
-       child: Scaffold(
-           appBar: appBar,
-           body: wid,
-           bottomNavigationBar: makeBottomBarItems(
-              stl.filterTabIcons,
-              g.param.filterTabNames,
-              onBotBarTaped,
-              screen)));
 }
 
 Widget wrapDetailRowOnCard(BuildContext ctx, Widget body)
@@ -1417,35 +1407,33 @@ FloatingActionButton makeFaButton(
 }
 
 Widget makeFAButtonMiddleScreen(
-   BuildContext ctx,
-   Function onLoadNewPosts,
-   Function onSearch,
-   int nNewPosts,
-   int nPosts,
+   final bool onSearchScreen,
+   final int nNewPosts,
+   final OnPressedFn0 onLoadNewPosts,
+   final OnPressedFn0 onSearch,
 ) {
-   if (nPosts == 0) { // Implies nNewPosts = 0.
-      return FloatingActionButton(
-         onPressed: onSearch,
-         backgroundColor: stl.colorScheme.secondary,
-	 mini: true,
-         child: Icon(
-            Icons.search,
-            color: stl.colorScheme.onSecondary,
-         ),
-      );
-   }
-
-   if (nNewPosts == 0)
+   if (onSearchScreen)
       return null;
 
+   if (nNewPosts != 0)
+      return FloatingActionButton(
+	 //mini: true,
+	 //heroTag: null,
+	 onPressed: onLoadNewPosts,
+	 backgroundColor: stl.colorScheme.secondary,
+	 child: Icon(
+	    Icons.file_download,
+	    color: stl.colorScheme.onSecondary,
+	 ),
+      );
+
    return FloatingActionButton(
-      //mini: true,
-      //heroTag: null,
-      onPressed: onLoadNewPosts,
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      onPressed: onSearch,
+      backgroundColor: stl.colorScheme.secondary,
+      mini: true,
       child: Icon(
-         Icons.file_download,
-         color: Theme.of(ctx).colorScheme.onSecondary,
+	 Icons.search,
+	 color: stl.colorScheme.onSecondary,
       ),
    );
 }
@@ -4084,7 +4072,7 @@ class OccaseState extends State<Occase>
    int _newPostErrorCode = -1;
 
    // Similar to _newPostPressed but for the filter screen.
-   bool _newFiltersPressed = false;
+   bool _newSearchPressed = false;
 
    // The index of the tab we are currently in in the *new
    // post* or *Filters* screen. For example 0 for the localization
@@ -4288,7 +4276,7 @@ class OccaseState extends State<Occase>
    OccaseState()
    {
       _newPostPressed = false;
-      _newFiltersPressed = false;
+      _newSearchPressed = false;
       _botBarIdx = 0;
 
       getApplicationDocumentsDirectory().then((Directory docDir) async
@@ -4731,7 +4719,7 @@ class OccaseState extends State<Occase>
       if (trees[_botBarIdx].root.length == 1) {
          if (_botBarIdx <= leaveIdx){
             _newPostPressed = false;
-            _newFiltersPressed = false;
+            _newSearchPressed = false;
          } else {
             --_botBarIdx;
          }
@@ -6061,7 +6049,7 @@ class OccaseState extends State<Occase>
    Future<void>
    _onSendFilters(BuildContext ctx, int i) async
    {
-      _newFiltersPressed = false;
+      _newSearchPressed = false;
       if (i == 0) {
          setState(() { });
          return;
@@ -6205,7 +6193,7 @@ class OccaseState extends State<Occase>
    void _onSearchPressed()
    {
       setState(() {
-         _newFiltersPressed = true;
+         _newSearchPressed = true;
          _trees[0].restoreMenuStack();
          _trees[1].restoreMenuStack();
          // If you changes this, also change the index _onWillPopMenu
@@ -6491,26 +6479,6 @@ class OccaseState extends State<Occase>
          );
       }
 
-      if (_newFiltersPressed) {
-         // Below we use txt.exDetails[0][0], because the filter is
-         // common to all products.
-         return makeFiltersScreen(
-            ctx,
-            _onSendFilters,
-            _onFilterDetail,
-            _onFilterNodePressed,
-            () { return _onWillPopMenu(_trees, 1);},
-            _onBotBarTapped,
-            _onFilterLeafNodePressed,
-            _trees,
-            _cfg.anyOfFeatures,
-            _botBarIdx,
-            _exDetailsRoot.children[0].children[0],
-            _cfg.ranges,
-            _onRangeChanged,
-         );
-      }
-
       if (_expPostIdx != -1 && _expImgIdx != -1) {
          Post post;
          if (_isOnOwn())
@@ -6560,7 +6528,7 @@ class OccaseState extends State<Occase>
       onWillPops[1] = (){return true;};
       onWillPops[2] = _onChatsBackPressed;
 
-      String appBarTitle = g.param.appName;
+      Widget appBarTitle = Text(g.param.appName);
 
       List<Widget> fltButtons = List<Widget>(g.param.tabNames.length);
 
@@ -6573,11 +6541,10 @@ class OccaseState extends State<Occase>
       );
 
       fltButtons[1] = makeFAButtonMiddleScreen(
-         ctx,
+	 _newSearchPressed,
+         _nNewPosts,
          _onShowNewPosts,
          _onSearchPressed,
-         _nNewPosts,
-         _posts.length,
       );
 
       fltButtons[2] = makeFaButton(
@@ -6607,19 +6574,39 @@ class OccaseState extends State<Occase>
 	 (int i) {_onClickOnPost(i, 1);},
       );
 
-      bodies[1] = makeNewPostLv(
-         ctx,
-         _nNewPosts,
-         _exDetailsRoot,
-         _inDetailsRoot,
-         _posts,
-         _trees,
-         _onExpandImg,
-	 (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 0);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 2);},
-      );
+
+      if (_newSearchPressed) {
+         // Below we use txt.exDetails[0][0], because the filter is
+         // common to all products.
+	 bodies[1] = makeSearchScreenWdg(
+	       ctx: ctx,
+	       filter: _cfg.anyOfFeatures,
+	       screen: _botBarIdx,
+	       exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
+	       trees: _trees,
+	       ranges: _cfg.ranges,
+	       onSendFilters: _onSendFilters,
+	       onFilterDetail: _onFilterDetail,
+	       onFilterNodePressed: _onFilterNodePressed,
+	       onFilterLeafNodePressed: _onFilterLeafNodePressed,
+	       onRangeChanged: _onRangeChanged,
+	    );
+
+      } else {
+	 bodies[1] = makeNewPostLv(
+	    ctx,
+	    _nNewPosts,
+	    _exDetailsRoot,
+	    _inDetailsRoot,
+	    _posts,
+	    _trees,
+	    _onExpandImg,
+	    (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	    (var a, int j) {_alertUserOnPressed(a, j, 0);},
+	    (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	    (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	 );
+      }
 
       bodies[2] = makeChatTab(
          ctx,
@@ -6640,13 +6627,14 @@ class OccaseState extends State<Occase>
 
       Widget appBarLeading;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
-         appBarTitle = g.param.msgOnRedirectingChat;
+         appBarTitle = Text(g.param.msgOnRedirectingChat);
          appBarLeading = IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: _onBackFromChatMsgRedirect
          );
       }
 
+      BottomNavigationBar bottomNavBar;
       List<Widget> actions = List<Widget>();
       if (_isOnOwn() && _hasLPChats() && !_hasLPChatMsgs()) {
          actions = makeOnLongPressedActions(
@@ -6676,6 +6664,25 @@ class OccaseState extends State<Occase>
          );
 
          actions.add(clearPosts);
+
+	 if (_newSearchPressed) {
+	    bottomNavBar = makeBottomBarItems(
+	       stl.filterTabIcons,
+	       g.param.filterTabNames,
+	       _onBotBarTapped,
+	       _botBarIdx,
+	    );
+
+	    appBarTitle = makePostAppBarWdg(
+               screen: _botBarIdx,
+	       trees: _trees,
+	    );
+
+	    appBarLeading = IconButton(
+	       icon: Icon(Icons.arrow_back),
+	       onPressed: () { return _onWillPopMenu(_trees, 1);},
+	    );
+	 }
       }
 
       // We only add the global action buttons if
@@ -6699,8 +6706,8 @@ class OccaseState extends State<Occase>
             onPressed: () { _onNewPost(); },
          );
 
-         actions.add(publishButton);
-         actions.add(searchButton);
+         //actions.add(publishButton);
+         //actions.add(searchButton);
          actions.add(makeAppBarVertAction(_onAppBarVertPressed));
       }
 
@@ -6714,13 +6721,14 @@ class OccaseState extends State<Occase>
       return WillPopScope(
          onWillPop: () async { return onWillPops[_tabCtrl.index]();},
          child: Scaffold(
+	    bottomNavigationBar: bottomNavBar,
             body: NestedScrollView(
                controller: _scrollCtrl,
                headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled)
                {
                   return <Widget>[
                      SliverAppBar(
-                        title: Text(appBarTitle),
+                        title: appBarTitle,
                         pinned: true,
                         floating: true,
                         forceElevated: innerBoxIsScrolled,
