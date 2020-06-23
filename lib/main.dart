@@ -56,6 +56,11 @@ Future<List<Tree>> readTreeFromAsset() async
    return l;
 }
 
+Future<void> fcmOnBackgroundMessage(Map<String, dynamic> message) async
+{
+  print("onBackgroundMessage: $message");
+}
+
 String emailToGravatarHash(String email)
 {
    if (email.isEmpty)
@@ -4169,6 +4174,7 @@ class OccaseState extends State<Occase>
          onMessage: (Map<String, dynamic> message) async {
            print("onMessage: $message");
          },
+         onBackgroundMessage: fcmOnBackgroundMessage,
          onLaunch: (Map<String, dynamic> message) async {
            print("onLaunch: $message");
          },
@@ -4183,6 +4189,8 @@ class OccaseState extends State<Occase>
 
          print('Token: $token');
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) { _load(); });
    }
 
    @override
@@ -4278,12 +4286,6 @@ class OccaseState extends State<Occase>
       _newPostPressed = false;
       _newSearchPressed = false;
       _botBarIdx = 0;
-
-      getApplicationDocumentsDirectory().then((Directory docDir) async
-      {
-         g.docDir = docDir.path;
-         _load(docDir.path);
-      });
    }
 
    Future<void> _onCreateDb(Database db, int version) async
@@ -4334,7 +4336,7 @@ class OccaseState extends State<Occase>
       channel.sink.add(payload);
    }
 
-   Future<void> _load(final String docDir) async
+   Future<void> _load() async
    {
       try {
          final String text =
@@ -4358,6 +4360,7 @@ class OccaseState extends State<Occase>
 
          String exDetailsStr =
             await rootBundle.loadString('data/ex_details_menu.txt');
+
          _exDetailsRoot =
             treeReader(jsonDecode(exDetailsStr)).first.root.first;
 
@@ -4378,7 +4381,6 @@ class OccaseState extends State<Occase>
       }
 
       _goToRegScreen = _cfg.nick.isEmpty;
-      print('--------> $_goToRegScreen');
 
       _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
       _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
