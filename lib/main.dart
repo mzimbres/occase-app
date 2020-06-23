@@ -4709,10 +4709,9 @@ class OccaseState extends State<Occase>
       int leaveIdx,
    ) {
       // We may want to  split this function in two: One for the
-      // filters and one for the new post screen.
+      // search and one for the new post screen.
       if (_botBarIdx >= trees.length) {
-         --_botBarIdx;
-         setState(() { });
+         setState(() { --_botBarIdx; });
          return false;
       }
 
@@ -6525,7 +6524,13 @@ class OccaseState extends State<Occase>
 
       List<Function> onWillPops = List<Function>(g.param.tabNames.length);
       onWillPops[0] = _onChatsBackPressed;
-      onWillPops[1] = (){return true;};
+      onWillPops[1] = ()
+      {
+	 if (_newSearchPressed)
+	    return _onWillPopMenu(_trees, 1);
+	 return true;
+      };
+
       onWillPops[2] = _onChatsBackPressed;
 
       Widget appBarTitle = Text(g.param.appName);
