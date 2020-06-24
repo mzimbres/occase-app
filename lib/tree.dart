@@ -30,24 +30,6 @@ Map<String, dynamic> menuElemToMap(NodeInfo me)
    };
 }
 
-Future<List<NodeInfo>> loadMenu(Database db) async
-{
-  final List<Map<String, dynamic>> maps = await db.query('menu');
-
-  return List.generate(maps.length, (i)
-  {
-     NodeInfo me = NodeInfo(
-        code: maps[i]['code'],
-        depth: maps[i]['depth'],
-        leafReach: maps[i]['leaf_reach'],
-        name: maps[i]['name'],
-        index: maps[i]['idx'],
-     );
-
-     return me;
-  });
-}
-
 // To avoid using global variable for the language index I will will
 // set them lazily as they are used. Unfourtunately we cannot store
 // the index only once as the toString method has no argument.
@@ -284,6 +266,16 @@ Node parseTree(List<NodeInfo> elems, int menuDepth)
    return root;
 }
 
+class NodeInfo2 {
+   int leafReach;
+   String code;
+
+   NodeInfo2(
+   { this.leafReach
+   , this.code,
+   });
+}
+
 class Tree {
    int filterDepth;
 
@@ -305,7 +297,7 @@ class Tree {
    // It is assumed that this function will be called when the last
    // node in the stack is the parent of a leaf and k will be the
    // index of the leaf int the array of children of the top node.
-   void updateLeafReach(int k, Batch batch, int idx)
+   NodeInfo2 updateLeafReach(int k, int idx)
    {
       int d = 0;
       Node node = root.last.children[k];
@@ -325,16 +317,20 @@ class Tree {
          root[i].leafReach += d;
       }
 
-      final String code = node.code.join('.');
-      batch.rawUpdate(sql.updateLeafReach,
-                      [node.leafReach, code, idx]);
+      return NodeInfo2(
+	 leafReach: node.leafReach,
+	 code: node.code.join('.'),
+      );
    }
 
-   void updateLeafReachAll(Batch batch, int idx)
+   List<NodeInfo2> updateLeafReachAll(int idx)
    {
       final int l = root.last.children.length;
+      List<NodeInfo2> ret = List<NodeInfo2>();
       for (int i = 0; i < l; ++i)
-         updateLeafReach(i, batch, idx);
+	 ret.add(updateLeafReach(i, idx));
+
+      return ret;
    }
 
    bool isFilterLeaf()

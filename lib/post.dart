@@ -259,33 +259,6 @@ class ChatMetadata {
 
       return nick.substring(0, 2);
    }
-
-   Future<void> loadMsgs(
-      final int postId,
-      final String userId,
-      Database db,
-   ) async {
-      try {
-         final List<Map<String, dynamic>> maps =
-            await db.rawQuery(sql.selectChats, [postId, userId]);
-
-         msgs = List.generate(maps.length, (i)
-         {
-            return ChatItem(
-               rowid: maps[i]['rowid'],
-               peerRowid: maps[i]['peer_rowid'],
-               isRedirected: maps[i]['is_redirected'],
-               date: maps[i]['date'],
-               msg: maps[i]['msg'],
-               refersTo: maps[i]['refers_to'],
-               status: maps[i]['status'],
-            );
-         });
-
-      } catch (e) {
-         print(e);
-      }
-   }
 }
 
 /* Chat sorting criteria
@@ -646,56 +619,6 @@ Map<String, dynamic> postToMap(Post post)
    };
 }
 
-Future<List<Post>>
-loadPosts(Database db, List<int> rangesMinMax) async
-{
-   List<Map<String, dynamic>> maps =
-      await db.rawQuery(sql.loadPosts);
-
-   return List.generate(maps.length, (i)
-   {
-      Post post = Post(rangesMinMax: rangesMinMax);
-      post.dbId = maps[i]['rowid'];
-      post.id = maps[i]['id'];
-      post.date = maps[i]['date'];
-      post.pinDate = maps[i]['pin_date'];
-      post.status = maps[i]['status'];
-
-      final String body = maps[i]['body'];
-      Map<String, dynamic> bodyMap = jsonDecode(body);
-
-
-      post.from = bodyMap['from'];
-      post.nick = bodyMap['nick'];
-      post.avatar = bodyMap['avatar'];
-      post.channel = decodeChannel(jsonDecode(bodyMap['channel']));
-
-      post.exDetails = decodeList(
-         cts.maxExDetailSize,
-         1,
-         jsonDecode(bodyMap['ex_details']),
-      );
-
-      post.inDetails = decodeList(
-         cts.maxInDetailSize,
-         0,
-         jsonDecode(bodyMap['in_details']),
-      );
-
-      final int rangeDivsLength = rangesMinMax.length >> 1;
-      post.rangeValues = decodeList(
-         rangeDivsLength,
-         0,
-         jsonDecode(bodyMap['range_values']),
-      );
-
-      post.images = decodeList(1, '', bodyMap['images']) ?? <String>[];
-
-      post.description = bodyMap['description'] ?? '';
-      return post;
-   });
-}
-
 bool toggleLPChat(ChatMetadata ch)
 {
    final bool old = ch.isLongPressed;
@@ -825,10 +748,7 @@ bool findAndMarkChatApp(
    posts[p.i].chats[p.j].setAckStatus(rowid, status);
    posts[p.i].chats[p.j].lastChatItem.status = status;
 
-   batch.rawUpdate(
-      sql.updateAckStatus,
-      [status, rowid],
-   );
+   batch.rawUpdate(sql.updateAckStatus, [status, rowid]);
 
    batch.rawUpdate(
       sql.updateLastChat,
@@ -988,66 +908,6 @@ Map<String, dynamic> configToMap(Config cfg)
     , 'any_of_features': cfg.anyOfFeatures.toString()
     , 'notifications': jsonEncode(cfg.notifications.toJson())
     };
-}
-
-Future<List<Config>> loadConfig(Database db) async
-{
-  final List<Map<String, dynamic>> maps =
-     await db.query('config');
-
-  return List.generate(maps.length, (i)
-  {
-     String str = maps[i]['ranges'];
-     assert(str != null);
-     List<String> fields = str.split(' ');
-     List<int> ranges = List.generate(
-        fields.length,
-        (int i) { return int.parse(fields[i]); },
-     );
-
-     Config cfg = Config(
-        appId: maps[i]['app_id'],
-        appPwd: maps[i]['app_pwd'],
-        email: maps[i]['email'],
-        nick: maps[i]['nick'],
-        lastPostId: maps[i]['last_post_id'],
-        lastSeenPostId: maps[i]['last_seen_post_id'],
-        showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
-        showDialogOnReportPost: maps[i]['show_dialog_on_report_post'],
-        showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
-        ranges: ranges,
-        anyOfFeatures: int.parse(maps[i]['any_of_features']),
-        notifications: NtfConfig.fromJson(jsonDecode(maps[i]['notifications'])),
-     );
-
-     return cfg;
-  });
-}
-
-Future<List<ChatMetadata>>
-loadChatMetadata(Database db, int postId) async
-{
-  final List<Map<String, dynamic>> maps =
-     await db.rawQuery(sql.selectChatStatusItem, [postId]);
-
-  return List.generate(maps.length, (i)
-  {
-     final String str = maps[i]['last_chat_item'];
-     ChatItem lastChatItem = ChatItem();
-     if (str.isNotEmpty)
-         lastChatItem = ChatItem.fromJson(jsonDecode(str));
-
-     return ChatMetadata(
-        peer: maps[i]['user_id'],
-        nick: maps[i]['nick'],
-        avatar: maps[i]['avatar'],
-        date: maps[i]['date'],
-        pinDate: maps[i]['pin_date'],
-        chatLength: maps[i]['chat_length'],
-        nUnreadMsgs: maps[i]['n_unread_msgs'],
-        lastChatItem: lastChatItem,
-     );
-  });
 }
 
 List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)
