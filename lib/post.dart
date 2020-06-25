@@ -733,31 +733,6 @@ bool markPresence(
    return true;
 }
 
-bool findAndMarkChatApp(
-   final List<Post> posts,
-   final String peer,
-   final int postId,
-   final int status,
-   final int rowid,
-   Batch batch,
-) {
-   final IdxPair p = findChat(posts, peer, postId);
-   if (IsInvalidPair(p))
-      return false;
-
-   posts[p.i].chats[p.j].setAckStatus(rowid, status);
-   posts[p.i].chats[p.j].lastChatItem.status = status;
-
-   batch.rawUpdate(sql.updateAckStatus, [status, rowid]);
-
-   batch.rawUpdate(
-      sql.updateLastChat,
-      [jsonEncode(posts[p.i].chats[p.j].lastChatItem), postId, peer],
-   );
-
-   return true;
-}
-
 List<List<List<int>>> decodeChannel(List<dynamic> to)
 {
    List<List<List<int>>> channel = List<List<List<int>>>();

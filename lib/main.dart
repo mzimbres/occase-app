@@ -43,12 +43,12 @@ typedef OnPressedFn7 = bool Function();
 enum Screen {posts, searches, favorites}
 
 class Persistency {
-   Database db;
+   Database _db;
 
    Future<List<Config>> loadConfig() async
    {
       final List<Map<String, dynamic>> maps =
-         await db.query('config');
+         await _db.query('config');
 
       return List.generate(maps.length, (i)
       {
@@ -81,7 +81,7 @@ class Persistency {
 
    Future<List<NodeInfo>> loadTrees() async
    {
-      final List<Map<String, dynamic>> maps = await db.query('menu');
+      final List<Map<String, dynamic>> maps = await _db.query('menu');
 
       return List.generate(maps.length, (i)
       {
@@ -99,7 +99,7 @@ class Persistency {
 
    Future<List<Post>> loadPosts(List<int> rangesMinMax) async
    {
-      List<Map<String, dynamic>> maps = await db.rawQuery(sql.loadPosts);
+      List<Map<String, dynamic>> maps = await _db.rawQuery(sql.loadPosts);
 
       return List.generate(maps.length, (i)
       {
@@ -148,7 +148,7 @@ class Persistency {
    Future<List<ChatMetadata>> loadChatMetadata(int postId) async
    {
      final List<Map<String, dynamic>> maps =
-	await db.rawQuery(sql.selectChatStatusItem, [postId]);
+	await _db.rawQuery(sql.selectChatStatusItem, [postId]);
 
      return List.generate(maps.length, (i)
      {
@@ -173,7 +173,7 @@ class Persistency {
    Future<List<AppMsgQueueElem>> loadOutChatMsg() async
    {
      final List<Map<String, dynamic>> maps =
-	await db.rawQuery(sql.loadOutChats);
+	await _db.rawQuery(sql.loadOutChats);
 
      return List.generate(maps.length, (i)
      {
@@ -188,61 +188,61 @@ class Persistency {
    Future<void> updateShowDialogOnDelPost(bool v) async
    {
       final String str = v ? 'yes' : 'no';
-      db.execute(sql.updateShowDialogOnDelPost, [str]);
+      await _db.execute(sql.updateShowDialogOnDelPost, [str]);
    }
 
    Future<void> updateShowDialogOnSelectPost(bool v) async
    {
       final String str = v ? 'yes' : 'no';
-      db.execute(sql.updateShowDialogOnSelectPost, [str]);
+      await _db.execute(sql.updateShowDialogOnSelectPost, [str]);
    }
 
    Future<void> updateShowDialogOnReportPost(bool v) async
    {
       final String str = v ? 'yes' : 'no';
-      db.execute(sql.updateShowDialogOnReportPost, [str]);
+      await _db.execute(sql.updateShowDialogOnReportPost, [str]);
    }
 
    Future<void> clearPosts() async
    {
-      db.execute(sql.clearPosts, [1]);
+      await _db.execute(sql.clearPosts, [1]);
    }
 
    Future<void> updateRanges(List<int> ranges) async
    {
-      db.execute(sql.updateRanges, [ranges.join(' ')]);
+      await _db.execute(sql.updateRanges, [ranges.join(' ')]);
    }
 
    Future<void> delPostWithId(int id) async
    {
-      db.execute(sql.delPostWithId, [id]);
+      await _db.execute(sql.delPostWithId, [id]);
    }
 
    Future<void> updateLastSeenPostId(int id) async
    {
-      db.execute(sql.updateLastSeenPostId, [id]);
+      await _db.execute(sql.updateLastSeenPostId, [id]);
    }
 
    Future<void> updateNUnreadMsgs(int postId, String peer) async
    {
-      db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
+      await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
 
    Future<int> insertPost(Post post, ConflictAlgorithm v) async
    {
-      return db.insert('posts', postToMap(post), conflictAlgorithm: v);
+      return await _db.insert('posts', postToMap(post), conflictAlgorithm: v);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async
    {
-      db.execute(sql.updatePostPinDate, [pinDate, postId]);
+      await _db.execute(sql.updatePostPinDate, [pinDate, postId]);
    }
 
    Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
    {
       try {
 	 final List<Map<String, dynamic>> maps =
-	    await db.rawQuery(sql.selectChats, [postId, userId]);
+	    await _db.rawQuery(sql.selectChats, [postId, userId]);
 
 	 return List.generate(maps.length, (i)
 	 {
@@ -266,12 +266,12 @@ class Persistency {
 
    Future<int> insertOutChatMsg(int isChat, String payload) async
    {
-      return db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
+      return await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
    }
 
    Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
    {
-      return db.insert(
+      return await _db.insert(
 	 'chats',
 	 makeChatItemToMap(postId, peer, ci),
 	 conflictAlgorithm: ConflictAlgorithm.replace,
@@ -280,7 +280,7 @@ class Persistency {
 
    Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
    {
-      db.rawInsert(sql.insertOrReplaceChatOnPost, makeChatMetadataSql(cm, postId));
+      await _db.rawInsert(sql.insertOrReplaceChatOnPost, makeChatMetadataSql(cm, postId));
    }
 
    Future<void> _onCreateDb(Database a, int version) async
@@ -323,7 +323,7 @@ class Persistency {
 
    Future<void> open() async
    {
-      db = await openDatabase(
+      _db = await openDatabase(
 	 p.join(await getDatabasesPath(), 'main.db'),
 	 readOnly: false,
 	 onCreate: _onCreateDb,
@@ -333,32 +333,32 @@ class Persistency {
 
    Future<int> deleteChatStElem(int postId, String peer) async
    {
-      return db.rawDelete(sql.deleteChatStElem, [postId, peer]);
+      return await _db.rawDelete(sql.deleteChatStElem, [postId, peer]);
    }
 
    Future<void> updateEmail(String email) async
    {
-      db.execute(sql.updateEmail, [email]);
+      await _db.execute(sql.updateEmail, [email]);
    }
 
    Future<void> updateNick(String nick) async
    {
-      db.execute(sql.updateNick, [nick]);
+      await _db.execute(sql.updateNick, [nick]);
    }
 
    Future<void> updateNotifications(String str) async
    {
-      db.execute(sql.updateNotifications, [str]);
+      await _db.execute(sql.updateNotifications, [str]);
    }
 
    Future<void> updateAnyOfFeatures(String str) async
    {
-      db.execute(sql.updateAnyOfFeatures, [str]);
+      await _db.execute(sql.updateAnyOfFeatures, [str]);
    }
 
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
    {
-      Batch batch = db.batch();
+      Batch batch = _db.batch();
       batch.rawInsert(sql.insertChatStOnPost, makeChatMetadataSql(cm, postId));
       batch.execute(sql.updatePostStatus, [2, postId]);
       await batch.commit(noResult: true, continueOnError: true);
@@ -370,7 +370,7 @@ class Persistency {
       String peer,
       ChatItem ci,
    ) async {
-      await db.transaction((txn) async {
+      await _db.transaction((txn) async {
          Batch batch = txn.batch();
          batch.rawInsert(
             sql.insertOrReplaceChatOnPost,
@@ -392,22 +392,22 @@ class Persistency {
 
    Future<void> updateAppCredentials(String appId, String appPwd) async
    {
-      db.execute(sql.updateAppCredentials, [appId, appPwd]);
+      await _db.execute(sql.updateAppCredentials, [appId, appPwd]);
    }
 
    Future<void> updateLastPostId(int id) async
    {
-      db.execute(sql.updateLastPostId, [id]);
+      await _db.execute(sql.updateLastPostId, [id]);
    }
 
    Future<void> updateLeafReach(NodeInfo2 v, int idx) async
    {
-      db.rawUpdate(sql.updateLeafReach, [v.leafReach, v.code, idx]);
+      await _db.rawUpdate(sql.updateLeafReach, [v.leafReach, v.code, idx]);
    }
 
    Future<void> updateLeafReach2(List<NodeInfo2> list, int idx) async
    {
-      Batch batch = db.batch();
+      Batch batch = _db.batch();
       list.forEach((v){
 	 batch.rawUpdate(sql.updateLeafReach, [v.leafReach, v.code, idx]);
       });
@@ -416,12 +416,30 @@ class Persistency {
 
    Future<void> delPostWithRowid(int dbId) async
    {
-      db.execute(sql.delPostWithRowid, [dbId]);
+      await _db.execute(sql.delPostWithRowid, [dbId]);
    }
 
    Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
    {
-      db.execute(sql.updatePostOnAck, [status, id, date, dbId]);
+      await _db.execute(sql.updatePostOnAck, [status, id, date, dbId]);
+   }
+
+   Future<void> updateAckStatus(
+      ChatItem ci,
+      int status,
+      int rowid,
+      int postId,
+      String from,
+   ) async {
+      Batch batch = _db.batch();
+      batch.rawUpdate(sql.updateAckStatus, [status, rowid]);
+      batch.rawUpdate(sql.updateLastChat, [jsonEncode(ci), postId, from]);
+      await batch.commit(noResult: true, continueOnError: true);
+   }
+
+   Future<void> deleteOutChatMsg(int rowid) async
+   {
+      await _db.rawDelete(sql.deleteOutChatMsg, [rowid]);
    }
 }
 
@@ -5800,7 +5818,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onServerAck(Map<String, dynamic> ack, Batch batch)
+   Future<void> _onServerAck(Map<String, dynamic> ack) async
    {
       try {
          assert(_appMsgQueue.first.sent);
@@ -5808,19 +5826,13 @@ class OccaseState extends State<Occase>
 
          final String res = ack['result'];
 
-         batch.rawDelete(sql.deleteOutChatMsg, [_appMsgQueue.first.rowid]);
+         await _persistency.deleteOutChatMsg(_appMsgQueue.first.rowid);
 
          final bool isChat = _appMsgQueue.first.isChat == 1;
          _appMsgQueue.removeFirst();
 
          if (res == 'ok' && isChat) {
-            _onChatAck(
-               ack['from'],
-               ack['post_id'],
-               <int>[ack['ack_id']],
-               1,
-               batch,
-            );
+            await _onChatAck(ack['from'], ack['post_id'], <int>[ack['ack_id']], 1);
             setState(() { });
          }
 
@@ -5996,55 +6008,53 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   void _onChatAck(
+   Future<void> _onChatAck(
       final String from,
       final int postId,
       final List<int> rowids,
       final int status,
-      Batch batch,
-   ) {
+   ) async {
+      List<Post> posts = _favPosts;
+      IdxPair p = findChat(posts, from, postId);
+      if (IsInvalidPair(p)) {
+	 posts = _ownPosts;
+	 p = findChat(_ownPosts, from, postId);
+      }
+
+      if (IsInvalidPair(p)) {
+	 print('Chat not found: from = $from, postId = $postId');
+	 return;
+      }
+
       for (int rowid in rowids) {
-         bool b = findAndMarkChatApp(
-            _favPosts,
-            from,
-            postId,
-            status,
-            rowid,
-            batch,
-         );
+	 final ChatMetadata cm = posts[p.i].chats[p.j];
+	 cm.setAckStatus(rowid, status);
+	 cm.lastChatItem.status = status;
 
-         if (!b) {
-            b = findAndMarkChatApp(
-               _ownPosts,
-               from,
-               postId,
-               status,
-               rowid,
-               batch,
-            );
-         }
+	 // Typically there won't be many rowids in this loop so it is fine to
+	 // use await here. The ideal case however is to offer a List<ChatItem>
+	 // interface in Persistency and use batch there.
 
-         if (!b)
-            print('Chat not found: from = $from, postId = $postId');
+	 await _persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
       }
    }
 
-   void _onMessage(Map<String, dynamic> ack, Batch batch)
+   Future<void> _onMessage(Map<String, dynamic> ack) async
    {
       final String from = ack['from'];
       final String type = ack['type'];
       final int postId = ack['post_id'];
 
       if (type == 'chat') {
-         _onChat(ack, from, postId, ack['is_redirected']);
+         await _onChat(ack, from, postId, ack['is_redirected']);
       } else if (type == 'server_ack') {
-         _onServerAck(ack, batch);
+         await _onServerAck(ack);
       } else if (type == 'chat_ack_received') {
          final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
-         _onChatAck(from, postId, rowids, 2, batch);
+         await _onChatAck(from, postId, rowids, 2);
       } else if (type == 'chat_ack_read') {
          final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
-         _onChatAck(from, postId, rowids, 3, batch);
+         await _onChatAck(from, postId, rowids, 3);
       }
 
       setState((){});
@@ -6198,7 +6208,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onWSDataImpl(Batch batch) async
+   Future<void> _onWSDataImpl() async
    {
       while (_wsMsgQueue.isNotEmpty) {
          var msg = _wsMsgQueue.removeFirst();
@@ -6208,7 +6218,7 @@ class OccaseState extends State<Occase>
          if (cmd == "presence") {
             _onPresence(ack);
          } else if (cmd == "message") {
-            _onMessage(ack, batch);
+            await _onMessage(ack);
          } else if (cmd == "login_ack") {
             _onLoginAck(ack, msg);
          } else if (cmd == "subscribe_ack") {
@@ -6218,7 +6228,7 @@ class OccaseState extends State<Occase>
          } else if (cmd == "publish_ack") {
             await _onPublishAck(ack);
          } else if (cmd == "delete_ack") {
-            _onServerAck(ack, batch);
+            await _onServerAck(ack);
          } else if (cmd == "register_ack") {
             await _onRegisterAck(ack, msg);
          } else if (cmd == "filenames_ack") {
@@ -6234,11 +6244,8 @@ class OccaseState extends State<Occase>
       print(msg);
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
-      if (isEmpty) {
-         Batch batch = _persistency.db.batch();
-         await _onWSDataImpl(batch);
-         await batch.commit(noResult: true, continueOnError: true);
-      }
+      if (isEmpty)
+         await _onWSDataImpl();
    }
 
    void _onWSError(error)
