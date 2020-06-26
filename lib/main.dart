@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:collection';
 
-import 'package:web_socket_channel/io.dart';
+import 'dart:io'
+       if (dart.library.io) 'package:web_socket_channel/io.dart'
+       if (dart.library.html) 'package:web_socket_channel/html.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
@@ -41,6 +43,179 @@ typedef OnPressedFn6 = void Function(int, RangeValues);
 typedef OnPressedFn7 = bool Function();
 
 enum Screen {posts, searches, favorites}
+
+class Persistency2 {
+   int insertPostId = 0;
+   int chatRowId = 0;
+
+   Future<List<Config>> loadConfig() async
+   {
+      return List<Config>();
+   }
+
+   Future<List<NodeInfo>> loadTrees() async
+   {
+      List<Tree> trees = await readTreeFromAsset();
+
+      List<NodeInfo> elems = List<NodeInfo>();
+      for (int i = 0; i < trees.length; ++i)
+         elems.addAll(makeMenuElems(trees[i].root.first, i, 1000));
+      return elems;
+   }
+
+   Future<List<Post>> loadPosts(List<int> rangesMinMax) async
+   {
+      return List<Post>();
+   }
+
+   Future<List<ChatMetadata>> loadChatMetadata(int postId) async
+   {
+      return List<ChatMetadata>();
+   }
+
+   Future<List<AppMsgQueueElem>> loadOutChatMsg() async
+   {
+      return List<AppMsgQueueElem>();
+   }
+
+   Future<void> updateShowDialogOnDelPost(bool v) async
+   {
+   }
+
+   Future<void> updateShowDialogOnSelectPost(bool v) async
+   {
+   }
+
+   Future<void> updateShowDialogOnReportPost(bool v) async
+   {
+   }
+
+   Future<void> clearPosts() async
+   {
+   }
+
+   Future<void> updateRanges(List<int> ranges) async
+   {
+   }
+
+   Future<void> delPostWithId(int id) async
+   {
+   }
+
+   Future<void> updateLastSeenPostId(int id) async
+   {
+   }
+
+   Future<void> updateNUnreadMsgs(int postId, String peer) async
+   {
+   }
+
+   Future<int> insertPost(Post post, ConflictAlgorithm v) async
+   {
+      return ++insertPostId;
+   }
+
+   Future<void> updatePostPinDate(int pinDate, int postId) async
+   {
+   }
+
+   Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
+   {
+      return List<ChatItem>();
+   }
+
+   Future<int> insertOutChatMsg(int isChat, String payload) async
+   {
+      return ++chatRowId;
+   }
+
+   Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
+   {
+      return ++chatRowId;
+   }
+
+   Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
+   {
+   }
+
+   Future<void> _onCreateDb(Database a, int version) async
+   {
+   }
+
+   Future<void> open() async
+   {
+   }
+
+   Future<int> deleteChatStElem(int postId, String peer) async
+   {
+      return 1;
+   }
+
+   Future<void> updateEmail(String email) async
+   {
+   }
+
+   Future<void> updateNick(String nick) async
+   {
+   }
+
+   Future<void> updateNotifications(String str) async
+   {
+   }
+
+   Future<void> updateAnyOfFeatures(String str) async
+   {
+   }
+
+   Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
+   {
+   }
+
+   Future<void> insertChatOnPost3(
+      int postId,
+      ChatMetadata chat,
+      String peer,
+      ChatItem ci,
+   ) async {
+   }
+
+   Future<void> updateAppCredentials(String appId, String appPwd) async
+   {
+   }
+
+   Future<void> updateLastPostId(int id) async
+   {
+   }
+
+   Future<void> updateLeafReach(NodeInfo2 v, int idx) async
+   {
+   }
+
+   Future<void> updateLeafReach2(List<NodeInfo2> list, int idx) async
+   {
+   }
+
+   Future<void> delPostWithRowid(int dbId) async
+   {
+   }
+
+   Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
+   {
+   }
+
+   Future<void> updateAckStatus(
+      ChatItem ci,
+      int status,
+      int rowid,
+      int postId,
+      String from,
+   ) async {
+   }
+
+   Future<void> deleteOutChatMsg(int rowid) async
+   {
+   }
+}
 
 class Persistency {
    Database _db;
@@ -2023,8 +2198,8 @@ ListView makeChatMsgListView(
    ChatMetadata ch,
    Function onChatMsgLongPressed,
    Function onDragChatMsg,
-   String ownNick,)
-{
+   String ownNick,
+) {
    final int nMsgs = ch.msgs.length;
    final int shift = ch.divisorUnreadMsgs == 0 ? 0 : 1;
 
@@ -4508,6 +4683,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    FocusNode _chatFocusNode;
 
+
+   //HtmlWebSocketChannel channel;
    IOWebSocketChannel channel;
    
    Persistency _persistency;
@@ -4771,21 +4948,28 @@ class OccaseState extends State<Occase>
 
    void _stablishNewConnection(String fcmToken)
    {
-      channel = IOWebSocketChannel.connect(cts.dbHost);
-      channel.stream.listen(
-         _onWSData,
-         onError: _onWSError,
-         onDone: _onWSDone,
-      );
+      try {
+	 // For the web
+	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 channel = IOWebSocketChannel.connect(cts.dbHost);
+	 channel.stream.listen(
+	    _onWSData,
+	    onError: _onWSError,
+	    onDone: _onWSDone,
+	 );
 
-      final String cmd = makeConnCmd(
-         _cfg.appId,
-         _cfg.appPwd,
-         fcmToken,
-         _cfg.notifications.getFlag(),
-      );
+	 final String cmd = makeConnCmd(
+	    _cfg.appId,
+	    _cfg.appPwd,
+	    fcmToken,
+	    _cfg.notifications.getFlag(),
+	 );
 
-      channel.sink.add(cmd);
+	 channel.sink.add(cmd);
+      } catch (e) {
+	 print('Unable to stablish ws connection to server.');
+	 print(e);
+      }
    }
 
    Future<void> _setDialogPref(final int i, bool v) async
@@ -5601,9 +5785,9 @@ class OccaseState extends State<Occase>
       }
 
       _showChatJumpDownButton = false;
-      print('----> $i $j');
       Post post = posts[i];
       ChatMetadata chat = posts[i].chats[j];
+      print('----> $chat');
 
       if (!chat.isLoaded())
          chat.msgs = await _persistency.loadChatMsgs(post.id, chat.peer);
