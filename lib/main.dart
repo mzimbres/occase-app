@@ -4552,6 +4552,200 @@ class DialogWithOpState extends State<DialogWithOp> {
 
 //_____________________________________________________________________
 
+class AppState {
+   Config cfg = Config();
+
+   // The trees holding the locations and products trees.
+   List<Tree> trees = List<Tree>();
+
+   // The ex details tree root node.
+   Node exDetailsRoot;
+
+   // The in details tree root node.
+   Node inDetailsRoot;
+
+   // The list of posts received from the server. Our own posts that the
+   // server echoes back to us (if we are subscribed to the channel)
+   // will be filtered out.
+   List<Post> posts = List<Post>();
+
+   // The list of posts the user has selected in the posts screen.
+   // They are moved from posts to here.
+   List<Post> favPosts = List<Post>();
+
+   // Posts the user wrote itself and sent to the server. One issue we
+   // have to observe is that if the user is subscribed to the channel
+   // the post belongs to, it will be received back and shouldn't be
+   // displayed or duplicated on this list. The posts received from
+   // the server will not be inserted in posts.
+   //
+   // The only posts inserted here are those that have been acked with
+   // ok by the server, before that they will live in outPostsQueue
+   List<Post> ownPosts = List<Post>();
+
+   // Posts sent to the server that haven't been acked yet. At the
+   // moment this queue will contain only one element. It is needed if
+   // to handle the case where we go offline between a publish and a
+   // publish_ack.
+   Queue<Post> outPostsQueue = Queue<Post>();
+
+   // Stores chat messages that cannot be lost in case the connection
+   // to the server is lost. 
+   Queue<AppMsgQueueElem> appMsgQueue = Queue<AppMsgQueueElem>();
+
+   // Whether or not to show the dialog informing the user what
+   // happens to selected or deleted posts in the posts screen.
+   List<bool> dialogPrefs = List<bool>(6);
+
+   Persistency persistency = Persistency();
+
+   Future<void> load() async
+   {
+      try {
+         final String text = await rootBundle.loadString('data/parameters.txt');
+         g.param = Parameters.fromJson(jsonDecode(text));
+         await initializeDateFormatting(g.param.localeName, null);
+
+         // Warining: The construction of Config depends on the
+         // parameters that have been load above, but where not loaded
+         // by the time it was inititalized. Ideally we would remove
+         // the use of global variable from withing its constructor,
+         // for now I will construct it again before it is used to
+         // initialize the db.
+	 await persistency.open();
+
+         final String exDetailsStr = await rootBundle.loadString('data/ex_details_menu.txt');
+         exDetailsRoot = treeReader(jsonDecode(exDetailsStr)).first.root.first;
+
+         final String inDetailsStr = await rootBundle.loadString('data/in_details_menu.txt');
+         inDetailsRoot = treeReader(jsonDecode(inDetailsStr)).first.root.first;
+      } catch (e) {
+         print(e);
+      }
+
+      try {
+         List<Config> configs = await persistency.loadConfig();
+         if (configs.isNotEmpty)
+            cfg = configs.first;
+      } catch (e) {
+         print(e);
+      }
+
+      dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
+      dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
+      dialogPrefs[2] = cfg.showDialogOnReportPost == 'yes';
+      dialogPrefs[3] = false;
+      dialogPrefs[4] = false;
+      dialogPrefs[5] = false;
+
+      trees = loadMenuItems(await persistency.loadTrees(), g.param.filterDepths);
+
+      try {
+         final List<Post> posts = await persistency.loadPosts(g.param.rangesMinMax);
+         for (Post p in posts) {
+            if (p.status == 0) {
+               ownPosts.add(p);
+               for (Post o in ownPosts)
+                  o.chats = await persistency.loadChatMetadata(o.id);
+            } else if (p.status == 1) {
+               posts.add(p);
+            } else if (p.status == 2) {
+               favPosts.add(p);
+               for (Post o in favPosts)
+                  o.chats = await persistency.loadChatMetadata(o.id);
+            } else if (p.status == 3) {
+               outPostsQueue.add(p);
+            } else {
+               assert(false);
+            }
+         }
+
+         ownPosts.sort(compPosts);
+         favPosts.sort(compPosts);
+      } catch (e) {
+         print(e);
+      }
+
+      List<AppMsgQueueElem> tmp = await persistency.loadOutChatMsg();
+
+      appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
+
+      print('Last post id: ${cfg.lastPostId}.');
+      print('Last post id seen: ${cfg.lastSeenPostId}.');
+      print('Login: ${cfg.appId}:${cfg.appPwd}');
+   }
+
+   int getNewPosts()
+   {
+      // NOTE: The posts array is expected to be sorted on its
+      // ids, so we could perform a binary search here instead.
+      final int i = posts.indexWhere((e)
+         { return e.id == cfg.lastSeenPostId; });
+
+      return i == -1 ? 0 : posts.length - i - 1;
+   }
+
+   Future<void> clearPosts() async
+   {
+      posts = List<Post>();
+      await persistency.clearPosts();
+   }
+
+   Future<void> setRange(int i, RangeValues rv) async
+   {
+      cfg.ranges[2 * i + 0] = rv.start.round();
+      cfg.ranges[2 * i + 1] = rv.end.round();
+      await persistency.updateRanges(cfg.ranges);
+   }
+
+   void restoreTreeStacks()
+   {
+      trees[0].restoreMenuStack();
+      trees[1].restoreMenuStack();
+   }
+
+   Future<void> setDialogPref(int i, bool v) async
+   {
+      dialogPrefs[i] = v;
+
+      final String str = v ? 'yes' : 'no';
+
+      if (i == 0)
+         await persistency.updateShowDialogOnDelPost(v);
+      else if (i == 1)
+         await persistency.updateShowDialogOnSelectPost(v);
+      else if (i == 2)
+         await persistency.updateShowDialogOnReportPost(v);
+   }
+
+   // Return the index where the post in located in favPosts.
+   Future<int> moveToFavorite(int i) async
+   {
+      // i refers to a post in the posts array.  We have to prevent the user
+      // from adding a chat twice. This can happen when he makes a new search,
+      // since in that case the lastPostId will be updated to 0.
+
+      final int postId = posts[i].id;
+      var f = (e) { return e.id == postId; };
+
+      if (favPosts.indexWhere(f) != -1)
+	 return -1;
+      
+      posts[i].status = 2;
+      final int k = posts[i].addChat(posts[i].from, posts[i].nick, posts[i].avatar);
+      await persistency.insertChatOnPost2(posts[i].id, posts[i].chats[k]);
+
+      favPosts.add(posts[i]);
+      favPosts.sort(compPosts);
+
+      final int h = favPosts.indexWhere(f);
+      assert(h != -1);
+      return h;
+   }
+}
+
+//_____________________________________________________________________
+
 class Occase extends StatefulWidget {
   Occase();
 
@@ -4562,16 +4756,7 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
-   Config _cfg = Config();
-
-   // The trees holding the locations and products trees.
-   List<Tree> _trees = List<Tree>();
-
-   // The ex details tree root node.
-   Node _exDetailsRoot;
-
-   // The in details tree root node.
-   Node _inDetailsRoot;
+   AppState _appState = AppState();
 
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
@@ -4584,39 +4769,6 @@ class OccaseState extends State<Occase>
    // Set to true when the user wants to change his notification
    // settings.
    bool _goToNtfScreen = false;
-
-   // The temporary variable used to store the post the user sends or
-   // the post the current chat screen belongs to, if any.
-   Post _post;
-
-   // The list of posts received from the server. Our own posts that the
-   // server echoes back to us (if we are subscribed to the channel)
-   // will be filtered out.
-   List<Post> _posts = List<Post>();
-
-   // The list of posts the user has selected in the posts screen.
-   // They are moved from _posts to here.
-   List<Post> _favPosts = List<Post>();
-
-   // Posts the user wrote itself and sent to the server. One issue we
-   // have to observe is that if the user is subscribed to the channel
-   // the post belongs to, it will be received back and shouldn't be
-   // displayed or duplicated on this list. The posts received from
-   // the server will not be inserted in _posts.
-   //
-   // The only posts inserted here are those that have been acked with
-   // ok by the server, before that they will live in _outPostsQueue
-   List<Post> _ownPosts = List<Post>();
-
-   // Posts sent to the server that haven't been acked yet. At the
-   // moment this queue will contain only one element. It is needed if
-   // to handle the case where we go offline between a publish and a
-   // publish_ack.
-   Queue<Post> _outPostsQueue = Queue<Post>();
-
-   // Stores chat messages that cannot be lost in case the connection
-   // to the server is lost. 
-   Queue<AppMsgQueueElem> _appMsgQueue = Queue<AppMsgQueueElem>();
 
    // A flag that is set to true when the floating button (new post)
    // is clicked. It must be carefully set to false when that screen
@@ -4637,16 +4789,16 @@ class OccaseState extends State<Occase>
    // tree, 1 for the models tree etc.
    int _botBarIdx = 0;
 
+   // The temporary variable used to store the post the user sends or
+   // the post the current chat screen belongs to, if any.
+   Post _post;
+
    // The current chat, if any.
    ChatMetadata _chat;
 
-   // The number of posts in the _posts array that hasn't been seen
+   // The number of posts in the _appState.posts array that hasn't been seen
    // yet by the user.
    int _nNewPosts = 0;
-
-   // Whether or not to show the dialog informing the user what
-   // happens to selected or deleted posts in the posts screen.
-   List<bool> _dialogPrefs = List<bool>(6);
 
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
@@ -4683,11 +4835,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    FocusNode _chatFocusNode;
 
-
    //HtmlWebSocketChannel channel;
    IOWebSocketChannel channel;
-   
-   Persistency _persistency;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not get
@@ -4723,7 +4872,6 @@ class OccaseState extends State<Occase>
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
       _lastDisconnect = -1;
-      _cfg = Config();
       WidgetsBinding.instance.addObserver(this);
 
       _firebaseMessaging.configure(
@@ -4746,9 +4894,14 @@ class OccaseState extends State<Occase>
          print('Token: $token');
       });
 
-      WidgetsBinding.instance.addPostFrameCallback((_) { _load(); });
-
-      _persistency = Persistency();
+      WidgetsBinding.instance.addPostFrameCallback((_) async
+      {
+	 await _appState.load();
+         _nNewPosts = _appState.getNewPosts();
+	 _goToRegScreen = _appState.cfg.nick.isEmpty;
+	 _stablishNewConnection(_fcmToken);
+	 setState(() { });
+      });
    }
 
    @override
@@ -4848,102 +5001,11 @@ class OccaseState extends State<Occase>
 
    void sendOfflinePosts()
    {
-      if (_outPostsQueue.isEmpty)
+      if (_appState.outPostsQueue.isEmpty)
          return;
        
-      final String payload = makePostPayload(_outPostsQueue.first);
+      final String payload = makePostPayload(_appState.outPostsQueue.first);
       channel.sink.add(payload);
-   }
-
-   Future<void> _load() async
-   {
-      try {
-         final String text = await rootBundle.loadString('data/parameters.txt');
-         g.param = Parameters.fromJson(jsonDecode(text));
-         await initializeDateFormatting(g.param.localeName, null);
-
-         // Warining: The construction of Config depends on the
-         // parameters that have been load above, but where not loaded
-         // by the time it was inititalized. Ideally we would remove
-         // the use of global variable from withing its constructor,
-         // for now I will construct it again before it is used to
-         // initialize the db.
-	 await _persistency.open();
-
-         final String exDetailsStr = await rootBundle.loadString('data/ex_details_menu.txt');
-         _exDetailsRoot = treeReader(jsonDecode(exDetailsStr)).first.root.first;
-
-         final String inDetailsStr = await rootBundle.loadString('data/in_details_menu.txt');
-         _inDetailsRoot = treeReader(jsonDecode(inDetailsStr)).first.root.first;
-      } catch (e) {
-         print(e);
-      }
-
-      try {
-         List<Config> configs = await _persistency.loadConfig();
-         if (configs.isNotEmpty)
-            _cfg = configs.first;
-      } catch (e) {
-         print(e);
-      }
-
-      _goToRegScreen = _cfg.nick.isEmpty;
-
-      _dialogPrefs[0] = _cfg.showDialogOnDelPost == 'yes';
-      _dialogPrefs[1] = _cfg.showDialogOnSelectPost == 'yes';
-      _dialogPrefs[2] = _cfg.showDialogOnReportPost == 'yes';
-      _dialogPrefs[3] = false;
-      _dialogPrefs[4] = false;
-      _dialogPrefs[5] = false;
-
-      assert(_trees.isEmpty);
-
-      _trees = loadMenuItems(await _persistency.loadTrees(), g.param.filterDepths);
-
-      try {
-         final List<Post> posts = await _persistency.loadPosts(g.param.rangesMinMax);
-         for (Post p in posts) {
-            if (p.status == 0) {
-               _ownPosts.add(p);
-               for (Post o in _ownPosts)
-                  o.chats = await _persistency.loadChatMetadata(o.id);
-            } else if (p.status == 1) {
-               _posts.add(p);
-            } else if (p.status == 2) {
-               _favPosts.add(p);
-               for (Post o in _favPosts)
-                  o.chats = await _persistency.loadChatMetadata(o.id);
-            } else if (p.status == 3) {
-               _outPostsQueue.add(p);
-            } else {
-               assert(false);
-            }
-         }
-
-         _ownPosts.sort(compPosts);
-         _favPosts.sort(compPosts);
-      } catch (e) {
-         print(e);
-      }
-
-      // NOTE: The _posts array is expected to be sorted on its
-      // ids, so we could perform a binary search here instead.
-      final int i = _posts.indexWhere((e)
-         { return e.id == _cfg.lastSeenPostId; });
-
-      if (i != -1)
-         _nNewPosts = _posts.length - i - 1;
-
-      List<AppMsgQueueElem> tmp = await _persistency.loadOutChatMsg();
-
-      _appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
-
-      _stablishNewConnection(_fcmToken);
-
-      print('Last post id: ${_cfg.lastPostId}.');
-      print('Last post id seen: ${_cfg.lastSeenPostId}.');
-      print('Login: ${_cfg.appId}:${_cfg.appPwd}');
-      setState(() { });
    }
 
    void _stablishNewConnection(String fcmToken)
@@ -4959,10 +5021,10 @@ class OccaseState extends State<Occase>
 	 );
 
 	 final String cmd = makeConnCmd(
-	    _cfg.appId,
-	    _cfg.appPwd,
+	    _appState.cfg.appId,
+	    _appState.cfg.appPwd,
 	    fcmToken,
-	    _cfg.notifications.getFlag(),
+	    _appState.cfg.notifications.getFlag(),
 	 );
 
 	 channel.sink.add(cmd);
@@ -4972,24 +5034,15 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _setDialogPref(final int i, bool v) async
+   Future<void> _setDialogPref(int i, bool v) async
    {
-      _dialogPrefs[i] = v;
-
-      final String str = v ? 'yes' : 'no';
-
-      if (i == 0)
-         await _persistency.updateShowDialogOnDelPost(v);
-      else if (i == 1)
-         await _persistency.updateShowDialogOnSelectPost(v);
-      else if (i == 2)
-         await _persistency.updateShowDialogOnReportPost(v);
+      _appState.setDialogPref(i, v);
    }
 
    Future<void>
    _alertUserOnPressed(BuildContext ctx, int i, int j) async
    {
-      if (!_dialogPrefs[j]) {
+      if (!_appState.dialogPrefs[j]) {
          await _onPostSelection(i, j);
          return;
       }
@@ -4999,7 +5052,7 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             return DialogWithOp(
-               () {return _dialogPrefs[j];},
+               () {return _appState.dialogPrefs[j];},
                (bool v) async {await _setDialogPref(j, v);},
                () async {await _onPostSelection(i, j);},
                g.param.dialogTitles[j],
@@ -5010,12 +5063,8 @@ class OccaseState extends State<Occase>
 
    Future<void> _clearPosts() async
    {
-      await _persistency.clearPosts();
-
-      setState((){
-         _posts = List<Post>();
-         _nNewPosts = 0;
-      });
+      await _appState.clearPosts();
+      setState((){ _nNewPosts = 0; });
    }
 
    void _clearPostsDialog(BuildContext ctx)
@@ -5056,7 +5105,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   // i = index in _posts, _favPosts, _own_posts.
+   // i = index in _appState.posts, _appState.favPosts, _own_posts.
    // j = image index in the post.
    void _onExpandImg(int i, int j)
    {
@@ -5077,13 +5126,8 @@ class OccaseState extends State<Occase>
 
    Future<void> _onRangeChanged(int i, RangeValues rv) async
    {
-      setState(()
-      {
-         _cfg.ranges[2 * i + 0] = rv.start.round();
-         _cfg.ranges[2 * i + 1] = rv.end.round();
-      });
-
-      await _persistency.updateRanges(_cfg.ranges);
+      _appState.setRange(i, rv);
+      setState(() { });
    }
 
    void _onClickOnPost(int i, int j)
@@ -5097,28 +5141,9 @@ class OccaseState extends State<Occase>
 
    Future<void> _onMovePostToFav(int i) async
    {
-      // We have to prevent the user from adding a chat twice. This can
-      // happen when he makes a new search, since in that case the
-      // lastPostId will be updated to 0.
-
-      final int postId = _posts[i].id;
-      var f = (e) { return e.id == postId; };
-
-      if (_favPosts.indexWhere(f) != -1)
+      final int h = await _appState.moveToFavorite(i);
+      if (h == -1)
 	 return;
-
-      _posts[i].status = 2;
-
-      final int k = _posts[i].addChat(
-	 _posts[i].from,
-	 _posts[i].nick,
-	 _posts[i].avatar,
-      );
-
-      await _persistency.insertChatOnPost2(_posts[i].id, _posts[i].chats[k]);
-
-      _favPosts.add(_posts[i]);
-      _favPosts.sort(compPosts);
 
       // We should be using the animate function below, but there is no way
       // one can wait until the animation is ready. The is needed to be able to call
@@ -5126,11 +5151,7 @@ class OccaseState extends State<Occase>
 
       // Use _tabCtrlChangeHandler() as listener
       //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
-
       _tabCtrl.index = 2;
-
-      final int h = _favPosts.indexWhere(f);
-      assert(h != -1);
 
       // The chat index in the fav screen is always zero.
       await _onChatPressed(h, 0);
@@ -5155,11 +5176,11 @@ class OccaseState extends State<Occase>
       if (j == 1) {
 	 await _onMovePostToFav(i);
       } else {
-         await _persistency.delPostWithId(_posts[i].id);
+         await _appState.persistency.delPostWithId(_appState.posts[i].id);
          // TODO: Send command to server to report if j = 2.
       }
 
-      _posts.removeAt(i);
+      _appState.posts.removeAt(i);
 
       setState(() { });
    }
@@ -5170,8 +5191,7 @@ class OccaseState extends State<Occase>
 	 _newPostPressed = true;
 	 _post = Post(rangesMinMax: g.param.rangesMinMax);
 	 _post.images = List<String>(); // TODO: remove this later.
-	 _trees[0].restoreMenuStack();
-	 _trees[1].restoreMenuStack();
+	 _appState.restoreTreeStacks();
 	 _botBarIdx = 0;
       });
    }
@@ -5190,7 +5210,7 @@ class OccaseState extends State<Occase>
 
       _nNewPosts -= n;
 
-      final int l = _posts.length;
+      final int l = _appState.posts.length;
 
       assert(l >= _nNewPosts);
 
@@ -5204,7 +5224,7 @@ class OccaseState extends State<Occase>
    Future<void> _onShowNewPosts() async
    {
       final int idx = _makeLastSeenPostId();
-      await _persistency.updateLastSeenPostId(_posts[idx].id);
+      await _appState.persistency.updateLastSeenPostId(_appState.posts[idx].id);
       setState((){});
    }
 
@@ -5257,10 +5277,10 @@ class OccaseState extends State<Occase>
             );
             if (_isOnFav()) {
                await _onSendChatImpl(
-                  _favPosts, c1.post.id, c1.chat.peer, ci);
+                  _appState.favPosts, c1.post.id, c1.chat.peer, ci);
             } else {
                await _onSendChatImpl(
-                  _ownPosts, c1.post.id, c1.chat.peer, ci);
+                  _appState.ownPosts, c1.post.id, c1.chat.peer, ci);
             }
          }
       }
@@ -5279,7 +5299,7 @@ class OccaseState extends State<Occase>
 
    Future<bool> _onPopChat() async
    {
-      await _persistency.updateNUnreadMsgs(_post.id, _chat.peer);
+      await _appState.persistency.updateNUnreadMsgs(_post.id, _chat.peer);
 
       _showChatJumpDownButton = false;
       _dragedIdx = -1;
@@ -5309,9 +5329,9 @@ class OccaseState extends State<Occase>
    Future<void> _onSendChat() async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
-      List<Post> posts = _ownPosts;
+      List<Post> posts = _appState.ownPosts;
       if (_isOnFav())
-         posts = _favPosts;
+         posts = _appState.favPosts;
 
       _chat.nUnreadMsgs = 0;
       await _onSendChatImpl(
@@ -5437,8 +5457,8 @@ class OccaseState extends State<Occase>
 
    void _onBotBarTapped(int i)
    {
-      if (_botBarIdx < _trees.length)
-         _trees[_botBarIdx].restoreMenuStack();
+      if (_botBarIdx < _appState.trees.length)
+         _appState.trees[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -5465,7 +5485,7 @@ class OccaseState extends State<Occase>
 
       do {
          --_botBarIdx;
-         _trees[_botBarIdx].restoreMenuStack();
+         _appState.trees[_botBarIdx].restoreMenuStack();
       } while (_botBarIdx != i);
 
       setState(() { });
@@ -5473,16 +5493,16 @@ class OccaseState extends State<Occase>
 
    void _onPostLeafPressed(int i)
    {
-      Node o = _trees[_botBarIdx].root.last.children[i];
-      _trees[_botBarIdx].root.add(o);
+      Node o = _appState.trees[_botBarIdx].root.last.children[i];
+      _appState.trees[_botBarIdx].root.add(o);
       _onPostLeafReached();
       setState(() { });
    }
 
    void _onPostLeafReached()
    {
-      _post.channel[_botBarIdx][0] = _trees[_botBarIdx].root.last.code;
-      _trees[_botBarIdx].restoreMenuStack();
+      _post.channel[_botBarIdx][0] = _appState.trees[_botBarIdx].root.last.code;
+      _appState.trees[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
@@ -5491,12 +5511,12 @@ class OccaseState extends State<Occase>
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
-         Node o = _trees[_botBarIdx].root.last.children[i];
-         _trees[_botBarIdx].root.add(o);
+         Node o = _appState.trees[_botBarIdx].root.last.children[i];
+         _appState.trees[_botBarIdx].root.add(o);
          i = 0;
-      } while (_trees[_botBarIdx].root.last.children.length == 1);
+      } while (_appState.trees[_botBarIdx].root.last.children.length == 1);
 
-      final int length = _trees[_botBarIdx].root.last.children.length;
+      final int length = _appState.trees[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -5509,8 +5529,8 @@ class OccaseState extends State<Occase>
 
    void _onFilterNodePressed(int i)
    {
-      Node o = _trees[_botBarIdx].root.last.children[i];
-      _trees[_botBarIdx].root.add(o);
+      Node o = _appState.trees[_botBarIdx].root.last.children[i];
+      _appState.trees[_botBarIdx].root.add(o);
 
       setState(() { });
    }
@@ -5519,37 +5539,37 @@ class OccaseState extends State<Occase>
    {
       // k = 0 means the *check all fields*.
       if (k == 0) {
-         List<NodeInfo2> list = _trees[_botBarIdx].updateLeafReachAll(_botBarIdx);
-	 await _persistency.updateLeafReach2(list, _botBarIdx);
+         List<NodeInfo2> list = _appState.trees[_botBarIdx].updateLeafReachAll(_botBarIdx);
+	 await _appState.persistency.updateLeafReach2(list, _botBarIdx);
          setState(() { });
          return;
       }
 
       --k; // Accounts for the Todos index.
 
-      NodeInfo2 ni2 = _trees[_botBarIdx].updateLeafReach(k, _botBarIdx);
-      await _persistency.updateLeafReach(ni2, _botBarIdx);
+      NodeInfo2 ni2 = _appState.trees[_botBarIdx].updateLeafReach(k, _botBarIdx);
+      await _appState.persistency.updateLeafReach(ni2, _botBarIdx);
       setState(() { });
    }
 
    Future<void> _sendPost() async
    {
-      _post.from = _cfg.appId;
-      _post.nick = _cfg.nick;
-      _post.avatar = emailToGravatarHash(_cfg.email);
+      _post.from = _appState.cfg.appId;
+      _post.nick = _appState.cfg.nick;
+      _post.avatar = emailToGravatarHash(_appState.cfg.email);
       _post.status = 3;
 
       Post post = _post.clone();
 
-      final bool isEmpty = _outPostsQueue.isEmpty;
+      final bool isEmpty = _appState.outPostsQueue.isEmpty;
 
       // We add it here in our own list of posts and keep in mind it
       // will be echoed back to us if we are subscribed to its
-      // channel. It has to be filtered out from _posts since that
+      // channel. It has to be filtered out from _appState.posts since that
       // list should not contain our own posts.
 
-      post.dbId = await _persistency.insertPost(post, ConflictAlgorithm.replace);
-      _outPostsQueue.add(post);
+      post.dbId = await _appState.persistency.insertPost(post, ConflictAlgorithm.replace);
+      _appState.outPostsQueue.add(post);
 
       if (!isEmpty)
          return;
@@ -5557,7 +5577,7 @@ class OccaseState extends State<Occase>
       // The queue was empty before we inserted the new post.
       // Therefore we are not waiting for an ack.
 
-      final String payload = makePostPayload(_outPostsQueue.first);
+      final String payload = makePostPayload(_appState.outPostsQueue.first);
       print(payload);
       channel.sink.add(payload);
    }
@@ -5565,10 +5585,10 @@ class OccaseState extends State<Occase>
    Future<void> _handlePublishAck(final int id, final int date) async
    {
       try {
-         assert(_outPostsQueue.isNotEmpty);
-         Post post = _outPostsQueue.removeFirst();
+         assert(_appState.outPostsQueue.isNotEmpty);
+         Post post = _appState.outPostsQueue.removeFirst();
          if (id == -1) {
-	    await _persistency.delPostWithRowid(post.dbId);
+	    await _appState.persistency.delPostWithRowid(post.dbId);
             setState(() {_newPostErrorCode = 0;});
             return;
          }
@@ -5577,7 +5597,7 @@ class OccaseState extends State<Occase>
          // that it replies before the post could be moved from the
          // output queue to the . In normal cases users won't
          // be so fast. But since this is my test condition, I will
-         // cope with that by inserting the post in _ownPosts and only
+         // cope with that by inserting the post in _appState.ownPosts and only
          // after that removing from the queue.
          // TODO: I think this does not hold anymore after I
          // introduced a message queue.
@@ -5586,17 +5606,17 @@ class OccaseState extends State<Occase>
          post.date = date;
          post.status = 0;
          post.pinDate = 0;
-         _ownPosts.add(post);
-         _ownPosts.sort(compPosts);
+         _appState.ownPosts.add(post);
+         _appState.ownPosts.sort(compPosts);
 
-         await _persistency.updatePostOnAck(0, id, date, post.dbId);
+         await _appState.persistency.updatePostOnAck(0, id, date, post.dbId);
 
          setState(() {_newPostErrorCode = 1;});
 
-         if (_outPostsQueue.isEmpty)
+         if (_appState.outPostsQueue.isEmpty)
             return;
 
-         final String payload = makePostPayload(_outPostsQueue.first);
+         final String payload = makePostPayload(_appState.outPostsQueue.first);
          channel.sink.add(payload);
       } catch (e) {
          print(e);
@@ -5606,11 +5626,11 @@ class OccaseState extends State<Occase>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         await _persistency.delPostWithId(_favPosts[i].id);
-         _favPosts.removeAt(i);
+         await _appState.persistency.delPostWithId(_appState.favPosts[i].id);
+         _appState.favPosts.removeAt(i);
       } else {
-         await _persistency.delPostWithId(_ownPosts[i].id);
-         final Post delPost = _ownPosts.removeAt(i);
+         await _appState.persistency.delPostWithId(_appState.ownPosts[i].id);
+         final Post delPost = _appState.ownPosts.removeAt(i);
 
          var msgMap = {
             'cmd': 'delete',
@@ -5630,13 +5650,13 @@ class OccaseState extends State<Occase>
    Future<void> _onPinPost(int i) async
    {
       if (_isOnFav()) {
-         onPinPostImpl(_favPosts[i]);
-	 await _persistency.updatePostPinDate(_favPosts[i].pinDate, _favPosts[i].id);
-	 _favPosts.sort(compPosts);
+         onPinPostImpl(_appState.favPosts[i]);
+	 await _appState.persistency.updatePostPinDate(_appState.favPosts[i].pinDate, _appState.favPosts[i].id);
+	 _appState.favPosts.sort(compPosts);
       } else {
-         onPinPostImpl(_ownPosts[i]);
-	 await _persistency.updatePostPinDate(_ownPosts[i].pinDate, _ownPosts[i].id);
-	 _ownPosts.sort(compPosts);
+         onPinPostImpl(_appState.ownPosts[i]);
+	 await _appState.persistency.updatePostPinDate(_appState.ownPosts[i].pinDate, _appState.ownPosts[i].id);
+	 _appState.ownPosts.sort(compPosts);
       }
       setState(() { });
    }
@@ -5790,7 +5810,7 @@ class OccaseState extends State<Occase>
       print('----> $chat');
 
       if (!chat.isLoaded())
-         chat.msgs = await _persistency.loadChatMsgs(post.id, chat.peer);
+         chat.msgs = await _appState.persistency.loadChatMsgs(post.id, chat.peer);
       
       // These variables must be set after the chats are loaded. Otherwise
       // chat.msgs may be called on null if a message arrives. 
@@ -5835,18 +5855,18 @@ class OccaseState extends State<Occase>
    Future<void> _onChatPressed(int i, int j) async
    {
       if (_isOnFav())
-         await _onChatPressedImpl(_favPosts, i, j);
+         await _onChatPressedImpl(_appState.favPosts, i, j);
       else
-         await _onChatPressedImpl(_ownPosts, i, j);
+         await _onChatPressedImpl(_appState.ownPosts, i, j);
    }
 
    void _onUserInfoPressed(BuildContext ctx, int postId, int j)
    {
       List<Post> posts;
       if (_isOnFav()) {
-         posts = _favPosts;
+         posts = _appState.favPosts;
       } else {
-         posts = _ownPosts;
+         posts = _appState.ownPosts;
       }
 
       final int i = posts.indexWhere((e) { return e.id == postId;});
@@ -5890,9 +5910,9 @@ class OccaseState extends State<Occase>
    void _onChatLP(int i, int j)
    {
       if (_isOnFav()) {
-         _onChatLPImpl(_favPosts, i, j);
+         _onChatLPImpl(_appState.favPosts, i, j);
       } else {
-         _onChatLPImpl(_ownPosts, i, j);
+         _onChatLPImpl(_appState.ownPosts, i, j);
       }
 
       setState(() { });
@@ -5900,7 +5920,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendAppMsg(String payload, int isChat) async
    {
-      final bool isEmpty = _appMsgQueue.isEmpty;
+      final bool isEmpty = _appState.appMsgQueue.isEmpty;
       AppMsgQueueElem tmp = AppMsgQueueElem(
          rowid: -1,
          isChat: isChat,
@@ -5908,24 +5928,24 @@ class OccaseState extends State<Occase>
          sent: false
       );
 
-      _appMsgQueue.add(tmp);
+      _appState.appMsgQueue.add(tmp);
 
-      tmp.rowid = await _persistency.insertOutChatMsg(isChat, payload);
+      tmp.rowid = await _appState.persistency.insertOutChatMsg(isChat, payload);
 
       if (isEmpty) {
-         assert(!_appMsgQueue.first.sent);
-         _appMsgQueue.first.sent = true;
-         print(_appMsgQueue.first.payload);
-         channel.sink.add(_appMsgQueue.first.payload);
+         assert(!_appState.appMsgQueue.first.sent);
+         _appState.appMsgQueue.first.sent = true;
+         print(_appState.appMsgQueue.first.payload);
+         channel.sink.add(_appState.appMsgQueue.first.payload);
       }
    }
 
    void _sendOfflineChatMsgs()
    {
-      if (_appMsgQueue.isNotEmpty) {
-         assert(!_appMsgQueue.first.sent);
-         _appMsgQueue.first.sent = true;
-         channel.sink.add(_appMsgQueue.first.payload);
+      if (_appState.appMsgQueue.isNotEmpty) {
+         assert(!_appState.appMsgQueue.first.sent);
+         _appState.appMsgQueue.first.sent = true;
+         channel.sink.add(_appState.appMsgQueue.first.payload);
       }
    }
 
@@ -5968,11 +5988,11 @@ class OccaseState extends State<Occase>
          final int j = posts[i].getChatHistIdx(peer);
          assert(j != -1);
 
-         final int rowid = await _persistency.insertChatMsg(postId, peer, ci);
+         final int rowid = await _appState.persistency.insertChatMsg(postId, peer, ci);
          ci.rowid = rowid;
          posts[i].chats[j].addChatItem(ci);
 
-         await _persistency.insertChatOnPost(postId, posts[i].chats[j]);
+         await _appState.persistency.insertChatOnPost(postId, posts[i].chats[j]);
 
          posts[i].chats.sort(compChats);
          posts.sort(compPosts);
@@ -5988,9 +6008,9 @@ class OccaseState extends State<Occase>
          , 'msg': ci.msg
          , 'refers_to': ci.refersTo
          , 'post_id': postId
-         , 'nick': _cfg.nick
+         , 'nick': _appState.cfg.nick
          , 'id': rowid
-         , 'avatar': emailToGravatarHash(_cfg.email)
+         , 'avatar': emailToGravatarHash(_appState.cfg.email)
          };
 
          final
@@ -6005,25 +6025,25 @@ class OccaseState extends State<Occase>
    Future<void> _onServerAck(Map<String, dynamic> ack) async
    {
       try {
-         assert(_appMsgQueue.first.sent);
-         assert(_appMsgQueue.isNotEmpty);
+         assert(_appState.appMsgQueue.first.sent);
+         assert(_appState.appMsgQueue.isNotEmpty);
 
          final String res = ack['result'];
 
-         await _persistency.deleteOutChatMsg(_appMsgQueue.first.rowid);
+         await _appState.persistency.deleteOutChatMsg(_appState.appMsgQueue.first.rowid);
 
-         final bool isChat = _appMsgQueue.first.isChat == 1;
-         _appMsgQueue.removeFirst();
+         final bool isChat = _appState.appMsgQueue.first.isChat == 1;
+         _appState.appMsgQueue.removeFirst();
 
          if (res == 'ok' && isChat) {
             await _onChatAck(ack['from'], ack['post_id'], <int>[ack['ack_id']], 1);
             setState(() { });
          }
 
-         if (_appMsgQueue.isNotEmpty) {
-            assert(!_appMsgQueue.first.sent);
-            _appMsgQueue.first.sent = true;
-            channel.sink.add(_appMsgQueue.first.payload);
+         if (_appState.appMsgQueue.isNotEmpty) {
+            assert(!_appState.appMsgQueue.first.sent);
+            _appState.appMsgQueue.first.sent = true;
+            channel.sink.add(_appState.appMsgQueue.first.payload);
          }
       } catch (e) {
          print(e);
@@ -6037,7 +6057,7 @@ class OccaseState extends State<Occase>
       int isRedirected,
    ) async {
       final String to = ack['to'];
-      if (to != _cfg.appId) {
+      if (to != _appState.cfg.appId) {
          print("Server bug caught. Please report.");
          return;
       }
@@ -6048,15 +6068,15 @@ class OccaseState extends State<Occase>
       final int refersTo = ack['refers_to'];
       final int peerRowid = ack['id'];
 
-      final int favIdx = _favPosts.indexWhere((e) {
+      final int favIdx = _appState.favPosts.indexWhere((e) {
          return e.id == postId;
       });
 
       List<Post> posts;
       if (favIdx != -1)
-         posts = _favPosts;
+         posts = _appState.favPosts;
       else
-         posts = _ownPosts;
+         posts = _appState.ownPosts;
 
       await _onChatImpl(
          to,
@@ -6159,7 +6179,7 @@ class OccaseState extends State<Occase>
       // Generating the payload before the async operation to avoid
       // problems.
       final String payload = jsonEncode(msgMap);
-      await _persistency.insertChatOnPost3(postId, chat, peer, ci);
+      await _appState.persistency.insertChatOnPost3(postId, chat, peer, ci);
       await _sendAppMsg(payload, 0);
    }
 
@@ -6177,9 +6197,9 @@ class OccaseState extends State<Occase>
       // We do not know if the post belongs to the sender or receiver, so
       // we have to try both.
 
-      final bool b = markPresence(_favPosts, peer, postId);
+      final bool b = markPresence(_appState.favPosts, peer, postId);
       if (!b)
-         markPresence(_ownPosts, peer, postId);
+         markPresence(_appState.ownPosts, peer, postId);
 
       // A timer that is launched after presence arrives. It is used
       // to call setState so that presence e.g. typing messages are
@@ -6198,11 +6218,11 @@ class OccaseState extends State<Occase>
       final List<int> rowids,
       final int status,
    ) async {
-      List<Post> posts = _favPosts;
+      List<Post> posts = _appState.favPosts;
       IdxPair p = findChat(posts, from, postId);
       if (IsInvalidPair(p)) {
-	 posts = _ownPosts;
-	 p = findChat(_ownPosts, from, postId);
+	 posts = _appState.ownPosts;
+	 p = findChat(_appState.ownPosts, from, postId);
       }
 
       if (IsInvalidPair(p)) {
@@ -6219,7 +6239,7 @@ class OccaseState extends State<Occase>
 	 // use await here. The ideal case however is to offer a List<ChatItem>
 	 // interface in Persistency and use batch there.
 
-	 await _persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
+	 await _appState.persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
       }
    }
 
@@ -6260,10 +6280,10 @@ class OccaseState extends State<Occase>
       if (appId == null || appPwd == null)
          return;
 
-      _cfg.appId = ack["id"];
-      _cfg.appPwd = ack["password"];
+      _appState.cfg.appId = ack["id"];
+      _appState.cfg.appPwd = ack["password"];
 
-      await _persistency.updateAppCredentials(_cfg.appId, _cfg.appPwd);
+      await _appState.persistency.updateAppCredentials(_appState.cfg.appId, _appState.cfg.appPwd);
 
       // Retrieves some posts for the newly registered user.
       _subscribeToChannels(0);
@@ -6318,7 +6338,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _subscribeToChannels(_cfg.lastPostId);
+      _subscribeToChannels(_appState.cfg.lastPostId);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -6342,10 +6362,10 @@ class OccaseState extends State<Occase>
       // When we are receiving new posts here as a result of the user
       // clicking the search buttom, we have to clear all old posts before
       // showing the new posts to the user.
-      final bool showPosts = _cfg.lastPostId == 0 || _posts.isEmpty;
-      if (_cfg.lastPostId == 0) {
-         await _persistency.clearPosts();
-         _posts.clear();
+      final bool showPosts = _appState.cfg.lastPostId == 0 || _appState.posts.isEmpty;
+      if (_appState.cfg.lastPostId == 0) {
+         await _appState.persistency.clearPosts();
+         _appState.posts.clear();
       }
 
       for (var item in ack['items']) {
@@ -6356,26 +6376,26 @@ class OccaseState extends State<Occase>
             // Just in case the server sends us posts out of order I
             // will check. It should however be considered a server
             // error.
-            if (post.id > _cfg.lastPostId)
-               _cfg.lastPostId = post.id;
+            if (post.id > _appState.cfg.lastPostId)
+               _appState.cfg.lastPostId = post.id;
 
-            if (post.from == _cfg.appId)
+            if (post.from == _appState.cfg.appId)
                continue;
 
-	    await _persistency.insertPost(post, ConflictAlgorithm.ignore);
+	    await _appState.persistency.insertPost(post, ConflictAlgorithm.ignore);
 
-            _posts.add(post);
+            _appState.posts.add(post);
             ++_nNewPosts;
          } catch (e) {
             print("Error: Invalid post detected.");
          }
       }
 
-      await _persistency.updateLastPostId(_cfg.lastPostId);
+      await _appState.persistency.updateLastPostId(_appState.cfg.lastPostId);
 
       if (showPosts) {
          final int idx = _makeLastSeenPostId();
-	 await _persistency.updateLastSeenPostId(_posts[idx].id);
+	 await _appState.persistency.updateLastSeenPostId(_appState.posts[idx].id);
       }
 
       setState(() { });
@@ -6497,8 +6517,8 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      //final int lastPostId = i == 1 ? 0 : _cfg.lastPostId;
-      //final int lastPostId = _cfg.lastPostId;
+      //final int lastPostId = i == 1 ? 0 : _appState.cfg.lastPostId;
+      //final int lastPostId = _appState.cfg.lastPostId;
 
       // I changed my mind in 8.12.2019 and decided it is less confusing to
       // the user if we always search for all posts not only for those that
@@ -6510,10 +6530,10 @@ class OccaseState extends State<Occase>
       // 2. Old posts will be cleared when we receive the answer to this
       //    request.
 
-      _cfg.lastPostId = 0;
+      _appState.cfg.lastPostId = 0;
       _nNewPosts = 0;
 
-      await _persistency.updateLastPostId(0);
+      await _appState.persistency.updateLastPostId(0);
 
       _subscribeToChannels(0);
 
@@ -6531,7 +6551,7 @@ class OccaseState extends State<Occase>
 
       // An empty channels list means we do not want any filter for
       // that menu item.
-      for (Tree item in _trees)
+      for (Tree item in _appState.trees)
          channels.add(readHashCodes(item.root.first, item.filterDepth));
 
       assert(channels.length == 2);
@@ -6541,8 +6561,8 @@ class OccaseState extends State<Occase>
       , 'last_post_id': lastPostId
       , 'filters': channels[0]
       , 'channels': channels[1]
-      , 'any_of_features': _cfg.anyOfFeatures
-      , 'ranges': convertToValues(_cfg.ranges)
+      , 'any_of_features': _appState.cfg.anyOfFeatures
+      , 'ranges': convertToValues(_appState.cfg.ranges)
       };
 
       final String payload = jsonEncode(subCmd);
@@ -6562,7 +6582,7 @@ class OccaseState extends State<Occase>
    int _getNUnreadFavChats()
    {
       int i = 0;
-      for (Post post in _favPosts)
+      for (Post post in _appState.favPosts)
          i += post.getNumberOfUnreadChats();
 
       return i;
@@ -6571,7 +6591,7 @@ class OccaseState extends State<Occase>
    int _getNUnreadOwnChats()
    {
       int i = 0;
-      for (Post post in _ownPosts)
+      for (Post post in _appState.ownPosts)
          i += post.getNumberOfUnreadChats();
 
       return i;
@@ -6636,8 +6656,8 @@ class OccaseState extends State<Occase>
    {
       setState(() {
          _newSearchPressed = true;
-         _trees[0].restoreMenuStack();
-         _trees[1].restoreMenuStack();
+         _appState.trees[0].restoreMenuStack();
+         _appState.trees[1].restoreMenuStack();
          // If you changes this, also change the index _onWillPopMenu
          // will be called with.
          _botBarIdx = 1;
@@ -6656,7 +6676,7 @@ class OccaseState extends State<Occase>
       _lpChats.first.post.chats.sort(compChats);
       _lpChats.clear();
 
-      // TODO: Sort _favPosts and _ownPosts. Beaware that the array
+      // TODO: Sort _appState.favPosts and _appState.ownPosts. Beaware that the array
       // Coord many have entries from chats from different posts and
       // they may be out of order. So care should be taken to not sort
       // the arrays multiple times.
@@ -6674,16 +6694,16 @@ class OccaseState extends State<Occase>
       // FIXME: For _fav chats we can directly delete the post since
       // it will only have one chat element.
 
-      _lpChats.forEach((e) async {removeLpChat(e, _persistency);});
+      _lpChats.forEach((e) async {removeLpChat(e, _appState.persistency);});
 
       if (_isOnFav()) {
-         for (Post o in _favPosts)
+         for (Post o in _appState.favPosts)
             if (o.chats.isEmpty)
-	       await _persistency.delPostWithId(o.id);
+	       await _appState.persistency.delPostWithId(o.id);
 
-         _favPosts.removeWhere((e) { return e.chats.isEmpty; });
+         _appState.favPosts.removeWhere((e) { return e.chats.isEmpty; });
       } else {
-         _ownPosts.sort(compPosts);
+         _appState.ownPosts.sort(compPosts);
       }
 
       _lpChats.clear();
@@ -6772,12 +6792,12 @@ class OccaseState extends State<Occase>
          }
 
          if (_txtCtrl2.text.isNotEmpty) {
-            _cfg.email = _txtCtrl2.text;
-            await _persistency.updateEmail(_cfg.email);
+            _appState.cfg.email = _txtCtrl2.text;
+            await _appState.persistency.updateEmail(_appState.cfg.email);
          }
 
-         _cfg.nick = _txtCtrl.text;
-         await _persistency.updateNick(_cfg.nick);
+         _appState.cfg.nick = _txtCtrl.text;
+         await _appState.persistency.updateNick(_appState.cfg.nick);
 
          setState(()
          {
@@ -6795,13 +6815,13 @@ class OccaseState extends State<Occase>
    {
       try {
          if (i == 0)
-            _cfg.notifications.chat = v;
+            _appState.cfg.notifications.chat = v;
 
          if (i == 1)
-            _cfg.notifications.post = v;
+            _appState.cfg.notifications.post = v;
 
-         final String str = jsonEncode(_cfg.notifications.toJson());
-         await _persistency.updateNotifications(str);
+         final String str = jsonEncode(_appState.cfg.notifications.toJson());
+         await _appState.persistency.updateNotifications(str);
 
          if (i == -1)
             _goToNtfScreen = false;
@@ -6835,10 +6855,10 @@ class OccaseState extends State<Occase>
 
    Future<void> _onFilterDetail(int i) async
    {
-      _cfg.anyOfFeatures ^= 1 << i;
+      _appState.cfg.anyOfFeatures ^= 1 << i;
 
-      final String str = _cfg.anyOfFeatures.toString();
-      await _persistency.updateAnyOfFeatures(str);
+      final String str = _appState.cfg.anyOfFeatures.toString();
+      await _appState.persistency.updateAnyOfFeatures(str);
       setState(() { });
    }
 
@@ -6846,10 +6866,10 @@ class OccaseState extends State<Occase>
    Widget build(BuildContext ctx)
    {
       final bool mustWait =
-         _trees.isEmpty    ||
-         _trees.isEmpty     ||
-         (_exDetailsRoot == null) ||
-         (_inDetailsRoot == null) ||
+         _appState.trees.isEmpty    ||
+         _appState.trees.isEmpty     ||
+         (_appState.exDetailsRoot == null) ||
+         (_appState.inDetailsRoot == null) ||
          (g.param == null);
 
       if (mustWait)
@@ -6865,8 +6885,8 @@ class OccaseState extends State<Occase>
             _txtCtrl,
             (){_onRegisterContinue(ctx);},
             g.param.changeNickAppBarTitle,
-            _cfg.email,
-            _cfg.nick,
+            _appState.cfg.email,
+            _appState.cfg.nick,
          );
       }
 
@@ -6875,7 +6895,7 @@ class OccaseState extends State<Occase>
             ctx,
             _onChangeNtf,
             g.param.changeNtfAppBarTitle,
-            _cfg.notifications,
+            _appState.cfg.notifications,
             g.param.ntfTitleDesc,
          );
       }
@@ -6900,17 +6920,17 @@ class OccaseState extends State<Occase>
          return makeNewPostScreens(
             ctx,
             _post,
-            _trees,
+            _appState.trees,
             _txtCtrl,
             _botBarIdx,
-            _exDetailsRoot,
-            _inDetailsRoot,
+            _appState.exDetailsRoot,
+            _appState.inDetailsRoot,
             _imgFiles,
             _filenamesTimer.isActive,
             _onExDetails,
             _onPostLeafPressed,
             _onPostNodePressed,
-            () { return _onWillPopMenu(_trees, 0); },
+            () { return _onWillPopMenu(_appState.trees, 0); },
             _onNewPostBotBarTapped,
             _onNewPostInDetail,
             _onRangeValueChanged,
@@ -6923,11 +6943,11 @@ class OccaseState extends State<Occase>
       if (_expPostIdx != -1 && _expImgIdx != -1) {
          Post post;
          if (_isOnOwn())
-            post = _ownPosts[_expPostIdx];
+            post = _appState.ownPosts[_expPostIdx];
          else if (_isOnPosts())
-            post = _posts[_expPostIdx];
+            post = _appState.posts[_expPostIdx];
          else if (_isOnFav())
-            post = _favPosts[_expPostIdx];
+            post = _appState.favPosts[_expPostIdx];
          else
             assert(false);
 
@@ -6952,7 +6972,7 @@ class OccaseState extends State<Occase>
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            makeTreeItemStr(_trees[0].root.first, _post.channel[1][0]),
+            makeTreeItemStr(_appState.trees[0].root.first, _post.channel[1][0]),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLpChat,
@@ -6960,7 +6980,7 @@ class OccaseState extends State<Occase>
             _onChatJumpDown,
             _isOnFavChat() ? _post.avatar : _chat.avatar,
             _onWritingChat,
-            _cfg.nick,
+            _appState.cfg.nick,
          );
       }
 
@@ -6969,7 +6989,7 @@ class OccaseState extends State<Occase>
       onWillPops[1] = ()
       {
 	 if (_newSearchPressed)
-	    return _onWillPopMenu(_trees, 1);
+	    return _onWillPopMenu(_appState.trees, 1);
 	 return true;
       };
 
@@ -7008,10 +7028,10 @@ class OccaseState extends State<Occase>
          ctx,
          _lpChatMsgs.isNotEmpty,
 	 Screen.posts,
-         _exDetailsRoot,
-         _inDetailsRoot,
-         _ownPosts,
-         _trees,
+         _appState.exDetailsRoot,
+         _appState.inDetailsRoot,
+         _appState.ownPosts,
+         _appState.trees,
          _onChatPressed,
          _onChatLP,
          (int i) { _removePostDialog(ctx, i);},
@@ -7027,11 +7047,11 @@ class OccaseState extends State<Occase>
          // common to all products.
 	 bodies[1] = makeSearchScreenWdg(
 	       ctx: ctx,
-	       filter: _cfg.anyOfFeatures,
+	       filter: _appState.cfg.anyOfFeatures,
 	       screen: _botBarIdx,
-	       exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
-	       trees: _trees,
-	       ranges: _cfg.ranges,
+	       exDetailsFilterNodes: _appState.exDetailsRoot.children[0].children[0],
+	       trees: _appState.trees,
+	       ranges: _appState.cfg.ranges,
 	       onSendFilters: _onSendFilters,
 	       onFilterDetail: _onFilterDetail,
 	       onFilterNodePressed: _onFilterNodePressed,
@@ -7043,10 +7063,10 @@ class OccaseState extends State<Occase>
 	 bodies[1] = makeNewPostLv(
 	    ctx,
 	    _nNewPosts,
-	    _exDetailsRoot,
-	    _inDetailsRoot,
-	    _posts,
-	    _trees,
+	    _appState.exDetailsRoot,
+	    _appState.inDetailsRoot,
+	    _appState.posts,
+	    _appState.trees,
 	    _onExpandImg,
 	    (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	    (var a, int j) {_alertUserOnPressed(a, j, 0);},
@@ -7059,10 +7079,10 @@ class OccaseState extends State<Occase>
          ctx,
          _lpChatMsgs.isNotEmpty,
 	 Screen.favorites,
-         _exDetailsRoot,
-         _inDetailsRoot,
-         _favPosts,
-         _trees,
+         _appState.exDetailsRoot,
+         _appState.inDetailsRoot,
+         _appState.favPosts,
+         _appState.trees,
          _onChatPressed,
          _onChatLP,
          (int i) { _removePostDialog(ctx, i);},
@@ -7122,12 +7142,12 @@ class OccaseState extends State<Occase>
 
 	    appBarTitle = makePostAppBarWdg(
                screen: _botBarIdx,
-	       trees: _trees,
+	       trees: _appState.trees,
 	    );
 
 	    appBarLeading = IconButton(
 	       icon: Icon(Icons.arrow_back),
-	       onPressed: () { return _onWillPopMenu(_trees, 1);},
+	       onPressed: () { return _onWillPopMenu(_appState.trees, 1);},
 	    );
 	 }
       }
