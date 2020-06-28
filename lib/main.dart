@@ -41,6 +41,7 @@ typedef OnPressedFn4 = void Function(BuildContext);
 typedef OnPressedFn5 = void Function(BuildContext, int, int);
 typedef OnPressedFn6 = void Function(int, RangeValues);
 typedef OnPressedFn7 = bool Function();
+typedef OnPressedFn8 = void Function(int, double);
 
 enum Screen {posts, searches, favorites}
 
@@ -706,15 +707,6 @@ Future<void> removeLpChat(Coord c, Persistency p) async
 
    final int n = await p.deleteChatStElem(c.post.id, c.chat.peer);
    assert(n == 1);
-}
-
-void onPinPostImpl(Post post)
-{
-   if (post.pinDate == 0) {
-      post.pinDate = DateTime.now().millisecondsSinceEpoch;
-   } else {
-      post.pinDate = 0;
-   }
 }
 
 Future<Null> main() async
@@ -1490,7 +1482,75 @@ List<Widget> makeNewPostDetailScreen(
    return all;
 }
 
-WillPopScope makeNewPostScreens(
+Widget makeNewPostFinalScreen({
+   final Post post,
+   final List<Tree> trees,
+   final int screen,
+   final Node exDetailsTree,
+   final Node inDetailsTree,
+   final List<File> imgFiles,
+   final OnPressedFn2 onAddPhoto,
+   final OnPressedFn4 onPublishPost,
+   final OnPressedFn4 onRemovePost,
+}) {
+
+   // NOTE: This ListView is used to provide a new context, so that
+   // it is possible to show the snackbar using the scaffold.of on
+   // the new context.
+
+   return ListView.builder(
+      shrinkWrap: true,
+      padding: const EdgeInsets.all(0.0),
+      itemCount: 3,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+	 if (i == 0)
+	    return makeNewPost(
+	       ctx: ctx,
+	       screen: Screen.searches,
+	       snackbarStr: g.param.cancelNewPost,
+	       post: post,
+	       exDetailsTree: exDetailsTree,
+	       inDetailsTree: inDetailsTree,
+	       trees: trees,
+	       imgFiles: imgFiles,
+	       onAddPhoto: onAddPhoto,
+	       onExpandImg: (int j){ print('Noop00'); },
+	       onAddPostToFavorite: () { print('Noop01'); },
+	       onDelPost: () { print('Noop02');},
+	       onSharePost: () { print('Noop03');},
+	       onReportPost: () { print('Noop05');},
+	       onPinPost: () { print('Noop06');},
+	    );
+
+	 if (i == 1) {
+	    return Padding(
+		  padding: EdgeInsets.only(top: 50.0),
+		  child: createRaisedButton(
+		     () {onRemovePost(ctx);},
+		     g.param.cancel,
+		     stl.expTileCardColor,
+		     Colors.black,
+	       ),
+	    );
+	 }
+
+	 if (i == 2) {
+	    return Padding(
+		  padding: EdgeInsets.only(top: 50.0),
+		  child: createRaisedButton(
+		     () { onPublishPost(ctx); },
+		     g.param.newPostAppBarTitle,
+		     stl.colorScheme.secondary,
+		     stl.colorScheme.onSecondary,
+	       ),
+	    );
+	 }
+      },
+   );
+}
+
+WillPopScope makeNewPostScreens({
    BuildContext ctx,
    final Post post,
    final List<Tree> trees,
@@ -1500,79 +1560,32 @@ WillPopScope makeNewPostScreens(
    final Node inDetailsTree,
    final List<File> imgFiles,
    final bool filenamesTimerActive,
-   Function onExDetail,
-   Function onPostLeafPressed,
-   Function onPostNodePressed,
-   Function onWillPopMenu,
-   Function onNewPostBotBarTapped,
-   Function onInDetail,
-   Function onRangeValueChanged,
-   OnPressedFn2 onAddPhoto,
-   OnPressedFn4 onPublishPost,
-   OnPressedFn4 onRemovePost,
-) {
-   Widget appBarTitleWidget = Text(
-      g.param.newPostAppBarTitle,
-      style: stl.appBarLtTitle,
-   );
-
+   final OnPressedFn3 onExDetail,
+   final OnPressedFn1 onPostLeafPressed,
+   final OnPressedFn1 onPostNodePressed,
+   final OnPressedFn7 onWillPopMenu,
+   final OnPressedFn1 onNewPostBotBarTapped,
+   final OnPressedFn3 onInDetail,
+   final OnPressedFn8 onRangeValueChanged,
+   final OnPressedFn2 onAddPhoto,
+   final OnPressedFn4 onPublishPost,
+   final OnPressedFn4 onRemovePost,
+}) {
    List<Widget> ww = List<Widget>();
    if (screen == 3) {
-      // NOTE: This ListView is used to provide a new context, so that
-      // it is possible to show the snackbar using the scaffold.of on
-      // the new context.
-      ListView wid = ListView.builder(
-         shrinkWrap: true,
-         padding: const EdgeInsets.all(0.0),
-         itemCount: 3,
-         itemBuilder: (BuildContext ctx, int i)
-         {
-	    if (i == 0)
-	       return makeNewPost(
-		  ctx: ctx,
-		  screen: Screen.searches,
-		  snackbarStr: g.param.cancelNewPost,
-		  post: post,
-		  exDetailsTree: exDetailsTree,
-		  inDetailsTree: inDetailsTree,
-		  trees: trees,
-		  imgFiles: imgFiles,
-		  onAddPhoto: onAddPhoto,
-		  onExpandImg: (int j){ print('Noop00'); },
-		  onAddPostToFavorite: () { print('Noop01'); },
-		  onDelPost: () { print('Noop02');},
-		  onSharePost: () { print('Noop03');},
-		  onReportPost: () { print('Noop05');},
-		  onPinPost: () { print('Noop06');},
-	       );
-
-	    if (i == 1) {
-	       return Padding(
-		     padding: EdgeInsets.only(top: 50.0),
-		     child: createRaisedButton(
-			() {onRemovePost(ctx);},
-			g.param.cancel,
-			stl.expTileCardColor,
-			Colors.black,
-		  ),
-	       );
-	    }
-
-	    if (i == 2) {
-	       return Padding(
-		     padding: EdgeInsets.only(top: 50.0),
-		     child: createRaisedButton(
-			() { onPublishPost(ctx); },
-			g.param.newPostAppBarTitle,
-			stl.colorScheme.secondary,
-			stl.colorScheme.onSecondary,
-		  ),
-	       );
-	    }
-         },
+      Widget finalScreen = makeNewPostFinalScreen(
+	 post: post,
+	 trees: trees,
+	 screen: screen,
+	 exDetailsTree: exDetailsTree,
+	 inDetailsTree: inDetailsTree,
+	 imgFiles: imgFiles,
+	 onAddPhoto: onAddPhoto,
+	 onPublishPost: onPublishPost,
+	 onRemovePost: onRemovePost,
       );
 
-      ww.add(wid);
+      ww.add(finalScreen);
 
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
@@ -1609,22 +1622,13 @@ WillPopScope makeNewPostScreens(
          onPostNodePressed);
 
       ww.add(wid);
-
-      appBarTitleWidget = ListTile(
-         title: Text(
-            g.param.newPostAppBarTitle,
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: stl.appBarLtTitle,
-         ),
-         dense: true,
-         subtitle: Text(trees[screen].getStackNames(),
-            maxLines: 1,
-            overflow: TextOverflow.clip,
-            style: stl.appBarLtSubtitle,
-         ),
-      );
    }
+
+   Widget appBarTitleWidget = makeSearchAppBar(
+      screen: screen,
+      trees: trees,
+      title: g.param.newPostAppBarTitle,
+   );
 
    AppBar appBar = AppBar(
       title: appBarTitleWidget,
@@ -1661,7 +1665,7 @@ WillPopScope makeNewPostScreens(
    );
 }
 
-Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
+Widget makeSearchFinalScreen(BuildContext ctx, Function onPressed)
 {
    // See the comment in _onPostSelection for why I removed the middle
    // button for now.
@@ -1690,22 +1694,19 @@ Widget makeNewFiltersEndWidget(BuildContext ctx, Function onPressed)
    );
 }
 
-Widget makePostAppBarWdg({
+Widget makeSearchAppBar({
    final int screen,
    final List<Tree> trees,
+   final String title,
 }) {
    assert(screen < 4);
 
    if (screen == 3 || screen == 2)
-      return Text(
-	 g.param.filterAppBarTitle,
-	 style: stl.appBarLtTitle,
-      );
+      return Text(title, style: stl.appBarLtTitle);
 
    return ListTile(
       dense: true,
-      title: Text(
-	 g.param.filterAppBarTitle,
+      title: Text(title,
 	 maxLines: 1,
 	 overflow: TextOverflow.clip,
 	 style: stl.appBarLtTitle,
@@ -1732,7 +1733,7 @@ Widget makeSearchScreenWdg({
    final OnPressedFn6 onRangeChanged,
 }) {
    if (screen == 3)
-      return makeNewFiltersEndWidget(ctx, onSendFilters);
+      return makeSearchFinalScreen(ctx, onSendFilters);
 
    if (screen == 2) {
       List<Widget> foo = List<Widget>();
@@ -1939,7 +1940,7 @@ FloatingActionButton makeFaButton(
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
          backgroundColor: Theme.of(ctx).colorScheme.secondary,
-	 mini: true,
+	 mini: false,
          child: Icon(
             Icons.send,
             color: Theme.of(ctx).colorScheme.onSecondary,
@@ -1956,7 +1957,7 @@ FloatingActionButton makeFaButton(
 
    return FloatingActionButton(
       backgroundColor: Theme.of(ctx).colorScheme.secondary,
-      mini: true,
+      mini: false,
       child: Icon(id,
          color: Theme.of(ctx).colorScheme.onSecondary,
       ),
@@ -1988,7 +1989,7 @@ Widget makeFAButtonMiddleScreen(
    return FloatingActionButton(
       onPressed: onSearch,
       backgroundColor: stl.colorScheme.secondary,
-      mini: true,
+      mini: false,
       child: Icon(
 	 Icons.search,
 	 color: stl.colorScheme.onSecondary,
@@ -2463,7 +2464,7 @@ Widget makeChatScreen(
          bottom: 20.0,
          right: 15.0,
          child: FloatingActionButton(
-            mini: true,
+            mini: false,
             onPressed: onChatJumpDown,
             backgroundColor: Theme.of(ctx).colorScheme.secondary,
             child: Icon(Icons.expand_more,
@@ -4812,6 +4813,28 @@ class AppState {
       list.sort(compPosts);
       return rowid;
    }
+
+   Future<void> setLastPostId(int id) async
+   {
+      await persistency.updateLastSeenPostId(id);
+   }
+
+   Future<void> setNUnreadMsgs(int id, String from) async
+   {
+      await persistency.updateNUnreadMsgs(id, from);
+   }
+
+   Future<void> setPinPostDate(int i, bool fav) async
+   {
+      List<Post> list = ownPosts;
+      if (fav)
+	 list = favPosts;
+
+      Post post = list[i];
+      await persistency.updatePostPinDate(post.pinDate, post.id);
+      post.pinDate = post.pinDate == 0 ? DateTime.now().millisecondsSinceEpoch : 0;
+      list.sort(compPosts);
+   }
 }
 
 //_____________________________________________________________________
@@ -5280,9 +5303,7 @@ class OccaseState extends State<Occase>
 
       assert(l >= _nNewPosts);
 
-      if (l == _nNewPosts)
-         return 0;
-
+      print('----------> $l $_nNewPosts ${_appState.posts.length} ');
       // The index of the last post already shown to the user.
       return l - _nNewPosts - 1;
    }
@@ -5290,7 +5311,7 @@ class OccaseState extends State<Occase>
    Future<void> _onShowNewPosts() async
    {
       final int idx = _makeLastSeenPostId();
-      await _appState.persistency.updateLastSeenPostId(_appState.posts[idx].id);
+      await _appState.setLastPostId(_appState.posts[idx].id);
       setState((){});
    }
 
@@ -5360,7 +5381,7 @@ class OccaseState extends State<Occase>
 
    Future<bool> _onPopChat() async
    {
-      await _appState.persistency.updateNUnreadMsgs(_post.id, _chat.peer);
+      await _appState.setNUnreadMsgs(_post.id, _chat.peer);
 
       _showChatJumpDownButton = false;
       _dragedIdx = -1;
@@ -5704,15 +5725,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onPinPost(int i) async
    {
-      if (_isOnFav()) {
-         onPinPostImpl(_appState.favPosts[i]);
-	 await _appState.persistency.updatePostPinDate(_appState.favPosts[i].pinDate, _appState.favPosts[i].id);
-	 _appState.favPosts.sort(compPosts);
-      } else {
-         onPinPostImpl(_appState.ownPosts[i]);
-	 await _appState.persistency.updatePostPinDate(_appState.ownPosts[i].pinDate, _appState.ownPosts[i].id);
-	 _appState.ownPosts.sort(compPosts);
-      }
+      await _appState.setPinPostDate(i, _isOnFav());
       setState(() { });
    }
 
@@ -6407,7 +6420,8 @@ class OccaseState extends State<Occase>
 
       if (showPosts) {
          final int idx = _makeLastSeenPostId();
-	 await _appState.persistency.updateLastSeenPostId(_appState.posts[idx].id);
+	 if (idx != -1)
+	    await _appState.setLastPostId(_appState.posts[idx].id);
       }
 
       setState(() { });
@@ -6930,25 +6944,25 @@ class OccaseState extends State<Occase>
 
       if (_newPostPressed) {
          return makeNewPostScreens(
-            ctx,
-            _post,
-            _appState.trees,
-            _txtCtrl,
-            _botBarIdx,
-            _appState.exDetailsRoot,
-            _appState.inDetailsRoot,
-            _imgFiles,
-            _filenamesTimer.isActive,
-            _onExDetails,
-            _onPostLeafPressed,
-            _onPostNodePressed,
-            () { return _onWillPopMenu(_appState.trees, 0); },
-            _onNewPostBotBarTapped,
-            _onNewPostInDetail,
-            _onRangeValueChanged,
-            _onAddPhoto,
-	    (var a) { _onSendNewPost(a, 1); },
-	    (var a) { _onSendNewPost(a, 0); },
+            ctx: ctx,
+            post: _post,
+            trees: _appState.trees,
+            txtCtrl: _txtCtrl,
+            screen: _botBarIdx,
+            exDetailsTree: _appState.exDetailsRoot,
+            inDetailsTree: _appState.inDetailsRoot,
+            imgFiles: _imgFiles,
+            filenamesTimerActive: _filenamesTimer.isActive,
+            onExDetail: _onExDetails,
+            onPostLeafPressed: _onPostLeafPressed,
+            onPostNodePressed: _onPostNodePressed,
+            onWillPopMenu: () { return _onWillPopMenu(_appState.trees, 0); },
+            onNewPostBotBarTapped: _onNewPostBotBarTapped,
+            onInDetail: _onNewPostInDetail,
+            onRangeValueChanged: _onRangeValueChanged,
+            onAddPhoto: _onAddPhoto,
+            onPublishPost: (var a) { _onSendNewPost(a, 1); },
+            onRemovePost: (var a) { _onSendNewPost(a, 0); },
          );
       }
 
@@ -7152,9 +7166,10 @@ class OccaseState extends State<Occase>
 	       _botBarIdx,
 	    );
 
-	    appBarTitle = makePostAppBarWdg(
+	    appBarTitle = makeSearchAppBar(
                screen: _botBarIdx,
 	       trees: _appState.trees,
+	       title: g.param.filterAppBarTitle,
 	    );
 
 	    appBarLeading = IconButton(
