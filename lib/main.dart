@@ -4725,22 +4725,92 @@ class AppState {
       // from adding a chat twice. This can happen when he makes a new search,
       // since in that case the lastPostId will be updated to 0.
 
-      final int postId = posts[i].id;
-      var f = (e) { return e.id == postId; };
+      Post post = posts[i];
+      posts.removeAt(i);
 
-      if (favPosts.indexWhere(f) != -1)
-	 return -1;
+      var f = (e) { return e.id == post.id; };
+
+      final int a = favPosts.indexWhere(f);
+      if (a != -1)
+	 return a;
       
-      posts[i].status = 2;
-      final int k = posts[i].addChat(posts[i].from, posts[i].nick, posts[i].avatar);
-      await persistency.insertChatOnPost2(posts[i].id, posts[i].chats[k]);
+      post.status = 2;
+      final int k = post.addChat(post.from, post.nick, post.avatar);
+      await persistency.insertChatOnPost2(post.id, post.chats[k]);
 
-      favPosts.add(posts[i]);
+      favPosts.add(post);
       favPosts.sort(compPosts);
 
-      final int h = favPosts.indexWhere(f);
-      assert(h != -1);
-      return h;
+      return favPosts.indexWhere(f);
+   }
+
+   Future<void> delPostWithId(int i) async
+   {
+      await persistency.delPostWithId(posts[i].id);
+      posts.removeAt(i);
+   }
+
+   Future<void>
+   setChatAckStatus(String from, int postId, List<int> rowids, int status) async
+   {
+      List<Post> list = favPosts;
+      IdxPair p = findChat(list, from, postId);
+      if (IsInvalidPair(p)) {
+	 list = ownPosts;
+	 p = findChat(ownPosts, from, postId);
+      }
+
+      if (IsInvalidPair(p)) {
+	 print('Chat not found: from = $from, postId = $postId');
+	 return;
+      }
+
+      for (int rowid in rowids) {
+	 final ChatMetadata cm = list[p.i].chats[p.j];
+	 cm.setAckStatus(rowid, status);
+	 cm.lastChatItem.status = status;
+
+	 // Typically there won't be many rowids in this loop so it is fine to
+	 // use await here. The ideal case however is to offer a List<ChatItem>
+	 // interface in Persistency and use batch there.
+
+	 await persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
+      }
+   }
+
+   Future<void>
+   setCredentials(String id, String password) async
+   {
+      cfg.appId = id;
+      cfg.appPwd = password;
+      await persistency.updateAppCredentials(id, password);
+   }
+
+   Future<int>
+   setChatMessage(int postId, String peer, ChatItem ci, bool fav) async
+   {
+      List<Post> list = ownPosts;
+      if (fav)
+	 list = favPosts;
+
+      final int i = list.indexWhere((e) { return e.id == postId;});
+      assert(i != -1);
+
+      Post post = list[i];
+      // We have to make sure every unread msg is marked as read
+      // before we receive any reply.
+      final int j = post.getChatHistIdx(peer);
+      assert(j != -1);
+
+      final int rowid = await persistency.insertChatMsg(postId, peer, ci);
+      ci.rowid = rowid;
+      post.chats[j].addChatItem(ci);
+
+      await persistency.insertChatOnPost(postId, post.chats[j]);
+
+      post.chats.sort(compChats);
+      list.sort(compPosts);
+      return rowid;
    }
 }
 
@@ -5142,8 +5212,7 @@ class OccaseState extends State<Occase>
    Future<void> _onMovePostToFav(int i) async
    {
       final int h = await _appState.moveToFavorite(i);
-      if (h == -1)
-	 return;
+      assert(h != -1);
 
       // We should be using the animate function below, but there is no way
       // one can wait until the animation is ready. The is needed to be able to call
@@ -5165,7 +5234,6 @@ class OccaseState extends State<Occase>
    // j = 3: Share.
    Future<void> _onPostSelection(int i, int j) async
    {
-      print('$i $j');
       assert(_isOnPosts());
 
       if (j == 3) {
@@ -5176,11 +5244,9 @@ class OccaseState extends State<Occase>
       if (j == 1) {
 	 await _onMovePostToFav(i);
       } else {
-         await _appState.persistency.delPostWithId(_appState.posts[i].id);
+         await _appState.delPostWithId(i);
          // TODO: Send command to server to report if j = 2.
       }
-
-      _appState.posts.removeAt(i);
 
       setState(() { });
    }
@@ -5275,13 +5341,8 @@ class OccaseState extends State<Occase>
                msg: c2.chat.msgs[c2.msgIdx].msg,
                date: now,
             );
-            if (_isOnFav()) {
-               await _onSendChatImpl(
-                  _appState.favPosts, c1.post.id, c1.chat.peer, ci);
-            } else {
-               await _onSendChatImpl(
-                  _appState.ownPosts, c1.post.id, c1.chat.peer, ci);
-            }
+
+	    await _onSendChatImpl(c1.post.id, c1.chat.peer, ci);
          }
       }
 
@@ -5328,20 +5389,14 @@ class OccaseState extends State<Occase>
 
    Future<void> _onSendChat() async
    {
-      final int now = DateTime.now().millisecondsSinceEpoch;
-      List<Post> posts = _appState.ownPosts;
-      if (_isOnFav())
-         posts = _appState.favPosts;
-
       _chat.nUnreadMsgs = 0;
       await _onSendChatImpl(
-         posts,
          _post.id,
          _chat.peer,
          ChatItem(
             isRedirected: 0,
             msg: _txtCtrl.text,
-            date: now,
+            date: DateTime.now().millisecondsSinceEpoch,
             refersTo: _dragedIdx,
             status: 0,
          ),
@@ -5971,31 +6026,16 @@ class OccaseState extends State<Occase>
    }
 
    Future<void> _onSendChatImpl(
-      List<Post> posts,
       int postId,
       String peer,
       ChatItem ci,
    ) async {
       try {
-         if (ci.msg.isEmpty)
-            return;
+	 if (ci.msg.isEmpty)
+	    return;
 
-         final int i = posts.indexWhere((e) { return e.id == postId;});
-         assert(i != -1);
-
-         // We have to make sure every unread msg is marked as read
-         // before we receive any reply.
-         final int j = posts[i].getChatHistIdx(peer);
-         assert(j != -1);
-
-         final int rowid = await _appState.persistency.insertChatMsg(postId, peer, ci);
-         ci.rowid = rowid;
-         posts[i].chats[j].addChatItem(ci);
-
-         await _appState.persistency.insertChatOnPost(postId, posts[i].chats[j]);
-
-         posts[i].chats.sort(compChats);
-         posts.sort(compPosts);
+	 final int rowid = 
+	    await _appState.setChatMessage(postId, peer, ci, _isOnFav());
 
          // At a certain point in the future, I want to stop sending
          // the user avatar on every message and deduced it from the
@@ -6013,8 +6053,7 @@ class OccaseState extends State<Occase>
          , 'avatar': emailToGravatarHash(_appState.cfg.email)
          };
 
-         final
-         String payload = jsonEncode(msgMap);
+         final String payload = jsonEncode(msgMap);
          await _sendAppMsg(payload, 1);
 
       } catch(e) {
@@ -6213,34 +6252,12 @@ class OccaseState extends State<Occase>
    }
 
    Future<void> _onChatAck(
-      final String from,
-      final int postId,
-      final List<int> rowids,
-      final int status,
+      String from,
+      int postId,
+      List<int> rowids,
+      int status,
    ) async {
-      List<Post> posts = _appState.favPosts;
-      IdxPair p = findChat(posts, from, postId);
-      if (IsInvalidPair(p)) {
-	 posts = _appState.ownPosts;
-	 p = findChat(_appState.ownPosts, from, postId);
-      }
-
-      if (IsInvalidPair(p)) {
-	 print('Chat not found: from = $from, postId = $postId');
-	 return;
-      }
-
-      for (int rowid in rowids) {
-	 final ChatMetadata cm = posts[p.i].chats[p.j];
-	 cm.setAckStatus(rowid, status);
-	 cm.lastChatItem.status = status;
-
-	 // Typically there won't be many rowids in this loop so it is fine to
-	 // use await here. The ideal case however is to offer a List<ChatItem>
-	 // interface in Persistency and use batch there.
-
-	 await _appState.persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
-      }
+      _appState.setChatAckStatus(from, postId, rowids, status);
    }
 
    Future<void> _onMessage(Map<String, dynamic> ack) async
@@ -6274,16 +6291,13 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      String appId = ack["id"];
-      String appPwd = ack["password"];
+      String id = ack["id"];
+      String pwd = ack["password"];
 
-      if (appId == null || appPwd == null)
+      if (id == null || pwd == null)
          return;
 
-      _appState.cfg.appId = ack["id"];
-      _appState.cfg.appPwd = ack["password"];
-
-      await _appState.persistency.updateAppCredentials(_appState.cfg.appId, _appState.cfg.appPwd);
+      await _appState.setCredentials(id, pwd);
 
       // Retrieves some posts for the newly registered user.
       _subscribeToChannels(0);
@@ -6363,10 +6377,8 @@ class OccaseState extends State<Occase>
       // clicking the search buttom, we have to clear all old posts before
       // showing the new posts to the user.
       final bool showPosts = _appState.cfg.lastPostId == 0 || _appState.posts.isEmpty;
-      if (_appState.cfg.lastPostId == 0) {
-         await _appState.persistency.clearPosts();
-         _appState.posts.clear();
-      }
+      if (_appState.cfg.lastPostId == 0)
+	 await _appState.clearPosts();
 
       for (var item in ack['items']) {
          try {
