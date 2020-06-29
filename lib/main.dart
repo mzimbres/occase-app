@@ -43,7 +43,7 @@ typedef OnPressedFn6 = void Function(int, RangeValues);
 typedef OnPressedFn7 = bool Function();
 typedef OnPressedFn8 = void Function(int, double);
 
-enum Screen {posts, searches, favorites}
+enum Screen {own, searches, favorites}
 
 class Persistency2 {
    int insertPostId = 0;
@@ -763,10 +763,7 @@ Widget makeAppBarVertAction(Function onSelected)
    );
 }
 
-List<Widget> makeOnLongPressedActions(
-   BuildContext ctx,
-   Function deleteChatEntryDialog,
-   Function pinChat)
+List<Widget> makeOnLongPressedActions(OnPressedFn0 deleteChatEntryDialog, Function pinChat)
 {
    List<Widget> actions = List<Widget>();
 
@@ -780,26 +777,24 @@ List<Widget> makeOnLongPressedActions(
    IconButton delChatBut = IconButton(
       icon: Icon(Icons.delete_forever, color: Colors.white),
       tooltip: g.param.deleteChat,
-      onPressed: () { deleteChatEntryDialog(ctx); });
+      onPressed: deleteChatEntryDialog,
+   );
 
    actions.add(delChatBut);
 
    return actions;
 }
 
-Scaffold makeWaitMenuScreen(BuildContext ctx)
+Scaffold makeWaitMenuScreen()
 {
    return Scaffold(
       appBar: AppBar(title: Text(g.param.appName)),
       body: Center(child: CircularProgressIndicator()),
-      backgroundColor: Theme.of(ctx).colorScheme.background,
+      backgroundColor: stl.colorScheme.background,
    );
 }
 
-Widget makeImgExpandScreen(
-   BuildContext ctx,
-   Function onWillPopScope,
-   Post post)
+Widget makeImgExpandScreen(Function onWillPopScope, Post post)
 {
    //final double width = MediaQuery.of(ctx).size.width;
    //final double height = MediaQuery.of(ctx).size.height;
@@ -837,19 +832,18 @@ Widget makeImgExpandScreen(
       child: Scaffold(
          //appBar: AppBar(title: Text(g.param.appName)),
          body: Center(child: foo),
-         backgroundColor: Theme.of(ctx).colorScheme.primary,
+         backgroundColor: stl.colorScheme.primary,
       ),
    );
 }
 
 TextField makeNickTxtField(
-   BuildContext ctx,
    TextEditingController txtCtrl,
    Icon icon,
    int fieldMaxLength,
    String hint,
 ) {
-   Color focusedColor = Theme.of(ctx).colorScheme.primary;
+   Color focusedColor = stl.colorScheme.primary;
 
    Color enabledColor = focusedColor;
 
@@ -884,7 +878,6 @@ TextField makeNickTxtField(
 }
 
 Scaffold makeRegisterScreen(
-   BuildContext ctx,
    TextEditingController emailCtrl,
    TextEditingController nickCtrl,
    Function onContinue,
@@ -896,16 +889,20 @@ Scaffold makeRegisterScreen(
       emailCtrl.text = previousEmail;
 
    TextField emailTf = makeNickTxtField(
-      ctx, emailCtrl, Icon(Icons.email),
-      cts.emailMaxLength, g.param.emailHint,
+      emailCtrl,
+      Icon(Icons.email),
+      cts.emailMaxLength,
+      g.param.emailHint,
    );
 
    if (previousNick.isNotEmpty)
       nickCtrl.text = previousNick;
 
    TextField nickTf = makeNickTxtField(
-      ctx, nickCtrl, Icon(Icons.person),
-      cts.nickMaxLength, g.param.nickHint,
+      nickCtrl,
+      Icon(Icons.person),
+      cts.nickMaxLength,
+      g.param.nickHint,
    );
 
    Widget button = createRaisedButton(
@@ -944,7 +941,6 @@ Scaffold makeRegisterScreen(
 }
 
 Scaffold makeNtfScreen(
-   BuildContext ctx,
    Function onChange,
    final String appBarTitle,
    final NtfConfig conf,
@@ -1208,15 +1204,14 @@ int searchBitOn(int o, int n)
 }
 
 RichText makeExpTileTitle(
-   BuildContext ctx,
    String first,
    String second,
    String sep,
-   bool changeColor)
-{
+   bool changeColor,
+) {
    Color color = changeColor
-               ? Theme.of(ctx).colorScheme.secondaryVariant
-               : Theme.of(ctx).colorScheme.secondary;
+               ? stl.colorScheme.secondaryVariant
+               : stl.colorScheme.secondary;
 
    return RichText(
       text: TextSpan(
@@ -1233,11 +1228,10 @@ RichText makeExpTileTitle(
 }
 
 Widget wrapOnDetailExpTitle(
-   BuildContext ctx,
    Widget title,
    List<Widget> children,
-   bool initiallyExpanded)
-{
+   bool initiallyExpanded,
+) {
    // Passing a global key has the effect that an expansion tile will
    // collapse after setState is called, but without animation not in
    // an nice way.
@@ -1249,7 +1243,7 @@ Widget wrapOnDetailExpTitle(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Theme(
-         data: makeExpTileThemeData(ctx),
+         data: makeExpTileThemeData(),
          child: ExpansionTile(
              //key: key,
              backgroundColor: stl.expTileCardColor,
@@ -1262,7 +1256,6 @@ Widget wrapOnDetailExpTitle(
 }
 
 Widget makeNewPostDetailExpTile(
-   BuildContext ctx,
    Function onInDetail,
    Node titleNode,
    int state,
@@ -1270,21 +1263,19 @@ Widget makeNewPostDetailExpTile(
 ) {
    List<Widget> bar =
       makeNewPostDetailElemList(
-         ctx,
          onInDetail,
          state,
          titleNode.children,
       );
 
    final RichText richTitle = makeExpTileTitle(
-      ctx,
       titleNode.name(g.param.langIdx),
       strDisplay,
       ':',
       state == 0,
    );
 
-   return wrapOnDetailExpTitle(ctx, richTitle, bar, false);
+   return wrapOnDetailExpTitle(richTitle, bar, false);
 }
 
 int counterBitsSet(int v)
@@ -1376,7 +1367,6 @@ List<String> getExDetailsStrings(Node exDetailsTree, Post post)
 }
 
 List<Widget> makeNewPostDetailScreen(
-   BuildContext ctx,
    Function onExDetail,
    Function onInDetail,
    Post post,
@@ -1393,7 +1383,6 @@ List<Widget> makeNewPostDetailScreen(
    final int l1 = exDetailsTree.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
       Widget foo = makeNewPostDetailExpTile(
-         ctx,
          (int j) {onExDetail(i, j);},
          exDetailsTree.children[idx].children[i],
          post.exDetails[i],
@@ -1407,7 +1396,6 @@ List<Widget> makeNewPostDetailScreen(
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
-         ctx,
          (int j) {onInDetail(i, j);},
          inDetailsTree.children[idx].children[i],
          post.inDetails[i],
@@ -1431,15 +1419,13 @@ List<Widget> makeNewPostDetailScreen(
       Column sliderCol = Column(children: col);
 
       all.add(wrapOnDetailExpTitle(
-            ctx,
             makeExpTileTitle(
-               ctx,
                g.param.rangePrefixes[i],
                post.rangeValues[i].toString(),
                ':',
                false,
             ),
-            <Widget>[wrapDetailRowOnCard(ctx, sliderCol)],
+            <Widget>[wrapDetailRowOnCard(sliderCol)],
             false,
          ),
       );
@@ -1463,9 +1449,8 @@ List<Widget> makeNewPostDetailScreen(
    );
 
    all.add(wrapOnDetailExpTitle(
-         ctx,
          Text(g.param.postDescTitle, style: stl.tsSubheadOnPrimary),
-         <Widget>[wrapDetailRowOnCard(ctx, pad)],
+         <Widget>[wrapDetailRowOnCard(pad)],
          false,
       ),
    );
@@ -1550,8 +1535,66 @@ Widget makeNewPostFinalScreen({
    );
 }
 
-WillPopScope makeNewPostScreens({
-   BuildContext ctx,
+Widget makeAppBarWdg({
+   bool hasLpChatMsgs,
+   bool newPostPressed,
+   bool newSearchPressed,
+   final int botBarIndex,
+   final Screen screen,
+   final List<Tree> trees,
+}) {
+   final bool fav = screen == Screen.favorites;
+   final bool own = screen == Screen.own;
+   final bool search = screen == Screen.searches;
+
+   if ((fav || own) && hasLpChatMsgs)
+      return Text(g.param.msgOnRedirectingChat);
+
+   if (own && newPostPressed)
+      return makeSearchAppBar(
+	 screen: botBarIndex,
+	 trees: trees,
+	 title: g.param.newPostAppBarTitle,
+      );
+
+   if (search && newSearchPressed)
+      return makeSearchAppBar(
+	 screen: botBarIndex,
+	 trees: trees,
+	 title: g.param.filterAppBarTitle,
+      );
+
+   return Text(g.param.appName);
+}
+
+BottomNavigationBar makeBotNavBar({
+   int botBarIndex,
+   bool newPostPressed,
+   bool newSearchPressed,
+   Screen screen,
+   OnPressedFn1 onNewPostBotBarTapped,
+   OnPressedFn1 onSearchBotBarPressed,
+}) {
+   if ((screen == Screen.own) && newPostPressed)
+      return makeBottomBarItems(
+	 stl.newPostTabIcons,
+	 g.param.newPostTabNames,
+	 onNewPostBotBarTapped,
+	 botBarIndex,
+      );
+
+   if ((screen == Screen.searches) && newSearchPressed)
+      return makeBottomBarItems(
+	 stl.filterTabIcons,
+	 g.param.filterTabNames,
+	 onSearchBotBarPressed,
+	 botBarIndex,
+      );
+
+   return null;
+}
+
+Widget makeNewPostScreenWdgs({
    final Post post,
    final List<Tree> trees,
    final TextEditingController txtCtrl,
@@ -1563,15 +1606,13 @@ WillPopScope makeNewPostScreens({
    final OnPressedFn3 onExDetail,
    final OnPressedFn1 onPostLeafPressed,
    final OnPressedFn1 onPostNodePressed,
-   final OnPressedFn7 onWillPopMenu,
-   final OnPressedFn1 onNewPostBotBarTapped,
    final OnPressedFn3 onInDetail,
    final OnPressedFn8 onRangeValueChanged,
    final OnPressedFn2 onAddPhoto,
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
 }) {
-   List<Widget> ww = List<Widget>();
+   List<Widget> list = List<Widget>();
    if (screen == 3) {
       Widget finalScreen = makeNewPostFinalScreen(
 	 post: post,
@@ -1585,11 +1626,10 @@ WillPopScope makeNewPostScreens({
 	 onRemovePost: onRemovePost,
       );
 
-      ww.add(finalScreen);
+      list.add(finalScreen);
 
    } else if (screen == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
-         ctx,
          onExDetail,
          onInDetail,
          post,
@@ -1613,59 +1653,29 @@ WillPopScope makeNewPostScreens({
          },
       );
 
-      ww.add(wid);
+      list.add(wid);
    } else {
       ListView wid = makeNewPostMenuListView(
-         ctx,
          trees[screen].root.last,
          onPostLeafPressed,
          onPostNodePressed);
 
-      ww.add(wid);
+      list.add(wid);
    }
-
-   Widget appBarTitleWidget = makeSearchAppBar(
-      screen: screen,
-      trees: trees,
-      title: g.param.newPostAppBarTitle,
-   );
-
-   AppBar appBar = AppBar(
-      title: appBarTitleWidget,
-      elevation: 0.7,
-      leading: IconButton(
-         icon: Icon(Icons.arrow_back),
-         onPressed: onWillPopMenu
-      ),
-   );
 
    if (filenamesTimerActive) {
       ModalBarrier mb = ModalBarrier(
          color: Colors.grey.withOpacity(0.4),
          dismissible: false,
       );
-      ww.add(mb);
-      ww.add(Center(child: CircularProgressIndicator()));
+      list.add(mb);
+      list.add(Center(child: CircularProgressIndicator()));
    }
 
-   Stack stack = Stack(children: ww);
-
-   return WillPopScope(
-      onWillPop: () async { return onWillPopMenu();},
-      child: Scaffold(
-          appBar: appBar,
-          body: stack,
-          bottomNavigationBar: makeBottomBarItems(
-             stl.newPostTabIcons,
-             g.param.newPostTabNames,
-             onNewPostBotBarTapped,
-             screen,
-          ),
-       ),
-   );
+   return Stack(children: list);
 }
 
-Widget makeSearchFinalScreen(BuildContext ctx, Function onPressed)
+Widget makeSearchFinalScreen(OnPressedFn1 onPressed)
 {
    // See the comment in _onPostSelection for why I removed the middle
    // button for now.
@@ -1677,19 +1687,21 @@ Widget makeSearchFinalScreen(BuildContext ctx, Function onPressed)
       [ Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
-             () {onPressed(ctx, 0);},
+             () {onPressed(0);},
              g.param.newFiltersFinalScreenButton[0],
 	     stl.expTileCardColor,
 	     Colors.black,
-          ),)
+          ),
+	)
       , Padding(
           padding: const EdgeInsets.symmetric(vertical: 40.0),
           child: createRaisedButton(
-             () {onPressed(ctx, 2);},
+             () {onPressed(2);},
              g.param.newFiltersFinalScreenButton[2],
 	     stl.colorScheme.secondary,
 	     stl.colorScheme.onSecondary,
-          ))
+          ),
+	)
       ]
    );
 }
@@ -1720,26 +1732,24 @@ Widget makeSearchAppBar({
 }
 
 Widget makeSearchScreenWdg({
-   BuildContext ctx,
    final int filter,
    final int screen,
    final Node exDetailsFilterNodes,
    final List<Tree> trees,
    final List<int> ranges,
-   final OnPressedFn2 onSendFilters,
+   final OnPressedFn1 onSendFilters,
    final OnPressedFn1 onFilterDetail,
    final OnPressedFn1 onFilterNodePressed,
    final OnPressedFn1 onFilterLeafNodePressed,
    final OnPressedFn6 onRangeChanged,
 }) {
    if (screen == 3)
-      return makeSearchFinalScreen(ctx, onSendFilters);
+      return makeSearchFinalScreen(onSendFilters);
 
    if (screen == 2) {
       List<Widget> foo = List<Widget>();
 
       final Widget vv = makeNewPostDetailExpTile(
-         ctx,
          onFilterDetail,
          exDetailsFilterNodes,
          filter,
@@ -1767,14 +1777,13 @@ Widget makeSearchScreenWdg({
 
          final String rangeTitle = '$vmin2 - $vmax2';
          final RichText rt = makeExpTileTitle(
-            ctx,
             g.param.rangePrefixes[i],
             rangeTitle,
             ':',
             false,
          );
 
-         foo.add(wrapOnDetailExpTitle(ctx, rt, <Widget>[rs], false));
+         foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
       }
 
       return ListView.builder(
@@ -1785,7 +1794,6 @@ Widget makeSearchScreenWdg({
    }
 
    return makeNewFilterListView(
-      ctx,
       trees[screen].root.last,
       onFilterLeafNodePressed,
       onFilterNodePressed,
@@ -1793,13 +1801,13 @@ Widget makeSearchScreenWdg({
    );
 }
 
-Widget wrapDetailRowOnCard(BuildContext ctx, Widget body)
+Widget wrapDetailRowOnCard(Widget body)
 {
    return Card(
       margin: const EdgeInsets.only(
        left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
       ),
-      color: Theme.of(ctx).colorScheme.background,
+      color: stl.colorScheme.background,
       child: body,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
@@ -1809,7 +1817,6 @@ Widget wrapDetailRowOnCard(BuildContext ctx, Widget body)
 }
 
 List<Widget> makeNewPostDetailElemList(
-   BuildContext ctx,
    Function proceed,
    int filter,
    List<Node> list)
@@ -1819,11 +1826,11 @@ List<Widget> makeNewPostDetailElemList(
    for (int i = 0; i < list.length; ++i) {
       bool v = ((filter & (1 << i)) != 0);
 
-      Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
-      Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+      Color avatarBgColor = stl.colorScheme.secondary;
+      Color avatarTxtColor = stl.colorScheme.onSecondary;
       if (v) {
-         avatarBgColor = Theme.of(ctx).colorScheme.primary;
-         avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
+         avatarBgColor = stl.colorScheme.primary;
+         avatarTxtColor = stl.colorScheme.onPrimary;
       }
 
        CheckboxListTile cblt = CheckboxListTile(
@@ -1837,10 +1844,10 @@ List<Widget> makeNewPostDetailElemList(
          title: Text(list[i].name(g.param.langIdx), style: stl.ltTitle),
          value: v,
          onChanged: (bool v) { proceed(i); },
-         activeColor: Theme.of(ctx).colorScheme.primary,
+         activeColor: stl.colorScheme.primary,
       );
 
-       widgets.add(wrapDetailRowOnCard(ctx, cblt));
+       widgets.add(wrapDetailRowOnCard(cblt));
    }
 
    return widgets;
@@ -1904,7 +1911,7 @@ makeTabBar(BuildContext ctx,
 BottomNavigationBar makeBottomBarItems(
    List<IconData> icons,
    List<String> iconLabels,
-   Function onBotBarTapped,
+   OnPressedFn1 onBotBarTapped,
    int i)
 {
    assert(icons.length == iconLabels.length);
@@ -1920,30 +1927,30 @@ BottomNavigationBar makeBottomBarItems(
    }
 
    return BottomNavigationBar(
-             items: items,
-             type: BottomNavigationBarType.fixed,
-             currentIndex: i,
-             onTap: onBotBarTapped);
+      items: items,
+      type: BottomNavigationBarType.fixed,
+      currentIndex: i,
+      onTap: onBotBarTapped,
+   );
 }
 
 FloatingActionButton makeFaButton(
-   BuildContext ctx,
-   Function onNewPost,
-   Function onFwdChatMsg,
+   OnPressedFn0 onNewPost,
+   OnPressedFn0 onFwdChatMsg,
    int lpChats,
-   int lpChatMsgs)
-{
+   int lpChatMsgs,
+) {
    if (lpChats == 0 && lpChatMsgs != 0)
       return null;
 
    IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: Theme.of(ctx).colorScheme.secondary,
+         backgroundColor: stl.colorScheme.secondary,
 	 mini: false,
          child: Icon(
             Icons.send,
-            color: Theme.of(ctx).colorScheme.onSecondary,
+            color: stl.colorScheme.onSecondary,
          ),
          onPressed: onFwdChatMsg,
       );
@@ -1956,10 +1963,10 @@ FloatingActionButton makeFaButton(
       return null;
 
    return FloatingActionButton(
-      backgroundColor: Theme.of(ctx).colorScheme.secondary,
+      backgroundColor: stl.colorScheme.secondary,
       mini: false,
       child: Icon(id,
-         color: Theme.of(ctx).colorScheme.onSecondary,
+         color: stl.colorScheme.onSecondary,
       ),
       onPressed: onNewPost,
    );
@@ -2913,14 +2920,14 @@ ListTile makeFilterListTitle(
    BuildContext ctx,
    Node child,
    Function onTap,
-   Icon trailing)
-{
-   Color avatarBgColor = Theme.of(ctx).colorScheme.secondary;
-   Color avatarTxtColor = Theme.of(ctx).colorScheme.onSecondary;
+   Icon trailing,
+) {
+   Color avatarBgColor = stl.colorScheme.secondary;
+   Color avatarTxtColor = stl.colorScheme.onSecondary;
 
    if (child.leafReach != 0) {
-      avatarBgColor = Theme.of(ctx).colorScheme.primary;
-      avatarTxtColor = Theme.of(ctx).colorScheme.onPrimary;
+      avatarBgColor = stl.colorScheme.primary;
+      avatarTxtColor = stl.colorScheme.onPrimary;
    }
 
    return
@@ -2957,12 +2964,11 @@ ListTile makeFilterListTitle(
  *  otherwise the first should be skipped.
  */
 ListView makeNewFilterListView(
-   BuildContext ctx,
    Node o,
    Function onLeafPressed,
    Function onNodePressed,
-   bool makeLeaf)
-{
+   bool makeLeaf,
+) {
    int shift = 0;
    if (makeLeaf || o.children.last.isLeaf())
       shift = 1;
@@ -3380,7 +3386,7 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
    return '$a - $b';
 }
 
-ThemeData makeExpTileThemeData(BuildContext ctx)
+ThemeData makeExpTileThemeData()
 {
    return ThemeData(
       accentColor: Colors.black,
@@ -3897,7 +3903,6 @@ Widget makeEmptyScreenWidget()
 }
 
 Widget makeNewPostLv(
-   BuildContext ctx,
    final int nNewPosts,
    final Node exDetailsTree,
    final Node inDetailsTree,
@@ -3948,11 +3953,10 @@ Widget makeNewPostLv(
 }
 
 ListView makeNewPostMenuListView(
-   BuildContext ctx,
    Node o,
    Function onLeafPressed,
-   Function onNodePressed)
-{
+   Function onNodePressed,
+) {
    return ListView.builder(
       itemCount: o.children.length,
       itemBuilder: (BuildContext ctx, int i)
@@ -4318,7 +4322,6 @@ Widget makeChatsExp(
       title = Text('${ch.length} ${g.param.numberOfChatsSuffix}');
    } else {
       title = makeExpTileTitle(
-         ctx,
          '${ch.length} ${g.param.numberOfChatsSuffix}',
          '$nUnreadChats ${g.param.numberOfUnreadChatsSuffix}',
          ', ',
@@ -4337,7 +4340,7 @@ Widget makeChatsExp(
       expState = true;
 
    return Theme(
-      data: makeExpTileThemeData(ctx),
+      data: makeExpTileThemeData(),
       child: ExpansionTile(
          backgroundColor: stl.expTileCardColor,
          initiallyExpanded: expState,
@@ -4365,8 +4368,7 @@ Widget wrapPostOnButton(
    );
 }
 
-Widget makeChatTab(
-   BuildContext ctx,
+Widget makeChatTab({
    final bool isFwdChatMsgs,
    final Screen screen,
    final Node exDetailsTree,
@@ -4380,7 +4382,7 @@ Widget makeChatTab(
    OnPressedFn5 onUserInfoPressed,
    OnPressedFn3 onExpandImg1,
    OnPressedFn1 onSharePost,
-) {
+}) {
    if (posts.length == 0)
       return makeEmptyScreenWidget();
 
@@ -5031,6 +5033,13 @@ class OccaseState extends State<Occase>
          print('Trying to reconnect.');
          _stablishNewConnection(_fcmToken);
       }
+   }
+
+   Screen _screen()
+   {
+      return _isOnOwn() ? Screen.own :
+	     _isOnFav() ? Screen.favorites :
+	                  Screen.searches;
    }
 
    bool _isOnOwn()
@@ -6893,20 +6902,18 @@ class OccaseState extends State<Occase>
    {
       final bool mustWait =
          _appState.trees.isEmpty    ||
-         _appState.trees.isEmpty     ||
          (_appState.exDetailsRoot == null) ||
          (_appState.inDetailsRoot == null) ||
          (g.param == null);
 
       if (mustWait)
-         return makeWaitMenuScreen(ctx);
+         return makeWaitMenuScreen();
 
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);
 
       if (_goToRegScreen) {
          return makeRegisterScreen(
-            ctx,
             _txtCtrl2,
             _txtCtrl,
             (){_onRegisterContinue(ctx);},
@@ -6918,7 +6925,6 @@ class OccaseState extends State<Occase>
 
       if (_goToNtfScreen) {
          return makeNtfScreen(
-            ctx,
             _onChangeNtf,
             g.param.changeNtfAppBarTitle,
             _appState.cfg.notifications,
@@ -6942,30 +6948,6 @@ class OccaseState extends State<Occase>
          });
       }
 
-      if (_newPostPressed) {
-         return makeNewPostScreens(
-            ctx: ctx,
-            post: _post,
-            trees: _appState.trees,
-            txtCtrl: _txtCtrl,
-            screen: _botBarIdx,
-            exDetailsTree: _appState.exDetailsRoot,
-            inDetailsTree: _appState.inDetailsRoot,
-            imgFiles: _imgFiles,
-            filenamesTimerActive: _filenamesTimer.isActive,
-            onExDetail: _onExDetails,
-            onPostLeafPressed: _onPostLeafPressed,
-            onPostNodePressed: _onPostNodePressed,
-            onWillPopMenu: () { return _onWillPopMenu(_appState.trees, 0); },
-            onNewPostBotBarTapped: _onNewPostBotBarTapped,
-            onInDetail: _onNewPostInDetail,
-            onRangeValueChanged: _onRangeValueChanged,
-            onAddPhoto: _onAddPhoto,
-            onPublishPost: (var a) { _onSendNewPost(a, 1); },
-            onRemovePost: (var a) { _onSendNewPost(a, 0); },
-         );
-      }
-
       if (_expPostIdx != -1 && _expImgIdx != -1) {
          Post post;
          if (_isOnOwn())
@@ -6977,11 +6959,7 @@ class OccaseState extends State<Occase>
          else
             assert(false);
 
-         return makeImgExpandScreen(
-            ctx,
-            () {_onExpandImg(-1, -1); return false;},
-            post,
-         );
+         return makeImgExpandScreen( () {_onExpandImg(-1, -1); return false;}, post);
       }
 
       if (_isOnFavChat() || _isOnOwnChat()) {
@@ -7021,13 +6999,10 @@ class OccaseState extends State<Occase>
 
       onWillPops[2] = _onChatsBackPressed;
 
-      Widget appBarTitle = Text(g.param.appName);
-
       List<Widget> fltButtons = List<Widget>(g.param.tabNames.length);
 
       fltButtons[0] = makeFaButton(
-         ctx,
-         _onNewPost,
+         _newPostPressed ? null : _onNewPost ,
          _onFwdSendButton,
          _lpChats.length,
          _lpChatMsgs.length
@@ -7041,7 +7016,6 @@ class OccaseState extends State<Occase>
       );
 
       fltButtons[2] = makeFaButton(
-         ctx,
          null,
          _onFwdSendButton,
          _lpChats.length,
@@ -7050,35 +7024,53 @@ class OccaseState extends State<Occase>
 
       List<Widget> bodies = List<Widget>(g.param.tabNames.length);
 
-      bodies[0] = makeChatTab(
-         ctx,
-         _lpChatMsgs.isNotEmpty,
-	 Screen.posts,
-         _appState.exDetailsRoot,
-         _appState.inDetailsRoot,
-         _appState.ownPosts,
-         _appState.trees,
-         _onChatPressed,
-         _onChatLP,
-         (int i) { _removePostDialog(ctx, i);},
-         _onPinPost,
-         _onUserInfoPressed,
-         _onExpandImg,
-	 (int i) {_onClickOnPost(i, 1);},
-      );
-
+      if (_newPostPressed) {
+         bodies[0] = makeNewPostScreenWdgs(
+            post: _post,
+            trees: _appState.trees,
+            txtCtrl: _txtCtrl,
+            screen: _botBarIdx,
+            exDetailsTree: _appState.exDetailsRoot,
+            inDetailsTree: _appState.inDetailsRoot,
+            imgFiles: _imgFiles,
+            filenamesTimerActive: _filenamesTimer.isActive,
+            onExDetail: _onExDetails,
+            onPostLeafPressed: _onPostLeafPressed,
+            onPostNodePressed: _onPostNodePressed,
+            onInDetail: _onNewPostInDetail,
+            onRangeValueChanged: _onRangeValueChanged,
+            onAddPhoto: _onAddPhoto,
+            onPublishPost: (var a) { _onSendNewPost(a, 1); },
+            onRemovePost: (var a) { _onSendNewPost(a, 0); },
+         );
+      } else {
+	 bodies[0] = makeChatTab(
+	    isFwdChatMsgs: _lpChatMsgs.isNotEmpty,
+	    screen: Screen.own,
+	    exDetailsTree: _appState.exDetailsRoot,
+	    inDetailsTree: _appState.inDetailsRoot,
+	    posts: _appState.ownPosts,
+	    trees: _appState.trees,
+	    onPressed: _onChatPressed,
+	    onLongPressed: _onChatLP,
+	    onDelPost1: (int i) { _removePostDialog(ctx, i);},
+	    onPinPost1: _onPinPost,
+	    onUserInfoPressed: _onUserInfoPressed,
+	    onExpandImg1: _onExpandImg,
+	    onSharePost: (int i) {_onClickOnPost(i, 1);},
+	 );
+      }
 
       if (_newSearchPressed) {
          // Below we use txt.exDetails[0][0], because the filter is
          // common to all products.
 	 bodies[1] = makeSearchScreenWdg(
-	       ctx: ctx,
 	       filter: _appState.cfg.anyOfFeatures,
 	       screen: _botBarIdx,
 	       exDetailsFilterNodes: _appState.exDetailsRoot.children[0].children[0],
 	       trees: _appState.trees,
 	       ranges: _appState.cfg.ranges,
-	       onSendFilters: _onSendFilters,
+	       onSendFilters: (int i) {_onSendFilters(ctx, i);},
 	       onFilterDetail: _onFilterDetail,
 	       onFilterNodePressed: _onFilterNodePressed,
 	       onFilterLeafNodePressed: _onFilterLeafNodePressed,
@@ -7087,7 +7079,6 @@ class OccaseState extends State<Occase>
 
       } else {
 	 bodies[1] = makeNewPostLv(
-	    ctx,
 	    _nNewPosts,
 	    _appState.exDetailsRoot,
 	    _appState.inDetailsRoot,
@@ -7102,55 +7093,75 @@ class OccaseState extends State<Occase>
       }
 
       bodies[2] = makeChatTab(
-         ctx,
-         _lpChatMsgs.isNotEmpty,
-	 Screen.favorites,
-         _appState.exDetailsRoot,
-         _appState.inDetailsRoot,
-         _appState.favPosts,
-         _appState.trees,
-         _onChatPressed,
-         _onChatLP,
-         (int i) { _removePostDialog(ctx, i);},
-         _onPinPost,
-         _onUserInfoPressed,
-         _onExpandImg,
-	 (int i) {_onClickOnPost(i, 1);},
+        isFwdChatMsgs: _lpChatMsgs.isNotEmpty,
+	screen: Screen.favorites,
+        exDetailsTree: _appState.exDetailsRoot,
+        inDetailsTree: _appState.inDetailsRoot,
+        posts: _appState.favPosts,
+        trees: _appState.trees,
+        onPressed: _onChatPressed,
+        onLongPressed: _onChatLP,
+        onDelPost1: (int i) { _removePostDialog(ctx, i);},
+        onPinPost1: _onPinPost,
+        onUserInfoPressed: _onUserInfoPressed,
+        onExpandImg1: _onExpandImg,
+	onSharePost: (int i) {_onClickOnPost(i, 1);},
+      );
+
+      BottomNavigationBar bottomNavBar = makeBotNavBar(
+	 botBarIndex: _botBarIdx,
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 screen: _screen(),
+	 onNewPostBotBarTapped: _onNewPostBotBarTapped,
+	 onSearchBotBarPressed: _onBotBarTapped,
+      );
+
+      Widget appBarTitle = makeAppBarWdg(
+	 hasLpChatMsgs: _hasLPChatMsgs(),
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 botBarIndex: _botBarIdx,
+	 screen: _screen(),
+	 trees: _appState.trees,
       );
 
       Widget appBarLeading;
       if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
-         appBarTitle = Text(g.param.msgOnRedirectingChat);
          appBarLeading = IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: _onBackFromChatMsgRedirect
          );
       }
 
-      BottomNavigationBar bottomNavBar;
       List<Widget> actions = List<Widget>();
-      if (_isOnOwn() && _hasLPChats() && !_hasLPChatMsgs()) {
-         actions = makeOnLongPressedActions(
-            ctx,
-            _deleteChatDialog,
-            _pinChats,
-         );
-      } else if (_isOnFav() && _hasLPChats() && !_hasLPChatMsgs()) {
-         IconButton delChatBut = IconButton(
-            icon: Icon(
-               Icons.delete_forever,
-               color: Theme.of(ctx).colorScheme.onPrimary,
-            ),
-            tooltip: g.param.deleteChat,
-            onPressed: () { _deleteChatDialog(ctx); }
-         );
+      if (_isOnOwn()) {
+	 if (_newPostPressed) {
+	    appBarLeading = IconButton(
+	       icon: Icon(Icons.arrow_back),
+	       onPressed: () { return _onWillPopMenu(_appState.trees, 0); },
+	    );
+	 } else if (_hasLPChats() && !_hasLPChatMsgs()) {
+	    actions = makeOnLongPressedActions(() {_deleteChatDialog(ctx);}, _pinChats);
+	 }
+      } else if (_isOnFav()) {
+	 if (_hasLPChats() && !_hasLPChatMsgs()) {
+	    IconButton delChatBut = IconButton(
+	       icon: Icon(
+		  Icons.delete_forever,
+		  color: stl.colorScheme.onPrimary,
+	       ),
+	       tooltip: g.param.deleteChat,
+	       onPressed: () { _deleteChatDialog(ctx); }
+	    );
 
-         actions.add(delChatBut);
+	    actions.add(delChatBut);
+	 }
       } else if (_isOnPosts()) {
          IconButton clearPosts = IconButton(
             icon: Icon(
                Icons.delete_forever,
-               color: Theme.of(ctx).colorScheme.onPrimary,
+               color: stl.colorScheme.onPrimary,
             ),
             tooltip: g.param.clearPosts,
             onPressed: () { _clearPostsDialog(ctx); }
@@ -7159,19 +7170,6 @@ class OccaseState extends State<Occase>
          actions.add(clearPosts);
 
 	 if (_newSearchPressed) {
-	    bottomNavBar = makeBottomBarItems(
-	       stl.filterTabIcons,
-	       g.param.filterTabNames,
-	       _onBotBarTapped,
-	       _botBarIdx,
-	    );
-
-	    appBarTitle = makeSearchAppBar(
-               screen: _botBarIdx,
-	       trees: _appState.trees,
-	       title: g.param.filterAppBarTitle,
-	    );
-
 	    appBarLeading = IconButton(
 	       icon: Icon(Icons.arrow_back),
 	       onPressed: () { return _onWillPopMenu(_appState.trees, 1);},
