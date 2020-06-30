@@ -763,14 +763,15 @@ Widget makeAppBarVertAction(Function onSelected)
    );
 }
 
-List<Widget> makeOnLongPressedActions(OnPressedFn0 deleteChatEntryDialog, Function pinChat)
+List<Widget> makeOnLongPressedActions(OnPressedFn0 deleteChatEntryDialog, OnPressedFn0 pinChat)
 {
    List<Widget> actions = List<Widget>();
 
    IconButton pinChatBut = IconButton(
       icon: Icon(Icons.place, color: Colors.white),
       tooltip: g.param.pinChat,
-      onPressed: pinChat);
+      onPressed: pinChat,
+   );
 
    actions.add(pinChatBut);
 
@@ -1535,6 +1536,118 @@ Widget makeNewPostFinalScreen({
    );
 }
 
+List<Widget> makeActions({
+   Screen screen,
+   bool newPostPressed,
+   bool hasLPChats,
+   bool hasLPChatMsgs,
+   OnPressedFn0 deleteChatDialog,
+   OnPressedFn0 pinChats,
+   OnPressedFn0 onClearPostsDialog,
+   OnPressedFn0 onSearchPressed,
+   OnPressedFn0 onNewPost,
+   Function onAppBarVertPressed,
+}) {
+   final bool fav = screen == Screen.favorites;
+   final bool own = screen == Screen.own;
+   final bool search = screen == Screen.searches;
+
+   List<Widget> ret = List<Widget>();
+   if (own) {
+      if (newPostPressed) {
+      } else if (hasLPChats && !hasLPChatMsgs) {
+	 ret = makeOnLongPressedActions(deleteChatDialog, pinChats);
+      }
+   } else if (fav) {
+      if (hasLPChats && !hasLPChatMsgs) {
+	 IconButton delChatBut = IconButton(
+	    icon: Icon(
+	       Icons.delete_forever,
+	       color: stl.colorScheme.onPrimary,
+	    ),
+	    tooltip: g.param.deleteChat,
+	    onPressed: deleteChatDialog,
+	 );
+
+	 ret.add(delChatBut);
+      }
+   } else if (search) {
+      IconButton clearPosts = IconButton(
+	 icon: Icon(
+	    Icons.delete_forever,
+	    color: stl.colorScheme.onPrimary,
+	 ),
+	 tooltip: g.param.clearPosts,
+	 onPressed: onClearPostsDialog,
+      );
+
+      ret.add(clearPosts);
+   }
+
+   // We only add the global action buttons if
+   // 1. There is no chat selected for selection.
+   // 2. We are not forwarding a message.
+   if (!hasLPChats && !hasLPChatMsgs) {
+      IconButton searchButton = IconButton(
+	 icon: Icon(
+	    Icons.search,
+	    color: stl.colorScheme.onPrimary,
+	 ),
+	 tooltip: g.param.notificationsButton,
+	 onPressed: onSearchPressed,
+      );
+
+      IconButton publishButton = IconButton(
+	 icon: Icon(
+	    stl.newPostIcon,
+	    color: stl.colorScheme.onPrimary,
+	 ),
+	 onPressed: onNewPost,
+      );
+
+      //ret.add(publishButton);
+      //ret.add(searchButton);
+      ret.add(makeAppBarVertAction(onAppBarVertPressed));
+   }
+
+   return ret;
+}
+
+Widget makeAppBarLeading({
+   final bool hasLpChats,
+   final bool hasLpChatMsgs,
+   final bool newPostPressed,
+   final bool newSearchPressed,
+   final Screen screen,
+   final OnPressedFn0 onWillLeaveSearch,
+   final OnPressedFn0 onWillLeaveNewPost,
+   final OnPressedFn0 onBackFromChatMsgRedirect,
+}) {
+   final bool fav = screen == Screen.favorites;
+   final bool own = screen == Screen.own;
+   final bool search = screen == Screen.searches;
+
+   if ((fav || own) && hasLpChatMsgs)
+      return IconButton(
+	 icon: Icon(Icons.arrow_back),
+	 onPressed: onBackFromChatMsgRedirect,
+      );
+
+   if (own && newPostPressed)
+      return IconButton(
+	 icon: Icon(Icons.arrow_back),
+	 onPressed: onWillLeaveNewPost,
+      );
+
+   if (search && newSearchPressed)
+      return IconButton(
+	 icon: Icon(Icons.arrow_back),
+	 onPressed: onWillLeaveSearch,
+      );
+
+   return null;
+}
+
 Widget makeAppBarWdg({
    bool hasLpChatMsgs,
    bool newPostPressed,
@@ -1881,13 +1994,53 @@ class MyApp extends StatelessWidget {
    }
 }
 
-TabBar
-makeTabBar(BuildContext ctx,
-           List<int> counters,
-           TabController tabCtrl,
-           List<double> opacity,
-           bool isFwd)
-{
+Widget makeFinalScafWdg({
+   OnPressedFn7 onWillPops,
+   BottomNavigationBar bottomNavBar,
+   ScrollController scrollCtrl,
+   Widget appBarTitle,
+   Widget appBarLeading,
+   Widget floatBut,
+   TabBar tabBar,
+   TabController tabCtrl,
+   List<Widget> actions,
+   List<Widget> bodies,
+}) {
+   return WillPopScope(
+      onWillPop: () async { return onWillPops();},
+      child: Scaffold(
+	 bottomNavigationBar: bottomNavBar,
+	 body: NestedScrollView(
+	    controller: scrollCtrl,
+	    headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled)
+	    {
+	       return <Widget>[
+		  SliverAppBar(
+		     title: appBarTitle,
+		     pinned: true,
+		     floating: true,
+		     forceElevated: innerBoxIsScrolled,
+		     bottom: tabBar,
+		     actions: actions,
+		     leading: appBarLeading,
+		  ),
+	       ];
+	    },
+	    body: TabBarView(controller: tabCtrl, children: bodies),
+	 ),
+	 backgroundColor: Colors.white,
+	 floatingActionButton: floatBut,
+      ),
+   );
+}
+
+TabBar makeTabBar(
+   BuildContext ctx,
+   List<int> counters,
+   TabController tabCtrl,
+   List<double> opacity,
+   bool isFwd,
+) {
    if (isFwd)
       return null;
 
@@ -1970,6 +2123,42 @@ FloatingActionButton makeFaButton(
       ),
       onPressed: onNewPost,
    );
+}
+
+List<Widget> makeFaButtons({
+   final bool newSearchPressed,
+   final int lpChats,
+   final int lpChatMsgs,
+   final int nNewPosts,
+   final OnPressedFn0 onNewPost,
+   final OnPressedFn0 onFwdSendButton,
+   final OnPressedFn0 onShowNewPosts,
+   final OnPressedFn0 onSearch,
+}) {
+   List<Widget> ret = List<Widget>(g.param.tabNames.length);
+
+   ret[0] = makeFaButton(
+      onNewPost,
+      onFwdSendButton,
+      lpChats,
+      lpChatMsgs
+   );
+
+   ret[1] = makeFAButtonMiddleScreen(
+      newSearchPressed,
+      nNewPosts,
+      onShowNewPosts,
+      onSearch,
+   );
+
+   ret[2] = makeFaButton(
+      null,
+      onFwdSendButton,
+      lpChats,
+      lpChatMsgs,
+   );
+
+   return ret;
 }
 
 Widget makeFAButtonMiddleScreen(
@@ -6988,7 +7177,7 @@ class OccaseState extends State<Occase>
          );
       }
 
-      List<Function> onWillPops = List<Function>(g.param.tabNames.length);
+      List<OnPressedFn7> onWillPops = List<OnPressedFn7>(g.param.tabNames.length);
       onWillPops[0] = _onChatsBackPressed;
       onWillPops[1] = ()
       {
@@ -6999,27 +7188,15 @@ class OccaseState extends State<Occase>
 
       onWillPops[2] = _onChatsBackPressed;
 
-      List<Widget> fltButtons = List<Widget>(g.param.tabNames.length);
-
-      fltButtons[0] = makeFaButton(
-         _newPostPressed ? null : _onNewPost ,
-         _onFwdSendButton,
-         _lpChats.length,
-         _lpChatMsgs.length
-      );
-
-      fltButtons[1] = makeFAButtonMiddleScreen(
-	 _newSearchPressed,
-         _nNewPosts,
-         _onShowNewPosts,
-         _onSearchPressed,
-      );
-
-      fltButtons[2] = makeFaButton(
-         null,
-         _onFwdSendButton,
-         _lpChats.length,
-         _lpChatMsgs.length
+      List<Widget> fltButtons = makeFaButtons(
+	 newSearchPressed: _newSearchPressed,
+	 lpChats: _lpChats.length,
+	 lpChatMsgs: _lpChatMsgs.length,
+	 nNewPosts: _nNewPosts,
+	 onNewPost: _newPostPressed ? null : _onNewPost,
+	 onFwdSendButton: _onFwdSendButton,
+	 onShowNewPosts: _onShowNewPosts,
+	 onSearch: _onSearchPressed,
       );
 
       List<Widget> bodies = List<Widget>(g.param.tabNames.length);
@@ -7126,82 +7303,29 @@ class OccaseState extends State<Occase>
 	 trees: _appState.trees,
       );
 
-      Widget appBarLeading;
-      if ((_isOnFav() || _isOnOwn()) && _hasLPChatMsgs()) {
-         appBarLeading = IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: _onBackFromChatMsgRedirect
-         );
-      }
+      Widget appBarLeading = makeAppBarLeading(
+	 hasLpChats: _hasLPChats(),
+	 hasLpChatMsgs: _hasLPChatMsgs(),
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 screen: _screen(),
+	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
+	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
+	 onBackFromChatMsgRedirect: _onBackFromChatMsgRedirect,
+      );
 
-      List<Widget> actions = List<Widget>();
-      if (_isOnOwn()) {
-	 if (_newPostPressed) {
-	    appBarLeading = IconButton(
-	       icon: Icon(Icons.arrow_back),
-	       onPressed: () { return _onWillPopMenu(_appState.trees, 0); },
-	    );
-	 } else if (_hasLPChats() && !_hasLPChatMsgs()) {
-	    actions = makeOnLongPressedActions(() {_deleteChatDialog(ctx);}, _pinChats);
-	 }
-      } else if (_isOnFav()) {
-	 if (_hasLPChats() && !_hasLPChatMsgs()) {
-	    IconButton delChatBut = IconButton(
-	       icon: Icon(
-		  Icons.delete_forever,
-		  color: stl.colorScheme.onPrimary,
-	       ),
-	       tooltip: g.param.deleteChat,
-	       onPressed: () { _deleteChatDialog(ctx); }
-	    );
-
-	    actions.add(delChatBut);
-	 }
-      } else if (_isOnPosts()) {
-         IconButton clearPosts = IconButton(
-            icon: Icon(
-               Icons.delete_forever,
-               color: stl.colorScheme.onPrimary,
-            ),
-            tooltip: g.param.clearPosts,
-            onPressed: () { _clearPostsDialog(ctx); }
-         );
-
-         actions.add(clearPosts);
-
-	 if (_newSearchPressed) {
-	    appBarLeading = IconButton(
-	       icon: Icon(Icons.arrow_back),
-	       onPressed: () { return _onWillPopMenu(_appState.trees, 1);},
-	    );
-	 }
-      }
-
-      // We only add the global action buttons if
-      // 1. There is no chat selected for selection.
-      // 2. We are not forwarding a message.
-      if (!_hasLPChats() && !_hasLPChatMsgs()) {
-         IconButton searchButton = IconButton(
-            icon: Icon(
-               Icons.search,
-               color: stl.colorScheme.onPrimary,
-            ),
-            tooltip: g.param.notificationsButton,
-            onPressed: () { _onSearchPressed(); }
-         );
-
-         IconButton publishButton = IconButton(
-            icon: Icon(
-               stl.newPostIcon,
-               color: stl.colorScheme.onPrimary,
-            ),
-            onPressed: () { _onNewPost(); },
-         );
-
-         //actions.add(publishButton);
-         //actions.add(searchButton);
-         actions.add(makeAppBarVertAction(_onAppBarVertPressed));
-      }
+      List<Widget> actions = makeActions(
+         screen: _screen(),
+	 newPostPressed: _newPostPressed,
+	 hasLPChats: _hasLPChats(),
+	 hasLPChatMsgs: _hasLPChatMsgs(),
+	 deleteChatDialog: () {_deleteChatDialog(ctx);},
+	 pinChats: _pinChats,
+	 onClearPostsDialog: () { _clearPostsDialog(ctx); },
+	 onSearchPressed: () { _onSearchPressed(); },
+	 onNewPost: () { _onNewPost(); },
+	 onAppBarVertPressed: _onAppBarVertPressed,
+      );
 
       List<int> newMsgsCounters = List<int>(g.param.tabNames.length);
       newMsgsCounters[0] = _getNUnreadOwnChats();
@@ -7210,40 +7334,19 @@ class OccaseState extends State<Occase>
 
       List<double> opacities = _getNewMsgsOpacities();
 
-      return WillPopScope(
-         onWillPop: () async { return onWillPops[_tabCtrl.index]();},
-         child: Scaffold(
-	    bottomNavigationBar: bottomNavBar,
-            body: NestedScrollView(
-               controller: _scrollCtrl,
-               headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled)
-               {
-                  return <Widget>[
-                     SliverAppBar(
-                        title: appBarTitle,
-                        pinned: true,
-                        floating: true,
-                        forceElevated: innerBoxIsScrolled,
-                        bottom: makeTabBar(
-                           ctx,
-                           newMsgsCounters,
-                           _tabCtrl,
-                           opacities,
-                           _hasLPChatMsgs(),
-                        ),
-                        actions: actions,
-                        leading: appBarLeading,
-                     ),
-                  ];
-               },
-               body: TabBarView(
-                  controller: _tabCtrl,
-                  children: bodies
-               ),
-            ),
-            backgroundColor: Colors.white,
-            floatingActionButton: fltButtons[_tabCtrl.index],
-         ),
+      TabBar tabBar = makeTabBar(ctx, newMsgsCounters, _tabCtrl, opacities, _hasLPChatMsgs());
+
+      return makeFinalScafWdg(
+	 onWillPops: onWillPops[_tabCtrl.index],
+	 bottomNavBar: bottomNavBar,
+	 scrollCtrl: _scrollCtrl,
+	 appBarTitle: appBarTitle,
+	 appBarLeading: appBarLeading,
+	 floatBut: fltButtons[_tabCtrl.index],
+	 tabBar: tabBar,
+	 actions: actions,
+	 tabCtrl: _tabCtrl,
+	 bodies: bodies,
       );
    }
 }
