@@ -5078,7 +5078,7 @@ class OccaseState extends State<Occase>
 
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
-   bool _showChatJumpDownButton = true;
+   List<bool> _showChatJumpDownButtons = List<bool>.filled(3, true);
 
    // Set to true when the user wants to change his email or nick or on
    // the first time the user opens the app.
@@ -5137,21 +5137,21 @@ class OccaseState extends State<Occase>
    // 1. The message is sent
    // 2. The user cancels the operation.
    // 3. The user leaves the chat screen.
-   int _dragedIdx = -1;
+   List<int> _dragedIdxs = List<int>.filled(3, -1);
 
    TabController _tabCtrl;
 
    // Each tab gets one scroll controller.
-   List<ScrollController> _scrollCtrl = List<ScrollController>(3);
+   List<ScrollController> _scrollCtrl = List<ScrollController>.filled(3, ScrollController());
 
-   ScrollController _chatScrollCtrl = ScrollController();
+   List<ScrollController> _chatScrollCtrl = List<ScrollController>.filled(3, ScrollController());
 
    // Used for every screen that offers text input.
    TextEditingController _txtCtrl;
 
    // Used in some cases where two text fields are required.
    TextEditingController _txtCtrl2;
-   FocusNode _chatFocusNode;
+   List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
    //HtmlWebSocketChannel channel;
    IOWebSocketChannel channel;
@@ -5169,8 +5169,8 @@ class OccaseState extends State<Occase>
 
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
-   int _expPostIdx = -1;
-   int _expImgIdx = -1;
+   List<int> _expPostIdxs = List<int>.filled(3, -1);
+   List<int> _expImgIdxs = List<int>.filled(3, -1);
 
    // Used to cache to fcmToken.
    String _fcmToken = '';
@@ -5186,14 +5186,11 @@ class OccaseState extends State<Occase>
       _txtCtrl = TextEditingController();
       _txtCtrl2 = TextEditingController();
       _tabCtrl.addListener(_tabCtrlChangeHandler);
-      _chatFocusNode = FocusNode();
-      _dragedIdx = -1;
-      _chatScrollCtrl.addListener(_chatScrollListener);
-      _lastDisconnect = -1;
 
-      _scrollCtrl[0] = ScrollController();
-      _scrollCtrl[1] = ScrollController();
-      _scrollCtrl[2] = ScrollController();
+      _chatScrollCtrl[ownIdx].addListener(() {_chatScrollListener(ownIdx);});
+      _chatScrollCtrl[favIdx].addListener(() {_chatScrollListener(favIdx);});
+
+      _lastDisconnect = -1;
 
       WidgetsBinding.instance.addObserver(this);
 
@@ -5236,8 +5233,11 @@ class OccaseState extends State<Occase>
       _scrollCtrl[0].dispose();
       _scrollCtrl[1].dispose();
       _scrollCtrl[2].dispose();
-      _chatScrollCtrl.dispose();
-      _chatFocusNode.dispose();
+      _chatScrollCtrl[ownIdx].dispose();
+      _chatScrollCtrl[ownIdx].dispose();
+      _chatFocusNodes[0].dispose();
+      _chatFocusNodes[1].dispose();
+      _chatFocusNodes[2].dispose();
       WidgetsBinding.instance.removeObserver(this);
 
       super.dispose();
@@ -5447,15 +5447,15 @@ class OccaseState extends State<Occase>
 
    // i = index in _appState.posts, _appState.favPosts, _own_posts.
    // j = image index in the post.
-   void _onExpandImg(int i, int j)
+   void _onExpandImg(int i, int j, int k)
    {
       //print('Expand image clicked with $i $j.');
 
       //_nNewPosts
 
       setState((){
-         _expPostIdx = i;
-         _expImgIdx = j;
+         _expPostIdxs[k] = i;
+         _expImgIdxs[k] = j;
       });
    }
 
@@ -5633,8 +5633,8 @@ class OccaseState extends State<Occase>
    {
       await _appState.setNUnreadMsgs(_posts[i].id, _chats[i].peer);
 
-      _showChatJumpDownButton = false;
-      _dragedIdx = -1;
+      _showChatJumpDownButtons[i] = false;
+      _dragedIdxs[i] = -1;
       _chats[i].nUnreadMsgs = 0;
       _chats[i].divisorUnreadMsgs = 0;
       _chats[i].divisorUnreadMsgsIdx = -1;
@@ -5652,9 +5652,9 @@ class OccaseState extends State<Occase>
       return false;
    }
 
-   void _onCancelFwdLpChat()
+   void _onCancelFwdLpChat(int i)
    {
-      _dragedIdx = -1;
+      _dragedIdxs[i] = -1;
       setState(() { });
    }
 
@@ -5668,20 +5668,20 @@ class OccaseState extends State<Occase>
             isRedirected: 0,
             msg: _txtCtrl.text,
             date: DateTime.now().millisecondsSinceEpoch,
-            refersTo: _dragedIdx,
+            refersTo: _dragedIdxs[i],
             status: 0,
          ),
       );
 
       _txtCtrl.clear();
-      _dragedIdx = -1;
+      _dragedIdxs[i] = -1;
 
       setState(()
       {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            _chatScrollCtrl.animateTo(
-               _chatScrollCtrl.position.maxScrollExtent,
+            _chatScrollCtrl[i].animateTo(
+               _chatScrollCtrl[i].position.maxScrollExtent,
                duration: const Duration(milliseconds: 300),
                curve: Curves.easeOut);
          });
@@ -5722,23 +5722,23 @@ class OccaseState extends State<Occase>
       channel.sink.add(payload);
    }
 
-   void _chatScrollListener()
+   void _chatScrollListener(int i)
    {
-      final double offset = _chatScrollCtrl.offset;
-      final double max = _chatScrollCtrl.position.maxScrollExtent;
+      final double offset = _chatScrollCtrl[i].offset;
+      final double max = _chatScrollCtrl[i].position.maxScrollExtent;
 
       final double tol = 40.0;
 
-      final bool old = _showChatJumpDownButton;
+      final bool old = _showChatJumpDownButtons[i];
 
-      if (_showChatJumpDownButton && !(offset < max))
-         setState(() {_showChatJumpDownButton = false;});
+      if (_showChatJumpDownButtons[i] && !(offset < max))
+         setState(() {_showChatJumpDownButtons[i] = false;});
 
-      if (!_showChatJumpDownButton && (offset < (max - tol)))
-         setState(() {_showChatJumpDownButton = true;});
+      if (!_showChatJumpDownButtons[i] && (offset < (max - tol)))
+         setState(() {_showChatJumpDownButtons[i] = true;});
 
-      if (!old && _showChatJumpDownButton)
-         _chats[ownIdx].nUnreadMsgs = 0;
+      if (!old && _showChatJumpDownButtons[i])
+         _chats[i].nUnreadMsgs = 0;
    }
 
    void _onFwdChatMsg(int i)
@@ -5751,24 +5751,24 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   void _onDragChatMsg(BuildContext ctx, int k, DragStartDetails d)
+   void _onDragChatMsg(BuildContext ctx, int k, DragStartDetails d, int i)
    {
-      _dragedIdx = k;
-      FocusScope.of(ctx).requestFocus(_chatFocusNode);
-      setState(() { });
+      _dragedIdxs[i] = k;
+      FocusScope.of(ctx).requestFocus(_chatFocusNodes[i]);
+      setState(() {});
    }
 
-   void _onChatMsgReply(BuildContext ctx)
+   void _onChatMsgReply(BuildContext ctx, int i)
    {
       assert(_lpChatMsgs.length == 1);
 
-      _dragedIdx = _lpChatMsgs.first.msgIdx;
+      _dragedIdxs[i] = _lpChatMsgs.first.msgIdx;
 
-      assert(_dragedIdx != -1);
+      assert(_dragedIdxs[i] != -1);
 
       _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
       _lpChatMsgs.clear();
-      FocusScope.of(ctx).requestFocus(_chatFocusNode);
+      FocusScope.of(ctx).requestFocus(_chatFocusNodes[i]);
       setState(() { });
    }
 
@@ -6123,7 +6123,7 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      _showChatJumpDownButton = false;
+      _showChatJumpDownButtons[k] = false;
       Post post = posts[i];
       ChatMetadata chat = posts[i].chats[j];
 
@@ -6156,16 +6156,16 @@ class OccaseState extends State<Occase>
       setState(() {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
+            _chatScrollCtrl[k].jumpTo(_chatScrollCtrl[k].position.maxScrollExtent);
          });
       });
    }
 
-   void _onChatJumpDown()
+   void _onChatJumpDown(int k)
    {
       setState(()
       {
-         _chatScrollCtrl.jumpTo(_chatScrollCtrl.position.maxScrollExtent);
+         _chatScrollCtrl[k].jumpTo(_chatScrollCtrl[k].position.maxScrollExtent);
       });
    }
 
@@ -6441,16 +6441,18 @@ class OccaseState extends State<Occase>
          // We are in the chat screen with the peer.
          ack = 'chat_ack_read';
 
+	 final int k = isOnOwnPost ? ownIdx : favIdx;
+
          // We are not currently showing the jump down button and can
          // animate to the bottom.
-         if (!_showChatJumpDownButton) {
+         if (!_showChatJumpDownButtons[k]) {
             setState(()
             {
                posts[i].chats[j].nUnreadMsgs = 0;
                SchedulerBinding.instance.addPostFrameCallback((_)
                {
-                  _chatScrollCtrl.animateTo(
-                     _chatScrollCtrl.position.maxScrollExtent,
+                  _chatScrollCtrl[k].animateTo(
+                     _chatScrollCtrl[k].position.maxScrollExtent,
                      duration: const Duration(milliseconds: 300),
                      curve: Curves.easeOut,
                   );
@@ -7191,41 +7193,44 @@ class OccaseState extends State<Occase>
          });
       }
 
-      if (_expPostIdx != -1 && _expImgIdx != -1) {
+      final int screenIdx = _screenIdx();
+      if (_expPostIdxs[screenIdx] != -1 && _expImgIdxs[screenIdx] != -1) {
          Post post;
          if (_isOnOwn())
-            post = _appState.ownPosts[_expPostIdx];
+            post = _appState.ownPosts[_expPostIdxs[screenIdx]];
          else if (_isOnSearch())
-            post = _appState.posts[_expPostIdx];
+            post = _appState.posts[_expPostIdxs[screenIdx]];
          else if (_isOnFav())
-            post = _appState.favPosts[_expPostIdx];
+            post = _appState.favPosts[_expPostIdxs[screenIdx]];
          else
             assert(false);
 
-         return makeImgExpandScreen( () {_onExpandImg(-1, -1); return false;}, post);
+         return makeImgExpandScreen(
+	    () { _onExpandImg(-1, -1, _screenIdx()); return false;},
+	    post,
+	 );
       }
 
       if (_isOnFavChat() || _isOnOwnChat()) {
-	 final int screenIdx = _screenIdx();
          return makeChatScreen(
             ctx,
             () { _onPopChat(screenIdx);},
             _chats[screenIdx],
             _txtCtrl,
             () {_onSendChat(screenIdx);},
-            _chatScrollCtrl,
+            _chatScrollCtrl[screenIdx],
             (int i, bool b) {_toggleLPChatMsgs(i, b, screenIdx);},
             _lpChatMsgs.length,
             () {_onFwdChatMsg(screenIdx);},
-            _onDragChatMsg,
-            _chatFocusNode,
-            _onChatMsgReply,
+            (var a, var b, var d) {_onDragChatMsg(a, b, d, screenIdx);},
+            _chatFocusNodes[screenIdx],
+            (var a) {_onChatMsgReply(a, screenIdx);},
             makeTreeItemStr(_appState.trees[0].root.first, _posts[screenIdx].channel[1][0]),
             _onChatAttachment,
-            _dragedIdx,
-            _onCancelFwdLpChat,
-            _showChatJumpDownButton,
-            _onChatJumpDown,
+            _dragedIdxs[screenIdx],
+            () {_onCancelFwdLpChat(screenIdx);},
+            _showChatJumpDownButtons[screenIdx],
+            () {_onChatJumpDown(screenIdx);},
             _isOnFavChat() ? _posts[screenIdx].avatar : _chats[screenIdx].avatar,
             (var s) {_onWritingChat(s, screenIdx);},
             _appState.cfg.nick,
@@ -7288,7 +7293,7 @@ class OccaseState extends State<Occase>
 	    onDelPost1: (int i) { _removePostDialog(ctx, i);},
 	    onPinPost1: _onPinPost,
 	    onUserInfoPressed: _onUserInfoPressed,
-	    onExpandImg1: _onExpandImg,
+	    onExpandImg1: (int i, int j) {_onExpandImg(i, j, screenIdx);},
 	    onSharePost: (int i) {_onClickOnPost(i, 1);},
 	 );
       }
@@ -7316,7 +7321,7 @@ class OccaseState extends State<Occase>
 	    _appState.inDetailsRoot,
 	    _appState.posts,
 	    _appState.trees,
-	    _onExpandImg,
+	    (int i, int j) {_onExpandImg(i, j, _screenIdx());},
 	    (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	    (var a, int j) {_alertUserOnPressed(a, j, 0);},
 	    (var a, int j) {_alertUserOnPressed(a, j, 3);},
@@ -7336,8 +7341,8 @@ class OccaseState extends State<Occase>
         onDelPost1: (int i) { _removePostDialog(ctx, i);},
         onPinPost1: _onPinPost,
         onUserInfoPressed: _onUserInfoPressed,
-        onExpandImg1: _onExpandImg,
-	onSharePost: (int i) {_onClickOnPost(i, 1);},
+        onExpandImg1: (int i, int j) { _onExpandImg(i, j, _screenIdx()); },
+	onSharePost: (int i) { _onClickOnPost(i, 1); },
       );
 
       BottomNavigationBar bottomNavBar = makeBotNavBar(
