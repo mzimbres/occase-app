@@ -1,6 +1,5 @@
-// The image width will be determined by the device screen width times
-// this factor.
-const double imgWidthFactor = 1.0;
+
+const double maxPageWidth = 450.0;
 
 // The image width will be determined by the device screen WIDTH times
 // this factor, that means, a factor 1.0 means a square image.

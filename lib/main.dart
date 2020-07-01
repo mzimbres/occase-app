@@ -42,6 +42,8 @@ typedef OnPressedFn5 = void Function(BuildContext, int, int);
 typedef OnPressedFn6 = void Function(int, RangeValues);
 typedef OnPressedFn7 = bool Function();
 typedef OnPressedFn8 = void Function(int, double);
+typedef OnPressedFn9 = void Function(String);
+typedef OnPressedFn10 = void Function(int, bool);
 
 enum Screen {own, searches, favorites}
 
@@ -797,8 +799,8 @@ Scaffold makeWaitMenuScreen()
 
 Widget makeImgExpandScreen(Function onWillPopScope, Post post)
 {
-   //final double width = MediaQuery.of(ctx).size.width;
-   //final double height = MediaQuery.of(ctx).size.height;
+   //final double width = makeWidth(ctx);
+   //final double height = makeHeight(ctx);
 
    final int l = post.images.length;
 
@@ -2001,8 +2003,8 @@ Widget makeFinalScafWdg({
    Widget appBarTitle,
    Widget appBarLeading,
    Widget floatBut,
+   Widget body,
    TabBar tabBar,
-   TabController tabCtrl,
    List<Widget> actions,
    List<Widget> bodies,
 }) {
@@ -2012,6 +2014,7 @@ Widget makeFinalScafWdg({
 	 bottomNavigationBar: bottomNavBar,
 	 body: NestedScrollView(
 	    controller: scrollCtrl,
+	    body: body,
 	    headerSliverBuilder: (BuildContext ctx, bool innerBoxIsScrolled)
 	    {
 	       return <Widget>[
@@ -2026,7 +2029,6 @@ Widget makeFinalScafWdg({
 		  ),
 	       ];
 	    },
-	    body: TabBarView(controller: tabCtrl, children: bodies),
 	 ),
 	 backgroundColor: Colors.white,
 	 floatingActionButton: floatBut,
@@ -2131,7 +2133,7 @@ List<Widget> makeFaButtons({
    final int lpChatMsgs,
    final int nNewPosts,
    final OnPressedFn0 onNewPost,
-   final OnPressedFn0 onFwdSendButton,
+   final OnPressedFn1 onFwdSendButton,
    final OnPressedFn0 onShowNewPosts,
    final OnPressedFn0 onSearch,
 }) {
@@ -2139,7 +2141,7 @@ List<Widget> makeFaButtons({
 
    ret[0] = makeFaButton(
       onNewPost,
-      onFwdSendButton,
+      () {onFwdSendButton(0);},
       lpChats,
       lpChatMsgs
    );
@@ -2153,7 +2155,7 @@ List<Widget> makeFaButtons({
 
    ret[2] = makeFaButton(
       null,
-      onFwdSendButton,
+      () {onFwdSendButton(2);},
       lpChats,
       lpChatMsgs,
    );
@@ -2347,7 +2349,7 @@ Card makeChatMsgWidget(
       marginRight = tmp;
    }
 
-   final double screenWidth = MediaQuery.of(ctx).size.width;
+   final double screenWidth = makeWidth(ctx);
    Card w1 = Card(
       margin: EdgeInsets.only(
             left: marginLeft,
@@ -2594,14 +2596,14 @@ Widget makeChatSecondLayer(
 
 Widget makeChatScreen(
    BuildContext ctx,
-   Function onWillPopScope,
+   OnPressedFn7 onWillPopScope,
    ChatMetadata ch,
    TextEditingController ctrl,
    Function onSendChatMsg,
    ScrollController scrollCtrl,
-   Function onChatMsgLongPressed,
+   OnPressedFn10 onChatMsgLongPressed,
    int nLongPressed,
-   Function onFwdChatMsg,
+   OnPressedFn0 onFwdChatMsg,
    Function onDragChatMsg,
    FocusNode chatFocusNode,
    Function onChatMsgReply,
@@ -2612,7 +2614,7 @@ Widget makeChatScreen(
    bool showChatJumpDownButton,
    Function onChatJumpDown,
    String avatar,
-   Function onWritingChat,
+   OnPressedFn9 onWritingChat,
    String ownNick,
 ) {
    Column secondLayer = makeChatSecondLayer(
@@ -2752,7 +2754,8 @@ Widget makeChatScreen(
    if (nLongPressed > 0) {
       IconButton forward = IconButton(
          icon: Icon(Icons.forward, color: Colors.white),
-         onPressed: onFwdChatMsg);
+         onPressed: onFwdChatMsg,
+      );
 
       actions.add(forward);
 
@@ -2799,21 +2802,21 @@ Widget makeChatScreen(
    }
 
    return WillPopScope(
-          onWillPop: () async { return onWillPopScope();},
-          child: Scaffold(
-             appBar : AppBar(
-                actions: actions,
-                title: title,
-                leading: IconButton(
-                   padding: EdgeInsets.all(0.0),
-                   icon: Icon(Icons.arrow_back),
-                   onPressed: onWillPopScope
-                ),
-             ),
-          body: mainCol,
-          backgroundColor: Colors.grey[300],
-       )
-    );
+         onWillPop: () async { return onWillPopScope();},
+         child: Scaffold(
+            appBar : AppBar(
+               actions: actions,
+               title: title,
+               leading: IconButton(
+                  padding: EdgeInsets.all(0.0),
+                  icon: Icon(Icons.arrow_back),
+                  onPressed: onWillPopScope,
+               ),
+            ),
+         body: mainCol,
+         backgroundColor: Colors.grey[300],
+      )
+   );
 }
 
 Widget makeTabWidget(
@@ -3279,7 +3282,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       ),
    );
 
-   final double width = MediaQuery.of(ctx).size.width;
+   final double width = makeWidth(ctx);
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
@@ -3523,7 +3526,7 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list, double padding)
 
 Widget makePostDescription(BuildContext ctx, String desc)
 {
-   final double width = MediaQuery.of(ctx).size.width;
+   final double width = makeWidth(ctx);
 
    return ConstrainedBox(
       constraints: BoxConstraints(
@@ -3643,14 +3646,41 @@ Widget makeImgTextPlaceholder(final String str)
    );
 }
 
+bool useAppLayoutImpl(double w)
+{
+   return w > (3 * cts.maxPageWidth);
+}
+
+bool useAppLayout(BuildContext ctx)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+
+   return useAppLayoutImpl(w);
+}
+
+double makeWidth(BuildContext ctx)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+
+   if (useAppLayoutImpl(w))
+      return w / 3.0;
+
+   return w;
+}
+
+double makeHeight(BuildContext ctx)
+{
+   return MediaQuery.of(ctx).size.height;
+}
+
 double makeImgWidth(BuildContext ctx)
 {
-   return MediaQuery.of(ctx).size.width * cts.imgWidthFactor;
+   return makeWidth(ctx);
 }
 
 double makeImgHeight(BuildContext ctx, double r)
 {
-   final double width = MediaQuery.of(ctx).size.width * cts.imgWidthFactor;
+   final double width = makeImgWidth(ctx);
    return width * r;
 }
 
@@ -5040,6 +5070,10 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
+   static const int ownIdx = 0;
+   static const int searchIdx = 1;
+   static const int favIdx = 2;
+
    AppState _appState = AppState();
 
    // Will be set to true if the user scrolls up a chat screen so that
@@ -5074,11 +5108,11 @@ class OccaseState extends State<Occase>
    int _botBarIdx = 0;
 
    // The temporary variable used to store the post the user sends or
-   // the post the current chat screen belongs to, if any.
-   Post _post;
+   // the post the current chat screen is open, if any.
+   List<Post> _posts = List<Post>(3);
 
    // The current chat, if any.
-   ChatMetadata _chat;
+   List<ChatMetadata> _chats = List<ChatMetadata>(3);
 
    // The number of posts in the _appState.posts array that hasn't been seen
    // yet by the user.
@@ -5107,9 +5141,9 @@ class OccaseState extends State<Occase>
 
    TabController _tabCtrl;
 
-   // Investigate if we need two scroll controllers. I think they are
-   // never used at the same time and therefore one should be enough.
-   ScrollController _scrollCtrl = ScrollController();
+   // Each tab gets one scroll controller.
+   List<ScrollController> _scrollCtrl = List<ScrollController>(3);
+
    ScrollController _chatScrollCtrl = ScrollController();
 
    // Used for every screen that offers text input.
@@ -5156,6 +5190,11 @@ class OccaseState extends State<Occase>
       _dragedIdx = -1;
       _chatScrollCtrl.addListener(_chatScrollListener);
       _lastDisconnect = -1;
+
+      _scrollCtrl[0] = ScrollController();
+      _scrollCtrl[1] = ScrollController();
+      _scrollCtrl[2] = ScrollController();
+
       WidgetsBinding.instance.addObserver(this);
 
       _firebaseMessaging.configure(
@@ -5194,7 +5233,9 @@ class OccaseState extends State<Occase>
       _txtCtrl.dispose();
       _txtCtrl2.dispose();
       _tabCtrl.dispose();
-      _scrollCtrl.dispose();
+      _scrollCtrl[0].dispose();
+      _scrollCtrl[1].dispose();
+      _scrollCtrl[2].dispose();
       _chatScrollCtrl.dispose();
       _chatFocusNode.dispose();
       WidgetsBinding.instance.removeObserver(this);
@@ -5231,29 +5272,37 @@ class OccaseState extends State<Occase>
 	                  Screen.searches;
    }
 
-   bool _isOnOwn()
+   int _screenIdx()
    {
-      return _tabCtrl.index == 0;
+      return _isOnOwn() ? ownIdx :
+	     _isOnFav() ? favIdx :
+	                  searchIdx;
    }
 
-   bool _isOnPosts()
+
+   bool _isOnOwn()
    {
-      return _tabCtrl.index == 1;
+      return _tabCtrl.index == ownIdx;
+   }
+
+   bool _isOnSearch()
+   {
+      return _tabCtrl.index == searchIdx;
    }
 
    bool _isOnFav()
    {
-      return _tabCtrl.index == 2;
+      return _tabCtrl.index == favIdx;
    }
 
    bool _isOnFavChat()
    {
-      return _isOnFav() && _post != null && _chat != null;
+      return _isOnFav() && _posts[favIdx] != null && _chats[favIdx] != null;
    }
 
    bool _isOnOwnChat()
    {
-      return _isOnOwn() && _post != null && _chat != null;
+      return _isOnOwn() && _posts[ownIdx] != null && _chats[ownIdx] != null;
    }
 
    bool _onTabSwitch()
@@ -5273,7 +5322,7 @@ class OccaseState extends State<Occase>
          opacities[0] = onFocusOp;
 
       opacities[1] = notOnFocusOp;
-      if (_isOnPosts())
+      if (_isOnSearch())
          opacities[1] = onFocusOp;
 
       opacities[2] = notOnFocusOp;
@@ -5412,7 +5461,7 @@ class OccaseState extends State<Occase>
 
    void _onRangeValueChanged(int i, double v)
    {
-      setState((){_post.rangeValues[i] = v.round();});
+      setState((){_posts[ownIdx].rangeValues[i] = v.round();});
    }
 
    Future<void> _onRangeChanged(int i, RangeValues rv) async
@@ -5441,7 +5490,7 @@ class OccaseState extends State<Occase>
 
       // Use _tabCtrlChangeHandler() as listener
       //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
-      _tabCtrl.index = 2;
+      _tabCtrl.index = favIdx;
 
       // The chat index in the fav screen is always zero.
       await _onChatPressed(h, 0);
@@ -5455,8 +5504,6 @@ class OccaseState extends State<Occase>
    // j = 3: Share.
    Future<void> _onPostSelection(int i, int j) async
    {
-      assert(_isOnPosts());
-
       if (j == 3) {
          Share.share(g.param.share, subject: g.param.shareSubject);
          return;
@@ -5476,8 +5523,8 @@ class OccaseState extends State<Occase>
    {
       setState(() {
 	 _newPostPressed = true;
-	 _post = Post(rangesMinMax: g.param.rangesMinMax);
-	 _post.images = List<String>(); // TODO: remove this later.
+	 _posts[ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
+	 _posts[ownIdx].images = List<String>(); // TODO: remove this later.
 	 _appState.restoreTreeStacks();
 	 _botBarIdx = 0;
       });
@@ -5550,7 +5597,12 @@ class OccaseState extends State<Occase>
       _lpChatMsgs.clear();
    }
 
-   Future<void> _onFwdSendButton() async
+   // Called with
+   //
+   // i = 0: own
+   // i = 2: fav
+   //
+   Future<void> _onFwdSendButton(int i) async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
       for (Coord c1 in _lpChats) {
@@ -5568,8 +5620,8 @@ class OccaseState extends State<Occase>
       _lpChats.forEach((e){toggleLPChat(e.chat);});
       _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
 
-      _post = _lpChatMsgs.first.post;
-      _chat = _lpChatMsgs.first.chat;
+      _posts[i] = _lpChatMsgs.first.post;
+      _chats[i] = _lpChatMsgs.first.chat;
 
       _lpChats.clear();
       _lpChatMsgs.clear();
@@ -5577,23 +5629,23 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<bool> _onPopChat() async
+   Future<bool> _onPopChat(int i) async
    {
-      await _appState.setNUnreadMsgs(_post.id, _chat.peer);
+      await _appState.setNUnreadMsgs(_posts[i].id, _chats[i].peer);
 
       _showChatJumpDownButton = false;
       _dragedIdx = -1;
-      _chat.nUnreadMsgs = 0;
-      _chat.divisorUnreadMsgs = 0;
-      _chat.divisorUnreadMsgsIdx = -1;
-      _lpChatMsgs.forEach((e){toggleLPChatMsg(_chat.msgs[e.msgIdx]);});
+      _chats[i].nUnreadMsgs = 0;
+      _chats[i].divisorUnreadMsgs = 0;
+      _chats[i].divisorUnreadMsgsIdx = -1;
+      _lpChatMsgs.forEach((e){toggleLPChatMsg(_chats[i].msgs[e.msgIdx]);});
 
       final bool isEmpty = _lpChatMsgs.isEmpty;
       _lpChatMsgs.clear();
 
       if (isEmpty) {
-         _post = null;
-         _chat = null;
+         _posts[i] = null;
+         _chats[i] = null;
       }
 
       setState(() { });
@@ -5606,12 +5658,12 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void> _onSendChat() async
+   Future<void> _onSendChat(int i) async
    {
-      _chat.nUnreadMsgs = 0;
+      _chats[i].nUnreadMsgs = 0;
       await _onSendChatImpl(
-         _post.id,
-         _chat.peer,
+         _posts[i].id,
+         _chats[i].peer,
          ChatItem(
             isRedirected: 0,
             msg: _txtCtrl.text,
@@ -5637,10 +5689,10 @@ class OccaseState extends State<Occase>
    }
 
    // Called when the user changes text in the chat text field.
-   void _onWritingChat(String v)
+   void _onWritingChat(String v, int i)
    {
-      assert(_chat != null);
-      assert(_post != null);
+      assert(_chats[i] != null);
+      assert(_posts[i] != null);
 
       // When the chat input text field was empty and the user types
       // in some text, we have to call set state to enable the send
@@ -5651,18 +5703,18 @@ class OccaseState extends State<Occase>
       setState((){});
 
       final int now = DateTime.now().millisecondsSinceEpoch;
-      final int last = _chat.lastPresenceSent + cts.presenceInterval;
+      final int last = _chats[i].lastPresenceSent + cts.presenceInterval;
 
       if (now < last)
          return;
 
-      _chat.lastPresenceSent = now;
+      _chats[i].lastPresenceSent = now;
 
       var subCmd = {
          'cmd': 'presence',
-         'to': _chat.peer,
+         'to': _chats[i].peer,
          'type': 'writing',
-         'post_id': _post.id,
+         'post_id': _posts[i].id,
       };
 
       final String payload = jsonEncode(subCmd);
@@ -5686,15 +5738,15 @@ class OccaseState extends State<Occase>
          setState(() {_showChatJumpDownButton = true;});
 
       if (!old && _showChatJumpDownButton)
-         _chat.nUnreadMsgs = 0;
+         _chats[ownIdx].nUnreadMsgs = 0;
    }
 
-   void _onFwdChatMsg()
+   void _onFwdChatMsg(int i)
    {
       assert(_lpChatMsgs.isNotEmpty);
 
-      _post = null;
-      _chat = null;
+      _posts[i] = null;
+      _chats[i] = null;
 
       setState(() { });
    }
@@ -5765,22 +5817,22 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   void _onPostLeafPressed(int i)
+   void _onPostLeafPressed(int i, int j)
    {
       Node o = _appState.trees[_botBarIdx].root.last.children[i];
       _appState.trees[_botBarIdx].root.add(o);
-      _onPostLeafReached();
+      _onPostLeafReached(j);
       setState(() { });
    }
 
-   void _onPostLeafReached()
+   void _onPostLeafReached(int i)
    {
-      _post.channel[_botBarIdx][0] = _appState.trees[_botBarIdx].root.last.code;
+      _posts[i].channel[_botBarIdx][0] = _appState.trees[_botBarIdx].root.last.code;
       _appState.trees[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
-   void _onPostNodePressed(int i)
+   void _onPostNodePressed(int i, int j)
    {
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
@@ -5795,7 +5847,7 @@ class OccaseState extends State<Occase>
       assert(length != 1);
 
       if (length == 0) {
-         _onPostLeafReached();
+         _onPostLeafReached(j);
       }
 
       setState(() { });
@@ -5828,12 +5880,12 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendPost() async
    {
-      _post.from = _appState.cfg.appId;
-      _post.nick = _appState.cfg.nick;
-      _post.avatar = emailToGravatarHash(_appState.cfg.email);
-      _post.status = 3;
+      _posts[ownIdx].from = _appState.cfg.appId;
+      _posts[ownIdx].nick = _appState.cfg.nick;
+      _posts[ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
+      _posts[ownIdx].status = 3;
 
-      Post post = _post.clone();
+      Post post = _posts[ownIdx].clone();
 
       final bool isEmpty = _appState.outPostsQueue.isEmpty;
 
@@ -5962,7 +6014,7 @@ class OccaseState extends State<Occase>
             return 0;
          }
 
-         _post.images.add(newname);
+         _posts[ownIdx].images.add(newname);
       }
 
       _imgFiles = List<File>();
@@ -6009,7 +6061,7 @@ class OccaseState extends State<Occase>
             ctx,
             (){
                _newPostPressed = false;
-               _post = null;
+               _posts[ownIdx] = null;
                setState((){});
             },
             g.param.cancelPost,
@@ -6063,6 +6115,7 @@ class OccaseState extends State<Occase>
       List<Post> posts,
       int i,
       int j,
+      int k,
    ) async {
       if (_lpChats.isNotEmpty || _lpChatMsgs.isNotEmpty) {
          _onChatLPImpl(posts, i, j);
@@ -6073,19 +6126,17 @@ class OccaseState extends State<Occase>
       _showChatJumpDownButton = false;
       Post post = posts[i];
       ChatMetadata chat = posts[i].chats[j];
-      print('----> $chat');
 
       if (!chat.isLoaded())
          chat.msgs = await _appState.persistency.loadChatMsgs(post.id, chat.peer);
       
       // These variables must be set after the chats are loaded. Otherwise
       // chat.msgs may be called on null if a message arrives. 
-      _post = post;
-      _chat = chat;
+      _posts[k] = post;
+      _chats[k] = chat;
 
-      if (_chat.nUnreadMsgs != 0) {
-         _chat.divisorUnreadMsgsIdx =
-            _chat.msgs.length - _chat.nUnreadMsgs;
+      if (_chats[k].nUnreadMsgs != 0) {
+         _chats[k].divisorUnreadMsgsIdx = _chats[k].msgs.length - _chats[k].nUnreadMsgs;
 
          // We know the number of unread messages, now we have to generate
          // the array with the messages peer rowid.
@@ -6096,7 +6147,7 @@ class OccaseState extends State<Occase>
          , 'to': posts[i].chats[j].peer
          , 'post_id': posts[i].id
          , 'id': -1
-         , 'ack_ids': readPeerRowIdsToAck(_chat.msgs, _chat.nUnreadMsgs)
+         , 'ack_ids': readPeerRowIdsToAck(_chats[k].msgs, _chats[k].nUnreadMsgs)
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -6121,9 +6172,9 @@ class OccaseState extends State<Occase>
    Future<void> _onChatPressed(int i, int j) async
    {
       if (_isOnFav())
-         await _onChatPressedImpl(_appState.favPosts, i, j);
+         await _onChatPressedImpl(_appState.favPosts, i, j, favIdx);
       else
-         await _onChatPressedImpl(_appState.ownPosts, i, j);
+         await _onChatPressedImpl(_appState.ownPosts, i, j, ownIdx);
    }
 
    void _onUserInfoPressed(BuildContext ctx, int postId, int j)
@@ -6215,22 +6266,22 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _toggleLPChatMsgs(int k, bool isTap)
+   void _toggleLPChatMsgs(int k, bool isTap, int i)
    {
-      assert(_post != null);
-      assert(_chat != null);
+      assert(_posts[i] != null);
+      assert(_chats[i] != null);
 
       if (isTap && _lpChatMsgs.isEmpty)
          return;
 
       final Coord tmp = Coord(
-         post: _post,
-         chat: _chat,
+         post: _posts[i],
+         chat: _chats[i],
          msgIdx: k
       );
 
       handleLPChats(_lpChatMsgs,
-                    toggleLPChatMsg(_chat.msgs[k]),
+                    toggleLPChatMsg(_chats[i].msgs[k]),
                     tmp, compPeerAndChatIdx);
 
       setState((){});
@@ -6377,13 +6428,16 @@ class OccaseState extends State<Occase>
 
       // If we are in the screen having chat with the user we can ack
       // it with chat_ack_read and skip chat_ack_received.
-      final bool isOnPost = _post != null && _post.id == postId; 
-      final bool isOnChat = _chat != null && _chat.peer == peer; 
+      final bool isOnOwnPost = _posts[ownIdx] != null && _posts[ownIdx].id == postId; 
+      final bool isOnFavPost = _posts[favIdx] != null && _posts[favIdx].id == postId; 
+
+      final bool isOnOwnChat = _chats[ownIdx] != null && _chats[ownIdx].peer == peer; 
+      final bool isOnFavChat = _chats[favIdx] != null && _chats[favIdx].peer == peer; 
 
       ++posts[i].chats[j].nUnreadMsgs;
 
       String ack;
-      if (isOnPost && isOnChat) {
+      if ((isOnOwnPost && isOnOwnChat) || (isOnFavPost && isOnFavChat)) {
          // We are in the chat screen with the peer.
          ack = 'chat_ack_read';
 
@@ -6519,7 +6573,7 @@ class OccaseState extends State<Occase>
       setState((){
          _newPostPressed = false;
          _botBarIdx = 0;
-         _post = null;
+         _posts[ownIdx] = null;
       });
    }
 
@@ -6821,10 +6875,10 @@ class OccaseState extends State<Occase>
       return i;
    }
 
-   bool _onChatsBackPressed()
+   bool _onChatsBackPressed(int i)
    {
       if (_hasLPChatMsgs()) {
-         _onBackFromChatMsgRedirect();
+         _onBackFromChatMsgRedirect(i);
          return false;
       }
 
@@ -6834,8 +6888,8 @@ class OccaseState extends State<Occase>
          return false;
       }
 
-      if (_post != null) {
-         _post = null;
+      if (_posts[i] != null) {
+         _posts[i] = null;
          setState(() { });
          return false;
       }
@@ -6986,15 +7040,15 @@ class OccaseState extends State<Occase>
       );
    }
 
-   void _onBackFromChatMsgRedirect()
+   void _onBackFromChatMsgRedirect(int i)
    {
       assert(_lpChatMsgs.isNotEmpty);
 
       if (_lpChats.isEmpty) {
          // All items int _lpChatMsgs should have the same post id and
          // peer so we can use the first.
-         _post = _lpChatMsgs.first.post;
-         _chat = _lpChatMsgs.first.chat;
+         _posts[i] = _lpChatMsgs.first.post;
+         _chats[i] = _lpChatMsgs.first.chat;
       } else {
          _unmarkLPChats();
       }
@@ -7059,21 +7113,21 @@ class OccaseState extends State<Occase>
    void _onExDetails(int i, int j)
    {
       if (j == -1) {
-         _post.description = _txtCtrl.text;
+         _posts[ownIdx].description = _txtCtrl.text;
          _txtCtrl.clear();
          _botBarIdx = 3;
          setState(() { });
          return;
       }
 
-      _post.exDetails[i] = 1 << j;
+      _posts[ownIdx].exDetails[i] = 1 << j;
 
       setState(() { });
    }
 
    void _onNewPostInDetail(int i, int j)
    {
-      _post.inDetails[i] ^= 1 << j;
+      _posts[ownIdx].inDetails[i] ^= 1 << j;
       setState(() { });
    }
 
@@ -7141,7 +7195,7 @@ class OccaseState extends State<Occase>
          Post post;
          if (_isOnOwn())
             post = _appState.ownPosts[_expPostIdx];
-         else if (_isOnPosts())
+         else if (_isOnSearch())
             post = _appState.posts[_expPostIdx];
          else if (_isOnFav())
             post = _appState.favPosts[_expPostIdx];
@@ -7152,33 +7206,34 @@ class OccaseState extends State<Occase>
       }
 
       if (_isOnFavChat() || _isOnOwnChat()) {
+	 final int screenIdx = _screenIdx();
          return makeChatScreen(
             ctx,
-            _onPopChat,
-            _chat,
+            () { _onPopChat(screenIdx);},
+            _chats[screenIdx],
             _txtCtrl,
-            _onSendChat,
+            () {_onSendChat(screenIdx);},
             _chatScrollCtrl,
-            _toggleLPChatMsgs,
+            (int i, bool b) {_toggleLPChatMsgs(i, b, screenIdx);},
             _lpChatMsgs.length,
-            _onFwdChatMsg,
+            () {_onFwdChatMsg(screenIdx);},
             _onDragChatMsg,
             _chatFocusNode,
             _onChatMsgReply,
-            makeTreeItemStr(_appState.trees[0].root.first, _post.channel[1][0]),
+            makeTreeItemStr(_appState.trees[0].root.first, _posts[screenIdx].channel[1][0]),
             _onChatAttachment,
             _dragedIdx,
             _onCancelFwdLpChat,
             _showChatJumpDownButton,
             _onChatJumpDown,
-            _isOnFavChat() ? _post.avatar : _chat.avatar,
-            _onWritingChat,
+            _isOnFavChat() ? _posts[screenIdx].avatar : _chats[screenIdx].avatar,
+            (var s) {_onWritingChat(s, screenIdx);},
             _appState.cfg.nick,
          );
       }
 
       List<OnPressedFn7> onWillPops = List<OnPressedFn7>(g.param.tabNames.length);
-      onWillPops[0] = _onChatsBackPressed;
+      onWillPops[0] = () {return _onChatsBackPressed(ownIdx);};
       onWillPops[1] = ()
       {
 	 if (_newSearchPressed)
@@ -7186,7 +7241,7 @@ class OccaseState extends State<Occase>
 	 return true;
       };
 
-      onWillPops[2] = _onChatsBackPressed;
+      onWillPops[2] = () {return _onChatsBackPressed(favIdx);};
 
       List<Widget> fltButtons = makeFaButtons(
 	 newSearchPressed: _newSearchPressed,
@@ -7203,7 +7258,7 @@ class OccaseState extends State<Occase>
 
       if (_newPostPressed) {
          bodies[0] = makeNewPostScreenWdgs(
-            post: _post,
+            post: _posts[0],
             trees: _appState.trees,
             txtCtrl: _txtCtrl,
             screen: _botBarIdx,
@@ -7212,8 +7267,8 @@ class OccaseState extends State<Occase>
             imgFiles: _imgFiles,
             filenamesTimerActive: _filenamesTimer.isActive,
             onExDetail: _onExDetails,
-            onPostLeafPressed: _onPostLeafPressed,
-            onPostNodePressed: _onPostNodePressed,
+            onPostLeafPressed: (int i) {_onPostLeafPressed(i, 0);},
+            onPostNodePressed: (int i) {_onPostNodePressed(i, 0);},
             onInDetail: _onNewPostInDetail,
             onRangeValueChanged: _onRangeValueChanged,
             onAddPhoto: _onAddPhoto,
@@ -7311,7 +7366,7 @@ class OccaseState extends State<Occase>
 	 screen: _screen(),
 	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
 	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
-	 onBackFromChatMsgRedirect: _onBackFromChatMsgRedirect,
+	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(_screenIdx());},
       );
 
       List<Widget> actions = makeActions(
@@ -7335,17 +7390,33 @@ class OccaseState extends State<Occase>
       List<double> opacities = _getNewMsgsOpacities();
 
       TabBar tabBar = makeTabBar(ctx, newMsgsCounters, _tabCtrl, opacities, _hasLPChatMsgs());
+      Widget body = TabBarView(controller: _tabCtrl, children: bodies);
+
+      final double width1 = makeWidth(ctx);
+      final double height1 = makeHeight(ctx);
+      print('$width1 $height1');
+
+      if (useAppLayout(ctx)) {
+	 body = Row(children: <Widget>
+	    [ Expanded(child: bodies[0])
+	    , VerticalDivider(width: 10.0, thickness: 10.0, indent: 0.0, color: stl.colorScheme.primary)
+	    , Expanded(child: bodies[1])
+	    , VerticalDivider(width: 10.0, thickness: 10.0, indent: 0.0, color: stl.colorScheme.primary)
+	    , Expanded(child: bodies[2])
+	    ],
+	 );
+      }
 
       return makeFinalScafWdg(
 	 onWillPops: onWillPops[_tabCtrl.index],
 	 bottomNavBar: bottomNavBar,
-	 scrollCtrl: _scrollCtrl,
+	 scrollCtrl: _scrollCtrl[_screenIdx()],
 	 appBarTitle: appBarTitle,
 	 appBarLeading: appBarLeading,
 	 floatBut: fltButtons[_tabCtrl.index],
+	 body: body,
 	 tabBar: tabBar,
 	 actions: actions,
-	 tabCtrl: _tabCtrl,
 	 bodies: bodies,
       );
    }
