@@ -44,6 +44,7 @@ typedef OnPressedFn7 = bool Function();
 typedef OnPressedFn8 = void Function(int, double);
 typedef OnPressedFn9 = void Function(String);
 typedef OnPressedFn10 = void Function(int, bool);
+typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 
 enum Screen {own, searches, favorites}
 
@@ -887,6 +888,7 @@ Scaffold makeRegisterScreen(
    String appBarTitle,
    String previousEmail,
    String previousNick,
+   double maxWidth,
 ) {
    if (previousEmail.isNotEmpty)
       emailCtrl.text = previousEmail;
@@ -932,11 +934,15 @@ Scaffold makeRegisterScreen(
       ]
    );
 
+   Widget body = col;
+   if (!useAppLayoutImpl(maxWidth))
+      body = SizedBox(width: maxWidth, child: col);
+
    return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
       body: Center(
          child: Padding(
-            child: col,
+            child: body,
             padding: EdgeInsets.symmetric(horizontal: 20.0),
          ),
       ),
@@ -2392,7 +2398,6 @@ Card makeChatMsgWidget(
 }
 
 ListView makeChatMsgListView(
-   BuildContext ctx,
    ScrollController scrollCtrl,
    ChatMetadata ch,
    Function onChatMsgLongPressed,
@@ -2596,26 +2601,26 @@ Widget makeChatSecondLayer(
 
 Widget makeChatScreen(
    BuildContext ctx,
-   OnPressedFn7 onWillPopScope,
    ChatMetadata ch,
    TextEditingController ctrl,
-   Function onSendChatMsg,
    ScrollController scrollCtrl,
-   OnPressedFn10 onChatMsgLongPressed,
    int nLongPressed,
-   OnPressedFn0 onFwdChatMsg,
-   Function onDragChatMsg,
    FocusNode chatFocusNode,
-   Function onChatMsgReply,
    String postSummary,
-   Function onAttachment,
    int dragedIdx,
-   Function onCancelFwdLPChatMsg,
    bool showChatJumpDownButton,
-   Function onChatJumpDown,
    String avatar,
-   OnPressedFn9 onWritingChat,
    String ownNick,
+   OnPressedFn7 onWillPopScope,
+   OnPressedFn0 onSendChatMsg,
+   OnPressedFn10 onChatMsgLongPressed,
+   OnPressedFn0 onFwdChatMsg,
+   OnPressedFn11 onDragChatMsg,
+   OnPressedFn4 onChatMsgReply,
+   OnPressedFn0 onAttachment,
+   OnPressedFn0 onCancelFwdLPChatMsg,
+   OnPressedFn0 onChatJumpDown,
+   OnPressedFn9 onWritingChat,
 ) {
    Column secondLayer = makeChatSecondLayer(
       ctx,
@@ -2644,7 +2649,6 @@ Widget makeChatScreen(
    Card card = makeChatScreenBotCard(null, null, sb, null, null);
 
    ListView list = makeChatMsgListView(
-      ctx,
       scrollCtrl,
       ch,
       onChatMsgLongPressed,
@@ -2664,9 +2668,9 @@ Widget makeChatScreen(
          child: FloatingActionButton(
             mini: false,
             onPressed: onChatJumpDown,
-            backgroundColor: Theme.of(ctx).colorScheme.secondary,
+            backgroundColor: stl.colorScheme.secondary,
             child: Icon(Icons.expand_more,
-               color: Theme.of(ctx).colorScheme.onSecondary,
+               color: stl.colorScheme.onSecondary,
             ),
          ),
       );
@@ -2680,8 +2684,8 @@ Widget makeChatScreen(
             child: makeUnreadMsgsCircle(
                ctx,
                ch.nUnreadMsgs,
-               Theme.of(ctx).colorScheme.secondaryVariant,
-               Theme.of(ctx).colorScheme.onSecondary,
+               stl.colorScheme.secondaryVariant,
+               stl.colorScheme.onSecondary,
             ),
          );
 
@@ -4364,8 +4368,8 @@ Widget makeChatListTileTrailingWidget(
       , makeUnreadMsgsCircle(
           ctx,
           nUnreadMsgs,
-          Theme.of(ctx).colorScheme.secondary,
-          Theme.of(ctx).colorScheme.onSecondary,
+          stl.colorScheme.secondary,
+          stl.colorScheme.onSecondary,
         )
       ]);
       
@@ -4388,8 +4392,8 @@ Widget makeChatListTileTrailingWidget(
          , makeUnreadMsgsCircle(
              ctx,
              nUnreadMsgs,
-             Theme.of(ctx).colorScheme.secondary,
-             Theme.of(ctx).colorScheme.onSecondary,
+             stl.colorScheme.secondary,
+             stl.colorScheme.onSecondary,
            )
          ]);
    }
@@ -5100,7 +5104,7 @@ class OccaseState extends State<Occase>
    int _newPostErrorCode = -1;
 
    // Similar to _newPostPressed but for the filter screen.
-   bool _newSearchPressed = false;
+   bool _newSearchPressed = true;
 
    // The index of the tab we are currently in in the *new
    // post* or *Filters* screen. For example 0 for the localization
@@ -5122,10 +5126,10 @@ class OccaseState extends State<Occase>
    // have been long pressed by the user. However, once one post is
    // long pressed to select the others is enough to perform a simple
    // click.
-   List<Coord> _lpChats = List<Coord>();
+   List<List<Coord>> _lpChats = List<List<Coord>>.filled(3, List<Coord>());
 
    // A temporary variable used to store forwarded chat messages.
-   List<Coord> _lpChatMsgs = List<Coord>();
+   List<List<Coord>> _lpChatMsgs = List<List<Coord>>.filled(3, List<Coord>());
 
    Queue<dynamic> _wsMsgQueue = Queue<dynamic>();
 
@@ -5234,7 +5238,7 @@ class OccaseState extends State<Occase>
       _scrollCtrl[1].dispose();
       _scrollCtrl[2].dispose();
       _chatScrollCtrl[ownIdx].dispose();
-      _chatScrollCtrl[ownIdx].dispose();
+      _chatScrollCtrl[favIdx].dispose();
       _chatFocusNodes[0].dispose();
       _chatFocusNodes[1].dispose();
       _chatFocusNodes[2].dispose();
@@ -5335,7 +5339,6 @@ class OccaseState extends State<Occase>
    OccaseState()
    {
       _newPostPressed = false;
-      _newSearchPressed = false;
       _botBarIdx = 0;
    }
 
@@ -5588,13 +5591,13 @@ class OccaseState extends State<Occase>
       return false;
    }
 
-   void _cleanUpLpOnSwitchTab()
+   void _cleanUpLpOnSwitchTab(int i)
    {
-      _lpChats.forEach((e){toggleLPChat(e.chat);});
-      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
+      _lpChats[i].forEach((e){toggleLPChat(e.chat);});
+      _lpChatMsgs[i].forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
 
-      _lpChats.clear();
-      _lpChatMsgs.clear();
+      _lpChats[i].clear();
+      _lpChatMsgs[i].clear();
    }
 
    // Called with
@@ -5605,8 +5608,8 @@ class OccaseState extends State<Occase>
    Future<void> _onFwdSendButton(int i) async
    {
       final int now = DateTime.now().millisecondsSinceEpoch;
-      for (Coord c1 in _lpChats) {
-         for (Coord c2 in _lpChatMsgs) {
+      for (Coord c1 in _lpChats[i]) {
+         for (Coord c2 in _lpChatMsgs[i]) {
             ChatItem ci = ChatItem(
                isRedirected: 1,
                msg: c2.chat.msgs[c2.msgIdx].msg,
@@ -5617,14 +5620,14 @@ class OccaseState extends State<Occase>
          }
       }
 
-      _lpChats.forEach((e){toggleLPChat(e.chat);});
-      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
+      _lpChats[i].forEach((e){toggleLPChat(e.chat);});
+      _lpChatMsgs[i].forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
 
-      _posts[i] = _lpChatMsgs.first.post;
-      _chats[i] = _lpChatMsgs.first.chat;
+      _posts[i] = _lpChatMsgs[i].first.post;
+      _chats[i] = _lpChatMsgs[i].first.chat;
 
-      _lpChats.clear();
-      _lpChatMsgs.clear();
+      _lpChats[i].clear();
+      _lpChatMsgs[i].clear();
 
       setState(() { });
    }
@@ -5638,10 +5641,10 @@ class OccaseState extends State<Occase>
       _chats[i].nUnreadMsgs = 0;
       _chats[i].divisorUnreadMsgs = 0;
       _chats[i].divisorUnreadMsgsIdx = -1;
-      _lpChatMsgs.forEach((e){toggleLPChatMsg(_chats[i].msgs[e.msgIdx]);});
+      _lpChatMsgs[i].forEach((e){toggleLPChatMsg(_chats[i].msgs[e.msgIdx]);});
 
-      final bool isEmpty = _lpChatMsgs.isEmpty;
-      _lpChatMsgs.clear();
+      final bool isEmpty = _lpChatMsgs[i].isEmpty;
+      _lpChatMsgs[i].clear();
 
       if (isEmpty) {
          _posts[i] = null;
@@ -5724,6 +5727,13 @@ class OccaseState extends State<Occase>
 
    void _chatScrollListener(int i)
    {
+      if (i != _screenIdx()) {
+	 // The control listener seems to be bound to all screens, thats why I
+	 // have to filter it here.
+	 print('Ignoring ---> $i');
+	 return;
+      }
+
       final double offset = _chatScrollCtrl[i].offset;
       final double max = _chatScrollCtrl[i].position.maxScrollExtent;
 
@@ -5743,7 +5753,7 @@ class OccaseState extends State<Occase>
 
    void _onFwdChatMsg(int i)
    {
-      assert(_lpChatMsgs.isNotEmpty);
+      assert(_lpChatMsgs[i].isNotEmpty);
 
       _posts[i] = null;
       _chats[i] = null;
@@ -5760,14 +5770,14 @@ class OccaseState extends State<Occase>
 
    void _onChatMsgReply(BuildContext ctx, int i)
    {
-      assert(_lpChatMsgs.length == 1);
+      assert(_lpChatMsgs[i].length == 1);
 
-      _dragedIdxs[i] = _lpChatMsgs.first.msgIdx;
+      _dragedIdxs[i] = _lpChatMsgs[i].first.msgIdx;
 
       assert(_dragedIdxs[i] != -1);
 
-      _lpChatMsgs.forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
-      _lpChatMsgs.clear();
+      _lpChatMsgs[i].forEach((e){toggleLPChatMsg(e.chat.msgs[e.msgIdx]);});
+      _lpChatMsgs[i].clear();
       FocusScope.of(ctx).requestFocus(_chatFocusNodes[i]);
       setState(() { });
    }
@@ -6117,8 +6127,8 @@ class OccaseState extends State<Occase>
       int j,
       int k,
    ) async {
-      if (_lpChats.isNotEmpty || _lpChatMsgs.isNotEmpty) {
-         _onChatLPImpl(posts, i, j);
+      if (_lpChats[k].isNotEmpty || _lpChatMsgs[i].isNotEmpty) {
+         _onChatLPImpl(posts, i, j, k);
          setState(() { });
          return;
       }
@@ -6212,12 +6222,12 @@ class OccaseState extends State<Occase>
       );
    }
 
-   void _onChatLPImpl(List<Post> posts, int i, int j)
+   void _onChatLPImpl(List<Post> posts, int i, int j, int k)
    {
       final Coord tmp = Coord(post: posts[i], chat: posts[i].chats[j]);
 
       handleLPChats(
-         _lpChats,
+         _lpChats[k],
          toggleLPChat(posts[i].chats[j]),
          tmp,
 	 compPostIdAndPeer,
@@ -6227,9 +6237,9 @@ class OccaseState extends State<Occase>
    void _onChatLP(int i, int j)
    {
       if (_isOnFav()) {
-         _onChatLPImpl(_appState.favPosts, i, j);
+         _onChatLPImpl(_appState.favPosts, i, j, favIdx);
       } else {
-         _onChatLPImpl(_appState.ownPosts, i, j);
+         _onChatLPImpl(_appState.ownPosts, i, j, ownIdx);
       }
 
       setState(() { });
@@ -6271,7 +6281,7 @@ class OccaseState extends State<Occase>
       assert(_posts[i] != null);
       assert(_chats[i] != null);
 
-      if (isTap && _lpChatMsgs.isEmpty)
+      if (isTap && _lpChatMsgs[i].isEmpty)
          return;
 
       final Coord tmp = Coord(
@@ -6280,7 +6290,7 @@ class OccaseState extends State<Occase>
          msgIdx: k
       );
 
-      handleLPChats(_lpChatMsgs,
+      handleLPChats(_lpChatMsgs[i],
                     toggleLPChatMsg(_chats[i].msgs[k]),
                     tmp, compPeerAndChatIdx);
 
@@ -6879,13 +6889,13 @@ class OccaseState extends State<Occase>
 
    bool _onChatsBackPressed(int i)
    {
-      if (_hasLPChatMsgs()) {
+      if (_hasLPChatMsgs(i)) {
          _onBackFromChatMsgRedirect(i);
          return false;
       }
 
-      if (_hasLPChats()) {
-         _unmarkLPChats();
+      if (_hasLPChats(i)) {
+         _unmarkLPChats(i);
          setState(() { });
          return false;
       }
@@ -6901,20 +6911,20 @@ class OccaseState extends State<Occase>
       return false;
    }
 
-   bool _hasLPChats()
+   bool _hasLPChats(int i)
    {
-      return _lpChats.isNotEmpty;
+      return _lpChats[i].isNotEmpty;
    }
 
-   bool _hasLPChatMsgs()
+   bool _hasLPChatMsgs(int i)
    {
-      return _lpChatMsgs.isNotEmpty;
+      return _lpChatMsgs[i].isNotEmpty;
    }
 
-   void _unmarkLPChats()
+   void _unmarkLPChats(int i)
    {
-      _lpChats.forEach((e){toggleLPChat(e.chat);});
-      _lpChats.clear();
+      _lpChats[i].forEach((e){toggleLPChat(e.chat);});
+      _lpChats[i].clear();
    }
 
    void _onAppBarVertPressed(ConfigActions ca)
@@ -6944,17 +6954,17 @@ class OccaseState extends State<Occase>
       });
    }
 
-   Future<void> _pinChats() async
+   Future<void> _pinChats(int i) async
    {
       assert(_isOnFav() || _isOnOwn());
 
-      if (_lpChats.isEmpty)
+      if (_lpChats[i].isEmpty)
          return;
 
-      _lpChats.forEach((e){toggleChatPinDate(e.chat);});
-      _lpChats.forEach((e){toggleLPChat(e.chat);});
-      _lpChats.first.post.chats.sort(compChats);
-      _lpChats.clear();
+      _lpChats[i].forEach((e){toggleChatPinDate(e.chat);});
+      _lpChats[i].forEach((e){toggleLPChat(e.chat);});
+      _lpChats[i].first.post.chats.sort(compChats);
+      _lpChats[i].clear();
 
       // TODO: Sort _appState.favPosts and _appState.ownPosts. Beaware that the array
       // Coord many have entries from chats from different posts and
@@ -6964,17 +6974,17 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void> _removeLPChats() async
+   Future<void> _removeLPChats(int i) async
    {
       assert(_isOnFav() || _isOnOwn());
 
-      if (_lpChats.isEmpty)
+      if (_lpChats[i].isEmpty)
          return;
 
       // FIXME: For _fav chats we can directly delete the post since
       // it will only have one chat element.
 
-      _lpChats.forEach((e) async {removeLpChat(e, _appState.persistency);});
+      _lpChats[i].forEach((e) async {removeLpChat(e, _appState.persistency);});
 
       if (_isOnFav()) {
          for (Post o in _appState.favPosts)
@@ -6986,11 +6996,11 @@ class OccaseState extends State<Occase>
          _appState.ownPosts.sort(compPosts);
       }
 
-      _lpChats.clear();
+      _lpChats[i].clear();
       setState(() { });
    }
 
-   void _deleteChatDialog(BuildContext ctx)
+   void _deleteChatDialog(BuildContext ctx, int i)
    {
       showDialog(
          context: ctx,
@@ -7000,12 +7010,12 @@ class OccaseState extends State<Occase>
                      child: Text(
                         g.param.devChatOkStr,
                         style: TextStyle(
-                           color: Theme.of(ctx).colorScheme.secondary,
+                           color: stl.colorScheme.secondary,
                         ),
                      ),
                      onPressed: () async
                      {
-                        await _removeLPChats();
+                        await _removeLPChats(i);
                         Navigator.of(ctx).pop();
                      });
 
@@ -7044,15 +7054,15 @@ class OccaseState extends State<Occase>
 
    void _onBackFromChatMsgRedirect(int i)
    {
-      assert(_lpChatMsgs.isNotEmpty);
+      assert(_lpChatMsgs[i].isNotEmpty);
 
-      if (_lpChats.isEmpty) {
+      if (_lpChats[i].isEmpty) {
          // All items int _lpChatMsgs should have the same post id and
          // peer so we can use the first.
-         _posts[i] = _lpChatMsgs.first.post;
-         _chats[i] = _lpChatMsgs.first.chat;
+         _posts[i] = _lpChatMsgs[i].first.post;
+         _chats[i] = _lpChatMsgs[i].first.chat;
       } else {
-         _unmarkLPChats();
+         _unmarkLPChats(i);
       }
 
       setState(() { });
@@ -7142,6 +7152,193 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
+   // Widget factories.
+   //
+   // i: screen index.
+   //
+   Widget _makeChatScreen(BuildContext ctx, int i)
+   {
+      return makeChatScreen(
+	 ctx,
+	 _chats[i],
+	 _txtCtrl,
+	 _chatScrollCtrl[i],
+	 _lpChatMsgs[i].length,
+	 _chatFocusNodes[i],
+	 makeTreeItemStr(_appState.trees[0].root.first, _posts[i].channel[1][0]),
+	 _dragedIdxs[i],
+	 _showChatJumpDownButtons[i],
+	 _isOnFavChat() ? _posts[i].avatar : _chats[i].avatar,
+	 _appState.cfg.nick,
+	 () { _onPopChat(i);},
+	 () {_onSendChat(i);},
+	 (int i, bool b) {_toggleLPChatMsgs(i, b, i);},
+	 () {_onFwdChatMsg(i);},
+	 (var a, var b, var d) {_onDragChatMsg(a, b, d, i);},
+	 (var a) {_onChatMsgReply(a, i);},
+	 _onChatAttachment,
+	 () {_onCancelFwdLpChat(i);},
+	 () {_onChatJumpDown(i);},
+	 (var s) {_onWritingChat(s, i);},
+      );
+   }
+
+   Widget _makeNewPostScreenWdgs()
+   {
+      return makeNewPostScreenWdgs(
+	 post: _posts[0],
+	 trees: _appState.trees,
+	 txtCtrl: _txtCtrl,
+	 screen: _botBarIdx,
+	 exDetailsTree: _appState.exDetailsRoot,
+	 inDetailsTree: _appState.inDetailsRoot,
+	 imgFiles: _imgFiles,
+	 filenamesTimerActive: _filenamesTimer.isActive,
+	 onExDetail: _onExDetails,
+	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, 0);},
+	 onPostNodePressed: (int i) {_onPostNodePressed(i, 0);},
+	 onInDetail: _onNewPostInDetail,
+	 onRangeValueChanged: _onRangeValueChanged,
+	 onAddPhoto: _onAddPhoto,
+	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
+	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
+      );
+   }
+
+   Widget _makeSearchScreenWdg(BuildContext ctx)
+   {
+      // Below we use txt.exDetails[0][0], because the filter is
+      // common to all products.
+      return makeSearchScreenWdg(
+	 filter: _appState.cfg.anyOfFeatures,
+	 screen: _botBarIdx,
+	 exDetailsFilterNodes: _appState.exDetailsRoot.children[0].children[0],
+	 trees: _appState.trees,
+	 ranges: _appState.cfg.ranges,
+	 onSendFilters: (int i) {_onSendFilters(ctx, i);},
+	 onFilterDetail: _onFilterDetail,
+	 onFilterNodePressed: _onFilterNodePressed,
+	 onFilterLeafNodePressed: _onFilterLeafNodePressed,
+	 onRangeChanged: _onRangeChanged,
+      );
+   }
+
+   Widget _makeNewPostLv()
+   {
+      return makeNewPostLv(
+	 _nNewPosts,
+	 _appState.exDetailsRoot,
+	 _appState.inDetailsRoot,
+	 _appState.posts,
+	 _appState.trees,
+	 (int i, int j) {_onExpandImg(i, j, searchIdx);},
+	 (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	 (var a, int j) {_alertUserOnPressed(a, j, 0);},
+	 (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	 (var a, int j) {_alertUserOnPressed(a, j, 2);},
+      );
+   }
+
+   List<Widget> _makeFaButtons(int i)
+   {
+      return makeFaButtons(
+	 newSearchPressed: _newSearchPressed,
+	 lpChats: _lpChats[i].length,
+	 lpChatMsgs: _lpChatMsgs[i].length,
+	 nNewPosts: _nNewPosts,
+	 onNewPost: _newPostPressed ? null : _onNewPost,
+	 onFwdSendButton: _onFwdSendButton,
+	 onShowNewPosts: _onShowNewPosts,
+	 onSearch: _onSearchPressed,
+      );
+   }
+
+   BottomNavigationBar _makeBotNavBar()
+   {
+      return makeBotNavBar(
+	 botBarIndex: _botBarIdx,
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 screen: _screen(),
+	 onNewPostBotBarTapped: _onNewPostBotBarTapped,
+	 onSearchBotBarPressed: _onBotBarTapped,
+      );
+   }
+
+   Widget _makeChatTab(BuildContext ctx, int i)
+   {
+      List<Post> posts = _appState.ownPosts;
+      if (i == favIdx)
+	 posts = _appState.favPosts;
+
+      return makeChatTab(
+	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
+	 screen: Screen.own,
+	 exDetailsTree: _appState.exDetailsRoot,
+	 inDetailsTree: _appState.inDetailsRoot,
+	 posts: posts,
+	 trees: _appState.trees,
+	 onPressed: _onChatPressed,
+	 onLongPressed: _onChatLP,
+	 onDelPost1: (int i) { _removePostDialog(ctx, i);},
+	 onPinPost1: _onPinPost,
+	 onUserInfoPressed: _onUserInfoPressed,
+	 onExpandImg1: (int i, int j) {_onExpandImg(i, j, i);},
+	 onSharePost: (int i) {_onClickOnPost(i, 1);},
+      );
+   }
+
+   List<Widget> _makeActions(BuildContext ctx, int i)
+   {
+      return makeActions(
+         screen: _screen(),
+	 newPostPressed: _newPostPressed,
+	 hasLPChats: _hasLPChats(i),
+	 hasLPChatMsgs: _hasLPChatMsgs(i),
+	 deleteChatDialog: () {_deleteChatDialog(ctx, i);},
+	 pinChats: () {_pinChats(i);},
+	 onClearPostsDialog: () { _clearPostsDialog(ctx); },
+	 onSearchPressed: _onSearchPressed,
+	 onNewPost: _onNewPost,
+	 onAppBarVertPressed: _onAppBarVertPressed,
+      );
+   }
+
+   Widget _makeAppBarLeading(int i)
+   {
+      return makeAppBarLeading(
+	 hasLpChats: _hasLPChats(i),
+	 hasLpChatMsgs: _hasLPChatMsgs(i),
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 screen: _screen(),
+	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
+	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
+	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
+      );
+   }
+
+   Widget _makeAppBarWdg(int i)
+   {
+      return makeAppBarWdg(
+	 hasLpChatMsgs: _hasLPChatMsgs(i),
+	 newPostPressed: _newPostPressed,
+	 newSearchPressed: _newSearchPressed,
+	 botBarIndex: _botBarIdx,
+	 screen: _screen(),
+	 trees: _appState.trees,
+      );
+   }
+
+   List<int> _newMsgsCounters()
+   {
+      List<int> ret = List<int>(g.param.tabNames.length);
+      ret[0] = _getNUnreadOwnChats();
+      ret[1] = _nNewPosts;
+      ret[2] = _getNUnreadFavChats();
+      return ret;
+   }
+
    @override
    Widget build(BuildContext ctx)
    {
@@ -7165,6 +7362,7 @@ class OccaseState extends State<Occase>
             g.param.changeNickAppBarTitle,
             _appState.cfg.email,
             _appState.cfg.nick,
+	    makeWidth(ctx),
          );
       }
 
@@ -7177,8 +7375,10 @@ class OccaseState extends State<Occase>
          );
       }
 
-      if (_onTabSwitch())
-         _cleanUpLpOnSwitchTab();
+      if (_onTabSwitch()) {
+         _cleanUpLpOnSwitchTab(ownIdx);
+         _cleanUpLpOnSwitchTab(favIdx);
+      }
 
       if (_newPostErrorCode != -1) {
          SchedulerBinding.instance.addPostFrameCallback((_)
@@ -7211,34 +7411,17 @@ class OccaseState extends State<Occase>
 	 );
       }
 
-      if (_isOnFavChat() || _isOnOwnChat()) {
-         return makeChatScreen(
-            ctx,
-            () { _onPopChat(screenIdx);},
-            _chats[screenIdx],
-            _txtCtrl,
-            () {_onSendChat(screenIdx);},
-            _chatScrollCtrl[screenIdx],
-            (int i, bool b) {_toggleLPChatMsgs(i, b, screenIdx);},
-            _lpChatMsgs.length,
-            () {_onFwdChatMsg(screenIdx);},
-            (var a, var b, var d) {_onDragChatMsg(a, b, d, screenIdx);},
-            _chatFocusNodes[screenIdx],
-            (var a) {_onChatMsgReply(a, screenIdx);},
-            makeTreeItemStr(_appState.trees[0].root.first, _posts[screenIdx].channel[1][0]),
-            _onChatAttachment,
-            _dragedIdxs[screenIdx],
-            () {_onCancelFwdLpChat(screenIdx);},
-            _showChatJumpDownButtons[screenIdx],
-            () {_onChatJumpDown(screenIdx);},
-            _isOnFavChat() ? _posts[screenIdx].avatar : _chats[screenIdx].avatar,
-            (var s) {_onWritingChat(s, screenIdx);},
-            _appState.cfg.nick,
-         );
-      }
+      if (_isOnFavChat() || _isOnOwnChat())
+         return _makeChatScreen(ctx, screenIdx);
 
       List<OnPressedFn7> onWillPops = List<OnPressedFn7>(g.param.tabNames.length);
-      onWillPops[0] = () {return _onChatsBackPressed(ownIdx);};
+      onWillPops[0] = ()
+      {
+	 if (_newPostPressed)
+	    return _onWillPopMenu(_appState.trees, 0);
+
+	 return _onChatsBackPressed(ownIdx);
+      };
       onWillPops[1] = ()
       {
 	 if (_newSearchPressed)
@@ -7248,158 +7431,32 @@ class OccaseState extends State<Occase>
 
       onWillPops[2] = () {return _onChatsBackPressed(favIdx);};
 
-      List<Widget> fltButtons = makeFaButtons(
-	 newSearchPressed: _newSearchPressed,
-	 lpChats: _lpChats.length,
-	 lpChatMsgs: _lpChatMsgs.length,
-	 nNewPosts: _nNewPosts,
-	 onNewPost: _newPostPressed ? null : _onNewPost,
-	 onFwdSendButton: _onFwdSendButton,
-	 onShowNewPosts: _onShowNewPosts,
-	 onSearch: _onSearchPressed,
-      );
+      List<Widget> fltButtons = _makeFaButtons(screenIdx);
 
       List<Widget> bodies = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-         bodies[0] = makeNewPostScreenWdgs(
-            post: _posts[0],
-            trees: _appState.trees,
-            txtCtrl: _txtCtrl,
-            screen: _botBarIdx,
-            exDetailsTree: _appState.exDetailsRoot,
-            inDetailsTree: _appState.inDetailsRoot,
-            imgFiles: _imgFiles,
-            filenamesTimerActive: _filenamesTimer.isActive,
-            onExDetail: _onExDetails,
-            onPostLeafPressed: (int i) {_onPostLeafPressed(i, 0);},
-            onPostNodePressed: (int i) {_onPostNodePressed(i, 0);},
-            onInDetail: _onNewPostInDetail,
-            onRangeValueChanged: _onRangeValueChanged,
-            onAddPhoto: _onAddPhoto,
-            onPublishPost: (var a) { _onSendNewPost(a, 1); },
-            onRemovePost: (var a) { _onSendNewPost(a, 0); },
-         );
+	 bodies[0] = _makeNewPostScreenWdgs();
       } else {
-	 bodies[0] = makeChatTab(
-	    isFwdChatMsgs: _lpChatMsgs.isNotEmpty,
-	    screen: Screen.own,
-	    exDetailsTree: _appState.exDetailsRoot,
-	    inDetailsTree: _appState.inDetailsRoot,
-	    posts: _appState.ownPosts,
-	    trees: _appState.trees,
-	    onPressed: _onChatPressed,
-	    onLongPressed: _onChatLP,
-	    onDelPost1: (int i) { _removePostDialog(ctx, i);},
-	    onPinPost1: _onPinPost,
-	    onUserInfoPressed: _onUserInfoPressed,
-	    onExpandImg1: (int i, int j) {_onExpandImg(i, j, screenIdx);},
-	    onSharePost: (int i) {_onClickOnPost(i, 1);},
-	 );
+	 bodies[0] = _makeChatTab(ctx, 0);
       }
 
       if (_newSearchPressed) {
-         // Below we use txt.exDetails[0][0], because the filter is
-         // common to all products.
-	 bodies[1] = makeSearchScreenWdg(
-	       filter: _appState.cfg.anyOfFeatures,
-	       screen: _botBarIdx,
-	       exDetailsFilterNodes: _appState.exDetailsRoot.children[0].children[0],
-	       trees: _appState.trees,
-	       ranges: _appState.cfg.ranges,
-	       onSendFilters: (int i) {_onSendFilters(ctx, i);},
-	       onFilterDetail: _onFilterDetail,
-	       onFilterNodePressed: _onFilterNodePressed,
-	       onFilterLeafNodePressed: _onFilterLeafNodePressed,
-	       onRangeChanged: _onRangeChanged,
-	    );
-
+	 bodies[1] = _makeSearchScreenWdg(ctx);
       } else {
-	 bodies[1] = makeNewPostLv(
-	    _nNewPosts,
-	    _appState.exDetailsRoot,
-	    _appState.inDetailsRoot,
-	    _appState.posts,
-	    _appState.trees,
-	    (int i, int j) {_onExpandImg(i, j, _screenIdx());},
-	    (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	    (var a, int j) {_alertUserOnPressed(a, j, 0);},
-	    (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	    (var a, int j) {_alertUserOnPressed(a, j, 2);},
-	 );
+	 bodies[1] = _makeNewPostLv();
       }
 
-      bodies[2] = makeChatTab(
-        isFwdChatMsgs: _lpChatMsgs.isNotEmpty,
-	screen: Screen.favorites,
-        exDetailsTree: _appState.exDetailsRoot,
-        inDetailsTree: _appState.inDetailsRoot,
-        posts: _appState.favPosts,
-        trees: _appState.trees,
-        onPressed: _onChatPressed,
-        onLongPressed: _onChatLP,
-        onDelPost1: (int i) { _removePostDialog(ctx, i);},
-        onPinPost1: _onPinPost,
-        onUserInfoPressed: _onUserInfoPressed,
-        onExpandImg1: (int i, int j) { _onExpandImg(i, j, _screenIdx()); },
-	onSharePost: (int i) { _onClickOnPost(i, 1); },
-      );
+      bodies[2] = _makeChatTab(ctx, 2);
 
-      BottomNavigationBar bottomNavBar = makeBotNavBar(
-	 botBarIndex: _botBarIdx,
-	 newPostPressed: _newPostPressed,
-	 newSearchPressed: _newSearchPressed,
-	 screen: _screen(),
-	 onNewPostBotBarTapped: _onNewPostBotBarTapped,
-	 onSearchBotBarPressed: _onBotBarTapped,
-      );
-
-      Widget appBarTitle = makeAppBarWdg(
-	 hasLpChatMsgs: _hasLPChatMsgs(),
-	 newPostPressed: _newPostPressed,
-	 newSearchPressed: _newSearchPressed,
-	 botBarIndex: _botBarIdx,
-	 screen: _screen(),
-	 trees: _appState.trees,
-      );
-
-      Widget appBarLeading = makeAppBarLeading(
-	 hasLpChats: _hasLPChats(),
-	 hasLpChatMsgs: _hasLPChatMsgs(),
-	 newPostPressed: _newPostPressed,
-	 newSearchPressed: _newSearchPressed,
-	 screen: _screen(),
-	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
-	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
-	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(_screenIdx());},
-      );
-
-      List<Widget> actions = makeActions(
-         screen: _screen(),
-	 newPostPressed: _newPostPressed,
-	 hasLPChats: _hasLPChats(),
-	 hasLPChatMsgs: _hasLPChatMsgs(),
-	 deleteChatDialog: () {_deleteChatDialog(ctx);},
-	 pinChats: _pinChats,
-	 onClearPostsDialog: () { _clearPostsDialog(ctx); },
-	 onSearchPressed: () { _onSearchPressed(); },
-	 onNewPost: () { _onNewPost(); },
-	 onAppBarVertPressed: _onAppBarVertPressed,
-      );
-
-      List<int> newMsgsCounters = List<int>(g.param.tabNames.length);
-      newMsgsCounters[0] = _getNUnreadOwnChats();
-      newMsgsCounters[1] = _nNewPosts;
-      newMsgsCounters[2] = _getNUnreadFavChats();
-
+      BottomNavigationBar bottomNavBar = _makeBotNavBar();
+      Widget appBarTitle = _makeAppBarWdg(screenIdx);
+      Widget appBarLeading = _makeAppBarLeading(screenIdx);
+      List<Widget> actions = _makeActions(ctx, screenIdx);
+      List<int> newMsgsCounters = _newMsgsCounters();
       List<double> opacities = _getNewMsgsOpacities();
-
-      TabBar tabBar = makeTabBar(ctx, newMsgsCounters, _tabCtrl, opacities, _hasLPChatMsgs());
+      TabBar tabBar = makeTabBar(ctx, newMsgsCounters, _tabCtrl, opacities, _hasLPChatMsgs(screenIdx));
       Widget body = TabBarView(controller: _tabCtrl, children: bodies);
-
-      final double width1 = makeWidth(ctx);
-      final double height1 = makeHeight(ctx);
-      print('$width1 $height1');
 
       if (useAppLayout(ctx)) {
 	 body = Row(children: <Widget>
