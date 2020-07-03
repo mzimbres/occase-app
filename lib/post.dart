@@ -361,7 +361,7 @@ class Post {
    String avatar;
 
    // Contains the channel this post was published in. It has the
-   // follwing form
+   // following form
    //
    //  [[[1, 2]], [[3, 2]]]
    //
@@ -420,7 +420,12 @@ class Post {
       { return rangeValues[0]; }
 
    int getProductDetailIdx()
-      { return channel[1][0][0]; }
+   {
+      if (channel[1][0].isEmpty)
+	 return -1;
+
+      return channel[1][0][0];
+   }
 
    Post clone()
    {

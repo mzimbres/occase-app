@@ -111,11 +111,11 @@ class Node {
 
 // Given a leaf code and the menu it corresponds to produces an array
 // with the names of the parent up until the root direct child.
-List<String>
-loadNames(Node root,
-          List<int> leafCode,
-          int langIdx)
-{
+List<String> loadNames(
+   Node root,
+   List<int> leafCode,
+   int langIdx,
+) {
    if (leafCode.isEmpty)
       return List<String>();
 
