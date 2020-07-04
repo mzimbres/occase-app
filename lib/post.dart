@@ -416,6 +416,16 @@ class Post {
       chats = List<ChatMetadata>();
    }
 
+   List<int> getLocationCode()
+   {
+      return channel[0][0];
+   }
+
+   List<int> getProductCode()
+   {
+      return channel[1][0];
+   }
+
    int getPrice()
       { return rangeValues[0]; }
 

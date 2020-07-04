@@ -59,3 +59,7 @@ const int presenceInterval = 5 * 1000;
 // download button. 
 const int maxPostsOnDownload = 10;
 
+const int ownIdx = 0;
+const int searchIdx = 1;
+const int favIdx = 2;
+

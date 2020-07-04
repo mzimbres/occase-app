@@ -45,6 +45,7 @@ typedef OnPressedFn8 = void Function(int, double);
 typedef OnPressedFn9 = void Function(String);
 typedef OnPressedFn10 = void Function(int, bool);
 typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
+typedef OnPressedFn12 = void Function(List<int> code, int i);
 
 enum Screen {own, searches, favorites}
 
@@ -1743,11 +1744,83 @@ BottomNavigationBar makeBotNavBar({
    return null;
 }
 
+Widget makeNewPostLT({
+   final String title,
+   final String subTitle,
+   final IconData icon,
+   OnPressedFn0 onTap,
+}) {
+   return ListTile(
+       contentPadding: EdgeInsets.all(3.0),
+       leading: CircleAvatar(
+	   child: Icon(icon,
+	      color: stl.colorScheme.primary,
+	   ),
+	   backgroundColor: Colors.white,
+       ),
+       title: Text(title,
+	  maxLines: 1,
+	  overflow: TextOverflow.clip,
+	  style: stl.ltTitle,
+       ),
+       dense: true,
+       subtitle:
+	  Text(subTitle,
+	     maxLines: 1,
+	     overflow: TextOverflow.clip,
+	     style: stl.appBarLtSubtitle.copyWith(color: Colors.grey),
+	  ),
+       onTap: onTap,
+       enabled: true,
+       isThreeLine: false,
+    );
+}
+
+Widget makeNewPostScreenWdgs2({
+   BuildContext ctx,
+   final Node locRootNode,
+   final Tree productTree,
+   final Post post,
+   final OnPressedFn12 onSetLocTreeCode,
+}) {
+   print('Location ${post.getLocationCode()}');
+   print('Product ${post.getProductCode()}');
+
+   List<int> locCode = post.getLocationCode();
+   String locSubtitle = 'Unknown';
+   if (locCode.isNotEmpty)
+      locSubtitle = loadNames(locRootNode, locCode, g.param.langIdx).join(', ');
+
+   Widget location = makeNewPostLT(
+      title: g.param.newPostTabNames[cts.ownIdx],
+      subTitle: locSubtitle,
+      icon: Icons.edit_location,
+      onTap: () async
+      {
+	 final List<int> code = await showDialog<List<int>>(
+	    context: ctx,
+	    builder: (BuildContext ctx2) { return TreeView(root: locRootNode); },
+	 );
+
+	 onSetLocTreeCode(code, 0);
+      },
+   );
+
+   Widget product = makeNewPostLT(
+      title: g.param.newPostTabNames[1],
+      subTitle: productTree.root.last.getChildrenNames(g.param.langIdx),
+      icon: Icons.directions_car,
+      onTap: (){print('b');},
+   );
+
+   return Column(children: <Widget>[location, product]);
+}
+
 Widget makeNewPostScreenWdgs({
    final Post post,
    final List<Tree> trees,
    final TextEditingController txtCtrl,
-   final int screen,
+   final int navBar,
    final Node exDetailsTree,
    final Node inDetailsTree,
    final List<File> imgFiles,
@@ -1762,11 +1835,11 @@ Widget makeNewPostScreenWdgs({
    final OnPressedFn4 onRemovePost,
 }) {
    List<Widget> list = List<Widget>();
-   if (screen == 3) {
+   if (navBar == 3) {
       Widget finalScreen = makeNewPostFinalScreen(
 	 post: post,
 	 trees: trees,
-	 screen: screen,
+	 screen: navBar,
 	 exDetailsTree: exDetailsTree,
 	 inDetailsTree: inDetailsTree,
 	 imgFiles: imgFiles,
@@ -1777,7 +1850,7 @@ Widget makeNewPostScreenWdgs({
 
       list.add(finalScreen);
 
-   } else if (screen == 2) {
+   } else if (navBar == 2) {
       final List<Widget> widgets = makeNewPostDetailScreen(
          onExDetail,
          onInDetail,
@@ -1804,10 +1877,11 @@ Widget makeNewPostScreenWdgs({
 
       list.add(wid);
    } else {
-      ListView wid = makeNewPostMenuListView(
-         trees[screen].root.last,
+      ListView wid = makeNewPostTreeLV(
+         trees[navBar].root.last,
          onPostLeafPressed,
-         onPostNodePressed);
+         onPostNodePressed,
+      );
 
       list.add(wid);
    }
@@ -2495,7 +2569,7 @@ ListView makeChatMsgListView(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
                                color:
-                               Theme.of(ctx).colorScheme.primary,
+                               stl.colorScheme.primary,
                             ),
                          )
                       ),
@@ -2998,7 +3072,7 @@ ListTile makeFilterSelectAllItem(
        leading: Icon(
           Icons.select_all,
           size: 35.0,
-          color: Theme.of(ctx).colorScheme.secondaryVariant
+          color: stl.colorScheme.secondaryVariant
        ),
        title: makeListTileTreeTitle(ctx, node, title),
        subtitle: makeListTileTreeSubtitle(node),
@@ -3119,7 +3193,7 @@ Widget makePaymentChoiceWidget(
       margin: const EdgeInsets.only(
        left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
       ),
-      color: Theme.of(ctx).colorScheme.background,
+      color: stl.colorScheme.background,
       //elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.only(
@@ -3147,7 +3221,7 @@ Widget makeListTileTreeTitle(
    if (node.isLeaf() && node.leafCounter > 1) {
       s = ' (${node.leafCounter})';
       counterTxtStl = Theme.of(ctx).textTheme.caption.copyWith(
-         color: Theme.of(ctx).colorScheme.primary,
+         color: stl.colorScheme.primary,
       );
    }
 
@@ -3384,7 +3458,7 @@ List<Widget> makePostInRows(
       );
 
       Row row = Row(children: <Widget>
-      [ Icon(Icons.check, color: Theme.of(ctx).colorScheme.primaryVariant)
+      [ Icon(Icons.check, color: stl.colorScheme.primaryVariant)
       , text
       ]); 
 
@@ -3582,7 +3656,7 @@ Card putPostElemOnCard(BuildContext ctx, List<Widget> list, double padding)
 
    return Card(
       elevation: 0.0,
-      //color: Theme.of(ctx).colorScheme.background,
+      //color: stl.colorScheme.background,
       color: Colors.white,
       margin: EdgeInsets.all(0.0),
       child: Padding(
@@ -3806,6 +3880,88 @@ List<Widget> makePostButtons({
 
    return <Widget>[remove, share, chat, pin];
 }
+
+//---------------------------------------------------------------------
+
+class TreeView extends StatefulWidget {
+   final Node root;
+
+   @override
+   TreeViewState createState() => TreeViewState();
+
+   TreeView({@required this.root});
+}
+
+class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
+   List<Node> _stack = List<Node>();
+
+   @override
+   void dispose()
+   {
+      super.dispose();
+   }
+
+   @override
+   void initState()
+   {
+      super.initState();
+      _stack = <Node>[widget.root];
+   }
+
+   void _onPostLeafPressed(BuildContext ctx, int i)
+   {
+      _stack.add(_stack.last.children[i]);
+      _onPostLeafReached(ctx);
+      setState(() { });
+   }
+
+   void _onPostLeafReached(BuildContext ctx)
+   {
+      Navigator.pop(ctx, _stack.last.code);
+      _stack = <Node>[widget.root];
+   }
+
+   void _onPostNodePressed(BuildContext ctx, int i)
+   {
+      // We continue pushing on the stack if the next screen will have
+      // only one menu option.
+      do {
+         Node o = _stack.last.children[i];
+         _stack.add(o);
+         i = 0;
+      } while (_stack.last.children.length == 1);
+
+      final int length = _stack.last.children.length;
+
+      assert(length != 1);
+
+      if (length == 0)
+         _onPostLeafReached(ctx);
+
+      setState(() { });
+   }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      List<Widget> locWdgs = makeNewPostTreeWdgs(
+	 node: _stack.last,
+	 onLeafPressed: (int i) {_onPostLeafPressed(ctx, i);},
+	 onNodePressed: (int i) {_onPostNodePressed(ctx, i);},
+      );
+
+      return SimpleDialog(
+	 title: Text(g.param.newPostTabNames[0],
+	    maxLines: 1,
+	    overflow: TextOverflow.clip,
+	    style: stl.ltTitle,
+	 ),
+	 children: locWdgs,
+      );
+   }
+}
+
+//---------------------------------------------------------------------
 
 class SizeAnimation extends StatefulWidget {
    int milliseconds;
@@ -4249,59 +4405,86 @@ Widget makeNewPostLv(
    );
 }
 
-ListView makeNewPostMenuListView(
+ListTile makeNewPostTreeWdg({
+   Node child,
+   OnPressedFn0 onLeafPressed,
+   OnPressedFn0 onNodePressed,
+}) {
+   if (child.isLeaf()) {
+      return ListTile(
+	 leading: CircleAvatar(
+	    child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
+	       style: TextStyle(color: stl.colorScheme.onSecondary),
+	    ),
+	    backgroundColor: stl.colorScheme.secondary,
+	 ),
+	 title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
+	 dense: true,
+	 onTap: onLeafPressed,
+	 enabled: true,
+	 onLongPress: (){},
+      );
+   }
+   
+   return
+      ListTile(
+	 leading: CircleAvatar(
+	    child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
+	       style: TextStyle(
+		  color: stl.colorScheme.onSecondary
+	       ),
+	    ),
+	    backgroundColor: stl.colorScheme.secondary,
+	 ),
+	 title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
+	 dense: true,
+	 subtitle: Text(
+	    child.getChildrenNames(g.param.langIdx),
+	    maxLines: 2,
+	    overflow: TextOverflow.clip,
+	    style: stl.ltSubtitle,
+	 ),
+	 trailing: Icon(Icons.keyboard_arrow_right),
+	 onTap: onNodePressed,
+	 enabled: true,
+	 isThreeLine: true
+      );
+}
+
+List<Widget> makeNewPostTreeWdgs({
+   Node node,
+   OnPressedFn1 onLeafPressed,
+   OnPressedFn1 onNodePressed,
+}) {
+   List<Widget> list = List<Widget>();
+
+   for (int i = 0; i < node.children.length; ++i) {
+      Node child = node.children[i];
+      Widget o =  makeNewPostTreeWdg(
+	 child: child,
+	 onLeafPressed: () {onLeafPressed(i);},
+	 onNodePressed: () {onNodePressed(i);},
+      );
+      list.add(o);
+   }
+
+   return list;
+}
+
+ListView makeNewPostTreeLV(
    Node o,
-   Function onLeafPressed,
-   Function onNodePressed,
+   OnPressedFn1 onLeafPressed,
+   OnPressedFn1 onNodePressed,
 ) {
    return ListView.builder(
       itemCount: o.children.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-         Node child = o.children[i];
-
-         if (child.isLeaf()) {
-            return ListTile(
-               leading: CircleAvatar(
-                  child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-                     style: TextStyle(
-                        color: Theme.of(ctx).colorScheme.onSecondary
-                     ),
-                  ),
-                  backgroundColor:
-                     Theme.of(ctx).colorScheme.secondary,
-               ),
-               title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
-               dense: true,
-               onTap: () { onLeafPressed(i);},
-               enabled: true,
-               onLongPress: (){},
-            );
-         }
-         
-         return
-            ListTile(
-               leading: CircleAvatar(
-                  child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-                     style: TextStyle(
-                        color: Theme.of(ctx).colorScheme.onSecondary
-                     ),
-                  ),
-                  backgroundColor: Theme.of(ctx).colorScheme.secondary,
-               ),
-               title: Text(o.children[i].name(g.param.langIdx), style: stl.ltTitle),
-               dense: true,
-               subtitle: Text(
-                  o.children[i].getChildrenNames(g.param.langIdx),
-                  maxLines: 2,
-                  overflow: TextOverflow.clip,
-                  style: stl.ltSubtitle,
-               ),
-               trailing: Icon(Icons.keyboard_arrow_right),
-               onTap: () { onNodePressed(i); },
-               enabled: true,
-               isThreeLine: true
-            );
+	 return makeNewPostTreeWdg(
+	    child: o.children[i],
+	    onLeafPressed: () {onLeafPressed(i);},
+	    onNodePressed: () {onNodePressed(i);},
+	 );
       },
    );
 }
@@ -4367,7 +4550,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
          maxLines: 1,
          overflow: TextOverflow.clip,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: Theme.of(ctx).colorScheme.secondary,
+            color: stl.colorScheme.secondary,
             //fontWeight: FontWeight.w500,
             fontStyle: FontStyle.italic,
          ),
@@ -4514,7 +4697,7 @@ Widget makeChatListTile(
    if (chat.isLongPressed) {
       bgColor = stl.chatLongPressendColor;
    } else {
-      bgColor = Theme.of(ctx).colorScheme.background;
+      bgColor = stl.colorScheme.background;
    }
 
    Widget trailing = makeChatListTileTrailingWidget(
@@ -5930,6 +6113,7 @@ class OccaseState extends State<Occase>
 
    void _onPostNodePressed(int i, int j)
    {
+      print('asssaaa $i $j $_botBarIdx');
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
@@ -7109,7 +7293,7 @@ class OccaseState extends State<Occase>
             final FlatButton cancel = FlatButton(
                child: Text(g.param.delChatCancelStr,
                   style: TextStyle(
-                     color: Theme.of(ctx).colorScheme.secondary,
+                     color: stl.colorScheme.secondary,
                   ),
                ),
                onPressed: ()
@@ -7239,6 +7423,11 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
+   void _onNewPostSetTreeCode(List<int> code, int i)
+   {
+      setState(() {_posts[ownIdx].channel[i].first = code;});
+   }
+
    // Widget factories.
    //
    // i: screen index.
@@ -7274,22 +7463,33 @@ class OccaseState extends State<Occase>
    Widget _makeNewPostScreenWdgs()
    {
       return makeNewPostScreenWdgs(
-	 post: _posts[0],
+	 post: _posts[ownIdx],
 	 trees: _appState.trees,
 	 txtCtrl: _txtCtrl,
-	 screen: _botBarIdx,
+	 navBar: _botBarIdx,
 	 exDetailsTree: _appState.exDetailsRoot,
 	 inDetailsTree: _appState.inDetailsRoot,
 	 imgFiles: _imgFiles,
 	 filenamesTimerActive: _filenamesTimer.isActive,
 	 onExDetail: _onExDetails,
-	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, 0);},
+	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, ownIdx);},
 	 onPostNodePressed: (int i) {_onPostNodePressed(i, ownIdx);},
 	 onInDetail: _onNewPostInDetail,
 	 onRangeValueChanged: _onRangeValueChanged,
 	 onAddPhoto: _onAddPhoto,
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
+      );
+   }
+
+   Widget _makeNewPostScreenWdgs2(BuildContext ctx)
+   {
+      return makeNewPostScreenWdgs2(
+	 ctx: ctx,
+	 locRootNode: _appState.trees[0].root.first,
+	 productTree: _appState.trees[1],
+	 post: _posts[ownIdx],
+	 onSetLocTreeCode: _onNewPostSetTreeCode,
       );
    }
 
@@ -7457,6 +7657,7 @@ class OccaseState extends State<Occase>
 
       if (_newPostPressed) {
 	 ret[ownIdx] = _makeNewPostScreenWdgs();
+	 //ret[ownIdx] = _makeNewPostScreenWdgs2(ctx);
       } else {
 	 ret[ownIdx] = _makeChatTab(ctx, ownIdx);
       }
@@ -7651,10 +7852,8 @@ class OccaseState extends State<Occase>
 	 );
       }
 
-      if (_isOnFavChat() || _isOnOwnChat()) {
-	 print('aaaa $screenIdx');
+      if (_isOnFavChat() || _isOnOwnChat())
          return _makeChatScreen(ctx, screenIdx);
-      }
 
       List<Widget> actions = _makeTabActions(ctx, screenIdx);
       actions.addAll(_makeGlobalActionsApp(ctx, screenIdx));
