@@ -45,7 +45,8 @@ typedef OnPressedFn8 = void Function(int, double);
 typedef OnPressedFn9 = void Function(String);
 typedef OnPressedFn10 = void Function(int, bool);
 typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
-typedef OnPressedFn12 = void Function(List<int> code, int i);
+typedef OnPressedFn12 = void Function(List<int>, int);
+typedef OnPressedFn13 = void Function(bool, int);
 
 enum Screen {own, searches, favorites}
 
@@ -1354,21 +1355,70 @@ List<Widget> makeSliderList({
    return <Widget>[sld2, sld1];
 }
 
-List<String> getExDetailsStrings(Node exDetailsTree, Post post)
+List<Widget> makeCheckBoxes(
+      final int state,
+      final List<String> items,
+      final OnPressedFn13 onChanged,
+) {
+   List<Widget> ret = List<Widget>();
+
+   for (int i = 0; i < items.length; ++i) {
+      final bool v = ((state & (1 << i)) != 0);
+      CheckboxListTile tmp = CheckboxListTile(
+         dense: true,
+         title: Text(items[i], style: stl.ltTitle),
+         value: v,
+         onChanged: (bool v) { onChanged(v, i); },
+         activeColor: stl.colorScheme.primary,
+	 isThreeLine: false,
+      );
+
+      ret.add(tmp);
+   }
+
+   return ret;
+}
+
+List<String> makeDetailsList(
+   Node root,
+   int productIdx,
+   int detailIdx,
+) {
+   if (productIdx >= root.children.length)
+      return List<String>();
+
+   Node productNode = root.children[productIdx];
+
+   if (detailIdx >= productNode.children.length)
+      return List<String>();
+
+   Node detailNode = productNode.children[detailIdx];
+
+   List<String> ret = List<String>();
+
+   for (int i = 0; i < detailNode.children.length; ++i)
+      ret.add(detailNode.children[i].name(g.param.langIdx));
+
+   return ret;
+}
+
+List<String> getExDetailsStrings(Node exDetailRootNode, Post post)
 {
    List<String> strs = List<String>();
    final int idx = post.getProductDetailIdx();
-   if (idx == -1)
-      return List<String>.filled(1, '');
+   if (idx == -1) {
+      //return List<String>.filled(1, '');
+      return List<String>();
+   }
 
-   final int l = exDetailsTree.children[idx].children.length;
+   final int l = exDetailRootNode.children[idx].children.length;
    for (int i = 0; i < l; ++i) {
       final int k = searchBitOn(
          post.exDetails[i],
-         exDetailsTree.children[idx].children[i].children.length
+         exDetailRootNode.children[idx].children[i].children.length
       );
 
-      String str = exDetailsTree
+      String str = exDetailRootNode
 	              .children[idx]
 	              .children[i]
 		      .children[k].name(g.param.langIdx);
@@ -1761,14 +1811,14 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.clip,
-	  style: stl.ltTitle,
+	  style: stl.appBarLtSubtitle.copyWith(color: Colors.grey),
        ),
        dense: true,
        subtitle:
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.clip,
-	     style: stl.appBarLtSubtitle.copyWith(color: Colors.grey),
+	     style: stl.ltTitle,
 	  ),
        onTap: onTap,
        enabled: true,
@@ -1779,20 +1829,23 @@ Widget makeNewPostLT({
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
    final Node locRootNode,
-   final Tree productTree,
+   final Node productRootNode,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final Post post,
    final OnPressedFn12 onSetLocTreeCode,
+   final OnPressedFn3 onSetExDetail,
+   final OnPressedFn3 onSetInDetail,
 }) {
-   print('Location ${post.getLocationCode()}');
-   print('Product ${post.getProductCode()}');
+   List<Widget> list = List<Widget>();
 
    List<int> locCode = post.getLocationCode();
-   String locSubtitle = 'Unknown';
+   String locSubtitle = g.param.unknownNick;
    if (locCode.isNotEmpty)
       locSubtitle = loadNames(locRootNode, locCode, g.param.langIdx).join(', ');
 
    Widget location = makeNewPostLT(
-      title: g.param.newPostTabNames[cts.ownIdx],
+      title: g.param.newPostTabNames[0],
       subTitle: locSubtitle,
       icon: Icons.edit_location,
       onTap: () async
@@ -1806,14 +1859,140 @@ Widget makeNewPostScreenWdgs2({
       },
    );
 
+   list.add(location);
+
+   List<int> productCode = post.getProductCode();
+   String productSubtitle = g.param.unknownNick;
+   if (productCode.isNotEmpty)
+      productSubtitle = loadNames(productRootNode, productCode, g.param.langIdx).join(', ');
+
    Widget product = makeNewPostLT(
       title: g.param.newPostTabNames[1],
-      subTitle: productTree.root.last.getChildrenNames(g.param.langIdx),
+      subTitle: productSubtitle,
       icon: Icons.directions_car,
-      onTap: (){print('b');},
+      onTap: () async
+      {
+	 final List<int> code = await showDialog<List<int>>(
+	    context: ctx,
+	    builder: (BuildContext ctx2) { return TreeView(root: productRootNode); },
+	 );
+
+	 if (code != null)
+	    onSetLocTreeCode(code, 1);
+      },
    );
 
-   return Column(children: <Widget>[location, product]);
+   list.add(product);
+
+   // ---------------------------------------------------
+
+   final int productIdx = post.getProductDetailIdx();
+
+   if (productIdx != -1) {
+      { // ex
+	 final int nDetails = exDetailsRootNode.children[productIdx].children.length;
+	 for (int i = 0; i < nDetails; ++i) {
+	    final List<String> detailStrs = makeDetailsList(exDetailsRootNode, productIdx, i);
+	    final int length = exDetailsRootNode.children[productIdx].children[i].children.length;
+	    final int k = post.exDetails[i] < length ? post.exDetails[i] : 0;
+	    final String subtitle = exDetailsRootNode
+			  .children[productIdx]
+			  .children[i]
+			  .children[k].name(g.param.langIdx);
+
+	    final String title =
+	       exDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx);
+
+	    Widget exDetailWdg = makeNewPostLT(
+	       title: title,
+	       subTitle: subtitle,
+	       icon: Icons.details,
+	       onTap: () async
+	       {
+		  final int state = await showDialog<int>(
+		     context: ctx,
+		     builder: (BuildContext ctx2)
+		     {
+			return ExDetailsView(
+			   title: title,
+			   names: detailStrs,
+			   onIdx: k,
+			);
+		     },
+		  );
+
+		  if (state != null)
+		     onSetExDetail(i, state);
+	       },
+	    );
+
+	    list.add(exDetailWdg);
+	 }
+      }
+      { // in
+	 final int nDetails = inDetailsRootNode.children[productIdx].children.length;
+	 for (int i = 0; i < nDetails; ++i) {
+	    final List<String> detailStrs = makeDetailsList(inDetailsRootNode, productIdx, i);
+	    final int length = inDetailsRootNode.children[productIdx].children[i].children.length;
+
+	    // TODO: Get list of children that are on.
+	    final int k = post.inDetails[i] < length ? post.inDetails[i] : 0;
+	    final String subtitle = inDetailsRootNode
+			  .children[productIdx]
+			  .children[i]
+			  .children[k].name(g.param.langIdx);
+
+	    final String title =
+	       inDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx);
+
+	    Widget inDetailWdg = makeNewPostLT(
+	       title: title,
+	       subTitle: subtitle,
+	       icon: Icons.details,
+	       onTap: () async
+	       {
+		  final int state = await showDialog<int>(
+		     context: ctx,
+		     builder: (BuildContext ctx2)
+		     {
+			return InDetailsView(
+			      state: post.inDetails[i],
+			      title: title,
+			      names: detailStrs,
+			);
+		     },
+		  );
+
+		  print('---------------> $state');
+
+		  if (state != null)
+		     onSetInDetail(i, state);
+	       },
+	    );
+
+	    list.add(inDetailWdg);
+	 }
+      }
+
+      // ---------------------------------------------------
+
+      Widget continueButton = createRaisedButton(
+	 (){print('aaa');},
+	 'Continue',
+	 stl.colorScheme.secondary,
+	 stl.colorScheme.primary,
+      );
+
+      list.add(continueButton);
+   }
+
+   return ListView.builder(
+      itemCount: list.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+	 return list[i];
+      },
+   );
 }
 
 Widget makeNewPostScreenWdgs({
@@ -2042,8 +2221,8 @@ Widget wrapDetailRowOnCard(Widget body)
 List<Widget> makeNewPostDetailElemList(
    Function proceed,
    int filter,
-   List<Node> list)
-{
+   List<Node> list,
+) {
    List<Widget> widgets = List<Widget>();
 
    for (int i = 0; i < list.length; ++i) {
@@ -2114,7 +2293,6 @@ Widget makeAppScaffoldWdg({
    Widget body,
    TabBar tabBar,
    List<Widget> actions,
-   List<Widget> bodies,
 }) {
    return WillPopScope(
       onWillPop: () async { return onWillPops();},
@@ -3346,7 +3524,7 @@ ListView makeNewFilterListView(
 }
 
 Widget createRaisedButton(
-   Function onPressed,
+   OnPressedFn0 onPressed,
    final String txt,
    Color color,
    Color textColor,
@@ -3879,6 +4057,132 @@ List<Widget> makePostButtons({
 
 
    return <Widget>[remove, share, chat, pin];
+}
+
+//------------------------------------------------------------------------------------
+class InDetailsView extends StatefulWidget {
+   int state;
+   final String title;
+   final List<String> names;
+
+   @override
+   InDetailsViewState createState() => InDetailsViewState();
+   InDetailsView(
+   { @required this.state
+   , @required this.title
+   , @required this.names
+   });
+}
+
+class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMixin {
+
+   @override
+   void dispose()
+   {
+      super.dispose();
+   }
+
+   @override
+   void initState()
+   {
+      super.initState();
+   }
+
+   void _onPressed(bool v, int i)
+   {
+      setState(() {widget.state ^= 1 << i;});
+   }
+
+   void _onOkPressed(BuildContext ctx)
+   {
+      Navigator.pop(ctx, widget.state);
+   }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      final FlatButton ok = FlatButton(
+	 child: Text(g.param.ok, style: TextStyle(color: stl.colorScheme.primary)),
+	 onPressed: () {_onOkPressed(ctx);},
+      );
+
+      return AlertDialog(
+	 title: Text(widget.title, style: TextStyle(color: stl.colorScheme.primary)),
+	 actions: <FlatButton>[ok],
+	 content: Column(
+	    mainAxisSize: MainAxisSize.min,
+	    children: makeCheckBoxes(
+	       widget.state,
+	       widget.names,
+	       _onPressed,
+	    ),
+	 ),
+      );
+   }
+}
+
+//--------------------------------------------------------------------------------------
+class ExDetailsView extends StatefulWidget {
+   final String title;
+   final List<String> names;
+   final int onIdx;
+
+   @override
+   ExDetailsViewState createState() => ExDetailsViewState();
+   ExDetailsView(
+   { @required this.title
+   , @required this.names
+   , @required this.onIdx
+   });
+}
+
+class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMixin {
+
+   @override
+   void dispose()
+   {
+      super.dispose();
+   }
+
+   @override
+   void initState()
+   {
+      super.initState();
+   }
+
+   void _onPressed(BuildContext ctx, bool v, int i)
+   {
+      Navigator.pop(ctx, v ? i : -1);
+   }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      List<Widget> exDetails = List<Widget>();
+      for (int i = 0; i < widget.names.length; ++i) {
+	 CheckboxListTile cb = CheckboxListTile(
+	    dense: true,
+	    title: Text(widget.names[i], style: stl.ltTitle),
+	    value: i == widget.onIdx,
+	    onChanged: (bool v) { _onPressed(ctx, v, i); },
+	    activeColor: stl.colorScheme.primary,
+	    isThreeLine: false,
+	 );
+
+
+	 Align a = Align(alignment: Alignment.centerLeft, child: cb);
+	 exDetails.add(a);
+      }
+
+      return SimpleDialog(
+	 title: Text(widget.title,
+	    maxLines: 1,
+	    overflow: TextOverflow.clip,
+	    style: stl.ltTitle,
+	 ),
+	 children: exDetails,
+      );
+   }
 }
 
 //---------------------------------------------------------------------
@@ -5361,7 +5665,7 @@ class OccaseState extends State<Occase>
    int _newPostErrorCode = -1;
 
    // Similar to _newPostPressed but for the filter screen.
-   bool _newSearchPressed = true;
+   bool _newSearchPressed = false;
 
    // The index of the tab we are currently in in the *new
    // post* or *Filters* screen. For example 0 for the localization
@@ -5789,7 +6093,7 @@ class OccaseState extends State<Occase>
    void prepareNewPost()
    {
       _posts[ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
-      _posts[ownIdx].images = List<String>(); // TODO: remove this later.
+      _posts[ownIdx].reset();
    }
 
    void _onNewPost()
@@ -7278,35 +7582,27 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
-                     child: Text(
-                        g.param.devChatOkStr,
-                        style: TextStyle(
-                           color: stl.colorScheme.secondary,
-                        ),
-                     ),
-                     onPressed: () async
-                     {
-                        await _removeLPChats(i);
-                        Navigator.of(ctx).pop();
-                     });
+	       child: Text(g.param.devChatOkStr,
+		  style: TextStyle(color: stl.colorScheme.secondary),
+	       ),
+	       onPressed: () async
+	       {
+		  await _removeLPChats(i);
+		  Navigator.of(ctx).pop();
+	       },
+	    );
 
             final FlatButton cancel = FlatButton(
                child: Text(g.param.delChatCancelStr,
-                  style: TextStyle(
-                     color: stl.colorScheme.secondary,
-                  ),
+                  style: TextStyle(color: stl.colorScheme.secondary),
                ),
-               onPressed: ()
-               {
-                  Navigator.of(ctx).pop();
-               });
+               onPressed: () { Navigator.of(ctx).pop(); });
 
             List<FlatButton> actions = List<FlatButton>(2);
             actions[0] = cancel;
             actions[1] = ok;
 
-            Text text = Text(
-               g.param.delOwnChatTitleStr,
+            Text text = Text(g.param.delOwnChatTitleStr,
                style: TextStyle(color: Colors.black));
 
             if (_isOnFav()) {
@@ -7425,7 +7721,22 @@ class OccaseState extends State<Occase>
 
    void _onNewPostSetTreeCode(List<int> code, int i)
    {
-      setState(() {_posts[ownIdx].channel[i].first = code;});
+      if (code.isEmpty)
+	 return;
+
+      _posts[ownIdx].channel[i].first = code;
+
+      setState(() {});
+   }
+
+   void _onSetExDetail(int detailIdx, int index)
+   {
+      setState(() {_posts[ownIdx].exDetails[detailIdx] = index;});
+   }
+
+   void _onSetInDetail(int detailIdx, int state)
+   {
+      setState(() { _posts[ownIdx].inDetails[detailIdx] = state; });
    }
 
    // Widget factories.
@@ -7434,7 +7745,6 @@ class OccaseState extends State<Occase>
    //
    Widget _makeChatScreen(BuildContext ctx, int i)
    {
-      print('bbb ---->  $i');
       return makeChatScreen(
 	 ctx,
 	 _chats[i],
@@ -7487,9 +7797,13 @@ class OccaseState extends State<Occase>
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
 	 locRootNode: _appState.trees[0].root.first,
-	 productTree: _appState.trees[1],
+	 productRootNode: _appState.trees[1].root.first,
+	 exDetailsRootNode: _appState.exDetailsRoot,
+	 inDetailsRootNode: _appState.inDetailsRoot,
 	 post: _posts[ownIdx],
 	 onSetLocTreeCode: _onNewPostSetTreeCode,
+	 onSetExDetail: _onSetExDetail,
+	 onSetInDetail: _onSetInDetail,
       );
    }
 
@@ -7656,8 +7970,8 @@ class OccaseState extends State<Occase>
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-	 ret[ownIdx] = _makeNewPostScreenWdgs();
-	 //ret[ownIdx] = _makeNewPostScreenWdgs2(ctx);
+	 //ret[ownIdx] = _makeNewPostScreenWdgs();
+	 ret[ownIdx] = _makeNewPostScreenWdgs2(ctx);
       } else {
 	 ret[ownIdx] = _makeChatTab(ctx, ownIdx);
       }
@@ -7868,7 +8182,6 @@ class OccaseState extends State<Occase>
 	 body: TabBarView(controller: _tabCtrl, children: bodies),
 	 tabBar: makeTabBar(ctx, newMsgCounters, _tabCtrl, opacities, _hasLPChatMsgs(screenIdx)),
 	 actions: actions,
-         bodies: bodies,
       );
    }
 }

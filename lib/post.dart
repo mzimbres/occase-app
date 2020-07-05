@@ -416,6 +416,16 @@ class Post {
       chats = List<ChatMetadata>();
    }
 
+   void reset()
+   {
+      images = List<String>();
+      exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
+      inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
+
+      final int l = g.param.rangesMinMax.length >> 1;
+      rangeValues = List.generate(l, (int i) { return g.param.rangesMinMax[2 * i]; });
+   }
+
    List<int> getLocationCode()
    {
       return channel[0][0];
@@ -423,6 +433,15 @@ class Post {
 
    List<int> getProductCode()
    {
+      if (channel == null)
+	 return <int>[];
+
+      if (channel[1] == null)
+	 return <int>[];
+
+      if (channel[1][0] == null)
+	 return <int>[];
+
       return channel[1][0];
    }
 
@@ -431,6 +450,15 @@ class Post {
 
    int getProductDetailIdx()
    {
+      if (channel == null)
+	 return -1;
+
+      if (channel[1] == null)
+	 return -1;
+
+      if (channel[1][0] == null)
+	 return -1;
+
       if (channel[1][0].isEmpty)
 	 return -1;
 
