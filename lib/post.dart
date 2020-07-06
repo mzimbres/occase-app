@@ -613,16 +613,14 @@ class Post {
          'channel': channel,
       };
 
+      print('sssss');
       final String body = jsonEncode(subCmd);
+      print('$body');
 
       return
       { 'from': from
-      , 'to': tree.toChannelHashCode(
-           channel[1][0],
-           g.param.filterDepths[1])
-      , 'filter': tree.toChannelHashCode(
-           channel[0][0],
-           g.param.filterDepths[0])
+      , 'to': tree.toChannelHashCode(channel[1][0], g.param.filterDepths[1])
+      , 'filter': tree.toChannelHashCode(channel[0][0], g.param.filterDepths[0])
       , 'id': id
       , 'features': exDetails.first
       , 'body': body

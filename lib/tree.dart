@@ -501,7 +501,10 @@ class TreeTraversal {
 
 int toChannelHashCodeD4(final List<int> c)
 {
-   assert(c.length >= 4);
+   if (c.length < 4)
+      return 0;
+
+   //assert(c.length >= 4);
 
    int ca = c[0];
    int cb = c[1];
@@ -519,7 +522,10 @@ int toChannelHashCodeD4(final List<int> c)
 
 int toChannelHashCodeD3(final List<int> c)
 {
-   assert(c.length >= 3);
+   if (c.length < 3)
+      return 0;
+
+   //assert(c.length >= 3);
 
    int ca = c[0];
    int cb = c[1];
@@ -535,7 +541,10 @@ int toChannelHashCodeD3(final List<int> c)
 
 int toChannelHashCodeD2(final List<int> c)
 {
-   assert(c.length >= 2);
+   if (c.length < 2)
+      return 0;
+
+   //assert(c.length >= 2);
 
    int ca = c[0];
    int cb = c[1];
@@ -548,7 +557,11 @@ int toChannelHashCodeD2(final List<int> c)
 
 int toChannelHashCodeD1(final List<int> c)
 {
-   assert(c.length >= 1);
+   if (c.length < 1)
+      return 0;
+
+   //assert(c.length >= 1);
+
    return c[0];
 }
 

@@ -1432,8 +1432,8 @@ List<Widget> makeNewPostDetailScreen(
    Function onExDetail,
    Function onInDetail,
    Post post,
-   Node exDetailsTree,
-   Node inDetailsTree,
+   Node exDetailsRootNode,
+   Node inDetailsRootNode,
    TextEditingController txtCtrl,
    Function onRangeValueChanged,
 ) {
@@ -1441,15 +1441,15 @@ List<Widget> makeNewPostDetailScreen(
    if (idx == -1)
       return List<Widget>();
 
-   List<String> exDetailsNames = getExDetailsStrings(exDetailsTree, post);
+   List<String> exDetailsNames = getExDetailsStrings(exDetailsRootNode, post);
 
    List<Widget> all = List<Widget>();
 
-   final int l1 = exDetailsTree.children[idx].children.length;
+   final int l1 = exDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
       Widget foo = makeNewPostDetailExpTile(
          (int j) {onExDetail(i, j);},
-         exDetailsTree.children[idx].children[i],
+         exDetailsRootNode.children[idx].children[i],
          post.exDetails[i],
          exDetailsNames[i],
       );
@@ -1457,12 +1457,12 @@ List<Widget> makeNewPostDetailScreen(
       all.add(foo);
    }
 
-   final int l2 = inDetailsTree.children[idx].children.length;
+   final int l2 = inDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
          (int j) {onInDetail(i, j);},
-         inDetailsTree.children[idx].children[i],
+         inDetailsRootNode.children[idx].children[i],
          post.inDetails[i],
          '$nBitsSet items',
       );
@@ -1533,11 +1533,11 @@ List<Widget> makeNewPostDetailScreen(
 }
 
 Widget makeNewPostFinalScreen({
+   BuildContext ctx,
    final Post post,
    final List<Tree> trees,
-   final int screen,
-   final Node exDetailsTree,
-   final Node inDetailsTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final List<File> imgFiles,
    final OnPressedFn2 onAddPhoto,
    final OnPressedFn4 onPublishPost,
@@ -1548,56 +1548,46 @@ Widget makeNewPostFinalScreen({
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
 
-   return ListView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
-      itemCount: 3,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-	 if (i == 0)
-	    return makeNewPost(
-	       ctx: ctx,
-	       screen: Screen.searches,
-	       snackbarStr: g.param.cancelNewPost,
-	       post: post,
-	       exDetailsTree: exDetailsTree,
-	       inDetailsTree: inDetailsTree,
-	       trees: trees,
-	       imgFiles: imgFiles,
-	       onAddPhoto: onAddPhoto,
-	       onExpandImg: (int j){ print('Noop00'); },
-	       onAddPostToFavorite: () { print('Noop01'); },
-	       onDelPost: () { print('Noop02');},
-	       onSharePost: () { print('Noop03');},
-	       onReportPost: () { print('Noop05');},
-	       onPinPost: () { print('Noop06');},
-	    );
-
-	 if (i == 1) {
-	    return Padding(
-		  padding: EdgeInsets.only(top: 50.0),
-		  child: createRaisedButton(
-		     () {onRemovePost(ctx);},
-		     g.param.cancel,
-		     stl.expTileCardColor,
-		     Colors.black,
-	       ),
-	    );
-	 }
-
-	 if (i == 2) {
-	    return Padding(
-		  padding: EdgeInsets.only(top: 50.0),
-		  child: createRaisedButton(
-		     () { onPublishPost(ctx); },
-		     g.param.newPostAppBarTitle,
-		     stl.colorScheme.secondary,
-		     stl.colorScheme.onSecondary,
-	       ),
-	    );
-	 }
-      },
+   Widget w0 = makeNewPost(
+      ctx: ctx,
+      screen: Screen.own,
+      snackbarStr: g.param.cancelNewPost,
+      post: post,
+      exDetailsRootNode: exDetailsRootNode,
+      inDetailsRootNode: inDetailsRootNode,
+      trees: trees,
+      imgFiles: imgFiles,
+      onAddPhoto: onAddPhoto,
+      onExpandImg: (int j){ print('Noop00'); },
+      onAddPostToFavorite: () { print('Noop01'); },
+      onDelPost: () { print('Noop02');},
+      onSharePost: () { print('Noop03');},
+      onReportPost: () { print('Noop05');},
+      onPinPost: () { print('Noop06');},
    );
+
+   Widget w1 = createRaisedButton(
+      () {onRemovePost(ctx);},
+      g.param.cancel,
+      stl.expTileCardColor,
+      Colors.black,
+   );
+
+   Widget w2 = createRaisedButton(
+      () { onPublishPost(ctx); },
+      g.param.newPostAppBarTitle,
+      stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
+   );
+
+   Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
+
+   Widget tmp = Padding(
+      padding: EdgeInsets.only(top: 30.0, bottom: 30.0),
+      child: r,
+   );
+
+   return Column(children: <Widget>[w0, tmp]);
 }
 
 List<Widget> makeTabActions({
@@ -1754,7 +1744,7 @@ Widget makeAppBarWdg({
       return makeSearchAppBar(
 	 screen: botBarIndex,
 	 trees: trees,
-	 title: g.param.newPostAppBarTitle,
+	 title: g.param.appName,
       );
 
    if (search && newSearchPressed)
@@ -1776,12 +1766,7 @@ BottomNavigationBar makeBotNavBar({
    OnPressedFn1 onSearchBotBarPressed,
 }) {
    if ((screen == Screen.own) && newPostPressed)
-      return makeBottomBarItems(
-	 stl.newPostTabIcons,
-	 g.param.newPostTabNames,
-	 onNewPostBotBarTapped,
-	 botBarIndex,
-      );
+      return null;
 
    if ((screen == Screen.searches) && newSearchPressed)
       return makeBottomBarItems(
@@ -1828,68 +1813,108 @@ Widget makeNewPostLT({
 
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
-   final Node locRootNode,
-   final Node productRootNode,
+   final bool filenamesTimerActive,
+   final Tree locationTree,
+   final Tree productTree,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
+   TextEditingController txtCtrl,
    final OnPressedFn12 onSetLocTreeCode,
    final OnPressedFn3 onSetExDetail,
    final OnPressedFn3 onSetInDetail,
+   final List<File> imgFiles,
+   final OnPressedFn2 onAddPhoto,
+   final OnPressedFn4 onPublishPost,
+   final OnPressedFn4 onRemovePost,
 }) {
+   Divider div = Divider(
+      color: Colors.black,
+      height: 2.0,
+      indent: 20.0,
+      endIndent: 30.0,
+   );
+
+   final Node locRootNode = locationTree.root.first;
+   final Node productRootNode = productTree.root.first;
+
    List<Widget> list = List<Widget>();
 
-   List<int> locCode = post.getLocationCode();
-   String locSubtitle = g.param.unknownNick;
-   if (locCode.isNotEmpty)
-      locSubtitle = loadNames(locRootNode, locCode, g.param.langIdx).join(', ');
+   { // Title
+      Text pageTitle = Text(g.param.newPostAppBarTitle,
+	 style: TextStyle(
+	    fontSize: 18.0,
+	    color: stl.colorScheme.primary,
+	    fontWeight: FontWeight.w500,
+	 ),
+      );
 
-   Widget location = makeNewPostLT(
-      title: g.param.newPostTabNames[0],
-      subTitle: locSubtitle,
-      icon: Icons.edit_location,
-      onTap: () async
-      {
-	 final List<int> code = await showDialog<List<int>>(
-	    context: ctx,
-	    builder: (BuildContext ctx2) { return TreeView(root: locRootNode); },
-	 );
+      Padding tmp = Padding(
+         child: pageTitle,
+	padding: EdgeInsets.only(top: 5.0, bottom: 10.0),
+      );
 
-	 onSetLocTreeCode(code, 0);
-      },
-   );
+      list.add(Center(child: tmp));
+      list.add(div);
+   }
 
-   list.add(location);
+   { // Location
+      List<int> locCode = post.getLocationCode();
+      String locSubtitle = g.param.unknownNick;
+      if (locCode.isNotEmpty)
+	 locSubtitle = loadNames(locRootNode, locCode, g.param.langIdx).join(', ');
 
-   List<int> productCode = post.getProductCode();
-   String productSubtitle = g.param.unknownNick;
-   if (productCode.isNotEmpty)
-      productSubtitle = loadNames(productRootNode, productCode, g.param.langIdx).join(', ');
+      Widget location = makeNewPostLT(
+	 title: g.param.newPostTabNames[0],
+	 subTitle: locSubtitle,
+	 icon: Icons.edit_location,
+	 onTap: () async
+	 {
+	    final List<int> code = await showDialog<List<int>>(
+	       context: ctx,
+	       builder: (BuildContext ctx2) { return TreeView(root: locRootNode); },
+	    );
 
-   Widget product = makeNewPostLT(
-      title: g.param.newPostTabNames[1],
-      subTitle: productSubtitle,
-      icon: Icons.directions_car,
-      onTap: () async
-      {
-	 final List<int> code = await showDialog<List<int>>(
-	    context: ctx,
-	    builder: (BuildContext ctx2) { return TreeView(root: productRootNode); },
-	 );
+	    onSetLocTreeCode(code, 0);
+	 },
+      );
 
-	 if (code != null)
-	    onSetLocTreeCode(code, 1);
-      },
-   );
+      list.add(location);
+      list.add(div);
+   }
 
-   list.add(product);
+   { // Product
+      List<int> productCode = post.getProductCode();
+      String productSubtitle = g.param.unknownNick;
+      if (productCode.isNotEmpty)
+	 productSubtitle = loadNames(productRootNode, productCode, g.param.langIdx).join(', ');
+
+      Widget product = makeNewPostLT(
+	 title: g.param.newPostTabNames[1],
+	 subTitle: productSubtitle,
+	 icon: Icons.directions_car,
+	 onTap: () async
+	 {
+	    final List<int> code = await showDialog<List<int>>(
+	       context: ctx,
+	       builder: (BuildContext ctx2) { return TreeView(root: productRootNode); },
+	    );
+
+	    if (code != null)
+	       onSetLocTreeCode(code, 1);
+	 },
+      );
+
+      list.add(product);
+      list.add(div);
+   }
 
    // ---------------------------------------------------
 
    final int productIdx = post.getProductDetailIdx();
-
    if (productIdx != -1) {
-      { // ex
+
+      { // exDetails
 	 final int nDetails = exDetailsRootNode.children[productIdx].children.length;
 	 for (int i = 0; i < nDetails; ++i) {
 	    final List<String> detailStrs = makeDetailsList(exDetailsRootNode, productIdx, i);
@@ -1927,9 +1952,11 @@ Widget makeNewPostScreenWdgs2({
 	    );
 
 	    list.add(exDetailWdg);
+	    list.add(div);
 	 }
       }
-      { // in
+
+      { // inDetails
 	 final int nDetails = inDetailsRootNode.children[productIdx].children.length;
 	 for (int i = 0; i < nDetails; ++i) {
 	    final List<String> detailStrs = makeDetailsList(inDetailsRootNode, productIdx, i);
@@ -1971,37 +1998,113 @@ Widget makeNewPostScreenWdgs2({
 	    );
 
 	    list.add(inDetailWdg);
+	    list.add(div);
 	 }
+      }
+
+      { // Description
+	 TextField tf = TextField(
+	    controller: txtCtrl,
+	    keyboardType: TextInputType.multiline,
+	    maxLines: null,
+	    maxLength: 300,
+	    style: stl.textField,
+	    decoration: InputDecoration.collapsed(
+	       hintText: g.param.newPostTextFieldHist,
+	    ),
+	 );
+
+	 Padding pad = Padding(
+	    padding: EdgeInsets.all(10.0),
+	    child: tf,
+	 );
+
+	 list.add(pad);
+	 list.add(div);
       }
 
       // ---------------------------------------------------
 
-      Widget continueButton = createRaisedButton(
-	 (){print('aaa');},
-	 'Continue',
-	 stl.colorScheme.secondary,
-	 stl.colorScheme.primary,
-      );
+      { // Title
+	 Text pageTitle = Text('Review and send',
+	    style: TextStyle(
+	       fontSize: 18.0,
+	       color: stl.colorScheme.primary,
+	       fontWeight: FontWeight.w500,
+	    ),
+	 );
 
-      list.add(continueButton);
-   }
+	 Padding tmp = Padding(
+	    child: pageTitle,
+	   padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+	 );
 
-   return ListView.builder(
+	 list.add(Center(child: tmp));
+      }
+
+   // ----------------------------------
+
+      { // final
+	 Widget finalScreen = makeNewPostFinalScreen(
+	    ctx: ctx,
+	    post: post,
+	    trees: <Tree>[locationTree, productTree],
+	    exDetailsRootNode: exDetailsRootNode,
+	    inDetailsRootNode: inDetailsRootNode,
+	    imgFiles: imgFiles,
+	    onAddPhoto: onAddPhoto,
+	    onPublishPost: onPublishPost,
+	    onRemovePost: onRemovePost,
+	 );
+
+	 Card c = Card(
+	    margin: const EdgeInsets.all(0.0),
+	    color: Colors.white,
+	    child: finalScreen,
+	    elevation: 2.0,
+	    shape: RoundedRectangleBorder(
+	       borderRadius: BorderRadius.all(Radius.circular(0.0)),
+	    ),
+	 );
+
+	 list.add(finalScreen);
+      }
+
+   } // ------------------------
+
+   Widget lv = ListView.builder(
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i)
       {
 	 return list[i];
       },
    );
+
+   if (!filenamesTimerActive)
+      return lv;
+
+   List<Widget> ret = List<Widget>();
+   ret.add(lv);
+
+   ModalBarrier mb = ModalBarrier(
+      color: Colors.grey.withOpacity(0.4),
+      dismissible: false,
+   );
+
+   ret.add(mb);
+   ret.add(Center(child: CircularProgressIndicator()));
+
+   return Stack(children: ret);
 }
 
 Widget makeNewPostScreenWdgs({
+   BuildContext ctx,
    final Post post,
    final List<Tree> trees,
    final TextEditingController txtCtrl,
    final int navBar,
-   final Node exDetailsTree,
-   final Node inDetailsTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final List<File> imgFiles,
    final bool filenamesTimerActive,
    final OnPressedFn3 onExDetail,
@@ -2016,11 +2119,11 @@ Widget makeNewPostScreenWdgs({
    List<Widget> list = List<Widget>();
    if (navBar == 3) {
       Widget finalScreen = makeNewPostFinalScreen(
+	 ctx: ctx,
 	 post: post,
 	 trees: trees,
-	 screen: navBar,
-	 exDetailsTree: exDetailsTree,
-	 inDetailsTree: inDetailsTree,
+	 exDetailsRootNode: exDetailsRootNode,
+	 inDetailsRootNode: inDetailsRootNode,
 	 imgFiles: imgFiles,
 	 onAddPhoto: onAddPhoto,
 	 onPublishPost: onPublishPost,
@@ -2034,8 +2137,8 @@ Widget makeNewPostScreenWdgs({
          onExDetail,
          onInDetail,
          post,
-         exDetailsTree,
-         inDetailsTree,
+         exDetailsRootNode,
+         inDetailsRootNode,
          txtCtrl,
          onRangeValueChanged,
       );
@@ -3741,7 +3844,7 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 List<Widget> makePostExDetails(
    BuildContext ctx,
    Post post,
-   Node exDetailsTree,
+   Node exDetailsRootNode,
 ) {
    // Post details varies according to the first index of the products
    // entry in the menu.
@@ -3752,18 +3855,18 @@ List<Widget> makePostExDetails(
    List<Widget> list = List<Widget>();
    list.add(makePostSectionTitle(ctx, g.param.postExDetailsTitle));
 
-   final int l1 = exDetailsTree.children[idx].children.length;
+   final int l1 = exDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
       final int j = searchBitOn(
          post.exDetails[i],
-         exDetailsTree.children[idx].children[i].children.length
+         exDetailsRootNode.children[idx].children[i].children.length
       );
       
       list.add(
          makePostRowElem(
             ctx,
-            exDetailsTree.children[idx].children[i].name(g.param.langIdx),
-            exDetailsTree.children[idx].children[i].children[j].name(g.param.langIdx),
+            exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
+            exDetailsRootNode.children[idx].children[i].children[j].name(g.param.langIdx),
          ),
       );
    }
@@ -3795,7 +3898,7 @@ List<Widget> makePostExDetails(
 List<Widget> makePostInDetails(
    BuildContext ctx,
    Post post,
-   Node inDetailsTree)
+   Node inDetailsRootNode)
 {
    List<Widget> all = List<Widget>();
 
@@ -3803,18 +3906,18 @@ List<Widget> makePostInDetails(
    if (i == -1)
       return List<Widget>();
 
-   final int l1 = inDetailsTree.children[i].children.length;
+   final int l1 = inDetailsRootNode.children[i].children.length;
    for (int j = 0; j < l1; ++j) {
       List<Widget> foo = makePostInRows(
          ctx,
-         inDetailsTree.children[i].children[j].children,
+         inDetailsRootNode.children[i].children[j].children,
          post.inDetails[j],
       );
 
       if (foo.length != 0) {
          all.add(makePostSectionTitle(
                ctx,
-               inDetailsTree.children[i].children[j].name(g.param.langIdx),
+               inDetailsRootNode.children[i].children[j].name(g.param.langIdx),
             ),
          );
          all.addAll(foo);
@@ -3870,14 +3973,14 @@ List<Widget> assemblePostRows(
    BuildContext ctx,
    Post post,
    List<Tree> menu,
-   Node exDetailsTree,
-   Node inDetailsTree,
+   Node exDetailsRootNode,
+   Node inDetailsRootNode,
 ) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
    all.addAll(makeMenuInfo(ctx, post, menu));
-   all.addAll(makePostExDetails(ctx, post, exDetailsTree));
-   all.addAll(makePostInDetails(ctx, post, inDetailsTree));
+   all.addAll(makePostExDetails(ctx, post, exDetailsRootNode));
+   all.addAll(makePostInDetails(ctx, post, inDetailsRootNode));
    if (post.description.isNotEmpty) {
       all.add(makePostSectionTitle(ctx, g.param.postDescTitle));
       all.add(makePostDescription(ctx, post.description));
@@ -4271,7 +4374,7 @@ class SizeAnimation extends StatefulWidget {
    int milliseconds;
    Screen screen;
    Post post;
-   Node exDetailsTree;
+   Node exDetailsRootNode;
    Widget detailsWidget;
    List<File> imgFiles;
    List<Tree> trees;
@@ -4289,7 +4392,7 @@ class SizeAnimation extends StatefulWidget {
    { @required this.milliseconds
    , @required this.screen
    , @required this.post
-   , @required this.exDetailsTree
+   , @required this.exDetailsRootNode
    , @required this.detailsWidget
    , @required this.imgFiles
    , @required this.trees
@@ -4481,7 +4584,7 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
       final String modelStr =
 	 makeTreeItemStr(widget.trees[1].root.first, widget.post.channel[1][0]);
       final String dateStr = makeDateString2(widget.post.date);
-      List<String> exDetailsNames = getExDetailsStrings(widget.exDetailsTree, widget.post);
+      List<String> exDetailsNames = getExDetailsStrings(widget.exDetailsRootNode, widget.post);
 
       Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
       Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
@@ -4576,8 +4679,8 @@ Widget makeNewPost({
    final Screen screen,
    final String snackbarStr,
    final Post post,
-   final Node exDetailsTree,
-   final Node inDetailsTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final List<Tree> trees,
    final List<File> imgFiles,
    OnPressedFn2 onAddPhoto,
@@ -4624,8 +4727,8 @@ Widget makeNewPost({
       ctx,
       post,
       trees,
-      exDetailsTree,
-      inDetailsTree,
+      exDetailsRootNode,
+      inDetailsRootNode,
    );
 
    rows.add(putPostElemOnCard(ctx, tmp, 4.0));
@@ -4634,7 +4737,7 @@ Widget makeNewPost({
      milliseconds: 500,
      screen: screen,
      post: post,
-     exDetailsTree: exDetailsTree,
+     exDetailsRootNode: exDetailsRootNode,
      detailsWidget: putPostElemOnCard(ctx, rows, 0.0),
      imgFiles: imgFiles,
      trees: trees,
@@ -4661,8 +4764,8 @@ Widget makeEmptyScreenWidget()
 
 Widget makeNewPostLv(
    final int nNewPosts,
-   final Node exDetailsTree,
-   final Node inDetailsTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final List<Post> posts,
    final List<Tree> trees,
    final OnPressedFn3 onExpandImg,
@@ -4693,8 +4796,8 @@ Widget makeNewPostLv(
 	    screen: Screen.searches,
             snackbarStr: g.param.dissmissedPost,
             post: posts[j],
-            exDetailsTree: exDetailsTree,
-            inDetailsTree: inDetailsTree,
+            exDetailsRootNode: exDetailsRootNode,
+            inDetailsRootNode: inDetailsRootNode,
             trees: trees,
             imgFiles: List<File>(),
             onAddPhoto: (var ctx, var i) {print('Error: Please fix.');},
@@ -5155,8 +5258,8 @@ Widget wrapPostOnButton(
 Widget makeChatTab({
    final bool isFwdChatMsgs,
    final Screen screen,
-   final Node exDetailsTree,
-   final Node inDetailsTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
    final List<Post> posts,
    final List<Tree> trees,
    final OnPressedFn3 onPressed,
@@ -5207,8 +5310,8 @@ Widget makeChatTab({
 	    screen: screen,
             snackbarStr: '',
             post: posts[i],
-            exDetailsTree: exDetailsTree,
-            inDetailsTree: inDetailsTree,
+            exDetailsRootNode: exDetailsRootNode,
+            inDetailsRootNode: inDetailsRootNode,
             trees: trees,
             imgFiles: List<File>(),
             onAddPhoto: (var a, var b) {print('Noop10');},
@@ -6464,12 +6567,15 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendPost() async
    {
+      print('ccccc');
       _posts[ownIdx].from = _appState.cfg.appId;
       _posts[ownIdx].nick = _appState.cfg.nick;
       _posts[ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[ownIdx].status = 3;
 
+      print('dddd');
       Post post = _posts[ownIdx].clone();
+      print('eee');
 
       final bool isEmpty = _appState.outPostsQueue.isEmpty;
 
@@ -7770,15 +7876,16 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeNewPostScreenWdgs()
+   Widget _makeNewPostScreenWdgs(BuildContext ctx)
    {
       return makeNewPostScreenWdgs(
+	 ctx: ctx,
 	 post: _posts[ownIdx],
 	 trees: _appState.trees,
 	 txtCtrl: _txtCtrl,
 	 navBar: _botBarIdx,
-	 exDetailsTree: _appState.exDetailsRoot,
-	 inDetailsTree: _appState.inDetailsRoot,
+	 exDetailsRootNode: _appState.exDetailsRoot,
+	 inDetailsRootNode: _appState.inDetailsRoot,
 	 imgFiles: _imgFiles,
 	 filenamesTimerActive: _filenamesTimer.isActive,
 	 onExDetail: _onExDetails,
@@ -7796,14 +7903,20 @@ class OccaseState extends State<Occase>
    {
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
-	 locRootNode: _appState.trees[0].root.first,
-	 productRootNode: _appState.trees[1].root.first,
+	 filenamesTimerActive: _filenamesTimer.isActive,
+	 locationTree: _appState.trees[0],
+	 productTree: _appState.trees[1],
 	 exDetailsRootNode: _appState.exDetailsRoot,
 	 inDetailsRootNode: _appState.inDetailsRoot,
 	 post: _posts[ownIdx],
+	 txtCtrl: _txtCtrl,
 	 onSetLocTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
 	 onSetInDetail: _onSetInDetail,
+	 imgFiles: _imgFiles,
+	 onAddPhoto: _onAddPhoto,
+	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
+	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
       );
    }
 
@@ -7876,8 +7989,8 @@ class OccaseState extends State<Occase>
       return makeChatTab(
 	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
 	 screen: Screen.own,
-	 exDetailsTree: _appState.exDetailsRoot,
-	 inDetailsTree: _appState.inDetailsRoot,
+	 exDetailsRootNode: _appState.exDetailsRoot,
+	 inDetailsRootNode: _appState.inDetailsRoot,
 	 posts: posts,
 	 trees: _appState.trees,
 	 onPressed: _onChatPressed,
@@ -7970,7 +8083,7 @@ class OccaseState extends State<Occase>
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-	 //ret[ownIdx] = _makeNewPostScreenWdgs();
+	 //ret[ownIdx] = _makeNewPostScreenWdgs(ctx);
 	 ret[ownIdx] = _makeNewPostScreenWdgs2(ctx);
       } else {
 	 ret[ownIdx] = _makeChatTab(ctx, ownIdx);
