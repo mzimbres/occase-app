@@ -702,7 +702,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency p) async
+Future<void> removeLpChat(Coord c, Persistency2 p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -1699,10 +1699,11 @@ Widget makeAppBarLeading({
    final OnPressedFn0 onWillLeaveNewPost,
    final OnPressedFn0 onBackFromChatMsgRedirect,
 }) {
-   final bool fav = screen == Screen.favorites;
    final bool own = screen == Screen.own;
    final bool search = screen == Screen.searches;
+   final bool fav = screen == Screen.favorites;
 
+   print('$own $search $fav $newPostPressed');
    if ((fav || own) && hasLpChatMsgs)
       return IconButton(
 	 icon: Icon(Icons.arrow_back),
@@ -1744,7 +1745,7 @@ Widget makeAppBarWdg({
       return makeSearchAppBar(
 	 screen: botBarIndex,
 	 trees: trees,
-	 title: g.param.appName,
+	 title: g.param.newPostAppBarTitle,
       );
 
    if (search && newSearchPressed)
@@ -1811,6 +1812,17 @@ Widget makeNewPostLT({
     );
 }
 
+ListView makeNewPostListView(List<Widget> list)
+{
+   return ListView.builder(
+      itemCount: list.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+	 return list[i];
+      },
+   );
+}
+
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
    final bool filenamesTimerActive,
@@ -1840,24 +1852,6 @@ Widget makeNewPostScreenWdgs2({
 
    List<Widget> list = List<Widget>();
 
-   { // Title
-      Text pageTitle = Text(g.param.newPostAppBarTitle,
-	 style: TextStyle(
-	    fontSize: 18.0,
-	    color: stl.colorScheme.primary,
-	    fontWeight: FontWeight.w500,
-	 ),
-      );
-
-      Padding tmp = Padding(
-         child: pageTitle,
-	padding: EdgeInsets.only(top: 5.0, bottom: 10.0),
-      );
-
-      list.add(Center(child: tmp));
-      list.add(div);
-   }
-
    { // Location
       List<int> locCode = post.getLocationCode();
       String locSubtitle = g.param.unknownNick;
@@ -1882,6 +1876,9 @@ Widget makeNewPostScreenWdgs2({
       list.add(location);
       list.add(div);
    }
+
+   if (post.getLocationCode().isEmpty)
+      return makeNewPostListView(list);
 
    { // Product
       List<int> productCode = post.getProductCode();
@@ -2072,13 +2069,7 @@ Widget makeNewPostScreenWdgs2({
 
    } // ------------------------
 
-   Widget lv = ListView.builder(
-      itemCount: list.length,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-	 return list[i];
-      },
-   );
+   final Widget lv = makeNewPostListView(list);
 
    if (!filenamesTimerActive)
       return lv;
@@ -2435,7 +2426,7 @@ Widget makeWebScaffoldWdg({
          child: Scaffold(
             appBar : appBar,
             body: body,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: Colors.white,
       ),
    );
 }
@@ -2514,14 +2505,14 @@ BottomNavigationBar makeBottomBarItems(
    );
 }
 
-FloatingActionButton makeFaButton(
+Widget makeFaButton(
    OnPressedFn0 onNewPost,
    OnPressedFn0 onFwdChatMsg,
    int lpChats,
    int lpChatMsgs,
 ) {
    if (lpChats == 0 && lpChatMsgs != 0)
-      return null;
+      return SizedBox.shrink();
 
    IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
@@ -2537,10 +2528,10 @@ FloatingActionButton makeFaButton(
    }
 
    if (lpChats != 0)
-      return null;
+      return SizedBox.shrink();
 
    if (onNewPost == null)
-      return null;
+      return SizedBox.shrink();
 
    return FloatingActionButton(
       backgroundColor: stl.colorScheme.secondary,
@@ -2554,8 +2545,8 @@ FloatingActionButton makeFaButton(
 
 List<Widget> makeFaButtons({
    final bool newSearchPressed,
-   final int lpChats,
-   final int lpChatMsgs,
+   final List<List<Coord>> lpChats,
+   final List<List<Coord>> lpChatMsgs,
    final int nNewPosts,
    final OnPressedFn0 onNewPost,
    final OnPressedFn1 onFwdSendButton,
@@ -2567,8 +2558,8 @@ List<Widget> makeFaButtons({
    ret[0] = makeFaButton(
       onNewPost,
       () {onFwdSendButton(0);},
-      lpChats,
-      lpChatMsgs
+      lpChats[0].length,
+      lpChatMsgs[0].length
    );
 
    ret[1] = makeFAButtonMiddleScreen(
@@ -2581,8 +2572,8 @@ List<Widget> makeFaButtons({
    ret[2] = makeFaButton(
       null,
       () {onFwdSendButton(2);},
-      lpChats,
-      lpChatMsgs,
+      lpChats[2].length,
+      lpChatMsgs[2].length,
    );
 
    return ret;
@@ -2595,7 +2586,7 @@ Widget makeFAButtonMiddleScreen(
    final OnPressedFn0 onSearch,
 ) {
    if (onSearchScreen)
-      return null;
+      return SizedBox.shrink();
 
    if (nNewPosts != 0)
       return FloatingActionButton(
@@ -4352,6 +4343,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
    Widget build(BuildContext ctx)
    {
       List<Widget> locWdgs = makeNewPostTreeWdgs(
+	 ctx: ctx,
 	 node: _stack.last,
 	 onLeafPressed: (int i) {_onPostLeafPressed(ctx, i);},
 	 onNodePressed: (int i) {_onPostNodePressed(ctx, i);},
@@ -4859,6 +4851,7 @@ ListTile makeNewPostTreeWdg({
 }
 
 List<Widget> makeNewPostTreeWdgs({
+   BuildContext ctx,
    Node node,
    OnPressedFn1 onLeafPressed,
    OnPressedFn1 onNodePressed,
@@ -4872,7 +4865,7 @@ List<Widget> makeNewPostTreeWdgs({
 	 onLeafPressed: () {onLeafPressed(i);},
 	 onNodePressed: () {onNodePressed(i);},
       );
-      list.add(o);
+      list.add(SizedBox(width: makeWidth(ctx), child: o));
    }
 
    return list;
@@ -5349,6 +5342,12 @@ Widget makeChatTab({
 //_____________________________________________________________________
 
 class DialogWithOp extends StatefulWidget {
+   final Function getValueFunc;
+   final Function setValueFunc;
+   final Function onPostSelection;
+   final String title;
+   final String body;
+
    DialogWithOp(
       this.getValueFunc,
       this.setValueFunc,
@@ -5357,32 +5356,14 @@ class DialogWithOp extends StatefulWidget {
       this.body,
    );
 
-   final Function getValueFunc;
-   final Function setValueFunc;
-   final Function onPostSelection;
-   final String title;
-   final String body;
-
    @override
    DialogWithOpState createState() => DialogWithOpState();
 }
 
 class DialogWithOpState extends State<DialogWithOp> {
-   Function _getValueFunc;
-   Function _setValueFunc;
-   Function _onPostSelection;
-   String _title;
-   String _body;
-   
    @override
    void initState()
    {
-      _getValueFunc = widget.getValueFunc;
-      _setValueFunc = widget.setValueFunc;
-      _onPostSelection = widget.onPostSelection;
-      _title = widget.title;
-      _body = widget.body;
-
       super.initState();
    }
 
@@ -5395,7 +5376,7 @@ class DialogWithOpState extends State<DialogWithOp> {
          ),
          onPressed: () async
          {
-            await _onPostSelection();
+            await widget.onPostSelection();
             Navigator.of(ctx).pop();
          },
       );
@@ -5417,18 +5398,18 @@ class DialogWithOpState extends State<DialogWithOp> {
 
       CheckboxListTile tile = CheckboxListTile(
          title: Text(g.param.doNotShowAgain),
-         value: !_getValueFunc(),
-         onChanged: (bool v) { setState(() {_setValueFunc(!v);}); },
+         value: !widget.getValueFunc(),
+         onChanged: (bool v) { setState(() {widget.setValueFunc(!v);}); },
          controlAffinity: ListTileControlAffinity.leading,
       );
 
       return SimpleDialog(
-         title: Text(_title),
+         title: Text(widget.title),
          children: <Widget>
          [ Padding(
               padding: EdgeInsets.all(25.0),
               child: Center(
-                 child: Text(_body,
+                 child: Text(widget.body,
                     style: TextStyle(fontSize: 16.0),
                  ),
               ),
@@ -5487,7 +5468,7 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>(6);
 
-   Persistency persistency = Persistency();
+   Persistency2 persistency = Persistency2();
 
    Future<void> load() async
    {
@@ -5821,8 +5802,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   //HtmlWebSocketChannel channel;
-   IOWebSocketChannel channel;
+   HtmlWebSocketChannel channel;
+   //IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not get
@@ -5843,7 +5824,7 @@ class OccaseState extends State<Occase>
    // Used to cache to fcmToken.
    String _fcmToken = '';
 
-   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+   //final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
    @override
    void initState()
@@ -5862,25 +5843,25 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
-      _firebaseMessaging.configure(
-         onMessage: (Map<String, dynamic> message) async {
-           print("onMessage: $message");
-         },
-         onBackgroundMessage: fcmOnBackgroundMessage,
-         onLaunch: (Map<String, dynamic> message) async {
-           print("onLaunch: $message");
-         },
-         onResume: (Map<String, dynamic> message) async {
-           print("onResume: $message");
-         },
-      );
+      //_firebaseMessaging.configure(
+      //   onMessage: (Map<String, dynamic> message) async {
+      //     print("onMessage: $message");
+      //   },
+      //   onBackgroundMessage: fcmOnBackgroundMessage,
+      //   onLaunch: (Map<String, dynamic> message) async {
+      //     print("onLaunch: $message");
+      //   },
+      //   onResume: (Map<String, dynamic> message) async {
+      //     print("onResume: $message");
+      //   },
+      //);
 
-      _firebaseMessaging.getToken().then((String token) {
-         if (_fcmToken != null)
-            _fcmToken = token;
+      //_firebaseMessaging.getToken().then((String token) {
+      //   if (_fcmToken != null)
+      //      _fcmToken = token;
 
-         print('Token: $token');
-      });
+      //   print('Token: $token');
+      //});
 
       WidgetsBinding.instance.addPostFrameCallback((_) async
       {
@@ -6026,8 +6007,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 channel = IOWebSocketChannel.connect(cts.dbHost);
+	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 //channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -7958,8 +7939,8 @@ class OccaseState extends State<Occase>
    {
       return makeFaButtons(
 	 newSearchPressed: _newSearchPressed,
-	 lpChats: _lpChats[i].length,
-	 lpChatMsgs: _lpChatMsgs[i].length,
+	 lpChats: _lpChats,
+	 lpChatMsgs: _lpChatMsgs,
 	 nNewPosts: _nNewPosts,
 	 onNewPost: _newPostPressed ? null : _onNewPost,
 	 onFwdSendButton: _onFwdSendButton,
@@ -8043,13 +8024,12 @@ class OccaseState extends State<Occase>
 
    Widget _makeAppBarLeading(int i)
    {
-      print('$_newPostPressed $_newSearchPressed');
       return makeAppBarLeading(
 	 hasLpChats: _hasLPChats(i),
 	 hasLpChatMsgs: _hasLPChatMsgs(i),
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 screen: _screen(),
+	 screen: _screenIdxToEnum(i),
 	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
 	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
 	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
@@ -8208,8 +8188,9 @@ class OccaseState extends State<Occase>
       List<double> opacities = _getNewMsgsOpacities();
 
       if (useAppLayout(ctx)) {
+      //if (false) {
 	 const double sep = 3.0;
-	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.white);
+	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 
 	 List<Widget> tabWdgs = makeTabWdgs(
 	    ctx: ctx,
@@ -8256,14 +8237,14 @@ class OccaseState extends State<Occase>
 	 else
 	    fav = Column(children: <Widget>[div, favTopBar, Expanded(child: bodies[favIdx]), div]);
 
-	 VerticalDivider vdiv = VerticalDivider(width: sep, thickness: sep, indent: 0.0, color: Colors.white);
+	 VerticalDivider vdiv = VerticalDivider(width: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 	 Widget body = Row(children: <Widget>
 	    [ vdiv
-	    , Expanded(child: own)
+	    , Expanded(child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[ownIdx])]))
 	    , vdiv
-	    , Expanded(child: search)
+	    , Expanded(child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[searchIdx])]))
 	    , vdiv
-	    , Expanded(child: fav)
+	    , Expanded(child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[favIdx])]))
 	    , vdiv
 	    ],
 	 );

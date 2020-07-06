@@ -428,6 +428,15 @@ class Post {
 
    List<int> getLocationCode()
    {
+      if (channel == null)
+	 return <int>[];
+
+      if (channel[0] == null)
+	 return <int>[];
+
+      if (channel[0][0] == null)
+	 return <int>[];
+
       return channel[0][0];
    }
 
