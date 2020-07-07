@@ -1,5 +1,5 @@
 
-const double maxPageWidth = 300.0;
+const double maxPageWidth = 350.0;
 
 // The image width will be determined by the device screen WIDTH times
 // this factor, that means, a factor 1.0 means a square image.
@@ -62,4 +62,9 @@ const int maxPostsOnDownload = 10;
 const int ownIdx = 0;
 const int searchIdx = 1;
 const int favIdx = 2;
+
+const double postImgWidth = 0.40;
+const double postWidth = 0.58;
+
+const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
 

@@ -48,7 +48,7 @@ typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
 
-enum Screen {own, searches, favorites}
+enum Screen {own, searches, fav}
 
 class Persistency2 {
    int insertPostId = 0;
@@ -56,7 +56,7 @@ class Persistency2 {
 
    Future<List<Config>> loadConfig() async
    {
-      return List<Config>();
+      return <Config>[Config(nick: g.param.unknownNick)];
    }
 
    Future<List<NodeInfo>> loadTrees() async
@@ -936,8 +936,9 @@ Scaffold makeRegisterScreen(
       ]
    );
 
+   // TODO: Use ConstrainedBox
    Widget body = col;
-   if (!useAppLayoutImpl(maxWidth))
+   if (!useWebWidth(maxWidth))
       body = SizedBox(width: maxWidth, child: col);
 
    return Scaffold(
@@ -952,6 +953,7 @@ Scaffold makeRegisterScreen(
 }
 
 Scaffold makeNtfScreen(
+   BuildContext ctx,
    Function onChange,
    final String appBarTitle,
    final NtfConfig conf,
@@ -987,10 +989,17 @@ Scaffold makeNtfScreen(
       ]
    );
 
+   final double width = makeWidth(ctx);
+
+   Widget tmp = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: width),
+      child: col,
+   );
+
    return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
       body: Padding(
-         child: col,
+         child: Center(child: tmp),
          padding: EdgeInsets.symmetric(vertical: 20.0),
       ),
    );
@@ -1599,7 +1608,7 @@ List<Widget> makeTabActions({
    OnPressedFn0 pinChats,
    OnPressedFn0 onClearPostsDialog,
 }) {
-   final bool fav = screen == Screen.favorites;
+   final bool fav = screen == Screen.fav;
    final bool own = screen == Screen.own;
    final bool search = screen == Screen.searches;
 
@@ -1701,7 +1710,7 @@ Widget makeAppBarLeading({
 }) {
    final bool own = screen == Screen.own;
    final bool search = screen == Screen.searches;
-   final bool fav = screen == Screen.favorites;
+   final bool fav = screen == Screen.fav;
 
    print('$own $search $fav $newPostPressed');
    if ((fav || own) && hasLpChatMsgs)
@@ -1734,7 +1743,7 @@ Widget makeAppBarWdg({
    final List<Tree> trees,
    Widget defaultWdg,
 }) {
-   final bool fav = screen == Screen.favorites;
+   final bool fav = screen == Screen.fav;
    final bool own = screen == Screen.own;
    final bool search = screen == Screen.searches;
 
@@ -2506,11 +2515,15 @@ BottomNavigationBar makeBottomBarItems(
 }
 
 Widget makeFaButton(
+   int nOwnPosts,
    OnPressedFn0 onNewPost,
    OnPressedFn0 onFwdChatMsg,
    int lpChats,
    int lpChatMsgs,
 ) {
+   if (nOwnPosts != -1 && nOwnPosts == 0)
+      return SizedBox.shrink();
+
    if (lpChats == 0 && lpChatMsgs != 0)
       return SizedBox.shrink();
 
@@ -2544,18 +2557,18 @@ Widget makeFaButton(
 }
 
 List<Widget> makeFaButtons({
+   final int nOwnPosts,
    final bool newSearchPressed,
    final List<List<Coord>> lpChats,
    final List<List<Coord>> lpChatMsgs,
-   final int nNewPosts,
    final OnPressedFn0 onNewPost,
    final OnPressedFn1 onFwdSendButton,
-   final OnPressedFn0 onShowNewPosts,
    final OnPressedFn0 onSearch,
 }) {
    List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
    ret[0] = makeFaButton(
+      nOwnPosts,
       onNewPost,
       () {onFwdSendButton(0);},
       lpChats[0].length,
@@ -2564,12 +2577,11 @@ List<Widget> makeFaButtons({
 
    ret[1] = makeFAButtonMiddleScreen(
       newSearchPressed,
-      nNewPosts,
-      onShowNewPosts,
       onSearch,
    );
 
    ret[2] = makeFaButton(
+      -1,
       null,
       () {onFwdSendButton(2);},
       lpChats[2].length,
@@ -2581,24 +2593,10 @@ List<Widget> makeFaButtons({
 
 Widget makeFAButtonMiddleScreen(
    final bool onSearchScreen,
-   final int nNewPosts,
-   final OnPressedFn0 onLoadNewPosts,
    final OnPressedFn0 onSearch,
 ) {
    if (onSearchScreen)
       return SizedBox.shrink();
-
-   if (nNewPosts != 0)
-      return FloatingActionButton(
-	 //mini: true,
-	 //heroTag: null,
-	 onPressed: onLoadNewPosts,
-	 backgroundColor: stl.colorScheme.secondary,
-	 child: Icon(
-	    Icons.file_download,
-	    color: stl.colorScheme.onSecondary,
-	 ),
-      );
 
    return FloatingActionButton(
       onPressed: onSearch,
@@ -3203,7 +3201,7 @@ Widget makeChatScreen(
           title: Text(ch.getChatDisplayName(),
              maxLines: 1,
              overflow: TextOverflow.clip,
-             style: stl.appBarLtTitle,
+             style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.onSecondary),
           ),
           dense: true,
           subtitle:
@@ -3221,9 +3219,10 @@ Widget makeChatScreen(
             appBar : AppBar(
                actions: actions,
                title: title,
+	       backgroundColor: stl.colorScheme.secondary,
                leading: IconButton(
                   padding: EdgeInsets.all(0.0),
-                  icon: Icon(Icons.arrow_back),
+                  icon: Icon(Icons.arrow_back, color: stl.colorScheme.onSecondary),
                   onPressed: onWillPopScope,
                ),
             ),
@@ -3237,10 +3236,10 @@ Widget makeTabWidget(
    BuildContext ctx,
    int n,
    String title,
-   double opacity
+   double opacity,
 ) {
    if (n == 0)
-      return Text(title);
+      return Center(child: Text(title));
 
    List<Widget> widgets = List<Widget>(2);
    widgets[0] = Text(title);
@@ -3643,8 +3642,8 @@ Container makeUnreadMsgsCircle(
    BuildContext ctx,
    int n,
    Color bgColor,
-   Color textColor)
-{
+   Color textColor,
+) {
    final Text txt =
       Text("$n",
            style: TextStyle(
@@ -4068,7 +4067,7 @@ Widget makeImgTextPlaceholder(final String str)
    );
 }
 
-bool useAppLayoutImpl(double w)
+bool useWebWidth(double w)
 {
    return w > (3 * cts.maxPageWidth);
 }
@@ -4077,17 +4076,21 @@ bool useAppLayout(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   return useAppLayoutImpl(w);
+   return useWebWidth(w);
 }
 
 double makeWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   if (useAppLayoutImpl(w))
-      return w / 3.0;
+   if (useWebWidth(w)) {
+      final double tmp = w / 3.0;
+      //final double max = tmp > cts.maxPageWidth ? cts.maxPageWidth : tmp;
+      return tmp;
+   }
 
-   return w;
+   final double max = w > cts.maxPageWidth ? cts.maxPageWidth : w;
+   return max;
 }
 
 double makeHeight(BuildContext ctx)
@@ -4315,7 +4318,11 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
    void _onPostLeafReached(BuildContext ctx)
    {
-      Navigator.pop(ctx, _stack.last.code);
+      List<int> code = <int>[];
+      if (_stack.last.code.isNotEmpty)
+	 code = _stack.last.code;
+
+      Navigator.pop(ctx, code);
       _stack = <Node>[widget.root];
    }
 
@@ -4353,7 +4360,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 title: Text(g.param.newPostTabNames[0],
 	    maxLines: 1,
 	    overflow: TextOverflow.clip,
-	    style: stl.ltTitle,
+	    style: stl.ltSubtitle,
 	 ),
 	 children: locWdgs,
       );
@@ -4484,7 +4491,7 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 
       Row buttonsRow = Row(children: buttonWdgs);
 
-      final double imgWidth = 0.37 * makeImgWidth(ctx);
+      final double imgWidth = cts.postImgWidth * makeImgWidth(ctx);
 
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
@@ -4585,12 +4592,12 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
       Widget s1 = makeTextWdg(exDetailsNames.first, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
       Widget s2 = makeTextWdg(exDetailsNames.last, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-      final double widthCol2 = 0.58 * makeImgWidth(ctx);
+      final double widthCol2 = cts.postWidth * makeImgWidth(ctx);
 
       Column infoWdg = Column(children: <Widget>
       [ Flexible(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
       , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
-      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
+      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
       , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
       , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
       , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
@@ -4742,7 +4749,20 @@ Widget makeNewPost({
    );
 }
 
-Widget makeEmptyScreenWidget()
+Widget makeOwnEmptyScreenWidget({
+   final OnPressedFn0 onPressed,
+}) {
+   Widget button = createRaisedButton(
+      onPressed,
+      g.param.newPostAppBarTitle,
+      stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
+   );
+
+   return Center(child: button);
+}
+
+Widget makeFavEmptyScreenWidget()
 {
    return Center(
       child: Text(g.param.appName,
@@ -4754,7 +4774,7 @@ Widget makeEmptyScreenWidget()
    );
 }
 
-Widget makeNewPostLv(
+Widget makeNewPostLv({
    final int nNewPosts,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
@@ -4765,17 +4785,18 @@ Widget makeNewPostLv(
    final OnPressedFn2 onDelPost,
    final OnPressedFn2 onSharePost,
    final OnPressedFn2 onReportPost,
-) {
+   final OnPressedFn0 onNext,
+}) {
    final int l = posts.length - nNewPosts;
    if (l == 0)
-      return makeEmptyScreenWidget();
+      return makeFavEmptyScreenWidget();
 
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
-      itemCount: l,
+      itemCount: l + 1,
       separatorBuilder: (BuildContext context, int index)
       {
 	 return Divider(color: Colors.black, height: 5.0);
@@ -4783,6 +4804,20 @@ Widget makeNewPostLv(
       itemBuilder: (BuildContext ctx, int i)
       {
          final int j = l - i - 1;
+	 if (i == l) {
+	    Widget ret = createRaisedButton(
+	       onNext,
+	       g.param.next,
+	       stl.colorScheme.secondary,
+	       stl.colorScheme.onSecondary,
+	    );
+
+	    return Padding(
+	       child: ret,
+	       padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+	    );
+	 }
+
          return makeNewPost(
             ctx: ctx,
 	    screen: Screen.searches,
@@ -5262,9 +5297,17 @@ Widget makeChatTab({
    OnPressedFn5 onUserInfoPressed,
    final OnPressedFn3 onExpandImg1,
    final OnPressedFn1 onSharePost,
+   final OnPressedFn0 onPost,
 }) {
-   if (posts.length == 0)
-      return makeEmptyScreenWidget();
+   if (posts.length == 0) {
+      if (screen == Screen.own)
+	 return makeOwnEmptyScreenWidget(
+            onPressed: onPost,
+	 );
+
+      if (screen == Screen.fav)
+	 return makeFavEmptyScreenWidget();
+   }
 
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
@@ -5318,7 +5361,7 @@ Widget makeChatTab({
 
          Widget chatExpansion = makeChatsExp(
             ctx,
-            screen == Screen.favorites,
+            screen == Screen.fav,
             isFwdChatMsgs,
             DateTime.now().millisecondsSinceEpoch,
             posts[i],
@@ -5469,6 +5512,10 @@ class AppState {
    List<bool> dialogPrefs = List<bool>(6);
 
    Persistency2 persistency = Persistency2();
+
+   AppState()
+   {
+   }
 
    Future<void> load() async
    {
@@ -5740,7 +5787,7 @@ class OccaseState extends State<Occase>
    // A flag that is set to true when the floating button (new post)
    // is clicked. It must be carefully set to false when that screen
    // are left.
-   bool _newPostPressed = true;
+   bool _newPostPressed = false;
 
    // This error code assumes the following values
    // -1: No error, nothing to do.
@@ -5918,7 +5965,7 @@ class OccaseState extends State<Occase>
    Screen _screen()
    {
       return _isOnOwn() ? Screen.own :
-	     _isOnFav() ? Screen.favorites :
+	     _isOnFav() ? Screen.fav :
 	                  Screen.searches;
    }
 
@@ -5932,7 +5979,7 @@ class OccaseState extends State<Occase>
    Screen _screenIdxToEnum(int i)
    {
       return i == ownIdx ? Screen.own :
-	     i == favIdx ? Screen.favorites :
+	     i == favIdx ? Screen.fav :
 	                  Screen.searches;
    }
 
@@ -7922,29 +7969,29 @@ class OccaseState extends State<Occase>
    Widget _makeNewPostLv()
    {
       return makeNewPostLv(
-	 _nNewPosts,
-	 _appState.exDetailsRoot,
-	 _appState.inDetailsRoot,
-	 _appState.posts,
-	 _appState.trees,
-	 (int i, int j) {_onExpandImg(i, j, searchIdx);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 0);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	 (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	nNewPosts: _nNewPosts,
+	exDetailsRootNode: _appState.exDetailsRoot,
+	inDetailsRootNode: _appState.inDetailsRoot,
+	posts: _appState.posts,
+	trees: _appState.trees,
+	onExpandImg: (int i, int j) {_onExpandImg(i, j, searchIdx);},
+	onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
+	onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	onNext: _onShowNewPosts,
       );
    }
 
    List<Widget> _makeFaButtons(int i)
    {
       return makeFaButtons(
+	 nOwnPosts: _appState.ownPosts.length,
 	 newSearchPressed: _newSearchPressed,
 	 lpChats: _lpChats,
 	 lpChatMsgs: _lpChatMsgs,
-	 nNewPosts: _nNewPosts,
 	 onNewPost: _newPostPressed ? null : _onNewPost,
 	 onFwdSendButton: _onFwdSendButton,
-	 onShowNewPosts: _onShowNewPosts,
 	 onSearch: _onSearchPressed,
       );
    }
@@ -7969,7 +8016,7 @@ class OccaseState extends State<Occase>
 
       return makeChatTab(
 	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
-	 screen: Screen.own,
+	 screen: _screenIdxToEnum(i),
 	 exDetailsRootNode: _appState.exDetailsRoot,
 	 inDetailsRootNode: _appState.inDetailsRoot,
 	 posts: posts,
@@ -7981,6 +8028,7 @@ class OccaseState extends State<Occase>
 	 onUserInfoPressed: _onUserInfoPressed,
 	 onExpandImg1: (int i, int j) {_onExpandImg(i, j, i);},
 	 onSharePost: (int i) {_onClickOnPost(i, 1);},
+	 onPost: _onNewPost,
       );
    }
 
@@ -8136,6 +8184,7 @@ class OccaseState extends State<Occase>
 
       if (_goToNtfScreen) {
          return makeNtfScreen(
+	    ctx,
             _onChangeNtf,
             g.param.changeNtfAppBarTitle,
             _appState.cfg.notifications,
@@ -8185,7 +8234,6 @@ class OccaseState extends State<Occase>
       List<Widget> bodies = _makeAppBodies(ctx);
       BottomNavigationBar bottomNavBar = _makeBotNavBar();
       List<int> newMsgCounters = _newMsgsCounters();
-      List<double> opacities = _getNewMsgsOpacities();
 
       if (useAppLayout(ctx)) {
       //if (false) {
@@ -8195,7 +8243,7 @@ class OccaseState extends State<Occase>
 	 List<Widget> tabWdgs = makeTabWdgs(
 	    ctx: ctx,
 	    counters: newMsgCounters,
-	    opacities: opacities,
+	    opacities: cts.newMsgsOpacitiesWeb,
 	 );
 
 	 Widget ownTopBar = AppBar(
@@ -8265,6 +8313,7 @@ class OccaseState extends State<Occase>
 
       List<Widget> actions = _makeTabActions(ctx, screenIdx);
       actions.addAll(_makeGlobalActionsApp(ctx, screenIdx));
+      List<double> opacities = _getNewMsgsOpacities();
 
       return makeAppScaffoldWdg(
 	 onWillPops: onWillPops[_tabCtrl.index],
