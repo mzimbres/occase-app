@@ -938,7 +938,7 @@ Scaffold makeRegisterScreen(
 
    // TODO: Use ConstrainedBox
    Widget body = col;
-   if (!useWebWidth(maxWidth))
+   if (!isWebImpl(maxWidth))
       body = SizedBox(width: maxWidth, child: col);
 
    return Scaffold(
@@ -1103,7 +1103,7 @@ Widget makeImgListView2(
    final int l1 = post.images.length;
    final int l2 = imgFiles.length;
 
-   final double width = makeImgWidth(ctx);
+   final double width = makeTabWidth(ctx);
    if (l1 == 0 && l2 == 0) {
       Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
       return makeImgPlaceholder(width, width, w);
@@ -1411,30 +1411,55 @@ List<String> makeDetailsList(
    return ret;
 }
 
-List<String> getExDetailsStrings(Node exDetailRootNode, Post post)
+List<String> makeExDetailsNames(Node exDetailRootNode, Post post)
 {
-   List<String> strs = List<String>();
-   final int idx = post.getProductDetailIdx();
-   if (idx == -1) {
-      //return List<String>.filled(1, '');
+   List<String> list = List<String>();
+   final int i = post.getProductDetailIdx();
+   if (i == -1)
       return List<String>();
+
+   final int l = exDetailRootNode.children[i].children.length;
+   for (int j = 0; j < l; ++j) {
+      final int n = exDetailRootNode.children[i].children[j].children.length;
+      final int k = post.exDetails[j];
+      if (k == -1 || k >= n)
+	 continue;
+
+      final String str = exDetailRootNode
+	                    .children[i]
+	                    .children[j]
+	                    .children[k].name(g.param.langIdx);
+
+      list.add(str);
    }
 
-   final int l = exDetailRootNode.children[idx].children.length;
-   for (int i = 0; i < l; ++i) {
-      final int k = searchBitOn(
-         post.exDetails[i],
-         exDetailRootNode.children[idx].children[i].children.length
-      );
+   return list;
+}
 
-      String str = exDetailRootNode
-	              .children[idx]
-	              .children[i]
-		      .children[k].name(g.param.langIdx);
-      strs.add(str);
+List<String> makeInDetailsNames(
+   Node inDetailsRootNode,
+   Post post,
+) {
+   final int i = post.getProductDetailIdx();
+   if (i == -1)
+      return <String>[];
+
+   final int l1 = inDetailsRootNode.children[i].children.length;
+   final int l2 = post.inDetails.length;
+   final int l = l1 > l2 ? l2 : l1;
+
+   List<String> ret = List<String>();
+   for (int j = 0; j < l; ++j) {
+      final int state = post.inDetails[j];
+      final Node node = inDetailsRootNode.children[i].children[j];
+      for (int k = 0; k < node.children.length; ++k) {
+	 if ((state & (1 << k)) == 0)
+	    continue;
+	 ret.add(node.children[k].name(g.param.langIdx));
+      }
    }
 
-   return strs;
+   return ret;
 }
 
 List<Widget> makeNewPostDetailScreen(
@@ -1450,7 +1475,7 @@ List<Widget> makeNewPostDetailScreen(
    if (idx == -1)
       return List<Widget>();
 
-   List<String> exDetailsNames = getExDetailsStrings(exDetailsRootNode, post);
+   List<String> exDetailsNames = makeExDetailsNames(exDetailsRootNode, post);
 
    List<Widget> all = List<Widget>();
 
@@ -3710,12 +3735,10 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    );
 }
 
-//ababab
 List<Widget> makePostInRows(
-   BuildContext ctx,
    List<Node> nodes,
-   int state)
-{
+   int state,
+) {
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < nodes.length; ++i) {
@@ -3749,8 +3772,8 @@ Widget makePostSectionTitle(
          padding: EdgeInsets.all(stl.postSectionPadding),
          child: Text(str,
             style: TextStyle(
-               fontSize: stl.subheadFontSize,
-               color: stl.primaryColor,
+               fontSize: stl.subtitleFontSize,
+               color: Colors.grey[500],
             ),
          ),
       ),
@@ -3847,16 +3870,16 @@ List<Widget> makePostExDetails(
 
    final int l1 = exDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
-      final int j = searchBitOn(
-         post.exDetails[i],
-         exDetailsRootNode.children[idx].children[i].children.length
-      );
+      final int n = exDetailsRootNode.children[idx].children[i].children.length;
+      final int k = post.exDetails[i];
+      if (k == -1 || k >= n)
+	 continue;
       
       list.add(
          makePostRowElem(
             ctx,
             exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
-            exDetailsRootNode.children[idx].children[i].children[j].name(g.param.langIdx),
+            exDetailsRootNode.children[idx].children[i].children[k].name(g.param.langIdx),
          ),
       );
    }
@@ -3899,7 +3922,6 @@ List<Widget> makePostInDetails(
    final int l1 = inDetailsRootNode.children[i].children.length;
    for (int j = 0; j < l1; ++j) {
       List<Widget> foo = makePostInRows(
-         ctx,
          inDetailsRootNode.children[i].children[j].children,
          post.inDetails[j],
       );
@@ -4067,29 +4089,59 @@ Widget makeImgTextPlaceholder(final String str)
    );
 }
 
-bool useWebWidth(double w)
+bool isWebImpl(double w)
 {
-   return w > (3 * cts.maxPageWidth);
+   return w > (3 * cts.maxWebTabWidth);
 }
 
-bool useAppLayout(BuildContext ctx)
+double makeTabWidthImpl(double w)
+{
+   if (isWebImpl(w))
+      return w / 3.0;
+
+   return w;
+}
+
+double makeTabWidth(BuildContext ctx)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+   return makeTabWidthImpl(w);
+}
+
+bool isWeb(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   return useWebWidth(w);
+   return isWebImpl(w);
+}
+
+double makeImgAvatarWidth(BuildContext ctx)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+   if (isWebImpl(w))
+      return cts.postImgAvatarTabWidthRate * cts.maxWebTabWidth;
+
+   if (w > cts.maxWebTabWidth)
+      return cts.postImgAvatarTabWidthRate * cts.maxWebTabWidth;
+
+   return cts.postImgAvatarTabWidthRate * w;
+}
+
+double makePostTextWidth(BuildContext ctx)
+{
+   final double tabWidth = makeTabWidth(ctx);
+   final double imgWidth = makeImgAvatarWidth(ctx);
+   return tabWidth - imgWidth - 5.00;
 }
 
 double makeWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   if (useWebWidth(w)) {
-      final double tmp = w / 3.0;
-      //final double max = tmp > cts.maxPageWidth ? cts.maxPageWidth : tmp;
-      return tmp;
-   }
+   if (isWebImpl(w))
+      return makeTabWidthImpl(w);
 
-   final double max = w > cts.maxPageWidth ? cts.maxPageWidth : w;
+   final double max = w > cts.maxWebTabWidth ? cts.maxWebTabWidth : w;
    return max;
 }
 
@@ -4374,6 +4426,7 @@ class SizeAnimation extends StatefulWidget {
    Screen screen;
    Post post;
    Node exDetailsRootNode;
+   Node inDetailsRootNode;
    Widget detailsWidget;
    List<File> imgFiles;
    List<Tree> trees;
@@ -4392,6 +4445,7 @@ class SizeAnimation extends StatefulWidget {
    , @required this.screen
    , @required this.post
    , @required this.exDetailsRootNode
+   , @required this.inDetailsRootNode
    , @required this.detailsWidget
    , @required this.imgFiles
    , @required this.trees
@@ -4458,16 +4512,16 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
    @override
    Widget build(BuildContext ctx)
    {
-      Text owner = Text(
-	 widget.post.nick,
-	 maxLines: 1,
-	 overflow: TextOverflow.clip,
-	 style: TextStyle(
-	    fontSize: stl.listTileSubtitleFontSize,
-	    color: Colors.grey[600],
-	    fontWeight: FontWeight.normal,
-	 ),
-      );
+      //Text owner = Text(
+      //   widget.post.nick,
+      //   maxLines: 1,
+      //   overflow: TextOverflow.clip,
+      //   style: TextStyle(
+      //      fontSize: stl.listTileSubtitleFontSize,
+      //      color: Colors.grey[600],
+      //      fontWeight: FontWeight.normal,
+      //   ),
+      //);
 
       final List<Widget> buttons = makePostButtons(
 	 pinDate: widget.post.pinDate,
@@ -4477,8 +4531,10 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 	 onPinPost: widget.onPinPost,
       );
 
+      Widget dateWdg = makeTextWdg(makeDateString2(widget.post.date), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
       List<Widget> buttonWdgs = List<Widget>();
-      buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
+      //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
+      buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
       if (widget.screen == Screen.searches) {
 	 buttonWdgs.add(Expanded(child: buttons[1]));
@@ -4491,7 +4547,7 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 
       Row buttonsRow = Row(children: buttonWdgs);
 
-      final double imgWidth = cts.postImgWidth * makeImgWidth(ctx);
+      final double imgAvatarWidth = makeImgAvatarWidth(ctx);
 
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
@@ -4499,8 +4555,8 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 	    //margin: const EdgeInsets.only(top: 10.0),
 	    margin: const EdgeInsets.all(0.0),
 	    child: makeNetImgBox(
-	       imgWidth,
-	       imgWidth,
+	       imgAvatarWidth,
+	       imgAvatarWidth,
 	       widget.post.images.first,
 	       BoxFit.cover,
 	    ),
@@ -4535,16 +4591,16 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 	 );
       } else if (widget.imgFiles.isNotEmpty) {
 	 imgWdg = Image.file(widget.imgFiles.last,
-	    width: imgWidth,
-	    height: imgWidth,
+	    width: imgAvatarWidth,
+	    height: imgAvatarWidth,
 	    fit: BoxFit.cover,
 	    filterQuality: FilterQuality.high,
 	 );
       } else {
 	 Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
 	 imgWdg = makeImgPlaceholder(
-	    imgWidth,
-	    imgWidth,
+	    imgAvatarWidth,
+	    imgAvatarWidth,
 	    w,
 	 );
       }
@@ -4582,28 +4638,31 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
          makeTreeItemStr(widget.trees[0].root.first, widget.post.channel[0][0]);
       final String modelStr =
 	 makeTreeItemStr(widget.trees[1].root.first, widget.post.channel[1][0]);
-      final String dateStr = makeDateString2(widget.post.date);
-      List<String> exDetailsNames = getExDetailsStrings(widget.exDetailsRootNode, widget.post);
+
+      List<String> exDetailsNames =
+	 makeExDetailsNames(widget.exDetailsRootNode, widget.post);
+
+      List<String> inDetailsNames =
+	 makeInDetailsNames(widget.inDetailsRootNode, widget.post);
 
       Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
       Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
-      Widget dataWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-      Widget s1 = makeTextWdg(exDetailsNames.first, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
-      Widget s2 = makeTextWdg(exDetailsNames.last, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget s1 = makeTextWdg(exDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget s2 = makeTextWdg(inDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-      final double widthCol2 = cts.postWidth * makeImgWidth(ctx);
+      final double widthCol2 = makePostTextWidth(ctx);
 
       Column infoWdg = Column(children: <Widget>
-      [ Flexible(child: SizedBox(width: widthCol2, child: Center(child: modelTitle)))
+      [ Flexible(child: SizedBox(width: widthCol2, child: Padding(child: modelTitle, padding: EdgeInsets.only(left: 5.0))))
       , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
-      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
+      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
       , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
-      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dataWdg)])))
+      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dateWdg)])))
       , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
       ]);
 
-      row1List.add(SizedBox(height: imgWidth, child: infoWdg));
+      row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
 
       List<Widget> rows = List<Widget>();
       rows.add(widget.detailsWidget);
@@ -4737,6 +4796,7 @@ Widget makeNewPost({
      screen: screen,
      post: post,
      exDetailsRootNode: exDetailsRootNode,
+     inDetailsRootNode: inDetailsRootNode,
      detailsWidget: putPostElemOnCard(ctx, rows, 0.0),
      imgFiles: imgFiles,
      trees: trees,
@@ -8235,7 +8295,7 @@ class OccaseState extends State<Occase>
       BottomNavigationBar bottomNavBar = _makeBotNavBar();
       List<int> newMsgCounters = _newMsgsCounters();
 
-      if (useAppLayout(ctx)) {
+      if (isWeb(ctx)) {
       //if (false) {
 	 const double sep = 3.0;
 	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
