@@ -109,21 +109,19 @@ class Node {
    }
 }
 
-// Given a leaf code and the menu it corresponds to produces an array
+// Given a node code and the menu it corresponds to produces an array
 // with the names of the parent up until the root direct child.
 List<String> loadNames(
    Node root,
-   List<int> leafCode,
+   List<int> code,
    int langIdx,
 ) {
-   if (leafCode.isEmpty)
+   if (code.isEmpty)
       return List<String>();
 
    List<String> names = List<String>();
    bool missing = false;
-   for (int i in leafCode) {
-      // An app that has not been updated may not contains some menu
-      // items so we have to check boundaries.
+   for (int i in code) {
       if (i >= root.children.length || missing) {
          missing = true;
          names.add('');
@@ -717,5 +715,100 @@ List<Tree> loadMenuItems(
    }
 
    return menu;
+}
+
+// Return a list of all ex details for the given product i.
+List<String> makeExDetailsNamesAll(Node root, List<int> exDetails, int i, int lang)
+{
+   if (i == -1)
+      return List<String>();
+
+   List<String> list = List<String>();
+   final int l = root.children[i].children.length;
+   for (int j = 0; j < l; ++j) {
+      final int n = root.children[i].children[j].children.length;
+      final int k = exDetails[j];
+      if (k == -1 || k >= n)
+	 continue;
+
+      String str = root.children[i].children[j].children[k].name(lang);
+      list.add(str);
+   }
+
+   return list;
+}
+
+List<String> makeInDetailNamesAll(Node root, List<int> inDetails, int i, int lang)
+{
+   if (i == -1)
+      return <String>[];
+
+   final int l1 = root.children[i].children.length;
+   final int l2 = inDetails.length;
+   final int l = l1 > l2 ? l2 : l1;
+
+   List<String> ret = List<String>();
+   for (int j = 0; j < l; ++j) {
+      final int state = inDetails[j];
+      final Node node = root.children[i].children[j];
+      List<String> names = makeInDetailNames(root, state, i, j, lang);
+      ret.addAll(names);
+   }
+
+   return ret;
+}
+
+List<String> makeInDetailNames(
+   Node root,
+   int state,
+   int productIdx,
+   int detailIdx,
+   int lang,
+) {
+   if (productIdx == -1)
+      return <String>[];
+
+   List<String> ret = List<String>();
+   final Node node = root.children[productIdx].children[detailIdx];
+
+   for (int k = 0; k < node.children.length; ++k)
+      if ((state & (1 << k)) != 0)
+	 ret.add(node.children[k].name(lang));
+
+   return ret;
+}
+
+int getNumberOfProductDetails(Node root, int productIdx)
+{
+   return root.children[productIdx].children.length;
+}
+
+int productDetailLength(Node root, int productIdx, int detailIdx)
+{
+   return root.children[productIdx].children[detailIdx].children.length;
+}
+
+List<String> listAllDetails(
+   Node root,
+   int productIdx,
+   int detailIdx,
+   int lang,
+) {
+   if (productIdx >= root.children.length)
+      return List<String>();
+
+   Node productNode = root.children[productIdx];
+
+   if (detailIdx >= productNode.children.length)
+      return List<String>();
+
+   Node detailNode = productNode.children[detailIdx];
+
+   List<String> ret = List<String>();
+
+   for (int i = 0; i < detailNode.children.length; ++i)
+      ret.add(detailNode.children[i].name(lang));
+
+   return ret;
 }
 

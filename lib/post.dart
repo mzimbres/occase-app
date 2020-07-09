@@ -367,7 +367,10 @@ class Post {
    //
    List<List<List<int>>> channel;
 
+   // Stores indexes.
    List<int> exDetails;
+
+   // Stores bits.
    List<int> inDetails;
 
    // The publication date.

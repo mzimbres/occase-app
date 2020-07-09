@@ -72,6 +72,12 @@ const TextStyle ltTitle = TextStyle(
    fontWeight: FontWeight.w500,
 );
 
+final TextStyle newPostTreeLT = TextStyle(
+   fontSize: ltTitleFontSize,
+   color: colorScheme.primary,
+   fontWeight: FontWeight.normal,
+);
+
 const TextStyle ltTitleOnPrimary = TextStyle(
    fontSize: ltTitleFontSize,
    color: onPrimaryColor,
@@ -80,8 +86,14 @@ const TextStyle ltTitleOnPrimary = TextStyle(
 
 final TextStyle ltSubtitle = TextStyle(
    fontSize: ltSubtitleFontSize,
-   color: Colors.grey[600],
-   fontWeight: FontWeight.normal,
+   color: Colors.grey[700],
+   fontWeight: FontWeight.w300,
+);
+
+final TextStyle newPostSubtitleLT = TextStyle(
+   fontSize: ltSubtitleFontSize,
+   color: Colors.grey[700],
+   fontWeight: FontWeight.w300,
 );
 
 final Color onPrimarySubtitleColor = Colors.grey[300];
@@ -170,4 +182,13 @@ final Color chatDateColor = Colors.grey[500];
 const double infoWidthFactor = 0.94;
 
 final Color expTileCardColor = Colors.grey[200];
+
+final
+Divider alertDivider = Divider(
+   color: Colors.grey,
+   height: 2.0,
+   thickness: 1.0,
+   indent: 17.0,
+   endIndent: 17.0,
+);
 

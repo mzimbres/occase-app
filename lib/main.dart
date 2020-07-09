@@ -48,8 +48,6 @@ typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
 
-enum Screen {own, searches, fav}
-
 class Persistency2 {
    int insertPostId = 0;
    int chatRowId = 0;
@@ -1375,7 +1373,7 @@ List<Widget> makeCheckBoxes(
       final bool v = ((state & (1 << i)) != 0);
       CheckboxListTile tmp = CheckboxListTile(
          dense: true,
-         title: Text(items[i], style: stl.ltTitle),
+         title: Text(items[i], style: stl.newPostTreeLT),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
          activeColor: stl.colorScheme.primary,
@@ -1383,80 +1381,6 @@ List<Widget> makeCheckBoxes(
       );
 
       ret.add(tmp);
-   }
-
-   return ret;
-}
-
-List<String> makeDetailsList(
-   Node root,
-   int productIdx,
-   int detailIdx,
-) {
-   if (productIdx >= root.children.length)
-      return List<String>();
-
-   Node productNode = root.children[productIdx];
-
-   if (detailIdx >= productNode.children.length)
-      return List<String>();
-
-   Node detailNode = productNode.children[detailIdx];
-
-   List<String> ret = List<String>();
-
-   for (int i = 0; i < detailNode.children.length; ++i)
-      ret.add(detailNode.children[i].name(g.param.langIdx));
-
-   return ret;
-}
-
-List<String> makeExDetailsNames(Node exDetailRootNode, Post post)
-{
-   List<String> list = List<String>();
-   final int i = post.getProductDetailIdx();
-   if (i == -1)
-      return List<String>();
-
-   final int l = exDetailRootNode.children[i].children.length;
-   for (int j = 0; j < l; ++j) {
-      final int n = exDetailRootNode.children[i].children[j].children.length;
-      final int k = post.exDetails[j];
-      if (k == -1 || k >= n)
-	 continue;
-
-      final String str = exDetailRootNode
-	                    .children[i]
-	                    .children[j]
-	                    .children[k].name(g.param.langIdx);
-
-      list.add(str);
-   }
-
-   return list;
-}
-
-List<String> makeInDetailsNames(
-   Node inDetailsRootNode,
-   Post post,
-) {
-   final int i = post.getProductDetailIdx();
-   if (i == -1)
-      return <String>[];
-
-   final int l1 = inDetailsRootNode.children[i].children.length;
-   final int l2 = post.inDetails.length;
-   final int l = l1 > l2 ? l2 : l1;
-
-   List<String> ret = List<String>();
-   for (int j = 0; j < l; ++j) {
-      final int state = post.inDetails[j];
-      final Node node = inDetailsRootNode.children[i].children[j];
-      for (int k = 0; k < node.children.length; ++k) {
-	 if ((state & (1 << k)) == 0)
-	    continue;
-	 ret.add(node.children[k].name(g.param.langIdx));
-      }
    }
 
    return ret;
@@ -1475,7 +1399,12 @@ List<Widget> makeNewPostDetailScreen(
    if (idx == -1)
       return List<Widget>();
 
-   List<String> exDetailsNames = makeExDetailsNames(exDetailsRootNode, post);
+   List<String> exDetailsNames = makeExDetailsNamesAll(
+      exDetailsRootNode,
+      post.exDetails,
+      post.getProductDetailIdx(),
+      g.param.langIdx,
+   );
 
    List<Widget> all = List<Widget>();
 
@@ -1584,7 +1513,7 @@ Widget makeNewPostFinalScreen({
 
    Widget w0 = makeNewPost(
       ctx: ctx,
-      screen: Screen.own,
+      screen: cts.ownIdx,
       snackbarStr: g.param.cancelNewPost,
       post: post,
       exDetailsRootNode: exDetailsRootNode,
@@ -1625,7 +1554,7 @@ Widget makeNewPostFinalScreen({
 }
 
 List<Widget> makeTabActions({
-   Screen screen,
+   int screen,
    bool newPostPressed,
    bool hasLPChats,
    bool hasLPChatMsgs,
@@ -1633,9 +1562,9 @@ List<Widget> makeTabActions({
    OnPressedFn0 pinChats,
    OnPressedFn0 onClearPostsDialog,
 }) {
-   final bool fav = screen == Screen.fav;
-   final bool own = screen == Screen.own;
-   final bool search = screen == Screen.searches;
+   final bool fav = screen == cts.favIdx;
+   final bool own = screen == cts.ownIdx;
+   final bool search = screen == cts.searchIdx;
 
    List<Widget> ret = List<Widget>();
    if (own) {
@@ -1728,14 +1657,14 @@ Widget makeAppBarLeading({
    final bool hasLpChatMsgs,
    final bool newPostPressed,
    final bool newSearchPressed,
-   final Screen screen,
+   final int screen,
    final OnPressedFn0 onWillLeaveSearch,
    final OnPressedFn0 onWillLeaveNewPost,
    final OnPressedFn0 onBackFromChatMsgRedirect,
 }) {
-   final bool own = screen == Screen.own;
-   final bool search = screen == Screen.searches;
-   final bool fav = screen == Screen.fav;
+   final bool own = screen == cts.ownIdx;
+   final bool search = screen == cts.searchIdx;
+   final bool fav = screen == cts.favIdx;
 
    print('$own $search $fav $newPostPressed');
    if ((fav || own) && hasLpChatMsgs)
@@ -1746,7 +1675,7 @@ Widget makeAppBarLeading({
 
    if (own && newPostPressed)
       return IconButton(
-	 icon: Icon(Icons.arrow_back),
+	 icon: Icon(Icons.arrow_back, color: stl.colorScheme.secondary),
 	 onPressed: onWillLeaveNewPost,
       );
 
@@ -1764,13 +1693,13 @@ Widget makeAppBarWdg({
    bool newPostPressed,
    bool newSearchPressed,
    final int botBarIndex,
-   final Screen screen,
+   final int screen,
    final List<Tree> trees,
    Widget defaultWdg,
 }) {
-   final bool fav = screen == Screen.fav;
-   final bool own = screen == Screen.own;
-   final bool search = screen == Screen.searches;
+   final bool fav = screen == cts.favIdx;
+   final bool own = screen == cts.ownIdx;
+   final bool search = screen == cts.searchIdx;
 
    if ((fav || own) && hasLpChatMsgs)
       return Text(g.param.msgOnRedirectingChat);
@@ -1796,14 +1725,14 @@ BottomNavigationBar makeBotNavBar({
    int botBarIndex,
    bool newPostPressed,
    bool newSearchPressed,
-   Screen screen,
+   int screen,
    OnPressedFn1 onNewPostBotBarTapped,
    OnPressedFn1 onSearchBotBarPressed,
 }) {
-   if ((screen == Screen.own) && newPostPressed)
+   if ((screen == cts.ownIdx) && newPostPressed)
       return null;
 
-   if ((screen == Screen.searches) && newSearchPressed)
+   if ((screen == cts.searchIdx) && newSearchPressed)
       return makeBottomBarItems(
 	 stl.filterTabIcons,
 	 g.param.filterTabNames,
@@ -1820,25 +1749,29 @@ Widget makeNewPostLT({
    final IconData icon,
    OnPressedFn0 onTap,
 }) {
+   Widget leading;
+   if (icon != null)
+      leading = CircleAvatar(
+	  child: Icon(icon,
+	     color: stl.colorScheme.primary,
+	  ),
+	  backgroundColor: Colors.white,
+       );
+      
    return ListTile(
        contentPadding: EdgeInsets.all(3.0),
-       leading: CircleAvatar(
-	   child: Icon(icon,
-	      color: stl.colorScheme.primary,
-	   ),
-	   backgroundColor: Colors.white,
-       ),
+       leading: leading,
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.clip,
-	  style: stl.appBarLtSubtitle.copyWith(color: Colors.grey),
+	  style: stl.newPostSubtitleLT,
        ),
        dense: true,
        subtitle:
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.clip,
-	     style: stl.ltTitle,
+	     style: stl.newPostTreeLT,
 	  ),
        onTap: onTap,
        enabled: true,
@@ -1855,6 +1788,31 @@ ListView makeNewPostListView(List<Widget> list)
 	 return list[i];
       },
    );
+}
+
+Widget makeExDetailDropDown()
+{
+   return DropdownButton<String>(
+	 value: 'One',
+	 icon: Icon(Icons.arrow_downward),
+	 iconSize: 24,
+	 elevation: 16,
+	 style: TextStyle(color: Colors.deepPurple),
+	 underline: Container(
+	       height: 2,
+	       color: Colors.deepPurpleAccent,
+	 ),
+	 onChanged: (String newValue) {
+	    print('aaaaaaaaaaaaaaaa');
+	 },
+	 items: <String>['One', 'Two', 'Free', 'Four']
+	 .map<DropdownMenuItem<String>>((String value) {
+	    return DropdownMenuItem<String>(
+		  value: value,
+		  child: Text(value),
+	    );
+	 }).toList(),
+	 );
 }
 
 Widget makeNewPostScreenWdgs2({
@@ -1874,11 +1832,13 @@ Widget makeNewPostScreenWdgs2({
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
 }) {
+   const double leftIndent = 10.0;
    Divider div = Divider(
-      color: Colors.black,
+      color: Colors.grey,
       height: 2.0,
-      indent: 20.0,
-      endIndent: 30.0,
+      indent: leftIndent,
+      endIndent: leftIndent,
+      thickness: 1.0,
    );
 
    final Node locRootNode = locationTree.root.first;
@@ -1946,43 +1906,49 @@ Widget makeNewPostScreenWdgs2({
    if (productIdx != -1) {
 
       { // exDetails
-	 final int nDetails = exDetailsRootNode.children[productIdx].children.length;
+	 final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
 	 for (int i = 0; i < nDetails; ++i) {
-	    final List<String> detailStrs = makeDetailsList(exDetailsRootNode, productIdx, i);
-	    final int length = exDetailsRootNode.children[productIdx].children[i].children.length;
+	    final int length = productDetailLength(exDetailsRootNode, productIdx, i);
 	    final int k = post.exDetails[i] < length ? post.exDetails[i] : 0;
-	    final String subtitle = exDetailsRootNode
-			  .children[productIdx]
-			  .children[i]
-			  .children[k].name(g.param.langIdx);
 
-	    final String title =
-	       exDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx);
+	    final List<String> names = loadNames(
+               exDetailsRootNode,
+	       <int>[productIdx, i, k],
+	       g.param.langIdx,
+	    );
 
+	    final List<String> detailStrs = listAllDetails(
+               exDetailsRootNode,
+	       productIdx,
+	       i,
+	       g.param.langIdx,
+	    );
+
+	    //Widget exDetailWdg1 = makeExDetailDropDown();
 	    Widget exDetailWdg = makeNewPostLT(
-	       title: title,
-	       subTitle: subtitle,
-	       icon: Icons.details,
+	       title: names[1],
+	       subTitle: names[2],
+	       icon: null,
 	       onTap: () async
 	       {
-		  final int state = await showDialog<int>(
-		     context: ctx,
-		     builder: (BuildContext ctx2)
-		     {
-			return ExDetailsView(
-			   title: title,
-			   names: detailStrs,
-			   onIdx: k,
-			);
-		     },
-		  );
+	          final int state = await showDialog<int>(
+	             context: ctx,
+	             builder: (BuildContext ctx2)
+	             {
+	        	return ExDetailsView(
+	        	   title: names[1],
+	        	   names: detailStrs,
+	        	   onIdx: k,
+	        	);
+	             },
+	          );
 
-		  if (state != null)
-		     onSetExDetail(i, state);
+	          if (state != null)
+	             onSetExDetail(i, state);
 	       },
 	    );
 
-	    list.add(exDetailWdg);
+	    list.add(Padding(padding: EdgeInsets.only(left: leftIndent), child: exDetailWdg));
 	    list.add(div);
 	 }
       }
@@ -1990,15 +1956,21 @@ Widget makeNewPostScreenWdgs2({
       { // inDetails
 	 final int nDetails = inDetailsRootNode.children[productIdx].children.length;
 	 for (int i = 0; i < nDetails; ++i) {
-	    final List<String> detailStrs = makeDetailsList(inDetailsRootNode, productIdx, i);
-	    final int length = inDetailsRootNode.children[productIdx].children[i].children.length;
+	    final List<String> detailStrs = listAllDetails(
+               inDetailsRootNode,
+	       productIdx,
+	       i,
+	       g.param.langIdx,
+	    );
 
-	    // TODO: Get list of children that are on.
-	    final int k = post.inDetails[i] < length ? post.inDetails[i] : 0;
-	    final String subtitle = inDetailsRootNode
-			  .children[productIdx]
-			  .children[i]
-			  .children[k].name(g.param.langIdx);
+	    List<String> subtitles = makeInDetailNames(
+               inDetailsRootNode,
+	       post.inDetails[i],
+	       productIdx, i,
+	       g.param.langIdx,
+	    );
+
+	    final String subtitle = subtitles.join(', ');;
 
 	    final String title =
 	       inDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx);
@@ -2006,7 +1978,7 @@ Widget makeNewPostScreenWdgs2({
 	    Widget inDetailWdg = makeNewPostLT(
 	       title: title,
 	       subTitle: subtitle,
-	       icon: Icons.details,
+	       icon: null,
 	       onTap: () async
 	       {
 		  final int state = await showDialog<int>(
@@ -2021,14 +1993,12 @@ Widget makeNewPostScreenWdgs2({
 		     },
 		  );
 
-		  print('---------------> $state');
-
 		  if (state != null)
 		     onSetInDetail(i, state);
 	       },
 	    );
 
-	    list.add(inDetailWdg);
+	    list.add(Padding(padding: EdgeInsets.only(left: leftIndent), child: inDetailWdg));
 	    list.add(div);
 	 }
       }
@@ -2251,13 +2221,13 @@ Widget makeSearchAppBar({
       title: Text(title,
 	 maxLines: 1,
 	 overflow: TextOverflow.clip,
-	 style: stl.appBarLtTitle,
+	 style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.secondary),
       ),
-      subtitle: Text(trees[screen].getStackNames(),
-	 maxLines: 1,
-	 overflow: TextOverflow.clip,
-	 style: stl.appBarLtSubtitle,
-      ),
+      //subtitle: Text(trees[screen].getStackNames(),
+      //   maxLines: 1,
+      //   overflow: TextOverflow.clip,
+      //   style: stl.appBarLtSubtitle,
+      //),
    );
 }
 
@@ -4134,6 +4104,12 @@ double makePostTextWidth(BuildContext ctx)
    return tabWidth - imgWidth - 5.00;
 }
 
+double makeDialogWidthHeight(BuildContext ctx)
+{
+   double w = makeTabWidth(ctx);
+   return 0.80 * w;
+}
+
 double makeWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
@@ -4208,6 +4184,35 @@ List<Widget> makePostButtons({
    return <Widget>[remove, share, chat, pin];
 }
 
+Widget makeNewPostDialogWdg({
+   final double width,
+   final Widget title,
+   final List<Widget> list,
+   final List<Widget> actions,
+}) {
+   ListView lv = ListView.separated(
+      separatorBuilder: (BuildContext context, int index)
+      {
+	 return stl.alertDivider;
+      },
+      itemCount: list.length,
+      itemBuilder: (BuildContext ctx, int i)
+      {
+	 return list[i];
+      }
+   );
+
+   return AlertDialog(
+      title: title,
+      actions: actions,
+      content: Container(
+	 width: width,
+	 height: width,
+	 child: lv,
+      ),
+   );
+}
+
 //------------------------------------------------------------------------------------
 class InDetailsView extends StatefulWidget {
    int state;
@@ -4255,17 +4260,17 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
 	 onPressed: () {_onOkPressed(ctx);},
       );
 
-      return AlertDialog(
-	 title: Text(widget.title, style: TextStyle(color: stl.colorScheme.primary)),
+      List<Widget> list = makeCheckBoxes(
+	 widget.state,
+	 widget.names,
+	 _onPressed,
+      );
+
+      return makeNewPostDialogWdg(
+	 width: makeDialogWidthHeight(ctx),
+	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 list: list,
 	 actions: <FlatButton>[ok],
-	 content: Column(
-	    mainAxisSize: MainAxisSize.min,
-	    children: makeCheckBoxes(
-	       widget.state,
-	       widget.names,
-	       _onPressed,
-	    ),
-	 ),
       );
    }
 }
@@ -4304,6 +4309,11 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       Navigator.pop(ctx, v ? i : -1);
    }
 
+   void _onOkPressed(BuildContext ctx)
+   {
+      Navigator.pop(ctx);
+   }
+
    @override
    Widget build(BuildContext ctx)
    {
@@ -4311,25 +4321,27 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       for (int i = 0; i < widget.names.length; ++i) {
 	 CheckboxListTile cb = CheckboxListTile(
 	    dense: true,
-	    title: Text(widget.names[i], style: stl.ltTitle),
+	    title: Text(widget.names[i], style: stl.newPostTreeLT),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
 	    activeColor: stl.colorScheme.primary,
 	    isThreeLine: false,
 	 );
 
-
 	 Align a = Align(alignment: Alignment.centerLeft, child: cb);
 	 exDetails.add(a);
       }
 
-      return SimpleDialog(
-	 title: Text(widget.title,
-	    maxLines: 1,
-	    overflow: TextOverflow.clip,
-	    style: stl.ltTitle,
-	 ),
-	 children: exDetails,
+      final FlatButton ok = FlatButton(
+	 child: Text(g.param.ok, style: TextStyle(color: stl.colorScheme.primary)),
+	 onPressed: () {_onOkPressed(ctx);},
+      );
+
+      return makeNewPostDialogWdg(
+	 width: makeDialogWidthHeight(ctx),
+	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 list: exDetails,
+	 actions: <FlatButton>[ok],
       );
    }
 }
@@ -4398,9 +4410,21 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       setState(() { });
    }
 
+   void _onBack(BuildContext ctx)
+   {
+      setState((){
+	 _stack.removeLast();
+	 if (_stack.isEmpty)
+	    Navigator.pop(ctx);
+      });
+   }
+
    @override
    Widget build(BuildContext ctx)
    {
+      if (_stack.isEmpty)
+	 return SizedBox.shrink();
+
       List<Widget> locWdgs = makeNewPostTreeWdgs(
 	 ctx: ctx,
 	 node: _stack.last,
@@ -4408,13 +4432,33 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 onNodePressed: (int i) {_onPostNodePressed(ctx, i);},
       );
 
-      return SimpleDialog(
-	 title: Text(g.param.newPostTabNames[0],
-	    maxLines: 1,
-	    overflow: TextOverflow.clip,
-	    style: stl.ltSubtitle,
+      final String titleStr = _stack.join(', ');
+
+      Widget titleWdg = RichText(
+	 text: TextSpan(
+	    text: '${g.param.newPostTabNames[0]}: ',
+	    style: stl.newPostTreeLT,
+	    children: <TextSpan>
+	    [ TextSpan(
+		 text: titleStr,
+		 style: stl.newPostTreeLT.copyWith(color: stl.colorScheme.secondary),
+	      ),
+	    ],
 	 ),
-	 children: locWdgs,
+      );
+
+      FlatButton back =  FlatButton(
+	 child: Text(g.param.newFiltersFinalScreenButton[0],
+	    style: TextStyle(color: stl.colorScheme.primary),
+	 ),
+	 onPressed: () {_onBack(ctx);},
+      );
+
+      return makeNewPostDialogWdg(
+	 width: makeDialogWidthHeight(ctx),
+	 title: titleWdg,
+	 list: locWdgs,
+	 actions: <FlatButton>[back],
       );
    }
 }
@@ -4423,7 +4467,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 class SizeAnimation extends StatefulWidget {
    int milliseconds;
-   Screen screen;
+   int screen;
    Post post;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
@@ -4536,7 +4580,7 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
       //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
-      if (widget.screen == Screen.searches) {
+      if (widget.screen == cts.searchIdx) {
 	 buttonWdgs.add(Expanded(child: buttons[1]));
 	 buttonWdgs.add(Expanded(child: buttons[2]));
       } else {
@@ -4639,11 +4683,19 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
       final String modelStr =
 	 makeTreeItemStr(widget.trees[1].root.first, widget.post.channel[1][0]);
 
-      List<String> exDetailsNames =
-	 makeExDetailsNames(widget.exDetailsRootNode, widget.post);
+      List<String> exDetailsNames = makeExDetailsNamesAll(
+         widget.exDetailsRootNode,
+	 widget.post.exDetails,
+	 widget.post.getProductDetailIdx(),
+	 g.param.langIdx,
+      );
 
-      List<String> inDetailsNames =
-	 makeInDetailsNames(widget.inDetailsRootNode, widget.post);
+      List<String> inDetailsNames = makeInDetailNamesAll(
+         widget.inDetailsRootNode,
+	 widget.post.inDetails,
+	 widget.post.getProductDetailIdx(),
+	 g.param.langIdx,
+      );
 
       Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
       Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
@@ -4734,7 +4786,7 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 
 Widget makeNewPost({
    BuildContext ctx,
-   final Screen screen,
+   final int screen,
    final String snackbarStr,
    final Post post,
    final Node exDetailsRootNode,
@@ -4880,7 +4932,7 @@ Widget makeNewPostLv({
 
          return makeNewPost(
             ctx: ctx,
-	    screen: Screen.searches,
+	    screen: cts.searchIdx,
             snackbarStr: g.param.dissmissedPost,
             post: posts[j],
             exDetailsRootNode: exDetailsRootNode,
@@ -4906,13 +4958,13 @@ ListTile makeNewPostTreeWdg({
 }) {
    if (child.isLeaf()) {
       return ListTile(
-	 leading: CircleAvatar(
-	    child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-	       style: TextStyle(color: stl.colorScheme.onSecondary),
-	    ),
-	    backgroundColor: stl.colorScheme.secondary,
-	 ),
-	 title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
+	 //leading: CircleAvatar(
+	 //   child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
+	 //      style: TextStyle(color: stl.colorScheme.onSecondary),
+	 //   ),
+	 //   backgroundColor: stl.colorScheme.secondary,
+	 //),
+	 title: Text(child.name(g.param.langIdx), style: stl.newPostTreeLT),
 	 dense: true,
 	 onTap: onLeafPressed,
 	 enabled: true,
@@ -4922,26 +4974,26 @@ ListTile makeNewPostTreeWdg({
    
    return
       ListTile(
-	 leading: CircleAvatar(
-	    child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-	       style: TextStyle(
-		  color: stl.colorScheme.onSecondary
-	       ),
-	    ),
-	    backgroundColor: stl.colorScheme.secondary,
-	 ),
-	 title: Text(child.name(g.param.langIdx), style: stl.ltTitle),
+	 //leading: CircleAvatar(
+	 //   child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
+	 //      style: TextStyle(
+	 //         color: stl.colorScheme.onSecondary
+	 //      ),
+	 //   ),
+	 //   backgroundColor: stl.colorScheme.secondary,
+	 //),
+	 title: Text(child.name(g.param.langIdx), style: stl.newPostTreeLT),
 	 dense: true,
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx),
-	    maxLines: 2,
+	    maxLines: 1,
 	    overflow: TextOverflow.clip,
-	    style: stl.ltSubtitle,
+	    style: stl.newPostSubtitleLT,
 	 ),
-	 trailing: Icon(Icons.keyboard_arrow_right),
+	 trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
 	 onTap: onNodePressed,
 	 enabled: true,
-	 isThreeLine: true
+	 isThreeLine: false,
       );
 }
 
@@ -5345,7 +5397,7 @@ Widget wrapPostOnButton(
 
 Widget makeChatTab({
    final bool isFwdChatMsgs,
-   final Screen screen,
+   final int screen,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
@@ -5360,12 +5412,12 @@ Widget makeChatTab({
    final OnPressedFn0 onPost,
 }) {
    if (posts.length == 0) {
-      if (screen == Screen.own)
+      if (screen == cts.ownIdx)
 	 return makeOwnEmptyScreenWidget(
             onPressed: onPost,
 	 );
 
-      if (screen == Screen.fav)
+      if (screen == cts.favIdx)
 	 return makeFavEmptyScreenWidget();
    }
 
@@ -5421,7 +5473,7 @@ Widget makeChatTab({
 
          Widget chatExpansion = makeChatsExp(
             ctx,
-            screen == Screen.fav,
+            screen == cts.favIdx,
             isFwdChatMsgs,
             DateTime.now().millisecondsSinceEpoch,
             posts[i],
@@ -6022,27 +6074,12 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Screen _screen()
-   {
-      return _isOnOwn() ? Screen.own :
-	     _isOnFav() ? Screen.fav :
-	                  Screen.searches;
-   }
-
    int _screenIdx()
    {
       return _isOnOwn() ? ownIdx :
 	     _isOnFav() ? favIdx :
 	                  searchIdx;
    }
-
-   Screen _screenIdxToEnum(int i)
-   {
-      return i == ownIdx ? Screen.own :
-	     i == favIdx ? Screen.fav :
-	                  Screen.searches;
-   }
-
 
    bool _isOnOwn()
    {
@@ -8056,13 +8093,13 @@ class OccaseState extends State<Occase>
       );
    }
 
-   BottomNavigationBar _makeBotNavBar()
+   BottomNavigationBar _makeBotNavBar(int screen)
    {
       return makeBotNavBar(
 	 botBarIndex: _botBarIdx,
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 screen: _screen(),
+	 screen: screen,
 	 onNewPostBotBarTapped: _onNewPostBotBarTapped,
 	 onSearchBotBarPressed: _onBotBarTapped,
       );
@@ -8076,7 +8113,7 @@ class OccaseState extends State<Occase>
 
       return makeChatTab(
 	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
-	 screen: _screenIdxToEnum(i),
+	 screen: i,
 	 exDetailsRootNode: _appState.exDetailsRoot,
 	 inDetailsRootNode: _appState.inDetailsRoot,
 	 posts: posts,
@@ -8095,7 +8132,7 @@ class OccaseState extends State<Occase>
    List<Widget> _makeTabActions(BuildContext ctx, int i)
    {
       return makeTabActions(
-         screen: _screenIdxToEnum(i),
+         screen: i,
 	 newPostPressed: _newPostPressed,
 	 hasLPChats: _hasLPChats(i),
 	 hasLPChatMsgs: _hasLPChatMsgs(i),
@@ -8137,7 +8174,7 @@ class OccaseState extends State<Occase>
 	 hasLpChatMsgs: _hasLPChatMsgs(i),
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 screen: _screenIdxToEnum(i),
+	 screen: i,
 	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
 	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
 	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
@@ -8151,7 +8188,7 @@ class OccaseState extends State<Occase>
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
 	 botBarIndex: _botBarIdx,
-	 screen: _screenIdxToEnum(i),
+	 screen: i,
 	 trees: _appState.trees,
 	 defaultWdg: defaultWdg,
       );
@@ -8292,11 +8329,10 @@ class OccaseState extends State<Occase>
       List<OnPressedFn7> onWillPops = _makeOnWillPop();
       List<Widget> fltButtons = _makeFaButtons(screenIdx);
       List<Widget> bodies = _makeAppBodies(ctx);
-      BottomNavigationBar bottomNavBar = _makeBotNavBar();
+      BottomNavigationBar bottomNavBar = _makeBotNavBar(screenIdx);
       List<int> newMsgCounters = _newMsgsCounters();
 
       if (isWeb(ctx)) {
-      //if (false) {
 	 const double sep = 3.0;
 	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 
