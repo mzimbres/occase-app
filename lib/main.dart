@@ -936,7 +936,7 @@ Scaffold makeRegisterScreen(
 
    // TODO: Use ConstrainedBox
    Widget body = col;
-   if (!isWebImpl(maxWidth))
+   if (!isWideScreenImpl(maxWidth))
       body = SizedBox(width: maxWidth, child: col);
 
    return Scaffold(
@@ -1666,7 +1666,6 @@ Widget makeAppBarLeading({
    final bool search = screen == cts.searchIdx;
    final bool fav = screen == cts.favIdx;
 
-   print('$own $search $fav $newPostPressed');
    if ((fav || own) && hasLpChatMsgs)
       return IconButton(
 	 icon: Icon(Icons.arrow_back),
@@ -1790,31 +1789,6 @@ ListView makeNewPostListView(List<Widget> list)
    );
 }
 
-Widget makeExDetailDropDown()
-{
-   return DropdownButton<String>(
-	 value: 'One',
-	 icon: Icon(Icons.arrow_downward),
-	 iconSize: 24,
-	 elevation: 16,
-	 style: TextStyle(color: Colors.deepPurple),
-	 underline: Container(
-	       height: 2,
-	       color: Colors.deepPurpleAccent,
-	 ),
-	 onChanged: (String newValue) {
-	    print('aaaaaaaaaaaaaaaa');
-	 },
-	 items: <String>['One', 'Two', 'Free', 'Four']
-	 .map<DropdownMenuItem<String>>((String value) {
-	    return DropdownMenuItem<String>(
-		  value: value,
-		  child: Text(value),
-	    );
-	 }).toList(),
-	 );
-}
-
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
    final bool filenamesTimerActive,
@@ -1924,7 +1898,6 @@ Widget makeNewPostScreenWdgs2({
 	       g.param.langIdx,
 	    );
 
-	    //Widget exDetailWdg1 = makeExDetailDropDown();
 	    Widget exDetailWdg = makeNewPostLT(
 	       title: names[1],
 	       subTitle: names[2],
@@ -3909,7 +3882,7 @@ List<Widget> makePostInDetails(
    return all;
 }
 
-Card putPostElemOnCard(BuildContext ctx, List<Widget> list, double padding)
+Card putPostElemOnCard(List<Widget> list, double padding)
 {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -4059,14 +4032,14 @@ Widget makeImgTextPlaceholder(final String str)
    );
 }
 
-bool isWebImpl(double w)
+bool isWideScreenImpl(double w)
 {
    return w > (3 * cts.maxWebTabWidth);
 }
 
 double makeTabWidthImpl(double w)
 {
-   if (isWebImpl(w))
+   if (isWideScreenImpl(w))
       return w / 3.0;
 
    return w;
@@ -4078,17 +4051,17 @@ double makeTabWidth(BuildContext ctx)
    return makeTabWidthImpl(w);
 }
 
-bool isWeb(BuildContext ctx)
+bool isWideScreen(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   return isWebImpl(w);
+   return isWideScreenImpl(w);
 }
 
 double makeImgAvatarWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
-   if (isWebImpl(w))
+   if (isWideScreenImpl(w))
       return cts.postImgAvatarTabWidthRate * cts.maxWebTabWidth;
 
    if (w > cts.maxWebTabWidth)
@@ -4114,7 +4087,7 @@ double makeWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   if (isWebImpl(w))
+   if (isWideScreenImpl(w))
       return makeTabWidthImpl(w);
 
    final double max = w > cts.maxWebTabWidth ? cts.maxWebTabWidth : w;
@@ -4784,10 +4757,8 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
    }
 }
 
-Widget makeNewPost({
+Widget makePostDetailsWdg({
    BuildContext ctx,
-   final int screen,
-   final String snackbarStr,
    final Post post,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
@@ -4795,20 +4766,8 @@ Widget makeNewPost({
    final List<File> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
-   OnPressedFn0 onAddPostToFavorite,
-   OnPressedFn0 onDelPost,
-   OnPressedFn0 onSharePost,
    OnPressedFn0 onReportPost,
-   OnPressedFn0 onPinPost,
 }) {
-   assert(trees.length == 2);
-
-   Widget title = Text(
-      makeTreeItemStr(trees[0].root.first, post.channel[1][0]),
-      maxLines: 1,
-      overflow: TextOverflow.clip,
-   );
-
    List<Widget> rows = List<Widget>();
 
    Widget lv = makeImgListView2(
@@ -4841,7 +4800,47 @@ Widget makeNewPost({
       inDetailsRootNode,
    );
 
-   rows.add(putPostElemOnCard(ctx, tmp, 4.0));
+   rows.add(putPostElemOnCard(tmp, 4.0));
+
+   return putPostElemOnCard(rows, 0.0);
+}
+
+Widget makeNewPost({
+   BuildContext ctx,
+   final int screen,
+   final String snackbarStr,
+   final Post post,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
+   final List<Tree> trees,
+   final List<File> imgFiles,
+   OnPressedFn2 onAddPhoto,
+   OnPressedFn1 onExpandImg,
+   OnPressedFn0 onAddPostToFavorite,
+   OnPressedFn0 onDelPost,
+   OnPressedFn0 onSharePost,
+   OnPressedFn0 onReportPost,
+   OnPressedFn0 onPinPost,
+}) {
+   assert(trees.length == 2);
+
+   Widget title = Text(
+      makeTreeItemStr(trees[0].root.first, post.channel[1][0]),
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+   );
+
+   Widget detailsWdg = makePostDetailsWdg(
+      ctx: ctx,
+      post: post,
+      exDetailsRootNode: exDetailsRootNode,
+      inDetailsRootNode: inDetailsRootNode,
+      trees: trees,
+      imgFiles: imgFiles,
+      onAddPhoto: onAddPhoto,
+      onExpandImg: onExpandImg,
+      onReportPost: onReportPost,
+   );
 
    return SizeAnimation(
      milliseconds: 500,
@@ -4849,7 +4848,7 @@ Widget makeNewPost({
      post: post,
      exDetailsRootNode: exDetailsRootNode,
      inDetailsRootNode: inDetailsRootNode,
-     detailsWidget: putPostElemOnCard(ctx, rows, 0.0),
+     detailsWidget: detailsWdg,
      imgFiles: imgFiles,
      trees: trees,
      onAddPhoto: onAddPhoto,
@@ -5581,7 +5580,7 @@ class DialogWithOpState extends State<DialogWithOp> {
 class AppState {
    Config cfg = Config();
 
-   // The trees holding the locations and products trees.
+   // The trees holding the locations and product trees.
    List<Tree> trees = List<Tree>();
 
    // The ex details tree root node.
@@ -5636,10 +5635,10 @@ class AppState {
          g.param = Parameters.fromJson(jsonDecode(text));
          await initializeDateFormatting(g.param.localeName, null);
 
-         // Warining: The construction of Config depends on the
+         // Warning: The construction of Config depends on the
          // parameters that have been load above, but where not loaded
          // by the time it was inititalized. Ideally we would remove
-         // the use of global variable from withing its constructor,
+         // the use of global variable from within its constructor,
          // for now I will construct it again before it is used to
          // initialize the db.
 	 await persistency.open();
@@ -5668,7 +5667,7 @@ class AppState {
       dialogPrefs[4] = false;
       dialogPrefs[5] = false;
 
-      trees = loadMenuItems(await persistency.loadTrees(), g.param.filterDepths);
+      trees = loadTreeItems(await persistency.loadTrees(), g.param.filterDepths);
 
       try {
          final List<Post> posts = await persistency.loadPosts(g.param.rangesMinMax);
@@ -5878,10 +5877,6 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
-   static const int ownIdx = 0;
-   static const int searchIdx = 1;
-   static const int favIdx = 2;
-
    AppState _appState = AppState();
 
    // Will be set to true if the user scrolls up a chat screen so that
@@ -5995,8 +5990,8 @@ class OccaseState extends State<Occase>
       _txtCtrl2 = TextEditingController();
       _tabCtrl.addListener(_tabCtrlChangeHandler);
 
-      _chatScrollCtrl[ownIdx].addListener(() {_chatScrollListener(ownIdx);});
-      _chatScrollCtrl[favIdx].addListener(() {_chatScrollListener(favIdx);});
+      _chatScrollCtrl[cts.ownIdx].addListener(() {_chatScrollListener(cts.ownIdx);});
+      _chatScrollCtrl[cts.favIdx].addListener(() {_chatScrollListener(cts.favIdx);});
 
       _lastDisconnect = -1;
 
@@ -6042,8 +6037,8 @@ class OccaseState extends State<Occase>
       _scrollCtrl[0].dispose();
       _scrollCtrl[1].dispose();
       _scrollCtrl[2].dispose();
-      _chatScrollCtrl[ownIdx].dispose();
-      _chatScrollCtrl[favIdx].dispose();
+      _chatScrollCtrl[cts.ownIdx].dispose();
+      _chatScrollCtrl[cts.favIdx].dispose();
       _chatFocusNodes[0].dispose();
       _chatFocusNodes[1].dispose();
       _chatFocusNodes[2].dispose();
@@ -6076,34 +6071,34 @@ class OccaseState extends State<Occase>
 
    int _screenIdx()
    {
-      return _isOnOwn() ? ownIdx :
-	     _isOnFav() ? favIdx :
-	                  searchIdx;
+      return _isOnOwn() ? cts.ownIdx :
+	     _isOnFav() ? cts.favIdx :
+	                  cts.searchIdx;
    }
 
    bool _isOnOwn()
    {
-      return _tabCtrl.index == ownIdx;
+      return _tabCtrl.index == cts.ownIdx;
    }
 
    bool _isOnSearch()
    {
-      return _tabCtrl.index == searchIdx;
+      return _tabCtrl.index == cts.searchIdx;
    }
 
    bool _isOnFav()
    {
-      return _tabCtrl.index == favIdx;
+      return _tabCtrl.index == cts.favIdx;
    }
 
    bool _isOnFavChat()
    {
-      return _isOnFav() && _posts[favIdx] != null && _chats[favIdx] != null;
+      return _isOnFav() && _posts[cts.favIdx] != null && _chats[cts.favIdx] != null;
    }
 
    bool _isOnOwnChat()
    {
-      return _isOnOwn() && _posts[ownIdx] != null && _chats[ownIdx] != null;
+      return _isOnOwn() && _posts[cts.ownIdx] != null && _chats[cts.ownIdx] != null;
    }
 
    bool _onTabSwitch()
@@ -6260,7 +6255,7 @@ class OccaseState extends State<Occase>
 
    void _onRangeValueChanged(int i, double v)
    {
-      setState((){_posts[ownIdx].rangeValues[i] = v.round();});
+      setState((){_posts[cts.ownIdx].rangeValues[i] = v.round();});
    }
 
    Future<void> _onRangeChanged(int i, RangeValues rv) async
@@ -6289,7 +6284,7 @@ class OccaseState extends State<Occase>
 
       // Use _tabCtrlChangeHandler() as listener
       //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
-      _tabCtrl.index = favIdx;
+      _tabCtrl.index = cts.favIdx;
 
       // The chat index in the fav screen is always zero.
       await _onChatPressed(h, 0);
@@ -6320,8 +6315,8 @@ class OccaseState extends State<Occase>
 
    void prepareNewPost()
    {
-      _posts[ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
-      _posts[ownIdx].reset();
+      _posts[cts.ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
+      _posts[cts.ownIdx].reset();
    }
 
    void _onNewPost()
@@ -6692,15 +6687,12 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendPost() async
    {
-      print('ccccc');
-      _posts[ownIdx].from = _appState.cfg.appId;
-      _posts[ownIdx].nick = _appState.cfg.nick;
-      _posts[ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
-      _posts[ownIdx].status = 3;
+      _posts[cts.ownIdx].from = _appState.cfg.appId;
+      _posts[cts.ownIdx].nick = _appState.cfg.nick;
+      _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
+      _posts[cts.ownIdx].status = 3;
 
-      print('dddd');
-      Post post = _posts[ownIdx].clone();
-      print('eee');
+      Post post = _posts[cts.ownIdx].clone();
 
       final bool isEmpty = _appState.outPostsQueue.isEmpty;
 
@@ -6829,7 +6821,7 @@ class OccaseState extends State<Occase>
             return 0;
          }
 
-         _posts[ownIdx].images.add(newname);
+         _posts[cts.ownIdx].images.add(newname);
       }
 
       _imgFiles = List<File>();
@@ -6876,7 +6868,7 @@ class OccaseState extends State<Occase>
             ctx,
             (){
                _newPostPressed = false;
-               _posts[ownIdx] = null;
+               _posts[cts.ownIdx] = null;
                setState((){});
             },
             g.param.cancelPost,
@@ -6987,9 +6979,9 @@ class OccaseState extends State<Occase>
    Future<void> _onChatPressed(int i, int j) async
    {
       if (_isOnFav())
-         await _onChatPressedImpl(_appState.favPosts, i, j, favIdx);
+         await _onChatPressedImpl(_appState.favPosts, i, j, cts.favIdx);
       else
-         await _onChatPressedImpl(_appState.ownPosts, i, j, ownIdx);
+         await _onChatPressedImpl(_appState.ownPosts, i, j, cts.ownIdx);
    }
 
    void _onUserInfoPressed(BuildContext ctx, int postId, int j)
@@ -7042,9 +7034,9 @@ class OccaseState extends State<Occase>
    void _onChatLP(int i, int j)
    {
       if (_isOnFav()) {
-         _onChatLPImpl(_appState.favPosts, i, j, favIdx);
+         _onChatLPImpl(_appState.favPosts, i, j, cts.favIdx);
       } else {
-         _onChatLPImpl(_appState.ownPosts, i, j, ownIdx);
+         _onChatLPImpl(_appState.ownPosts, i, j, cts.ownIdx);
       }
 
       setState(() { });
@@ -7083,7 +7075,6 @@ class OccaseState extends State<Occase>
 
    void _toggleLPChatMsgs(int k, bool isTap, int i)
    {
-      print('---->  $i');
       assert(_posts[i] != null);
       assert(_chats[i] != null);
 
@@ -7244,11 +7235,11 @@ class OccaseState extends State<Occase>
 
       // If we are in the screen having chat with the user we can ack
       // it with chat_ack_read and skip chat_ack_received.
-      final bool isOnOwnPost = _posts[ownIdx] != null && _posts[ownIdx].id == postId; 
-      final bool isOnFavPost = _posts[favIdx] != null && _posts[favIdx].id == postId; 
+      final bool isOnOwnPost = _posts[cts.ownIdx] != null && _posts[cts.ownIdx].id == postId; 
+      final bool isOnFavPost = _posts[cts.favIdx] != null && _posts[cts.favIdx].id == postId; 
 
-      final bool isOnOwnChat = _chats[ownIdx] != null && _chats[ownIdx].peer == peer; 
-      final bool isOnFavChat = _chats[favIdx] != null && _chats[favIdx].peer == peer; 
+      final bool isOnOwnChat = _chats[cts.ownIdx] != null && _chats[cts.ownIdx].peer == peer; 
+      final bool isOnFavChat = _chats[cts.favIdx] != null && _chats[cts.favIdx].peer == peer; 
 
       ++posts[i].chats[j].nUnreadMsgs;
 
@@ -7257,7 +7248,7 @@ class OccaseState extends State<Occase>
          // We are in the chat screen with the peer.
          ack = 'chat_ack_read';
 
-	 final int k = isOnOwnPost ? ownIdx : favIdx;
+	 final int k = isOnOwnPost ? cts.ownIdx : cts.favIdx;
 
          // We are not currently showing the jump down button and can
          // animate to the bottom.
@@ -7391,7 +7382,7 @@ class OccaseState extends State<Occase>
       setState((){
          _newPostPressed = false;
          _botBarIdx = 0;
-         _posts[ownIdx] = null;
+         _posts[cts.ownIdx] = null;
       });
    }
 
@@ -7608,6 +7599,7 @@ class OccaseState extends State<Occase>
    _onSendFilters(BuildContext ctx, int i) async
    {
       _newSearchPressed = false;
+
       if (i == 0) {
          setState(() { });
          return;
@@ -7923,21 +7915,21 @@ class OccaseState extends State<Occase>
    void _onExDetails(int i, int j)
    {
       if (j == -1) {
-         _posts[ownIdx].description = _txtCtrl.text;
+         _posts[cts.ownIdx].description = _txtCtrl.text;
          _txtCtrl.clear();
          _botBarIdx = 3;
          setState(() { });
          return;
       }
 
-      _posts[ownIdx].exDetails[i] = 1 << j;
+      _posts[cts.ownIdx].exDetails[i] = 1 << j;
 
       setState(() { });
    }
 
    void _onNewPostInDetail(int i, int j)
    {
-      _posts[ownIdx].inDetails[i] ^= 1 << j;
+      _posts[cts.ownIdx].inDetails[i] ^= 1 << j;
       setState(() { });
    }
 
@@ -7955,19 +7947,19 @@ class OccaseState extends State<Occase>
       if (code.isEmpty)
 	 return;
 
-      _posts[ownIdx].channel[i].first = code;
+      _posts[cts.ownIdx].channel[i].first = code;
 
       setState(() {});
    }
 
    void _onSetExDetail(int detailIdx, int index)
    {
-      setState(() {_posts[ownIdx].exDetails[detailIdx] = index;});
+      setState(() {_posts[cts.ownIdx].exDetails[detailIdx] = index;});
    }
 
    void _onSetInDetail(int detailIdx, int state)
    {
-      setState(() { _posts[ownIdx].inDetails[detailIdx] = state; });
+      setState(() { _posts[cts.ownIdx].inDetails[detailIdx] = state; });
    }
 
    // Widget factories.
@@ -8005,7 +7997,7 @@ class OccaseState extends State<Occase>
    {
       return makeNewPostScreenWdgs(
 	 ctx: ctx,
-	 post: _posts[ownIdx],
+	 post: _posts[cts.ownIdx],
 	 trees: _appState.trees,
 	 txtCtrl: _txtCtrl,
 	 navBar: _botBarIdx,
@@ -8014,8 +8006,8 @@ class OccaseState extends State<Occase>
 	 imgFiles: _imgFiles,
 	 filenamesTimerActive: _filenamesTimer.isActive,
 	 onExDetail: _onExDetails,
-	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, ownIdx);},
-	 onPostNodePressed: (int i) {_onPostNodePressed(i, ownIdx);},
+	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, cts.ownIdx);},
+	 onPostNodePressed: (int i) {_onPostNodePressed(i, cts.ownIdx);},
 	 onInDetail: _onNewPostInDetail,
 	 onRangeValueChanged: _onRangeValueChanged,
 	 onAddPhoto: _onAddPhoto,
@@ -8033,7 +8025,7 @@ class OccaseState extends State<Occase>
 	 productTree: _appState.trees[1],
 	 exDetailsRootNode: _appState.exDetailsRoot,
 	 inDetailsRootNode: _appState.inDetailsRoot,
-	 post: _posts[ownIdx],
+	 post: _posts[cts.ownIdx],
 	 txtCtrl: _txtCtrl,
 	 onSetLocTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
@@ -8071,7 +8063,7 @@ class OccaseState extends State<Occase>
 	inDetailsRootNode: _appState.inDetailsRoot,
 	posts: _appState.posts,
 	trees: _appState.trees,
-	onExpandImg: (int i, int j) {_onExpandImg(i, j, searchIdx);},
+	onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
 	onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
@@ -8108,7 +8100,7 @@ class OccaseState extends State<Occase>
    Widget _makeChatTab(BuildContext ctx, int i)
    {
       List<Post> posts = _appState.ownPosts;
-      if (i == favIdx)
+      if (i == cts.favIdx)
 	 posts = _appState.favPosts;
 
       return makeChatTab(
@@ -8197,9 +8189,9 @@ class OccaseState extends State<Occase>
    List<int> _newMsgsCounters()
    {
       List<int> ret = List<int>(g.param.tabNames.length);
-      ret[ownIdx] = _getNUnreadOwnChats();
-      ret[searchIdx] = _nNewPosts;
-      ret[favIdx] = _getNUnreadFavChats();
+      ret[cts.ownIdx] = _getNUnreadOwnChats();
+      ret[cts.searchIdx] = _nNewPosts;
+      ret[cts.favIdx] = _getNUnreadFavChats();
       return ret;
    }
 
@@ -8208,19 +8200,19 @@ class OccaseState extends State<Occase>
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-	 //ret[ownIdx] = _makeNewPostScreenWdgs(ctx);
-	 ret[ownIdx] = _makeNewPostScreenWdgs2(ctx);
+	 //ret[cts.ownIdx] = _makeNewPostScreenWdgs(ctx);
+	 ret[cts.ownIdx] = _makeNewPostScreenWdgs2(ctx);
       } else {
-	 ret[ownIdx] = _makeChatTab(ctx, ownIdx);
+	 ret[cts.ownIdx] = _makeChatTab(ctx, cts.ownIdx);
       }
 
       if (_newSearchPressed) {
-	 ret[searchIdx] = _makeSearchScreenWdg(ctx);
+	 ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
       } else {
-	 ret[searchIdx] = _makeNewPostLv();
+	 ret[cts.searchIdx] = _makeNewPostLv();
       }
 
-      ret[favIdx] = _makeChatTab(ctx, favIdx);
+      ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
 
       return ret;
    }
@@ -8229,25 +8221,25 @@ class OccaseState extends State<Occase>
    {
       List<OnPressedFn7> ret = List<OnPressedFn7>(g.param.tabNames.length);
 
-      ret[ownIdx] = ()
+      ret[cts.ownIdx] = ()
       {
 	 if (_newPostPressed)
-	    return _onWillPopMenu(_appState.trees, ownIdx);
+	    return _onWillPopMenu(_appState.trees, cts.ownIdx);
 
-	 return _onChatsBackPressed(ownIdx);
+	 return _onChatsBackPressed(cts.ownIdx);
       };
 
-      ret[searchIdx] = ()
+      ret[cts.searchIdx] = ()
       {
 	 print('aa');
 	 if (_newSearchPressed)
-	    return _onWillPopMenu(_appState.trees, searchIdx);
+	    return _onWillPopMenu(_appState.trees, cts.searchIdx);
 
 	 setState((){});
 	 return true;
       };
 
-      ret[favIdx] = () {return _onChatsBackPressed(favIdx);};
+      ret[cts.favIdx] = () {return _onChatsBackPressed(cts.favIdx);};
 
       return ret;
    }
@@ -8290,8 +8282,8 @@ class OccaseState extends State<Occase>
       }
 
       if (_onTabSwitch()) {
-         _cleanUpLpOnSwitchTab(ownIdx);
-         _cleanUpLpOnSwitchTab(favIdx);
+         _cleanUpLpOnSwitchTab(cts.ownIdx);
+         _cleanUpLpOnSwitchTab(cts.favIdx);
 	 _botBarIdx = 0;
       }
 
@@ -8332,7 +8324,7 @@ class OccaseState extends State<Occase>
       BottomNavigationBar bottomNavBar = _makeBotNavBar(screenIdx);
       List<int> newMsgCounters = _newMsgsCounters();
 
-      if (isWeb(ctx)) {
+      if (isWideScreen(ctx)) {
 	 const double sep = 3.0;
 	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 
@@ -8343,52 +8335,52 @@ class OccaseState extends State<Occase>
 	 );
 
 	 Widget ownTopBar = AppBar(
-	    actions: _makeTabActions(ctx, ownIdx),
-	    title: _makeAppBarTitleWdg(ownIdx, tabWdgs[ownIdx]),
-	    leading: _makeAppBarLeading(ownIdx),
+	    actions: _makeTabActions(ctx, cts.ownIdx),
+	    title: _makeAppBarTitleWdg(cts.ownIdx, tabWdgs[cts.ownIdx]),
+	    leading: _makeAppBarLeading(cts.ownIdx),
 	 );
 
 	 Widget own;
 	 if (_isOnOwnChat())
-	    own = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, ownIdx)), div]);
+	    own = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.ownIdx)), div]);
 	 else
-	    own = Column(children: <Widget>[div, ownTopBar, Expanded(child: bodies[ownIdx]), div]);
+	    own = Column(children: <Widget>[div, ownTopBar, Expanded(child: bodies[cts.ownIdx]), div]);
 
 	 Widget searchTopBar = AppBar(
-	    actions: _makeTabActions(ctx, searchIdx),
-	    title: _makeAppBarTitleWdg(searchIdx, tabWdgs[searchIdx]),
-	    leading: _makeAppBarLeading(searchIdx),
+	    actions: _makeTabActions(ctx, cts.searchIdx),
+	    title: _makeAppBarTitleWdg(cts.searchIdx, tabWdgs[cts.searchIdx]),
+	    leading: _makeAppBarLeading(cts.searchIdx),
 	 );
 
 	 Widget search = Column(
 	    children: <Widget>
 	    [ div
 	    , searchTopBar
-	    , Expanded(child: bodies[searchIdx])
+	    , Expanded(child: bodies[cts.searchIdx])
 	    , div
 	    ]
 	 );
 
 	 Widget favTopBar = AppBar(
-	    actions: _makeTabActions(ctx, favIdx),
-	    title: _makeAppBarTitleWdg(favIdx, tabWdgs[favIdx]),
-	    leading: _makeAppBarLeading(favIdx),
+	    actions: _makeTabActions(ctx, cts.favIdx),
+	    title: _makeAppBarTitleWdg(cts.favIdx, tabWdgs[cts.favIdx]),
+	    leading: _makeAppBarLeading(cts.favIdx),
 	 );
 
          Widget fav;
 	 if (_isOnFavChat())
-	    fav = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, favIdx)), div]);
+	    fav = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.favIdx)), div]);
 	 else
-	    fav = Column(children: <Widget>[div, favTopBar, Expanded(child: bodies[favIdx]), div]);
+	    fav = Column(children: <Widget>[div, favTopBar, Expanded(child: bodies[cts.favIdx]), div]);
 
 	 VerticalDivider vdiv = VerticalDivider(width: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 	 Widget body = Row(children: <Widget>
 	    [ vdiv
-	    , Expanded(child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[ownIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
 	    , vdiv
-	    , Expanded(child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[searchIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.searchIdx])]))
 	    , vdiv
-	    , Expanded(child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[favIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.favIdx])]))
 	    , vdiv
 	    ],
 	 );

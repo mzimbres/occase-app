@@ -680,7 +680,7 @@ makeMenuElems(final Node root, int index, int maxDepth)
    return elems;
 }
 
-List<Tree> loadMenuItems(
+List<Tree> loadTreeItems(
    final List<NodeInfo> elems,
    final List<int> filterDepths,
 ) {

@@ -186,7 +186,7 @@ final Color expTileCardColor = Colors.grey[200];
 final
 Divider alertDivider = Divider(
    color: Colors.grey,
-   height: 2.0,
+   height: 1.0,
    thickness: 1.0,
    indent: 17.0,
    endIndent: 17.0,
