@@ -47,6 +47,7 @@ typedef OnPressedFn10 = void Function(int, bool);
 typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
+typedef OnPressedFn14 = void Function(List<int>);
 
 class Persistency2 {
    int insertPostId = 0;
@@ -55,16 +56,6 @@ class Persistency2 {
    Future<List<Config>> loadConfig() async
    {
       return <Config>[Config(nick: g.param.unknownNick)];
-   }
-
-   Future<List<NodeInfo>> loadTrees() async
-   {
-      List<Tree> trees = await readTreeFromAsset();
-
-      List<NodeInfo> elems = List<NodeInfo>();
-      for (int i = 0; i < trees.length; ++i)
-         elems.addAll(makeMenuElems(trees[i].root.first, i, 1000));
-      return elems;
    }
 
    Future<List<Post>> loadPosts(List<int> rangesMinMax) async
@@ -191,14 +182,6 @@ class Persistency2 {
    {
    }
 
-   Future<void> updateLeafReach(NodeInfo2 v, int idx) async
-   {
-   }
-
-   Future<void> updateLeafReach2(List<NodeInfo2> list, int idx) async
-   {
-   }
-
    Future<void> delPostWithRowid(int dbId) async
    {
    }
@@ -255,24 +238,6 @@ class Persistency {
          );
 
          return cfg;
-      });
-   }
-
-   Future<List<NodeInfo>> loadTrees() async
-   {
-      final List<Map<String, dynamic>> maps = await _db.query('menu');
-
-      return List.generate(maps.length, (i)
-      {
-         NodeInfo me = NodeInfo(
-            code: maps[i]['code'],
-            depth: maps[i]['depth'],
-            leafReach: maps[i]['leaf_reach'],
-            name: maps[i]['name'],
-            index: maps[i]['idx'],
-         );
-
-         return me;
       });
    }
 
@@ -469,21 +434,6 @@ class Persistency {
       await a.execute(sql.createChats);
       await a.execute(sql.createChatStatus);
       await a.execute(sql.creatOutChatTable);
-      await a.execute(sql.createMenuTable);
-
-      // When the database is created, we also have to create the
-      // default menu table.
-      List<Tree> trees = await readTreeFromAsset();
-
-      List<NodeInfo> elems = List<NodeInfo>();
-      for (int i = 0; i < trees.length; ++i) {
-         elems.addAll(makeMenuElems(
-               trees[i].root.first,
-               i,
-               1000, // Large enough to include nodes at all depths.
-            ),
-         );
-      }
 
       Batch batch = a.batch();
 
@@ -494,8 +444,6 @@ class Persistency {
          configToMap(cfg),
          conflictAlgorithm: ConflictAlgorithm.replace,
       );
-
-      elems.forEach((NodeInfo me) { batch.insert('menu', menuElemToMap(me)); });
 
       await batch.commit(noResult: true, continueOnError: true);
    }
@@ -577,20 +525,6 @@ class Persistency {
    Future<void> updateLastPostId(int id) async
    {
       await _db.execute(sql.updateLastPostId, [id]);
-   }
-
-   Future<void> updateLeafReach(NodeInfo2 v, int idx) async
-   {
-      await _db.rawUpdate(sql.updateLeafReach, [v.leafReach, v.code, idx]);
-   }
-
-   Future<void> updateLeafReach2(List<NodeInfo2> list, int idx) async
-   {
-      Batch batch = _db.batch();
-      list.forEach((v){
-	 batch.rawUpdate(sql.updateLeafReach, [v.leafReach, v.code, idx]);
-      });
-      await batch.commit(noResult: true, continueOnError: true);
    }
 
    Future<void> delPostWithRowid(int dbId) async
@@ -700,7 +634,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency2 p) async
+Future<void> removeLpChat(Coord c, Persistency p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -1787,6 +1721,39 @@ ListView makeNewPostListView(List<Widget> list)
    );
 }
 
+Widget makeChooseTreeNodeDialog({
+   BuildContext ctx,
+   final List<int> defaultCode,
+   final Node locationRootNode,
+   final IconData iconData,
+   final OnPressedFn14 onSetTreeCode,
+}) {
+   String locSubtitle = g.param.unknownNick;
+   if (defaultCode.isNotEmpty) {
+      locSubtitle = loadNames(
+         locationRootNode,
+	 defaultCode,
+	 g.param.langIdx,
+      ).join(', ');
+   }
+
+   return makeNewPostLT(
+      title: g.param.newPostTabNames[0],
+      subTitle: locSubtitle,
+      icon: iconData,
+      onTap: () async
+      {
+	 final List<int> code = await showDialog<List<int>>(
+	    context: ctx,
+	    builder: (BuildContext ctx2) { return TreeView(root: locationRootNode); },
+	 );
+
+	 if (code != null)
+	    onSetTreeCode(code);
+      },
+   );
+}
+
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
    final bool filenamesTimerActive,
@@ -1796,7 +1763,7 @@ Widget makeNewPostScreenWdgs2({
    final Node inDetailsRootNode,
    final Post post,
    TextEditingController txtCtrl,
-   final OnPressedFn12 onSetLocTreeCode,
+   final OnPressedFn12 onSetTreeCode,
    final OnPressedFn3 onSetExDetail,
    final OnPressedFn3 onSetInDetail,
    final List<File> imgFiles,
@@ -1804,72 +1771,37 @@ Widget makeNewPostScreenWdgs2({
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
 }) {
-   const double leftIndent = 10.0;
-   Divider div = Divider(
-      color: Colors.grey,
-      height: 2.0,
-      indent: leftIndent,
-      endIndent: leftIndent,
-      thickness: 1.0,
-   );
-
-   final Node locRootNode = locationTree.root.first;
-   final Node productRootNode = productTree.root.first;
-
    List<Widget> list = List<Widget>();
 
-   { // Location
-      List<int> locCode = post.getLocationCode();
-      String locSubtitle = g.param.unknownNick;
-      if (locCode.isNotEmpty)
-	 locSubtitle = loadNames(locRootNode, locCode, g.param.langIdx).join(', ');
-
-      Widget location = makeNewPostLT(
-	 title: g.param.newPostTabNames[0],
-	 subTitle: locSubtitle,
-	 icon: Icons.edit_location,
-	 onTap: () async
-	 {
-	    final List<int> code = await showDialog<List<int>>(
-	       context: ctx,
-	       builder: (BuildContext ctx2) { return TreeView(root: locRootNode); },
-	    );
-
-	    onSetLocTreeCode(code, 0);
-	 },
+   {
+      final Node locRootNode = locationTree.root.first;
+      Widget location = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 defaultCode: post.getLocationCode(),
+	 locationRootNode: locRootNode,
+	 iconData: Icons.edit_location,
+	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
       );
 
       list.add(location);
-      list.add(div);
+      list.add(stl.newPostDivider);
    }
 
    if (post.getLocationCode().isEmpty)
       return makeNewPostListView(list);
 
-   { // Product
-      List<int> productCode = post.getProductCode();
-      String productSubtitle = g.param.unknownNick;
-      if (productCode.isNotEmpty)
-	 productSubtitle = loadNames(productRootNode, productCode, g.param.langIdx).join(', ');
-
-      Widget product = makeNewPostLT(
-	 title: g.param.newPostTabNames[1],
-	 subTitle: productSubtitle,
-	 icon: Icons.directions_car,
-	 onTap: () async
-	 {
-	    final List<int> code = await showDialog<List<int>>(
-	       context: ctx,
-	       builder: (BuildContext ctx2) { return TreeView(root: productRootNode); },
-	    );
-
-	    if (code != null)
-	       onSetLocTreeCode(code, 1);
-	 },
+   {
+      final Node productRootNode = productTree.root.first;
+      Widget product = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 defaultCode: post.getProductCode(),
+	 locationRootNode: productRootNode,
+	 iconData: Icons.directions_car,
+	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
       );
 
       list.add(product);
-      list.add(div);
+      list.add(stl.newPostDivider);
    }
 
    // ---------------------------------------------------
@@ -1919,8 +1851,8 @@ Widget makeNewPostScreenWdgs2({
 	       },
 	    );
 
-	    list.add(Padding(padding: EdgeInsets.only(left: leftIndent), child: exDetailWdg));
-	    list.add(div);
+	    list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: exDetailWdg));
+	    list.add(stl.newPostDivider);
 	 }
       }
 
@@ -1969,8 +1901,8 @@ Widget makeNewPostScreenWdgs2({
 	       },
 	    );
 
-	    list.add(Padding(padding: EdgeInsets.only(left: leftIndent), child: inDetailWdg));
-	    list.add(div);
+	    list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: inDetailWdg));
+	    list.add(stl.newPostDivider);
 	 }
       }
 
@@ -1992,7 +1924,7 @@ Widget makeNewPostScreenWdgs2({
 	 );
 
 	 list.add(pad);
-	 list.add(div);
+	 list.add(stl.newPostDivider);
       }
 
       // ---------------------------------------------------
@@ -2202,26 +2134,55 @@ Widget makeSearchAppBar({
    );
 }
 
-Widget makeSearchScreenWdg({
+Widget makeSearchScreenWdg2({
+   BuildContext ctx,
    final int filter,
    final int screen,
    final Node exDetailsFilterNodes,
    final List<Tree> trees,
    final List<int> ranges,
-   final OnPressedFn1 onSendFilters,
-   final OnPressedFn1 onFilterDetail,
-   final OnPressedFn1 onFilterNodePressed,
-   final OnPressedFn1 onFilterLeafNodePressed,
+   final OnPressedFn1 onSearchPressed,
+   final OnPressedFn1 onSearchDetail,
+   final OnPressedFn1 onTreeNodePressed,
+   final OnPressedFn1 onTreeLeafNodePressed,
    final OnPressedFn6 onRangeChanged,
 }) {
    if (screen == 3)
-      return makeSearchFinalScreen(onSendFilters);
+      return makeSearchFinalScreen(onSearchPressed);
 
    if (screen == 2) {
       List<Widget> foo = List<Widget>();
 
+      {
+	 final Node root = trees[0].root.first;
+	 Widget location = makeChooseTreeNodeDialog(
+	    ctx: ctx,
+	    defaultCode: <int>[],
+	    locationRootNode: root,
+	    iconData: Icons.edit_location,
+	    onSetTreeCode: (var code) { print('Location code: $code');},
+	 );
+
+	 foo.add(location);
+	 foo.add(stl.newPostDivider);
+      }
+
+      {
+	 final Node root = trees[0].root.first;
+	 Widget product = makeChooseTreeNodeDialog(
+	    ctx: ctx,
+	    defaultCode: <int>[],
+	    locationRootNode: root,
+	    iconData: Icons.directions_car,
+	    onSetTreeCode: (var code) { print('Product code: $code');},
+	 );
+
+	 foo.add(product);
+	 foo.add(stl.newPostDivider);
+      }
+
       final Widget vv = makeNewPostDetailExpTile(
-         onFilterDetail,
+         onSearchDetail,
          exDetailsFilterNodes,
          filter,
          '',
@@ -2266,8 +2227,79 @@ Widget makeSearchScreenWdg({
 
    return makeNewFilterListView(
       trees[screen].root.last,
-      onFilterLeafNodePressed,
-      onFilterNodePressed,
+      onTreeLeafNodePressed,
+      onTreeNodePressed,
+      trees[screen].isFilterLeaf(),
+   );
+}
+
+
+Widget makeSearchScreenWdg({
+   final int filter,
+   final int screen,
+   final Node exDetailsFilterNodes,
+   final List<Tree> trees,
+   final List<int> ranges,
+   final OnPressedFn1 onSearchPressed,
+   final OnPressedFn1 onSearchDetail,
+   final OnPressedFn1 onTreeNodePressed,
+   final OnPressedFn1 onTreeLeafNodePressed,
+   final OnPressedFn6 onRangeChanged,
+}) {
+   if (screen == 3)
+      return makeSearchFinalScreen(onSearchPressed);
+
+   if (screen == 2) {
+      List<Widget> foo = List<Widget>();
+
+      final Widget vv = makeNewPostDetailExpTile(
+         onSearchDetail,
+         exDetailsFilterNodes,
+         filter,
+         '',
+      );
+
+      foo.add(vv);
+
+      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
+         final int vmin = ranges[2 * i + 0];
+         final int vmax = ranges[2 * i + 1];
+
+         final int l = g.param.discreteRanges[i].length - 1;
+
+         final Widget rs = RangeSlider(
+            min: 0,
+            max: l.toDouble(),
+            divisions: g.param.discreteRanges[i].length,
+            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
+            values: RangeValues(vmin.toDouble(), vmax.toDouble()),
+         );
+
+         final int vmin2 = g.param.discreteRanges[i][vmin];
+         final int vmax2 = g.param.discreteRanges[i][vmax];
+
+         final String rangeTitle = '$vmin2 - $vmax2';
+         final RichText rt = makeExpTileTitle(
+            g.param.rangePrefixes[i],
+            rangeTitle,
+            ':',
+            false,
+         );
+
+         foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
+      }
+
+      return ListView.builder(
+         padding: const EdgeInsets.all(3.0),
+         itemCount: foo.length,
+         itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
+      );
+   }
+
+   return makeNewFilterListView(
+      trees[screen].root.last,
+      onTreeLeafNodePressed,
+      onTreeNodePressed,
       trees[screen].isFilterLeaf(),
    );
 }
@@ -5517,15 +5549,6 @@ class DialogWithOpState extends State<DialogWithOp> {
 class AppState {
    Config cfg = Config();
 
-   // The trees holding the locations and product trees.
-   List<Tree> trees = List<Tree>();
-
-   // The ex details tree root node.
-   Node exDetailsRoot;
-
-   // The in details tree root node.
-   Node inDetailsRoot;
-
    // The list of posts received from the server. Our own posts that the
    // server echoes back to us (if we are subscribed to the channel)
    // will be filtered out.
@@ -5557,9 +5580,9 @@ class AppState {
 
    // Whether or not to show the dialog informing the user what
    // happens to selected or deleted posts in the posts screen.
-   List<bool> dialogPrefs = List<bool>(6);
+   List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency2 persistency = Persistency2();
+   Persistency persistency = Persistency();
 
    AppState()
    {
@@ -5568,28 +5591,18 @@ class AppState {
    Future<void> load() async
    {
       try {
-         final String text = await rootBundle.loadString('data/parameters.txt');
-         g.param = Parameters.fromJson(jsonDecode(text));
-         await initializeDateFormatting(g.param.localeName, null);
+	 await persistency.open();
+      } catch (e) {
+         print(e);
+      }
 
+      try {
          // Warning: The construction of Config depends on the
          // parameters that have been load above, but where not loaded
          // by the time it was inititalized. Ideally we would remove
          // the use of global variable from within its constructor,
          // for now I will construct it again before it is used to
          // initialize the db.
-	 await persistency.open();
-
-         final String exDetailsStr = await rootBundle.loadString('data/ex_details_menu.txt');
-         exDetailsRoot = treeReader(jsonDecode(exDetailsStr)).first.root.first;
-
-         final String inDetailsStr = await rootBundle.loadString('data/in_details_menu.txt');
-         inDetailsRoot = treeReader(jsonDecode(inDetailsStr)).first.root.first;
-      } catch (e) {
-         print(e);
-      }
-
-      try {
          List<Config> configs = await persistency.loadConfig();
          if (configs.isNotEmpty)
             cfg = configs.first;
@@ -5600,11 +5613,6 @@ class AppState {
       dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
       dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
       dialogPrefs[2] = cfg.showDialogOnReportPost == 'yes';
-      dialogPrefs[3] = false;
-      dialogPrefs[4] = false;
-      dialogPrefs[5] = false;
-
-      trees = loadTreeItems(await persistency.loadTrees(), g.param.filterDepths);
 
       try {
          final List<Post> posts = await persistency.loadPosts(g.param.rangesMinMax);
@@ -5636,8 +5644,6 @@ class AppState {
 
       appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
 
-      print('Last post id: ${cfg.lastPostId}.');
-      print('Last post id seen: ${cfg.lastSeenPostId}.');
       print('Login: ${cfg.appId}:${cfg.appPwd}');
    }
 
@@ -5662,12 +5668,6 @@ class AppState {
       cfg.ranges[2 * i + 0] = rv.start.round();
       cfg.ranges[2 * i + 1] = rv.end.round();
       await persistency.updateRanges(cfg.ranges);
-   }
-
-   void restoreTreeStacks()
-   {
-      trees[0].restoreMenuStack();
-      trees[1].restoreMenuStack();
    }
 
    Future<void> setDialogPref(int i, bool v) async
@@ -5814,6 +5814,15 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
+   // The trees holding the locations and product trees.
+   List<Tree> _trees = List<Tree>();
+
+   // The ex details tree root node.
+   Node _exDetailsRoot;
+
+   // The in details tree root node.
+   Node _inDetailsRoot;
+
    AppState _appState = AppState();
 
    // Will be set to true if the user scrolls up a chat screen so that
@@ -5893,8 +5902,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   HtmlWebSocketChannel channel;
-   //IOWebSocketChannel channel;
+   //HtmlWebSocketChannel channel;
+   IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not get
@@ -5915,7 +5924,7 @@ class OccaseState extends State<Occase>
    // Used to cache to fcmToken.
    String _fcmToken = '';
 
-   //final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
    @override
    void initState()
@@ -5934,35 +5943,50 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
-      //_firebaseMessaging.configure(
-      //   onMessage: (Map<String, dynamic> message) async {
-      //     print("onMessage: $message");
-      //   },
-      //   onBackgroundMessage: fcmOnBackgroundMessage,
-      //   onLaunch: (Map<String, dynamic> message) async {
-      //     print("onLaunch: $message");
-      //   },
-      //   onResume: (Map<String, dynamic> message) async {
-      //     print("onResume: $message");
-      //   },
-      //);
+      _firebaseMessaging.configure(
+         onMessage: (Map<String, dynamic> message) async {
+           print("onMessage: $message");
+         },
+         onBackgroundMessage: fcmOnBackgroundMessage,
+         onLaunch: (Map<String, dynamic> message) async {
+           print("onLaunch: $message");
+         },
+         onResume: (Map<String, dynamic> message) async {
+           print("onResume: $message");
+         },
+      );
 
-      //_firebaseMessaging.getToken().then((String token) {
-      //   if (_fcmToken != null)
-      //      _fcmToken = token;
+      _firebaseMessaging.getToken().then((String token) {
+         if (_fcmToken != null)
+            _fcmToken = token;
 
-      //   print('Token: $token');
-      //});
-
-      WidgetsBinding.instance.addPostFrameCallback((_) async
-      {
-	 await _appState.load();
-         _nNewPosts = _appState.getNewPosts();
-	 _goToRegScreen = _appState.cfg.nick.isEmpty;
-	 prepareNewPost();
-	 _stablishNewConnection(_fcmToken);
-	 setState(() { });
+         print('Token: $token');
       });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
+   }
+
+   Future<void> _init() async
+   {
+      final String text = await rootBundle.loadString('data/parameters.txt');
+      g.param = Parameters.fromJson(jsonDecode(text));
+      await initializeDateFormatting(g.param.localeName, null);
+
+      _trees = await readTreeFromAsset();
+
+      final String exDetailsStr = await rootBundle.loadString('data/ex_details_menu.txt');
+      _exDetailsRoot = treeReader(jsonDecode(exDetailsStr)).first.root.first;
+
+      final String inDetailsStr = await rootBundle.loadString('data/in_details_menu.txt');
+      _inDetailsRoot = treeReader(jsonDecode(inDetailsStr)).first.root.first;
+
+      await _appState.load();
+
+      _nNewPosts = _appState.getNewPosts();
+      _goToRegScreen = _appState.cfg.nick.isEmpty;
+      prepareNewPost();
+      _stablishNewConnection(_fcmToken);
+      setState(() { });
    }
 
    @override
@@ -6083,8 +6107,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 //channel = IOWebSocketChannel.connect(cts.dbHost);
+	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -6261,7 +6285,8 @@ class OccaseState extends State<Occase>
       setState(() {
 	 _newPostPressed = true;
 	 prepareNewPost();
-	 _appState.restoreTreeStacks();
+	 _trees[0].restoreMenuStack();
+	 _trees[1].restoreMenuStack();
 	 _botBarIdx = 0;
       });
    }
@@ -6526,8 +6551,8 @@ class OccaseState extends State<Occase>
 
    void _onBotBarTapped(int i)
    {
-      if (_botBarIdx < _appState.trees.length)
-         _appState.trees[_botBarIdx].restoreMenuStack();
+      if (_botBarIdx < _trees.length)
+         _trees[_botBarIdx].restoreMenuStack();
 
       setState(() { _botBarIdx = i; });
    }
@@ -6554,7 +6579,7 @@ class OccaseState extends State<Occase>
 
       do {
          --_botBarIdx;
-         _appState.trees[_botBarIdx].restoreMenuStack();
+         _trees[_botBarIdx].restoreMenuStack();
       } while (_botBarIdx != i);
 
       setState(() { });
@@ -6562,16 +6587,16 @@ class OccaseState extends State<Occase>
 
    void _onPostLeafPressed(int i, int j)
    {
-      Node o = _appState.trees[_botBarIdx].root.last.children[i];
-      _appState.trees[_botBarIdx].root.add(o);
+      Node o = _trees[_botBarIdx].root.last.children[i];
+      _trees[_botBarIdx].root.add(o);
       _onPostLeafReached(j);
       setState(() { });
    }
 
    void _onPostLeafReached(int i)
    {
-      _posts[i].channel[_botBarIdx][0] = _appState.trees[_botBarIdx].root.last.code;
-      _appState.trees[_botBarIdx].restoreMenuStack();
+      _posts[i].channel[_botBarIdx][0] = _trees[_botBarIdx].root.last.code;
+      _trees[_botBarIdx].restoreMenuStack();
       _botBarIdx = postIndexHelper(_botBarIdx);
    }
 
@@ -6581,12 +6606,12 @@ class OccaseState extends State<Occase>
       // We continue pushing on the stack if the next screen will have
       // only one menu option.
       do {
-         Node o = _appState.trees[_botBarIdx].root.last.children[i];
-         _appState.trees[_botBarIdx].root.add(o);
+         Node o = _trees[_botBarIdx].root.last.children[i];
+         _trees[_botBarIdx].root.add(o);
          i = 0;
-      } while (_appState.trees[_botBarIdx].root.last.children.length == 1);
+      } while (_trees[_botBarIdx].root.last.children.length == 1);
 
-      final int length = _appState.trees[_botBarIdx].root.last.children.length;
+      final int length = _trees[_botBarIdx].root.last.children.length;
 
       assert(length != 1);
 
@@ -6597,28 +6622,17 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   void _onFilterNodePressed(int i)
+   void _onTreeNodePressed(int i)
    {
-      Node o = _appState.trees[_botBarIdx].root.last.children[i];
-      _appState.trees[_botBarIdx].root.add(o);
+      Node o = _trees[_botBarIdx].root.last.children[i];
+      _trees[_botBarIdx].root.add(o);
 
       setState(() { });
    }
 
-   Future<void> _onFilterLeafNodePressed(int k) async
+   Future<void> _onTreeLeafNodePressed(int k) async
    {
-      // k = 0 means the *check all fields*.
-      if (k == 0) {
-         List<NodeInfo2> list = _appState.trees[_botBarIdx].updateLeafReachAll(_botBarIdx);
-	 await _appState.persistency.updateLeafReach2(list, _botBarIdx);
-         setState(() { });
-         return;
-      }
-
-      --k; // Accounts for the Todos index.
-
-      NodeInfo2 ni2 = _appState.trees[_botBarIdx].updateLeafReach(k, _botBarIdx);
-      await _appState.persistency.updateLeafReach(ni2, _botBarIdx);
+      print('Dummy');
       setState(() { });
    }
 
@@ -7311,7 +7325,7 @@ class OccaseState extends State<Occase>
       await _appState.setCredentials(id, pwd);
 
       // Retrieves some posts for the newly registered user.
-      _subscribeToChannels(0);
+      _sendSearchPosts(0);
    }
 
    void _leaveNewPostScreen()
@@ -7363,7 +7377,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _subscribeToChannels(_appState.cfg.lastPostId);
+      _sendSearchPosts(_appState.cfg.lastPostId);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -7488,7 +7502,7 @@ class OccaseState extends State<Occase>
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
-   void _onOkDialAfterSendFilters()
+   void _onOkAfterSearch()
    {
       _tabCtrl.index = 1;
       _botBarIdx = 0;
@@ -7526,14 +7540,13 @@ class OccaseState extends State<Occase>
    }
 
   /* The variable i can assume the following values
-   * 0: Only leaves the screen.
+   * 0: Leaves the screen.
    * 1: Retrieve all posts from the server. (I think we do not need this
    *    option).
    * 2: Notifications: When the user presses search we will zero the
    *    lastPostId and search.
    */
-   Future<void>
-   _onSendFilters(BuildContext ctx, int i) async
+   Future<void> _onSearch(BuildContext ctx, int i) async
    {
       _newSearchPressed = false;
 
@@ -7560,32 +7573,23 @@ class OccaseState extends State<Occase>
 
       await _appState.persistency.updateLastPostId(0);
 
-      _subscribeToChannels(0);
+      _sendSearchPosts(0);
 
       _showSimpleDialog(
          ctx,
-         _onOkDialAfterSendFilters,
+         _onOkAfterSearch,
          g.param.dialogTitles[3],
          Text(g.param.dialogBodies[3]),
       );
    }
 
-   void _subscribeToChannels(int lastPostId)
+   void _sendSearchPosts(int lastPostId)
    {
-      List<List<int>> channels = List<List<int>>();
-
-      // An empty channels list means we do not want any filter for
-      // that menu item.
-      for (Tree item in _appState.trees)
-         channels.add(readHashCodes(item.root.first, item.filterDepth));
-
-      assert(channels.length == 2);
-
       var subCmd =
       { 'cmd': 'subscribe'
       , 'last_post_id': lastPostId
-      , 'filters': channels[0]
-      , 'channels': channels[1]
+      , 'filters': <int>[]
+      , 'channels': <int>[]
       , 'any_of_features': _appState.cfg.anyOfFeatures
       , 'ranges': convertToValues(_appState.cfg.ranges)
       };
@@ -7681,8 +7685,8 @@ class OccaseState extends State<Occase>
    {
       setState(() {
          _newSearchPressed = true;
-         _appState.trees[0].restoreMenuStack();
-         _appState.trees[1].restoreMenuStack();
+         _trees[0].restoreMenuStack();
+         _trees[1].restoreMenuStack();
          // If you changes this, also change the index _onWillPopMenu
          // will be called with.
          _botBarIdx = 1;
@@ -7870,7 +7874,7 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void> _onFilterDetail(int i) async
+   Future<void> _onSearchDetail(int i) async
    {
       _appState.cfg.anyOfFeatures ^= 1 << i;
 
@@ -7912,7 +7916,7 @@ class OccaseState extends State<Occase>
 	 _chatScrollCtrl[i],
 	 _lpChatMsgs[i].length,
 	 _chatFocusNodes[i],
-	 makeTreeItemStr(_appState.trees[0].root.first, _posts[i].channel[1][0]),
+	 makeTreeItemStr(_trees[0].root.first, _posts[i].channel[1][0]),
 	 _dragedIdxs[i],
 	 _showChatJumpDownButtons[i],
 	 _isOnFavChat() ? _posts[i].avatar : _chats[i].avatar,
@@ -7935,11 +7939,11 @@ class OccaseState extends State<Occase>
       return makeNewPostScreenWdgs(
 	 ctx: ctx,
 	 post: _posts[cts.ownIdx],
-	 trees: _appState.trees,
+	 trees: _trees,
 	 txtCtrl: _txtCtrl,
 	 navBar: _botBarIdx,
-	 exDetailsRootNode: _appState.exDetailsRoot,
-	 inDetailsRootNode: _appState.inDetailsRoot,
+	 exDetailsRootNode: _exDetailsRoot,
+	 inDetailsRootNode: _inDetailsRoot,
 	 imgFiles: _imgFiles,
 	 filenamesTimerActive: _filenamesTimer.isActive,
 	 onExDetail: _onExDetails,
@@ -7958,13 +7962,13 @@ class OccaseState extends State<Occase>
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
 	 filenamesTimerActive: _filenamesTimer.isActive,
-	 locationTree: _appState.trees[0],
-	 productTree: _appState.trees[1],
-	 exDetailsRootNode: _appState.exDetailsRoot,
-	 inDetailsRootNode: _appState.inDetailsRoot,
+	 locationTree: _trees[0],
+	 productTree: _trees[1],
+	 exDetailsRootNode: _exDetailsRoot,
+	 inDetailsRootNode: _inDetailsRoot,
 	 post: _posts[cts.ownIdx],
 	 txtCtrl: _txtCtrl,
-	 onSetLocTreeCode: _onNewPostSetTreeCode,
+	 onSetTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
 	 onSetInDetail: _onSetInDetail,
 	 imgFiles: _imgFiles,
@@ -7981,13 +7985,32 @@ class OccaseState extends State<Occase>
       return makeSearchScreenWdg(
 	 filter: _appState.cfg.anyOfFeatures,
 	 screen: _botBarIdx,
-	 exDetailsFilterNodes: _appState.exDetailsRoot.children[0].children[0],
-	 trees: _appState.trees,
+	 exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
+	 trees: _trees,
 	 ranges: _appState.cfg.ranges,
-	 onSendFilters: (int i) {_onSendFilters(ctx, i);},
-	 onFilterDetail: _onFilterDetail,
-	 onFilterNodePressed: _onFilterNodePressed,
-	 onFilterLeafNodePressed: _onFilterLeafNodePressed,
+	 onSearchPressed: (int i) {_onSearch(ctx, i);},
+	 onSearchDetail: _onSearchDetail,
+	 onTreeNodePressed: _onTreeNodePressed,
+	 onTreeLeafNodePressed: _onTreeLeafNodePressed,
+	 onRangeChanged: _onRangeChanged,
+      );
+   }
+
+   Widget _makeSearchScreenWdg2(BuildContext ctx)
+   {
+      // Below we use txt.exDetails[0][0], because the filter is
+      // common to all products.
+      return makeSearchScreenWdg2(
+	 ctx: ctx,
+	 filter: _appState.cfg.anyOfFeatures,
+	 screen: _botBarIdx,
+	 exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
+	 trees: _trees,
+	 ranges: _appState.cfg.ranges,
+	 onSearchPressed: (int i) {_onSearch(ctx, i);},
+	 onSearchDetail: _onSearchDetail,
+	 onTreeNodePressed: _onTreeNodePressed,
+	 onTreeLeafNodePressed: _onTreeLeafNodePressed,
 	 onRangeChanged: _onRangeChanged,
       );
    }
@@ -7996,10 +8019,10 @@ class OccaseState extends State<Occase>
    {
       return makeNewPostLv(
 	nNewPosts: _nNewPosts,
-	exDetailsRootNode: _appState.exDetailsRoot,
-	inDetailsRootNode: _appState.inDetailsRoot,
+	exDetailsRootNode: _exDetailsRoot,
+	inDetailsRootNode: _inDetailsRoot,
 	posts: _appState.posts,
-	trees: _appState.trees,
+	trees: _trees,
 	onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
@@ -8043,10 +8066,10 @@ class OccaseState extends State<Occase>
       return makeChatTab(
 	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
 	 screen: i,
-	 exDetailsRootNode: _appState.exDetailsRoot,
-	 inDetailsRootNode: _appState.inDetailsRoot,
+	 exDetailsRootNode: _exDetailsRoot,
+	 inDetailsRootNode: _inDetailsRoot,
 	 posts: posts,
-	 trees: _appState.trees,
+	 trees: _trees,
 	 onPressed: _onChatPressed,
 	 onLongPressed: _onChatLP,
 	 onDelPost1: (int i) { _removePostDialog(ctx, i);},
@@ -8104,8 +8127,8 @@ class OccaseState extends State<Occase>
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
 	 screen: i,
-	 onWillLeaveSearch: () { return _onWillPopMenu(_appState.trees, 1);},
-	 onWillLeaveNewPost: () { return _onWillPopMenu(_appState.trees, 0); },
+	 onWillLeaveSearch: () { return _onWillPopMenu(_trees, 1);},
+	 onWillLeaveNewPost: () { return _onWillPopMenu(_trees, 0); },
 	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
       );
    }
@@ -8118,7 +8141,7 @@ class OccaseState extends State<Occase>
 	 newSearchPressed: _newSearchPressed,
 	 botBarIndex: _botBarIdx,
 	 screen: i,
-	 trees: _appState.trees,
+	 trees: _trees,
 	 defaultWdg: defaultWdg,
       );
    }
@@ -8144,7 +8167,8 @@ class OccaseState extends State<Occase>
       }
 
       if (_newSearchPressed) {
-	 ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
+	 //ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
+	 ret[cts.searchIdx] = _makeSearchScreenWdg2(ctx);
       } else {
 	 ret[cts.searchIdx] = _makeNewPostLv();
       }
@@ -8161,7 +8185,7 @@ class OccaseState extends State<Occase>
       ret[cts.ownIdx] = ()
       {
 	 if (_newPostPressed)
-	    return _onWillPopMenu(_appState.trees, cts.ownIdx);
+	    return _onWillPopMenu(_trees, cts.ownIdx);
 
 	 return _onChatsBackPressed(cts.ownIdx);
       };
@@ -8170,7 +8194,7 @@ class OccaseState extends State<Occase>
       {
 	 print('aa');
 	 if (_newSearchPressed)
-	    return _onWillPopMenu(_appState.trees, cts.searchIdx);
+	    return _onWillPopMenu(_trees, cts.searchIdx);
 
 	 setState((){});
 	 return true;
@@ -8185,9 +8209,9 @@ class OccaseState extends State<Occase>
    Widget build(BuildContext ctx)
    {
       final bool mustWait =
-         _appState.trees.isEmpty    ||
-         (_appState.exDetailsRoot == null) ||
-         (_appState.inDetailsRoot == null) ||
+         _trees.isEmpty    ||
+         (_exDetailsRoot == null) ||
+         (_inDetailsRoot == null) ||
          (g.param == null);
 
       if (mustWait)

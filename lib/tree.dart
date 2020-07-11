@@ -19,17 +19,6 @@ class NodeInfo {
    });
 }
 
-Map<String, dynamic> menuElemToMap(NodeInfo me)
-{
-   return {
-      'code': me.code,
-      'depth': me.depth,
-      'leaf_reach': me.leafReach,
-      'name': me.name,
-      'idx': me.index,
-   };
-}
-
 // To avoid using global variable for the language index I will will
 // set them lazily as they are used. Unfourtunately we cannot store
 // the index only once as the toString method has no argument.
@@ -286,51 +275,6 @@ class Tree {
       root = List<Node>();
    }
 
-   // Returns the name of each node in the menu stack. 
-   String getStackNames()
-   {
-      return root.join(', ');
-   }
-
-   // It is assumed that this function will be called when the last
-   // node in the stack is the parent of a leaf and k will be the
-   // index of the leaf int the array of children of the top node.
-   NodeInfo2 updateLeafReach(int k, int idx)
-   {
-      int d = 0;
-      Node node = root.last.children[k];
-      if (node.leafReach > 0) {
-         d = - node.leafCounter;
-         node.leafReach = 0;
-      } else {
-         d = node.leafCounter;
-         node.leafReach = node.leafCounter;
-      }
-
-      // d contains how much we have to increase or decrease the
-      // parent nodes.
-
-      for (int i = 0; i < root.length; ++i) {
-         //int j = root.length - i - 1; // Index of the last element.
-         root[i].leafReach += d;
-      }
-
-      return NodeInfo2(
-	 leafReach: node.leafReach,
-	 code: node.code.join('.'),
-      );
-   }
-
-   List<NodeInfo2> updateLeafReachAll(int idx)
-   {
-      final int l = root.last.children.length;
-      List<NodeInfo2> ret = List<NodeInfo2>();
-      for (int i = 0; i < l; ++i)
-	 ret.add(updateLeafReach(i, idx));
-
-      return ret;
-   }
-
    bool isFilterLeaf()
    {
       return root.length == filterDepth;
@@ -428,14 +372,14 @@ List<Tree> treeReader(Map<String, dynamic> menusMap)
 {
    List<dynamic> rawMenus = menusMap['menus'];
 
-   List<Tree> menus = List<Tree>();
+   List<Tree> trees = List<Tree>();
 
    for (var raw in rawMenus) {
       Tree item = Tree.fromJson(raw);
-      menus.add(item);
+      trees.add(item);
    }
 
-   return menus;
+   return trees;
 }
 
 class TreeTraversal {
@@ -678,43 +622,6 @@ makeMenuElems(final Node root, int index, int maxDepth)
    }
 
    return elems;
-}
-
-List<Tree> loadTreeItems(
-   final List<NodeInfo> elems,
-   final List<int> filterDepths,
-) {
-   // Here we have to load all leaf counters and leaf reach.
-   //
-   // NOTE: When the user selects a specific tree node in the filters
-   // screen, we save only that specific node's leaf reach on the
-   // database, the corrections in the leaf reach of parent nodes are
-   // kept in memory, that is why we have to load them here.
-
-   List<Tree> menu = List<Tree>(2);
-   menu[0] = Tree();
-   menu[1] = Tree();
-
-   menu[0].filterDepth = filterDepths[0];
-   menu[1].filterDepth = filterDepths[1];
-
-   List<List<NodeInfo>> tmp = List<List<NodeInfo>>(2);
-   tmp[0] = List<NodeInfo>();
-   tmp[1] = List<NodeInfo>();
-
-   elems.forEach((NodeInfo me) {tmp[me.index].add(me);});
-
-   for (int i = 0; i < tmp.length; ++i) {
-      final int menuDepth = findTreeDepth(tmp[i]);
-      if (menuDepth != 0) {
-         Node node = parseTree(tmp[i], menuDepth);
-         loadLeafCounters(node);
-         loadLeafReaches(node, menu[i].filterDepth);
-         menu[i].root.add(node);
-      }
-   }
-
-   return menu;
 }
 
 // Return a list of all ex details for the given product i.

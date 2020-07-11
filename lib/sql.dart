@@ -224,28 +224,3 @@ final String loadOutChats =
 SELECT rowid, * FROM out_chat_msg_queue
 ''';
 
-//___________________________________________________________________
-// The menu table.
-
-final String createMenuTable =
-'''
-CREATE TABLE menu
-( code TEXT
-, depth INTEGER
-, leaf_reach INTEGER
-, name TEXT
-, idx INTEGER
-, PRIMARY KEY (code, idx)
-)
-''';
-
-final String insertMenuElem =
-'''
-INSERT INTO menu VALUES (?, ?, ?, ?, ?)
-''';
-
-final String updateLeafReach =
-'''
-UPDATE menu SET leaf_reach = ? WHERE code = ? AND idx = ?
-''';
-
