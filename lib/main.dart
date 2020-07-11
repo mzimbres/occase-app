@@ -1512,9 +1512,7 @@ Widget makeNewPostFinalScreen({
    // the new context.
 
    Widget w0 = makeNewPost(
-      ctx: ctx,
       screen: cts.ownIdx,
-      snackbarStr: g.param.cancelNewPost,
       post: post,
       exDetailsRootNode: exDetailsRootNode,
       inDetailsRootNode: inDetailsRootNode,
@@ -4007,8 +4005,8 @@ Widget makeTextWdg(
 Widget makeAddOrRemoveWidget(
    Function add,
    IconData id,
-   Color color)
-{
+   Color color,
+) {
    return Padding(
       padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
       child: IconButton(
@@ -4114,7 +4112,6 @@ List<Widget> makePostButtons({
    int pinDate,
    OnPressedFn0 onDelPost,
    OnPressedFn0 onSharePost,
-   OnPressedFn0 onShowChatBox,
    OnPressedFn0 onPinPost,
 }) {
    IconButton remove = IconButton(
@@ -4135,13 +4132,6 @@ List<Widget> makePostButtons({
       ),
    );
 
-   IconButton chat = IconButton(
-      padding: EdgeInsets.all(0.0),
-      icon: stl.favIcon,
-      onPressed: onShowChatBox,
-      color: stl.colorScheme.primary,
-   );
-
    IconData pinIcon = pinDate == 0 ? Icons.place : Icons.pin_drop;
 
    IconButton pin = IconButton(
@@ -4153,13 +4143,13 @@ List<Widget> makePostButtons({
       ),
    );
 
-
-   return <Widget>[remove, share, chat, pin];
+   return <Widget>[remove, share, pin];
 }
 
 Widget makeNewPostDialogWdg({
    final double width,
    final Widget title,
+   final double indent,
    final List<Widget> list,
    final List<Widget> actions,
 }) {
@@ -4177,6 +4167,7 @@ Widget makeNewPostDialogWdg({
 
    return AlertDialog(
       title: title,
+      contentPadding: EdgeInsets.all(indent),
       actions: actions,
       content: Container(
 	 width: width,
@@ -4242,6 +4233,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: makeDialogWidthHeight(ctx),
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 indent: 10.0,
 	 list: list,
 	 actions: <FlatButton>[ok],
       );
@@ -4313,6 +4305,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: makeDialogWidthHeight(ctx),
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 indent: 10.0,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
       );
@@ -4430,6 +4423,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       return makeNewPostDialogWdg(
 	 width: makeDialogWidthHeight(ctx),
 	 title: titleWdg,
+	 indent: 10.0,
 	 list: locWdgs,
 	 actions: <FlatButton>[back],
       );
@@ -4438,7 +4432,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 //---------------------------------------------------------------------
 
-class SizeAnimation extends StatefulWidget {
+class PostWidget extends StatefulWidget {
    int milliseconds;
    int screen;
    Post post;
@@ -4452,13 +4446,14 @@ class SizeAnimation extends StatefulWidget {
    OnPressedFn0 onAddPostToFavorite;
    OnPressedFn0 onDelPost;
    OnPressedFn0 onSharePost;
+   OnPressedFn0 onReportPost;
    OnPressedFn0 onPinPost;
 
    @override
-   SizeAnimationState createState() => SizeAnimationState();
+   PostWidgetState createState() => PostWidgetState();
 
-   SizeAnimation(
-   { @required this.milliseconds
+   PostWidget(
+   { this.milliseconds = 500
    , @required this.screen
    , @required this.post
    , @required this.exDetailsRootNode
@@ -4471,19 +4466,16 @@ class SizeAnimation extends StatefulWidget {
    , @required this.onAddPostToFavorite
    , @required this.onDelPost
    , @required this.onSharePost
+   , @required this.onReportPost
    , @required this.onPinPost
    });
 }
 
-class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMixin {
-   AnimationController _detailsCtrl;
-   AnimationController _chatCtrl;
+class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
    @override
    void dispose()
    {
-      _detailsCtrl.dispose();
-      _chatCtrl.dispose();
       super.dispose();
    }
 
@@ -4491,39 +4483,71 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
    void initState()
    {
       super.initState();
-      _detailsCtrl = AnimationController(
-	 vsync: this,
-	 duration: Duration(milliseconds: widget.milliseconds),
-      );
-
-      _chatCtrl = AnimationController(
-	 vsync: this,
-	 duration: Duration(milliseconds: widget.milliseconds),
-      );
-
-      _detailsCtrl.reverse();
-      _chatCtrl.reverse();
    }
 
-   void _onPressed(int i)
+   Future<void> _onShowDetails(BuildContext ctx) async
    {
-      setState((){
-	 if (i == 0 || i == 1) {
-	    if (_detailsCtrl.status == AnimationStatus.dismissed) {
-	       _detailsCtrl.forward();
-	    } else if (_detailsCtrl.status == AnimationStatus.completed) {
-	       _detailsCtrl.reverse();
-	    }
-	 }
+      final int code = await showDialog<int>(
+	 context: ctx,
+	 builder: (BuildContext ctx2)
+	 {
+	    Widget detailsWdg = makePostDetailsWdg(
+	       ctx: ctx2,
+	       post: widget.post,
+	       exDetailsRootNode: widget.exDetailsRootNode,
+	       inDetailsRootNode: widget.inDetailsRootNode,
+	       trees: widget.trees,
+	       imgFiles: widget.imgFiles,
+	       onAddPhoto: widget.onAddPhoto,
+	       onExpandImg: widget.onExpandImg,
+	       onReportPost: () 
+	          {
+		     Navigator.of(ctx).pop();
+		     widget.onReportPost();
+		  },
+	    );
 
-	 if (i == 2) {
-	    if (_chatCtrl.status == AnimationStatus.dismissed) {
-	       _chatCtrl.forward();
-	    } else if (_chatCtrl.status == AnimationStatus.completed) {
-	       _chatCtrl.reverse();
-	    }
-	 }
-      });
+            final
+	    FlatButton ok = FlatButton(
+	       child: Text(g.param.newFiltersFinalScreenButton[0]),
+	       onPressed: () { Navigator.of(ctx).pop(); },
+	    );
+
+	    ChatMetadata cm = ChatMetadata(
+	      peer: widget.post.from,
+	      nick: widget.post.nick,
+	      avatar: widget.post.avatar,
+	      date: DateTime.now().millisecondsSinceEpoch,
+	      lastChatItem: ChatItem(),
+	    );
+
+	    Widget tmp = makeChatListTile(
+	       ctx,
+	       cm,
+	       0,
+	       false,
+	       '',
+	       stl.chatListTilePadding,
+	       2.0,
+	       () {},
+	       () {},
+	       ()
+	          {
+		     Navigator.of(ctx).pop();
+		     widget.onAddPostToFavorite();
+		  },
+	    );
+
+	    final double width = makeTabWidth(ctx);
+	    return makeNewPostDialogWdg(
+	       width: width,
+               title: null,
+	       indent: 5.0,
+	       list: <Widget>[detailsWdg],
+               actions: <Widget>[SizedBox(width: width, child: tmp)],
+	    );
+	 },
+      );
    }
 
    @override
@@ -4544,7 +4568,6 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 	 pinDate: widget.post.pinDate,
 	 onDelPost: widget.onDelPost,
 	 onSharePost: widget.onSharePost,
-	 onShowChatBox: () {_onPressed(2);},
 	 onPinPost: widget.onPinPost,
       );
 
@@ -4557,7 +4580,6 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 	 buttonWdgs.add(Expanded(child: buttons[1]));
 	 buttonWdgs.add(Expanded(child: buttons[2]));
       } else {
-	 buttonWdgs.add(Expanded(child: buttons[3]));
 	 buttonWdgs.add(Expanded(child: buttons[0]));
 	 buttonWdgs.add(Expanded(child: buttons[1]));
       }
@@ -4689,71 +4711,13 @@ class SizeAnimationState extends State<SizeAnimation> with TickerProviderStateMi
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
 
-      List<Widget> rows = List<Widget>();
-      rows.add(widget.detailsWidget);
-      rows.add(Row(children: row1List));
-
-      ChatMetadata cm = ChatMetadata(
-	peer: widget.post.from,
-	nick: widget.post.nick,
-	avatar: widget.post.avatar,
-	date: DateTime.now().millisecondsSinceEpoch,
-	lastChatItem: ChatItem(),
-      );
-
-      Widget tmp = makeChatListTile(
-	 ctx,
-	 cm,
-	 0,
-	 false,
-	 '',
-	 stl.chatListTilePadding,
-	 2.0,
-	 widget.onAddPostToFavorite,
-	 widget.onAddPostToFavorite,
-	 widget.onAddPostToFavorite,
-      );
-
-      rows.add(tmp);
-
-      List<Widget> sss = List<Widget>();
-
-      Widget detailsWgd = SizeTransition(
-	 child: RaisedButton(
-	    color: Colors.white,
-	    onPressed: () {_onPressed(0);},
-	    elevation: 0.0,
-	    child: rows[0],
-	    padding: const EdgeInsets.all(0.0),
-	 ),
-	 sizeFactor: CurvedAnimation(
-	       curve: Curves.fastOutSlowIn,
-	       parent: _detailsCtrl,
-	 ),
-      );
-
-      sss.add(detailsWgd);
-
-      Widget postWdg = RaisedButton(
+      return RaisedButton(
 	 color: Colors.white,
-	 onPressed: () {_onPressed(1);},
+	 onPressed: () {_onShowDetails(ctx);},
 	 elevation: 0.0,
-	 child: rows[1],
+	 child: Row(children: row1List),
 	 padding: const EdgeInsets.all(0.0),
       );
-
-      sss.add(postWdg);
-
-      Widget chatWdg = SizeTransition(
-	 child: rows[2],
-	 sizeFactor: CurvedAnimation(
-	       curve: Curves.fastOutSlowIn,
-	       parent: _chatCtrl,
-	 ),
-      );
-
-      sss.add(chatWdg);
-      return Column(children: sss);
    }
 }
 
@@ -4806,9 +4770,7 @@ Widget makePostDetailsWdg({
 }
 
 Widget makeNewPost({
-   BuildContext ctx,
    final int screen,
-   final String snackbarStr,
    final Post post,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
@@ -4822,33 +4784,11 @@ Widget makeNewPost({
    OnPressedFn0 onReportPost,
    OnPressedFn0 onPinPost,
 }) {
-   assert(trees.length == 2);
-
-   Widget title = Text(
-      makeTreeItemStr(trees[0].root.first, post.channel[1][0]),
-      maxLines: 1,
-      overflow: TextOverflow.clip,
-   );
-
-   Widget detailsWdg = makePostDetailsWdg(
-      ctx: ctx,
-      post: post,
-      exDetailsRootNode: exDetailsRootNode,
-      inDetailsRootNode: inDetailsRootNode,
-      trees: trees,
-      imgFiles: imgFiles,
-      onAddPhoto: onAddPhoto,
-      onExpandImg: onExpandImg,
-      onReportPost: onReportPost,
-   );
-
-   return SizeAnimation(
-     milliseconds: 500,
+   return PostWidget(
      screen: screen,
      post: post,
      exDetailsRootNode: exDetailsRootNode,
      inDetailsRootNode: inDetailsRootNode,
-     detailsWidget: detailsWdg,
      imgFiles: imgFiles,
      trees: trees,
      onAddPhoto: onAddPhoto,
@@ -4856,6 +4796,7 @@ Widget makeNewPost({
      onAddPostToFavorite: onAddPostToFavorite,
      onDelPost: onDelPost,
      onSharePost: onSharePost,
+     onReportPost: onReportPost,
      onPinPost: onPinPost,
    );
 }
@@ -4930,9 +4871,7 @@ Widget makeNewPostLv({
 	 }
 
          return makeNewPost(
-            ctx: ctx,
 	    screen: cts.searchIdx,
-            snackbarStr: g.param.dissmissedPost,
             post: posts[j],
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
@@ -5453,9 +5392,7 @@ Widget makeChatTab({
             onExpandImg = (int j){print('Error: post.images is empty.');};
 
 	 Widget bbb = makeNewPost(
-            ctx: ctx,
 	    screen: screen,
-            snackbarStr: '',
             post: posts[i],
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
