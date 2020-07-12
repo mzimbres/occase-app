@@ -1208,10 +1208,10 @@ Widget wrapOnDetailExpTitle(
 }
 
 Widget makeNewPostDetailExpTile(
-   Function onInDetail,
-   Node titleNode,
    int state,
    String strDisplay,
+   Node titleNode,
+   Function onInDetail,
 ) {
    List<Widget> bar =
       makeNewPostDetailElemList(
@@ -1345,10 +1345,10 @@ List<Widget> makeNewPostDetailScreen(
    final int l1 = exDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
       Widget foo = makeNewPostDetailExpTile(
-         (int j) {onExDetail(i, j);},
-         exDetailsRootNode.children[idx].children[i],
          post.exDetails[i],
          exDetailsNames[i],
+         exDetailsRootNode.children[idx].children[i],
+         (int j) {onExDetail(i, j);},
       );
 
       all.add(foo);
@@ -1358,10 +1358,10 @@ List<Widget> makeNewPostDetailScreen(
    for (int i = 0; i < l2; ++i) {
       final int nBitsSet = counterBitsSet(post.inDetails[i]);
       Widget foo = makeNewPostDetailExpTile(
-         (int j) {onInDetail(i, j);},
-         inDetailsRootNode.children[idx].children[i],
          post.inDetails[i],
          '$nBitsSet items',
+         inDetailsRootNode.children[idx].children[i],
+         (int j) {onInDetail(i, j);},
       );
 
       all.add(foo);
@@ -1623,7 +1623,6 @@ Widget makeAppBarWdg({
    bool hasLpChatMsgs,
    bool newPostPressed,
    bool newSearchPressed,
-   final int botBarIndex,
    final int screen,
    final List<Tree> trees,
    Widget defaultWdg,
@@ -1637,41 +1636,17 @@ Widget makeAppBarWdg({
 
    if (own && newPostPressed)
       return makeSearchAppBar(
-	 screen: botBarIndex,
 	 trees: trees,
 	 title: g.param.newPostAppBarTitle,
       );
 
    if (search && newSearchPressed)
       return makeSearchAppBar(
-	 screen: botBarIndex,
 	 trees: trees,
 	 title: g.param.filterAppBarTitle,
       );
 
    return defaultWdg;
-}
-
-BottomNavigationBar makeBotNavBar({
-   int botBarIndex,
-   bool newPostPressed,
-   bool newSearchPressed,
-   int screen,
-   OnPressedFn1 onNewPostBotBarTapped,
-   OnPressedFn1 onSearchBotBarPressed,
-}) {
-   if ((screen == cts.ownIdx) && newPostPressed)
-      return null;
-
-   if ((screen == cts.searchIdx) && newSearchPressed)
-      return makeBottomBarItems(
-	 stl.filterTabIcons,
-	 g.param.filterTabNames,
-	 onSearchBotBarPressed,
-	 botBarIndex,
-      );
-
-   return null;
 }
 
 Widget makeNewPostLT({
@@ -1723,35 +1698,205 @@ ListView makeNewPostListView(List<Widget> list)
 
 Widget makeChooseTreeNodeDialog({
    BuildContext ctx,
+   final String title,
    final List<int> defaultCode,
-   final Node locationRootNode,
+   final Node root,
    final IconData iconData,
    final OnPressedFn14 onSetTreeCode,
 }) {
-   String locSubtitle = g.param.unknownNick;
+   String subtitle = root.name(g.param.langIdx);
    if (defaultCode.isNotEmpty) {
-      locSubtitle = loadNames(
-         locationRootNode,
+      subtitle = loadNames(
+         root,
 	 defaultCode,
 	 g.param.langIdx,
       ).join(', ');
    }
 
    return makeNewPostLT(
-      title: g.param.newPostTabNames[0],
-      subTitle: locSubtitle,
+      title: title,
+      subTitle: subtitle,
       icon: iconData,
       onTap: () async
       {
 	 final List<int> code = await showDialog<List<int>>(
 	    context: ctx,
-	    builder: (BuildContext ctx2) { return TreeView(root: locationRootNode); },
+	    builder: (BuildContext ctx2) { return TreeView(root: root); },
 	 );
 
 	 if (code != null)
 	    onSetTreeCode(code);
       },
    );
+}
+
+Widget makeNewPostInDetailLT({
+   BuildContext ctx,
+   final int state,
+   final String title,
+   final String subtitle,
+   final List<String> details,
+   final OnPressedFn1 onSetInDetail,
+}) {
+   return makeNewPostLT(
+      title: title,
+      subTitle: subtitle,
+      icon: null,
+      onTap: () async
+      {
+	 final int state2 = await showDialog<int>(
+	    context: ctx,
+	    builder: (BuildContext ctx2)
+	    {
+	       return InDetailsView(
+		     state: state,
+		     title: title,
+		     names: details,
+	       );
+	    },
+	 );
+
+	 if (state2 != null)
+	    onSetInDetail(state2);
+      },
+   );
+}
+
+List<Widget> makeSearchWdgs({
+   BuildContext ctx,
+   final Tree locationTree,
+   final Tree productTree,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
+   final Post post,
+   final OnPressedFn12 onSetTreeCode,
+   final OnPressedFn3 onSetExDetail,
+   final OnPressedFn3 onSetInDetail,
+}) {
+   List<Widget> list = List<Widget>();
+
+   {
+      final Node locRootNode = locationTree.root.first;
+      Widget location = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 title: g.param.newPostTabNames[0],
+	 defaultCode: post.getLocationCode(),
+	 root: locRootNode,
+	 iconData: Icons.edit_location,
+	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
+      );
+
+      list.add(location);
+      list.add(stl.newPostDivider);
+   }
+
+   if (post.getLocationCode().isEmpty)
+      return list;
+
+   {
+      final Node productRootNode = productTree.root.first;
+      Widget product = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 title: g.param.newPostTabNames[1],
+	 defaultCode: post.getProductCode(),
+	 root: productRootNode,
+	 iconData: Icons.directions_car,
+	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
+      );
+
+      list.add(product);
+      list.add(stl.newPostDivider);
+   }
+
+   // ---------------------------------------------------
+
+   if (post.getProductCode().isEmpty)
+      return list;
+
+   final int productIdx = post.getProductDetailIdx();
+   if (productIdx == -1)
+      return list;
+
+   {  // exDetails
+      final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
+      for (int i = 0; i < nDetails; ++i) {
+	 final int length = productDetailLength(exDetailsRootNode, productIdx, i);
+	 final int k = post.exDetails[i] < length ? post.exDetails[i] : 0;
+
+	 final List<String> names = loadNames(
+	    exDetailsRootNode,
+	    <int>[productIdx, i, k],
+	    g.param.langIdx,
+	 );
+
+	 final List<String> detailStrs = listAllDetails(
+	    root: exDetailsRootNode,
+	    productIndex: productIdx,
+	    detailIndex: i,
+	    languageIndex: g.param.langIdx,
+	 );
+
+	 Widget exDetailWdg = makeNewPostLT(
+	    title: names[1],
+	    subTitle: names[2],
+	    icon: null,
+	    onTap: () async
+	    {
+	       final int state = await showDialog<int>(
+		  context: ctx,
+		  builder: (BuildContext ctx2)
+		  {
+		     return ExDetailsView(
+			title: names[1],
+			names: detailStrs,
+			onIdx: k,
+		     );
+		  },
+	       );
+
+	       if (state != null)
+		  onSetExDetail(i, state);
+	    },
+	 );
+
+	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: exDetailWdg));
+	 list.add(stl.newPostDivider);
+      }
+   }
+
+   {  // inDetails
+      final int nDetails = inDetailsRootNode.children[productIdx].children.length;
+      for (int i = 0; i < nDetails; ++i) {
+	 final List<String> details = listAllDetails(
+	    root: inDetailsRootNode,
+	    productIndex: productIdx,
+	    detailIndex: i,
+	    languageIndex: g.param.langIdx,
+	 );
+
+	 List<String> subtitles = makeInDetailNames(
+	    root: inDetailsRootNode,
+	    state: post.inDetails[i],
+	    productIndex: productIdx,
+	    detailIndex: i,
+	    languageIndex: g.param.langIdx,
+	 );
+
+	 Widget inDetailWdg = makeNewPostInDetailLT(
+	    ctx: ctx,
+	    state: post.inDetails[i],
+	    title: inDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx),
+	    subtitle: subtitles.join(', '),
+	    details: details,
+	    onSetInDetail: (var state) {onSetInDetail(i, state);},
+	 );
+
+	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: inDetailWdg));
+	 list.add(stl.newPostDivider);
+      }
+   }
+
+   return list;
 }
 
 Widget makeNewPostScreenWdgs2({
@@ -1771,141 +1916,22 @@ Widget makeNewPostScreenWdgs2({
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
 }) {
-   List<Widget> list = List<Widget>();
+   List<Widget> list = makeSearchWdgs(
+      ctx: ctx,
+      locationTree: locationTree,
+      productTree: productTree,
+      exDetailsRootNode: exDetailsRootNode,
+      inDetailsRootNode: inDetailsRootNode,
+      post: post,
+      onSetTreeCode: onSetTreeCode,
+      onSetExDetail: onSetExDetail,
+      onSetInDetail: onSetInDetail,
+   );
 
-   {
-      final Node locRootNode = locationTree.root.first;
-      Widget location = makeChooseTreeNodeDialog(
-	 ctx: ctx,
-	 defaultCode: post.getLocationCode(),
-	 locationRootNode: locRootNode,
-	 iconData: Icons.edit_location,
-	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
-      );
-
-      list.add(location);
-      list.add(stl.newPostDivider);
-   }
-
-   if (post.getLocationCode().isEmpty)
+   if (list.length < 5)
       return makeNewPostListView(list);
 
-   {
-      final Node productRootNode = productTree.root.first;
-      Widget product = makeChooseTreeNodeDialog(
-	 ctx: ctx,
-	 defaultCode: post.getProductCode(),
-	 locationRootNode: productRootNode,
-	 iconData: Icons.directions_car,
-	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
-      );
-
-      list.add(product);
-      list.add(stl.newPostDivider);
-   }
-
-   // ---------------------------------------------------
-
-   final int productIdx = post.getProductDetailIdx();
-   if (productIdx != -1) {
-
-      { // exDetails
-	 final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
-	 for (int i = 0; i < nDetails; ++i) {
-	    final int length = productDetailLength(exDetailsRootNode, productIdx, i);
-	    final int k = post.exDetails[i] < length ? post.exDetails[i] : 0;
-
-	    final List<String> names = loadNames(
-               exDetailsRootNode,
-	       <int>[productIdx, i, k],
-	       g.param.langIdx,
-	    );
-
-	    final List<String> detailStrs = listAllDetails(
-               exDetailsRootNode,
-	       productIdx,
-	       i,
-	       g.param.langIdx,
-	    );
-
-	    Widget exDetailWdg = makeNewPostLT(
-	       title: names[1],
-	       subTitle: names[2],
-	       icon: null,
-	       onTap: () async
-	       {
-	          final int state = await showDialog<int>(
-	             context: ctx,
-	             builder: (BuildContext ctx2)
-	             {
-	        	return ExDetailsView(
-	        	   title: names[1],
-	        	   names: detailStrs,
-	        	   onIdx: k,
-	        	);
-	             },
-	          );
-
-	          if (state != null)
-	             onSetExDetail(i, state);
-	       },
-	    );
-
-	    list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: exDetailWdg));
-	    list.add(stl.newPostDivider);
-	 }
-      }
-
-      { // inDetails
-	 final int nDetails = inDetailsRootNode.children[productIdx].children.length;
-	 for (int i = 0; i < nDetails; ++i) {
-	    final List<String> detailStrs = listAllDetails(
-               inDetailsRootNode,
-	       productIdx,
-	       i,
-	       g.param.langIdx,
-	    );
-
-	    List<String> subtitles = makeInDetailNames(
-               inDetailsRootNode,
-	       post.inDetails[i],
-	       productIdx, i,
-	       g.param.langIdx,
-	    );
-
-	    final String subtitle = subtitles.join(', ');;
-
-	    final String title =
-	       inDetailsRootNode.children[productIdx].children[i].name(g.param.langIdx);
-
-	    Widget inDetailWdg = makeNewPostLT(
-	       title: title,
-	       subTitle: subtitle,
-	       icon: null,
-	       onTap: () async
-	       {
-		  final int state = await showDialog<int>(
-		     context: ctx,
-		     builder: (BuildContext ctx2)
-		     {
-			return InDetailsView(
-			      state: post.inDetails[i],
-			      title: title,
-			      names: detailStrs,
-			);
-		     },
-		  );
-
-		  if (state != null)
-		     onSetInDetail(i, state);
-	       },
-	    );
-
-	    list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: inDetailWdg));
-	    list.add(stl.newPostDivider);
-	 }
-      }
-
+   if (list.length > 2) {
       { // Description
 	 TextField tf = TextField(
 	    controller: txtCtrl,
@@ -2078,47 +2104,10 @@ Widget makeNewPostScreenWdgs({
    return Stack(children: list);
 }
 
-Widget makeSearchFinalScreen(OnPressedFn1 onPressed)
-{
-   // See the comment in _onPostSelection for why I removed the middle
-   // button for now.
-   return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      //mainAxisSize: MainAxisSize.min,
-      children: <Widget>
-      [ Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createRaisedButton(
-             () {onPressed(0);},
-             g.param.newFiltersFinalScreenButton[0],
-	     stl.expTileCardColor,
-	     Colors.black,
-          ),
-	)
-      , Padding(
-          padding: const EdgeInsets.symmetric(vertical: 40.0),
-          child: createRaisedButton(
-             () {onPressed(2);},
-             g.param.newFiltersFinalScreenButton[2],
-	     stl.colorScheme.secondary,
-	     stl.colorScheme.onSecondary,
-          ),
-	)
-      ]
-   );
-}
-
 Widget makeSearchAppBar({
-   final int screen,
    final List<Tree> trees,
    final String title,
 }) {
-   assert(screen < 4);
-
-   if (screen == 3 || screen == 2)
-      return Text(title, style: stl.appBarLtTitle);
-
    return ListTile(
       dense: true,
       title: Text(title,
@@ -2136,171 +2125,133 @@ Widget makeSearchAppBar({
 
 Widget makeSearchScreenWdg2({
    BuildContext ctx,
-   final int filter,
-   final int screen,
-   final Node exDetailsFilterNodes,
-   final List<Tree> trees,
+   final int state,
+   final Node locationRootNode,
+   final Node productRootNode,
+   final Node exDetailsRootNode,
+   final Post post,
    final List<int> ranges,
    final OnPressedFn1 onSearchPressed,
    final OnPressedFn1 onSearchDetail,
-   final OnPressedFn1 onTreeNodePressed,
-   final OnPressedFn1 onTreeLeafNodePressed,
    final OnPressedFn6 onRangeChanged,
+   final OnPressedFn14 onSetLocationCode,
+   final OnPressedFn14 onSetProductCode,
 }) {
-   if (screen == 3)
-      return makeSearchFinalScreen(onSearchPressed);
+   List<Widget> foo = List<Widget>();
 
-   if (screen == 2) {
-      List<Widget> foo = List<Widget>();
-
-      {
-	 final Node root = trees[0].root.first;
-	 Widget location = makeChooseTreeNodeDialog(
-	    ctx: ctx,
-	    defaultCode: <int>[],
-	    locationRootNode: root,
-	    iconData: Icons.edit_location,
-	    onSetTreeCode: (var code) { print('Location code: $code');},
-	 );
-
-	 foo.add(location);
-	 foo.add(stl.newPostDivider);
-      }
-
-      {
-	 final Node root = trees[0].root.first;
-	 Widget product = makeChooseTreeNodeDialog(
-	    ctx: ctx,
-	    defaultCode: <int>[],
-	    locationRootNode: root,
-	    iconData: Icons.directions_car,
-	    onSetTreeCode: (var code) { print('Product code: $code');},
-	 );
-
-	 foo.add(product);
-	 foo.add(stl.newPostDivider);
-      }
-
-      final Widget vv = makeNewPostDetailExpTile(
-         onSearchDetail,
-         exDetailsFilterNodes,
-         filter,
-         '',
+   {  // Location
+      Widget location = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 title: g.param.newPostTabNames[0],
+	 defaultCode: post.getLocationCode(),
+	 root: locationRootNode,
+	 iconData: Icons.edit_location,
+	 onSetTreeCode: onSetLocationCode,
       );
 
-      foo.add(vv);
-
-      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
-         final int vmin = ranges[2 * i + 0];
-         final int vmax = ranges[2 * i + 1];
-
-         final int l = g.param.discreteRanges[i].length - 1;
-
-         final Widget rs = RangeSlider(
-            min: 0,
-            max: l.toDouble(),
-            divisions: g.param.discreteRanges[i].length,
-            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
-            values: RangeValues(vmin.toDouble(), vmax.toDouble()),
-         );
-
-         final int vmin2 = g.param.discreteRanges[i][vmin];
-         final int vmax2 = g.param.discreteRanges[i][vmax];
-
-         final String rangeTitle = '$vmin2 - $vmax2';
-         final RichText rt = makeExpTileTitle(
-            g.param.rangePrefixes[i],
-            rangeTitle,
-            ':',
-            false,
-         );
-
-         foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
-      }
-
-      return ListView.builder(
-         padding: const EdgeInsets.all(3.0),
-         itemCount: foo.length,
-         itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
-      );
+      foo.add(location);
+      foo.add(stl.newPostDivider);
    }
 
-   return makeNewFilterListView(
-      trees[screen].root.last,
-      onTreeLeafNodePressed,
-      onTreeNodePressed,
-      trees[screen].isFilterLeaf(),
-   );
-}
-
-
-Widget makeSearchScreenWdg({
-   final int filter,
-   final int screen,
-   final Node exDetailsFilterNodes,
-   final List<Tree> trees,
-   final List<int> ranges,
-   final OnPressedFn1 onSearchPressed,
-   final OnPressedFn1 onSearchDetail,
-   final OnPressedFn1 onTreeNodePressed,
-   final OnPressedFn1 onTreeLeafNodePressed,
-   final OnPressedFn6 onRangeChanged,
-}) {
-   if (screen == 3)
-      return makeSearchFinalScreen(onSearchPressed);
-
-   if (screen == 2) {
-      List<Widget> foo = List<Widget>();
-
-      final Widget vv = makeNewPostDetailExpTile(
-         onSearchDetail,
-         exDetailsFilterNodes,
-         filter,
-         '',
+   {  // Product
+      Widget product = makeChooseTreeNodeDialog(
+	 ctx: ctx,
+	 defaultCode: post.getProductCode(),
+	 title: g.param.newPostTabNames[1],
+	 root: productRootNode,
+	 iconData: Icons.directions_car,
+	 onSetTreeCode: onSetProductCode,
       );
 
-      foo.add(vv);
-
-      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
-         final int vmin = ranges[2 * i + 0];
-         final int vmax = ranges[2 * i + 1];
-
-         final int l = g.param.discreteRanges[i].length - 1;
-
-         final Widget rs = RangeSlider(
-            min: 0,
-            max: l.toDouble(),
-            divisions: g.param.discreteRanges[i].length,
-            onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
-            values: RangeValues(vmin.toDouble(), vmax.toDouble()),
-         );
-
-         final int vmin2 = g.param.discreteRanges[i][vmin];
-         final int vmax2 = g.param.discreteRanges[i][vmax];
-
-         final String rangeTitle = '$vmin2 - $vmax2';
-         final RichText rt = makeExpTileTitle(
-            g.param.rangePrefixes[i],
-            rangeTitle,
-            ':',
-            false,
-         );
-
-         foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
-      }
-
-      return ListView.builder(
-         padding: const EdgeInsets.all(3.0),
-         itemCount: foo.length,
-         itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
-      );
+      foo.add(product);
+      foo.add(stl.newPostDivider);
    }
 
-   return makeNewFilterListView(
-      trees[screen].root.last,
-      onTreeLeafNodePressed,
-      onTreeNodePressed,
-      trees[screen].isFilterLeaf(),
+   {  // Details
+      const int productIndex = 0;
+      const int detailIndex = 0;
+
+      List<String> subtitles = makeInDetailNames(
+	 state: state,
+	 root: exDetailsRootNode,
+	 productIndex: productIndex,
+	 detailIndex: detailIndex,
+	 languageIndex: g.param.langIdx,
+      );
+
+      List<String> details = listAllDetails(
+	 root: exDetailsRootNode,
+	 productIndex: productIndex,
+	 detailIndex: detailIndex,
+	 languageIndex: g.param.langIdx,
+      );
+
+      Widget detail = makeNewPostInDetailLT(
+	 ctx: ctx,
+	 state: state,
+	 title: exDetailsRootNode.children[productIndex].children[detailIndex].name(g.param.langIdx),
+	 subtitle: subtitles.join(', '),
+	 details: details,
+	 onSetInDetail: onSearchDetail,
+      );
+
+      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: detail));
+      foo.add(stl.newPostDivider);
+   }
+
+   {  // Ranges
+      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
+	 final int vmin = ranges[2 * i + 0];
+	 final int vmax = ranges[2 * i + 1];
+
+	 final int l = g.param.discreteRanges[i].length - 1;
+
+	 final Widget rs = RangeSlider(
+	    min: 0,
+	    max: l.toDouble(),
+	    divisions: g.param.discreteRanges[i].length,
+	    onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
+	    values: RangeValues(vmin.toDouble(), vmax.toDouble()),
+	 );
+
+	 final int vmin2 = g.param.discreteRanges[i][vmin];
+	 final int vmax2 = g.param.discreteRanges[i][vmax];
+
+	 final String rangeTitle = '$vmin2 - $vmax2';
+	 final RichText rt = makeExpTileTitle(
+	    g.param.rangePrefixes[i],
+	    rangeTitle,
+	    ':',
+	    false,
+	 );
+
+	 foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
+      }
+   }
+
+   { // Send cancel
+      Widget w1 = createRaisedButton(
+	 () {onSearchPressed(0);},
+	 g.param.cancel,
+	 stl.expTileCardColor,
+	 Colors.black,
+      );
+
+      Widget w2 = createRaisedButton(
+	 () {onSearchPressed(2);},
+	 g.param.filterAppBarTitle,
+	 stl.colorScheme.secondary,
+	 stl.colorScheme.onSecondary,
+      );
+
+      Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
+      foo.add(r);
+   }
+
+   return ListView.builder(
+      padding: const EdgeInsets.all(3.0),
+      itemCount: foo.length,
+      itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
    );
 }
 
@@ -2386,7 +2337,6 @@ class MyApp extends StatelessWidget {
 
 Widget makeAppScaffoldWdg({
    OnPressedFn7 onWillPops,
-   BottomNavigationBar bottomNavBar,
    ScrollController scrollCtrl,
    Widget appBarTitle,
    Widget appBarLeading,
@@ -2398,7 +2348,6 @@ Widget makeAppScaffoldWdg({
    return WillPopScope(
       onWillPop: () async { return onWillPops();},
       child: Scaffold(
-	 bottomNavigationBar: bottomNavBar,
 	 body: NestedScrollView(
 	    controller: scrollCtrl,
 	    body: body,
@@ -2483,32 +2432,6 @@ TabBar makeTabBar(
       controller: tabCtrl,
       indicatorColor: Colors.white,
       tabs: tabs,
-   );
-}
-
-BottomNavigationBar makeBottomBarItems(
-   List<IconData> icons,
-   List<String> iconLabels,
-   OnPressedFn1 onBotBarTapped,
-   int i)
-{
-   assert(icons.length == iconLabels.length);
-   final int length = icons.length;
-
-   List<BottomNavigationBarItem> items =
-         List<BottomNavigationBarItem>(length);
-
-   for (int i = 0; i < length; ++i) {
-      items[i] = BottomNavigationBarItem(
-                    icon: Icon(icons[i]),
-                    title: Text(iconLabels[i]));
-   }
-
-   return BottomNavigationBar(
-      items: items,
-      type: BottomNavigationBarType.fixed,
-      currentIndex: i,
-      onTap: onBotBarTapped,
    );
 }
 
@@ -3555,65 +3478,6 @@ ListTile makeFilterListTitle(
        );
 }
 
-/*
- *  To support the "select all" buttom in the menu checkbox we have to
- *  add some complex logic.  First we note that the "Todos" checkbox
- *  should appear in all screens that present checkboxes, namely, when
- *  
- *  1. makeLeaf is true, or
- *  2. isLeaf is true for more than one node.
- *
- *  In those cases the builder will go through all node children
- *  otherwise the first should be skipped.
- */
-ListView makeNewFilterListView(
-   Node o,
-   Function onLeafPressed,
-   Function onNodePressed,
-   bool makeLeaf,
-) {
-   int shift = 0;
-   if (makeLeaf || o.children.last.isLeaf())
-      shift = 1;
-
-   return ListView.builder(
-      //padding: const EdgeInsets.all(8.0),
-      itemCount: o.children.length + shift,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-         if (shift == 1 && i == 0)
-            return makeFilterSelectAllItem(
-               ctx,
-               o,
-               g.param.selectAll,
-               () { onLeafPressed(0); },
-            );
-
-         if (shift == 1) {
-            Node child = o.children[i - 1];
-
-            Widget icon = Icon(Icons.check_box_outline_blank);
-            if (child.leafReach > 0)
-               icon = Icon(Icons.check_box);
-
-            return makeFilterListTitle(
-               ctx,
-               child,
-               () { onLeafPressed(i);},
-               icon,
-            );
-         }
-
-         return makeFilterListTitle(
-            ctx,
-            o.children[i],
-            () { onNodePressed(i); },
-            Icon(Icons.keyboard_arrow_right),
-         );
-      },
-   );
-}
-
 Widget createRaisedButton(
    OnPressedFn0 onPressed,
    final String txt,
@@ -4374,11 +4238,11 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
    void _onPostLeafPressed(BuildContext ctx, int i)
    {
       _stack.add(_stack.last.children[i]);
-      _onPostLeafReached(ctx);
+      _onOk(ctx);
       setState(() { });
    }
 
-   void _onPostLeafReached(BuildContext ctx)
+   void _onOk(BuildContext ctx)
    {
       List<int> code = <int>[];
       if (_stack.last.code.isNotEmpty)
@@ -4403,7 +4267,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       assert(length != 1);
 
       if (length == 0)
-         _onPostLeafReached(ctx);
+         _onOk(ctx);
 
       setState(() { });
    }
@@ -4452,12 +4316,19 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 onPressed: () {_onBack(ctx);},
       );
 
+      FlatButton ok =  FlatButton(
+	 child: Text(g.param.ok,
+	    style: TextStyle(color: stl.colorScheme.primary),
+	 ),
+	 onPressed: () {_onOk(ctx);},
+      );
+
       return makeNewPostDialogWdg(
 	 width: makeDialogWidthHeight(ctx),
 	 title: titleWdg,
 	 indent: 10.0,
 	 list: locWdgs,
-	 actions: <FlatButton>[back],
+	 actions: <FlatButton>[back, ok],
       );
    }
 }
@@ -5851,11 +5722,6 @@ class OccaseState extends State<Occase>
    // Similar to _newPostPressed but for the filter screen.
    bool _newSearchPressed = false;
 
-   // The index of the tab we are currently in in the *new
-   // post* or *Filters* screen. For example 0 for the localization
-   // tree, 1 for the models tree etc.
-   int _botBarIdx = 0;
-
    // The temporary variable used to store the post the user sends or
    // the post the current chat screen is open, if any.
    List<Post> _posts = List<Post>(3);
@@ -5984,7 +5850,8 @@ class OccaseState extends State<Occase>
 
       _nNewPosts = _appState.getNewPosts();
       _goToRegScreen = _appState.cfg.nick.isEmpty;
-      prepareNewPost();
+      prepareNewPost(cts.ownIdx);
+      prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
       setState(() { });
    }
@@ -6091,7 +5958,6 @@ class OccaseState extends State<Occase>
 
    OccaseState()
    {
-      _botBarIdx = 0;
    }
 
    void sendOfflinePosts()
@@ -6274,20 +6140,19 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   void prepareNewPost()
+   void prepareNewPost(int i)
    {
-      _posts[cts.ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
-      _posts[cts.ownIdx].reset();
+      _posts[i] = Post(rangesMinMax: g.param.rangesMinMax);
+      _posts[i].reset();
    }
 
    void _onNewPost()
    {
       setState(() {
 	 _newPostPressed = true;
-	 prepareNewPost();
+	 prepareNewPost(cts.ownIdx);
 	 _trees[0].restoreMenuStack();
 	 _trees[1].restoreMenuStack();
-	 _botBarIdx = 0;
       });
    }
 
@@ -6309,7 +6174,6 @@ class OccaseState extends State<Occase>
 
       assert(l >= _nNewPosts);
 
-      print('----------> $l $_nNewPosts ${_appState.posts.length} ');
       // The index of the last post already shown to the user.
       return l - _nNewPosts - 1;
    }
@@ -6321,31 +6185,11 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   bool _onWillPopMenu(
-      final List<Tree> trees,
-      int leaveIdx,
-   ) {
-      // We may want to  split this function in two: One for the
-      // search and one for the new post screen.
-      if (_botBarIdx >= trees.length) {
-         setState(() { --_botBarIdx; });
-         return false;
-      }
-
-      if (trees[_botBarIdx].root.length == 1) {
-         if (_botBarIdx <= leaveIdx){
-            _newPostPressed = false;
-            _newSearchPressed = false;
-         } else {
-            --_botBarIdx;
-         }
-
-         setState(() { });
-         return false;
-      }
-
-      trees[_botBarIdx].root.removeLast();
-      setState(() { });
+   bool _onWillPopMenu() {
+      setState(() {
+	 _newPostPressed = false;
+	 _newSearchPressed = false;
+      });
       return false;
    }
 
@@ -6547,87 +6391,6 @@ class OccaseState extends State<Occase>
          await ImagePicker.pickImage(source: ImageSource.gallery);
 
        setState(() { });
-   }
-
-   void _onBotBarTapped(int i)
-   {
-      if (_botBarIdx < _trees.length)
-         _trees[_botBarIdx].restoreMenuStack();
-
-      setState(() { _botBarIdx = i; });
-   }
-
-   void _onNewPostBotBarTapped(int i)
-   {
-      // We allow the user to tap backwards to a new tab but not
-      // forward.  This is to avoid complex logic of avoid the
-      // publication of imcomplete posts.
-      if (i >= _botBarIdx)
-         return;
-
-      // The desired tab is *i* the current tab is _botBarIdx. For any
-      // tab we land on or walk through we have to restore the menu
-      // stack, except for the last two tabs.
-
-      if (i == 2) {
-         _botBarIdx = 2;
-         setState(() { });
-         return;
-      }
-
-      _botBarIdx = i + 1;
-
-      do {
-         --_botBarIdx;
-         _trees[_botBarIdx].restoreMenuStack();
-      } while (_botBarIdx != i);
-
-      setState(() { });
-   }
-
-   void _onPostLeafPressed(int i, int j)
-   {
-      Node o = _trees[_botBarIdx].root.last.children[i];
-      _trees[_botBarIdx].root.add(o);
-      _onPostLeafReached(j);
-      setState(() { });
-   }
-
-   void _onPostLeafReached(int i)
-   {
-      _posts[i].channel[_botBarIdx][0] = _trees[_botBarIdx].root.last.code;
-      _trees[_botBarIdx].restoreMenuStack();
-      _botBarIdx = postIndexHelper(_botBarIdx);
-   }
-
-   void _onPostNodePressed(int i, int j)
-   {
-      print('asssaaa $i $j $_botBarIdx');
-      // We continue pushing on the stack if the next screen will have
-      // only one menu option.
-      do {
-         Node o = _trees[_botBarIdx].root.last.children[i];
-         _trees[_botBarIdx].root.add(o);
-         i = 0;
-      } while (_trees[_botBarIdx].root.last.children.length == 1);
-
-      final int length = _trees[_botBarIdx].root.last.children.length;
-
-      assert(length != 1);
-
-      if (length == 0) {
-         _onPostLeafReached(j);
-      }
-
-      setState(() { });
-   }
-
-   void _onTreeNodePressed(int i)
-   {
-      Node o = _trees[_botBarIdx].root.last.children[i];
-      _trees[_botBarIdx].root.add(o);
-
-      setState(() { });
    }
 
    Future<void> _onTreeLeafNodePressed(int k) async
@@ -7332,7 +7095,6 @@ class OccaseState extends State<Occase>
    {
       setState((){
          _newPostPressed = false;
-         _botBarIdx = 0;
          _posts[cts.ownIdx] = null;
       });
    }
@@ -7505,7 +7267,6 @@ class OccaseState extends State<Occase>
    void _onOkAfterSearch()
    {
       _tabCtrl.index = 1;
-      _botBarIdx = 0;
       setState(() { });
    }
 
@@ -7684,12 +7445,8 @@ class OccaseState extends State<Occase>
    void _onSearchPressed()
    {
       setState(() {
-         _newSearchPressed = true;
-         _trees[0].restoreMenuStack();
-         _trees[1].restoreMenuStack();
-         // If you changes this, also change the index _onWillPopMenu
-         // will be called with.
-         _botBarIdx = 1;
+	 prepareNewPost(cts.searchIdx);
+	 _newSearchPressed = true;
       });
    }
 
@@ -7853,30 +7610,9 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onExDetails(int i, int j)
-   {
-      if (j == -1) {
-         _posts[cts.ownIdx].description = _txtCtrl.text;
-         _txtCtrl.clear();
-         _botBarIdx = 3;
-         setState(() { });
-         return;
-      }
-
-      _posts[cts.ownIdx].exDetails[i] = 1 << j;
-
-      setState(() { });
-   }
-
-   void _onNewPostInDetail(int i, int j)
-   {
-      _posts[cts.ownIdx].inDetails[i] ^= 1 << j;
-      setState(() { });
-   }
-
    Future<void> _onSearchDetail(int i) async
    {
-      _appState.cfg.anyOfFeatures ^= 1 << i;
+      _appState.cfg.anyOfFeatures = i;
 
       final String str = _appState.cfg.anyOfFeatures.toString();
       await _appState.persistency.updateAnyOfFeatures(str);
@@ -7889,6 +7625,26 @@ class OccaseState extends State<Occase>
 	 return;
 
       _posts[cts.ownIdx].channel[i].first = code;
+
+      setState(() {});
+   }
+
+   void _onSetSearchLocationCode(List<int> code)
+   {
+      if (code.isEmpty)
+	 return;
+
+      _posts[cts.searchIdx].channel[0].first = code;
+
+      setState(() {});
+   }
+
+   void _onSetSearchProductCode(List<int> code)
+   {
+      if (code.isEmpty)
+	 return;
+
+      _posts[cts.searchIdx].channel[1].first = code;
 
       setState(() {});
    }
@@ -7934,29 +7690,6 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeNewPostScreenWdgs(BuildContext ctx)
-   {
-      return makeNewPostScreenWdgs(
-	 ctx: ctx,
-	 post: _posts[cts.ownIdx],
-	 trees: _trees,
-	 txtCtrl: _txtCtrl,
-	 navBar: _botBarIdx,
-	 exDetailsRootNode: _exDetailsRoot,
-	 inDetailsRootNode: _inDetailsRoot,
-	 imgFiles: _imgFiles,
-	 filenamesTimerActive: _filenamesTimer.isActive,
-	 onExDetail: _onExDetails,
-	 onPostLeafPressed: (int i) {_onPostLeafPressed(i, cts.ownIdx);},
-	 onPostNodePressed: (int i) {_onPostNodePressed(i, cts.ownIdx);},
-	 onInDetail: _onNewPostInDetail,
-	 onRangeValueChanged: _onRangeValueChanged,
-	 onAddPhoto: _onAddPhoto,
-	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
-	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
-      );
-   }
-
    Widget _makeNewPostScreenWdgs2(BuildContext ctx)
    {
       return makeNewPostScreenWdgs2(
@@ -7978,40 +7711,23 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeSearchScreenWdg(BuildContext ctx)
-   {
-      // Below we use txt.exDetails[0][0], because the filter is
-      // common to all products.
-      return makeSearchScreenWdg(
-	 filter: _appState.cfg.anyOfFeatures,
-	 screen: _botBarIdx,
-	 exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
-	 trees: _trees,
-	 ranges: _appState.cfg.ranges,
-	 onSearchPressed: (int i) {_onSearch(ctx, i);},
-	 onSearchDetail: _onSearchDetail,
-	 onTreeNodePressed: _onTreeNodePressed,
-	 onTreeLeafNodePressed: _onTreeLeafNodePressed,
-	 onRangeChanged: _onRangeChanged,
-      );
-   }
-
    Widget _makeSearchScreenWdg2(BuildContext ctx)
    {
       // Below we use txt.exDetails[0][0], because the filter is
       // common to all products.
       return makeSearchScreenWdg2(
 	 ctx: ctx,
-	 filter: _appState.cfg.anyOfFeatures,
-	 screen: _botBarIdx,
-	 exDetailsFilterNodes: _exDetailsRoot.children[0].children[0],
-	 trees: _trees,
+	 state: _appState.cfg.anyOfFeatures,
+	 locationRootNode: _trees[0].root.first,
+	 productRootNode: _trees[1].root.first,
+	 exDetailsRootNode: _exDetailsRoot,
+	 post: _posts[cts.searchIdx],
 	 ranges: _appState.cfg.ranges,
 	 onSearchPressed: (int i) {_onSearch(ctx, i);},
 	 onSearchDetail: _onSearchDetail,
-	 onTreeNodePressed: _onTreeNodePressed,
-	 onTreeLeafNodePressed: _onTreeLeafNodePressed,
 	 onRangeChanged: _onRangeChanged,
+	 onSetLocationCode: _onSetSearchLocationCode,
+	 onSetProductCode: _onSetSearchProductCode,
       );
    }
 
@@ -8042,18 +7758,6 @@ class OccaseState extends State<Occase>
 	 onNewPost: _newPostPressed ? null : _onNewPost,
 	 onFwdSendButton: _onFwdSendButton,
 	 onSearch: _onSearchPressed,
-      );
-   }
-
-   BottomNavigationBar _makeBotNavBar(int screen)
-   {
-      return makeBotNavBar(
-	 botBarIndex: _botBarIdx,
-	 newPostPressed: _newPostPressed,
-	 newSearchPressed: _newSearchPressed,
-	 screen: screen,
-	 onNewPostBotBarTapped: _onNewPostBotBarTapped,
-	 onSearchBotBarPressed: _onBotBarTapped,
       );
    }
 
@@ -8127,8 +7831,8 @@ class OccaseState extends State<Occase>
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
 	 screen: i,
-	 onWillLeaveSearch: () { return _onWillPopMenu(_trees, 1);},
-	 onWillLeaveNewPost: () { return _onWillPopMenu(_trees, 0); },
+	 onWillLeaveSearch: _onWillPopMenu,
+	 onWillLeaveNewPost: _onWillPopMenu,
 	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
       );
    }
@@ -8139,7 +7843,6 @@ class OccaseState extends State<Occase>
 	 hasLpChatMsgs: _hasLPChatMsgs(i),
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 botBarIndex: _botBarIdx,
 	 screen: i,
 	 trees: _trees,
 	 defaultWdg: defaultWdg,
@@ -8160,14 +7863,12 @@ class OccaseState extends State<Occase>
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-	 //ret[cts.ownIdx] = _makeNewPostScreenWdgs(ctx);
 	 ret[cts.ownIdx] = _makeNewPostScreenWdgs2(ctx);
       } else {
 	 ret[cts.ownIdx] = _makeChatTab(ctx, cts.ownIdx);
       }
 
       if (_newSearchPressed) {
-	 //ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
 	 ret[cts.searchIdx] = _makeSearchScreenWdg2(ctx);
       } else {
 	 ret[cts.searchIdx] = _makeNewPostLv();
@@ -8185,16 +7886,15 @@ class OccaseState extends State<Occase>
       ret[cts.ownIdx] = ()
       {
 	 if (_newPostPressed)
-	    return _onWillPopMenu(_trees, cts.ownIdx);
+	    return _onWillPopMenu();
 
 	 return _onChatsBackPressed(cts.ownIdx);
       };
 
       ret[cts.searchIdx] = ()
       {
-	 print('aa');
 	 if (_newSearchPressed)
-	    return _onWillPopMenu(_trees, cts.searchIdx);
+	    return _onWillPopMenu();
 
 	 setState((){});
 	 return true;
@@ -8245,7 +7945,6 @@ class OccaseState extends State<Occase>
       if (_onTabSwitch()) {
          _cleanUpLpOnSwitchTab(cts.ownIdx);
          _cleanUpLpOnSwitchTab(cts.favIdx);
-	 _botBarIdx = 0;
       }
 
       if (_newPostErrorCode != -1) {
@@ -8282,7 +7981,6 @@ class OccaseState extends State<Occase>
       List<OnPressedFn7> onWillPops = _makeOnWillPop();
       List<Widget> fltButtons = _makeFaButtons(screenIdx);
       List<Widget> bodies = _makeAppBodies(ctx);
-      BottomNavigationBar bottomNavBar = _makeBotNavBar(screenIdx);
       List<int> newMsgCounters = _newMsgsCounters();
 
       if (isWideScreen(ctx)) {
@@ -8366,7 +8064,6 @@ class OccaseState extends State<Occase>
 
       return makeAppScaffoldWdg(
 	 onWillPops: onWillPops[_tabCtrl.index],
-	 bottomNavBar: bottomNavBar,
 	 scrollCtrl: _scrollCtrl[_screenIdx()],
 	 appBarTitle: _makeAppBarTitleWdg(screenIdx, Text(g.param.appName)),
 	 appBarLeading: _makeAppBarLeading(screenIdx),

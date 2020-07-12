@@ -658,63 +658,69 @@ List<String> makeInDetailNamesAll(Node root, List<int> inDetails, int i, int lan
    for (int j = 0; j < l; ++j) {
       final int state = inDetails[j];
       final Node node = root.children[i].children[j];
-      List<String> names = makeInDetailNames(root, state, i, j, lang);
+      List<String> names = makeInDetailNames(
+	 root: root,
+	 state: state,
+	 productIndex: i,
+	 detailIndex: j,
+	 languageIndex: lang,
+      );
       ret.addAll(names);
    }
 
    return ret;
 }
 
-List<String> makeInDetailNames(
+List<String> makeInDetailNames({
    Node root,
    int state,
-   int productIdx,
-   int detailIdx,
-   int lang,
-) {
-   if (productIdx == -1)
+   int productIndex,
+   int detailIndex,
+   int languageIndex,
+}) {
+   if (productIndex == -1)
       return <String>[];
 
    List<String> ret = List<String>();
-   final Node node = root.children[productIdx].children[detailIdx];
+   final Node node = root.children[productIndex].children[detailIndex];
 
    for (int k = 0; k < node.children.length; ++k)
       if ((state & (1 << k)) != 0)
-	 ret.add(node.children[k].name(lang));
+	 ret.add(node.children[k].name(languageIndex));
 
    return ret;
 }
 
-int getNumberOfProductDetails(Node root, int productIdx)
+int getNumberOfProductDetails(Node root, int productIndex)
 {
-   return root.children[productIdx].children.length;
+   return root.children[productIndex].children.length;
 }
 
-int productDetailLength(Node root, int productIdx, int detailIdx)
+int productDetailLength(Node root, int productIndex, int detailIndex)
 {
-   return root.children[productIdx].children[detailIdx].children.length;
+   return root.children[productIndex].children[detailIndex].children.length;
 }
 
-List<String> listAllDetails(
+List<String> listAllDetails({
    Node root,
-   int productIdx,
-   int detailIdx,
-   int lang,
-) {
-   if (productIdx >= root.children.length)
+   int productIndex,
+   int detailIndex,
+   int languageIndex,
+}) {
+   if (productIndex >= root.children.length)
       return List<String>();
 
-   Node productNode = root.children[productIdx];
+   Node productNode = root.children[productIndex];
 
-   if (detailIdx >= productNode.children.length)
+   if (detailIndex >= productNode.children.length)
       return List<String>();
 
-   Node detailNode = productNode.children[detailIdx];
+   Node detailNode = productNode.children[detailIndex];
 
    List<String> ret = List<String>();
 
    for (int i = 0; i < detailNode.children.length; ++i)
-      ret.add(detailNode.children[i].name(lang));
+      ret.add(detailNode.children[i].name(languageIndex));
 
    return ret;
 }
