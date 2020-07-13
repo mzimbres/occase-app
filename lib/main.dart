@@ -1179,6 +1179,25 @@ RichText makeExpTileTitle(
    );
 }
 
+RichText makeSearchTitle({
+   String name,
+   String value,
+   String separator,
+}) {
+   return RichText(
+      text: TextSpan(
+         text: '$name$separator',
+         style: stl.newPostSubtitleLT,
+         children: <TextSpan>
+         [ TextSpan(
+              text: value,
+              style: stl.newPostTreeLT,
+           ),
+         ],
+      ),
+   );
+}
+
 Widget wrapOnDetailExpTitle(
    Widget title,
    List<Widget> children,
@@ -1606,7 +1625,7 @@ Widget makeAppBarLeading({
 
    if (own && newPostPressed)
       return IconButton(
-	 icon: Icon(Icons.arrow_back, color: stl.colorScheme.secondary),
+	 icon: Icon(Icons.arrow_back, color: Colors.white),
 	 onPressed: onWillLeaveNewPost,
       );
 
@@ -2113,7 +2132,7 @@ Widget makeSearchAppBar({
       title: Text(title,
 	 maxLines: 1,
 	 overflow: TextOverflow.clip,
-	 style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.secondary),
+	 style: stl.appBarLtTitle.copyWith(color: Colors.white),
       ),
       //subtitle: Text(trees[screen].getStackNames(),
       //   maxLines: 1,
@@ -2218,14 +2237,16 @@ Widget makeSearchScreenWdg2({
 	 final int vmax2 = g.param.discreteRanges[i][vmax];
 
 	 final String rangeTitle = '$vmin2 - $vmax2';
-	 final RichText rt = makeExpTileTitle(
-	    g.param.rangePrefixes[i],
-	    rangeTitle,
-	    ':',
-	    false,
+
+	 final RichText rt = makeSearchTitle(
+	    name: g.param.rangePrefixes[i],
+	    value: rangeTitle,
+	    separator: ': ',
 	 );
 
-	 foo.add(wrapOnDetailExpTitle(rt, <Widget>[rs], false));
+	 foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
+	 foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: rs));
+	 foo.add(stl.newPostDivider);
       }
    }
 
@@ -2245,7 +2266,7 @@ Widget makeSearchScreenWdg2({
       );
 
       Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
-      foo.add(r);
+      foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent), child: r));
    }
 
    return ListView.builder(
@@ -4048,6 +4069,7 @@ Widget makeNewPostDialogWdg({
    final double indent,
    final List<Widget> list,
    final List<Widget> actions,
+   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
 }) {
    ListView lv = ListView.separated(
       separatorBuilder: (BuildContext context, int index)
@@ -4065,6 +4087,7 @@ Widget makeNewPostDialogWdg({
       title: title,
       contentPadding: EdgeInsets.all(indent),
       actions: actions,
+      insetPadding: insetPadding,
       content: Container(
 	 width: width,
 	 height: width,
@@ -4336,7 +4359,6 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 //---------------------------------------------------------------------
 
 class PostWidget extends StatefulWidget {
-   int milliseconds;
    int screen;
    Post post;
    Node exDetailsRootNode;
@@ -4356,8 +4378,7 @@ class PostWidget extends StatefulWidget {
    PostWidgetState createState() => PostWidgetState();
 
    PostWidget(
-   { this.milliseconds = 500
-   , @required this.screen
+   { @required this.screen
    , @required this.post
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
@@ -4442,12 +4463,15 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    );
 
 	    final double width = makeTabWidth(ctx);
+
+	    const double indent = 5.0;
 	    return makeNewPostDialogWdg(
 	       width: width,
                title: null,
-	       indent: 5.0,
+	       indent: indent,
 	       list: <Widget>[detailsWdg],
                actions: <Widget>[SizedBox(width: width, child: tmp)],
+	       insetPadding: const EdgeInsets.symmetric(horizontal: indent, vertical: 0.0),
 	    );
 	 },
       );
@@ -4480,11 +4504,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
       if (widget.screen == cts.searchIdx) {
+	 buttonWdgs.add(buttons[1]);
+	 //buttonWdgs.add(Expanded(child: buttons[2]));
+      } else {
 	 buttonWdgs.add(Expanded(child: buttons[1]));
 	 buttonWdgs.add(Expanded(child: buttons[2]));
-      } else {
-	 buttonWdgs.add(Expanded(child: buttons[0]));
-	 buttonWdgs.add(Expanded(child: buttons[1]));
       }
 
       Row buttonsRow = Row(children: buttonWdgs);
@@ -4746,12 +4770,13 @@ Widget makeNewPostLv({
    if (l == 0)
       return makeFavEmptyScreenWidget();
 
+   final int shift = nNewPosts == 0 ? 0 : 1;
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
-      itemCount: l + 1,
+      itemCount: l + shift,
       separatorBuilder: (BuildContext context, int index)
       {
 	 return Divider(color: Colors.black, height: 5.0);
@@ -7139,7 +7164,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _sendSearchPosts(_appState.cfg.lastPostId);
+      _sendSearchPosts(0);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -7264,18 +7289,12 @@ class OccaseState extends State<Occase>
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
-   void _onOkAfterSearch()
-   {
-      _tabCtrl.index = 1;
-      setState(() { });
-   }
-
    void _showSimpleDialog(
       BuildContext ctx,
       Function onOk,
       String title,
-      Widget content)
-   {
+      Widget content,
+   ) {
       showDialog(
          context: ctx,
          builder: (BuildContext ctx)
@@ -7336,12 +7355,13 @@ class OccaseState extends State<Occase>
 
       _sendSearchPosts(0);
 
-      _showSimpleDialog(
-         ctx,
-         _onOkAfterSearch,
-         g.param.dialogTitles[3],
-         Text(g.param.dialogBodies[3]),
-      );
+      // I believe we do not need this dialog anymore.
+      //_showSimpleDialog(
+      //   ctx,
+      //   () { setState(() { }); }
+      //   g.param.dialogTitles[3],
+      //   Text(g.param.dialogBodies[3]),
+      //);
    }
 
    void _sendSearchPosts(int lastPostId)
