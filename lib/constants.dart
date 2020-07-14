@@ -61,7 +61,9 @@ const int ownIdx = 0;
 const int searchIdx = 1;
 const int favIdx = 2;
 
-const double maxWebTabWidth = 350.0;
+const double tabDefaultWidth = 350.0;
+const List<double> tabWidthRates = const <double>[0.25, 0.5, 0.25];
+const List<int> tabFlexValues = const <int>[5, 10, 5];
 const double postImgAvatarTabWidthRate = 0.40;
 const double postWidth = 0.58;
 

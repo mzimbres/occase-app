@@ -22,6 +22,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -48,6 +49,73 @@ typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
 typedef OnPressedFn14 = void Function(List<int>);
+
+bool isWideScreenImpl(double w)
+{
+   return w > (3 * cts.tabDefaultWidth);
+}
+
+double makeTabWidthImpl(double w, int tab)
+{
+   if (isWideScreenImpl(w)) {
+      return cts.tabWidthRates[tab] * w;
+   }
+
+   return w;
+}
+
+double makeTabWidth(BuildContext ctx, int tab)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+   return makeTabWidthImpl(w, tab);
+}
+
+bool isWideScreen(BuildContext ctx)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+   return isWideScreenImpl(w);
+}
+
+double makeImgAvatarWidth(BuildContext ctx, int tab)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+   if (isWideScreenImpl(w))
+      return cts.postImgAvatarTabWidthRate * cts.tabDefaultWidth;
+
+   if (w > cts.tabDefaultWidth)
+      return cts.postImgAvatarTabWidthRate * cts.tabDefaultWidth;
+
+   return cts.postImgAvatarTabWidthRate * w;
+}
+
+double makePostTextWidth(BuildContext ctx, int tab)
+{
+   final double tabWidth = makeTabWidth(ctx, tab);
+   final double imgWidth = makeImgAvatarWidth(ctx, tab);
+   return tabWidth - imgWidth - 10.00;
+}
+
+double makeDialogWidthHeight(BuildContext ctx, int tab)
+{
+   double w = makeTabWidth(ctx, tab);
+   return 0.80 * w;
+}
+
+double makeMaxWidth(BuildContext ctx, int tab)
+{
+   final double w = MediaQuery.of(ctx).size.width;
+
+   if (isWideScreenImpl(w))
+      return makeTabWidthImpl(w, tab);
+
+   final double max = w > cts.tabDefaultWidth ? cts.tabDefaultWidth : w;
+   return max;
+}
+
+double makeMaxHeight(BuildContext ctx)
+{
+   return MediaQuery.of(ctx).size.height;
+}
 
 class Persistency2 {
    int insertPostId = 0;
@@ -734,8 +802,8 @@ Scaffold makeWaitMenuScreen()
 
 Widget makeImgExpandScreen(Function onWillPopScope, Post post)
 {
-   //final double width = makeWidth(ctx);
-   //final double height = makeHeight(ctx);
+   //final double width = makeMaxWidth(ctx, tab);
+   //final double height = makeMaxHeight(ctx);
 
    final int l = post.images.length;
 
@@ -921,7 +989,7 @@ Scaffold makeNtfScreen(
       ]
    );
 
-   final double width = makeWidth(ctx);
+   final double width = makeTabWidth(ctx, cts.ownIdx);
 
    Widget tmp = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: width),
@@ -953,7 +1021,7 @@ Widget makeNetImgBox(
          print('====> $error $url $error');
          //Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
          Widget w = Text(g.param.unreachableImgError,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
                color: stl.colorScheme.background,
                fontSize: stl.tt.title.fontSize,
@@ -1023,25 +1091,50 @@ Widget makeWdgOverImg(Widget wdg)
    );
 }
 
+Image getImage({
+   String path,
+   double width,
+   double height,
+   BoxFit fit,
+   FilterQuality filterQuality,
+}) {
+   if (kIsWeb)
+      return Image.network(
+         path,
+	 width: width,
+	 height: height,
+	 fit: fit,
+	 filterQuality: filterQuality,
+      );
+
+   return Image.file(
+      File(path),
+      width: width,
+      height: height,
+      fit: fit,
+      filterQuality: filterQuality,
+   );
+}
+
 // Generates the image list view of a post.
 Widget makeImgListView2(
    BuildContext ctx,
    Post post,
    BoxFit bf,
-   List<File> imgFiles,
+   List<PickedFile> imgFiles,
    OnPressedFn1 onExpandImg,
    OnPressedFn2 addImg,
 ) {
    final int l1 = post.images.length;
    final int l2 = imgFiles.length;
 
-   final double width = makeTabWidth(ctx);
+   final double width = makeTabWidth(ctx, cts.ownIdx);
    if (l1 == 0 && l2 == 0) {
       Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
       return makeImgPlaceholder(width, width, w);
    }
 
-   final double height = makeImgHeight(ctx, cts.imgHeightFactor);
+   final double height = makeMaxHeight(ctx);
 
    final int l = l1 == 0 ? l2 : l1;
 
@@ -1069,7 +1162,8 @@ Widget makeImgListView2(
 	    wdgs.add(tmp);
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles.isNotEmpty) {
-	    Widget tmp = Image.file(imgFiles[i],
+	    Widget tmp = getImage(
+	       path: imgFiles[i].path,
 	       width: width,
 	       height: width,
 	       fit: BoxFit.cover,
@@ -1109,7 +1203,7 @@ Widget makeImgListView(
    double width,
    double height,
    Function onAddPhoto,
-   List<File> imgFiles,
+   List<PickedFile> imgFiles,
    Post post)
 {
    int l = 1;
@@ -1123,7 +1217,8 @@ Widget makeImgListView(
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         Widget img = Image.file(imgFiles[i],
+         Widget img = getImage(
+	    path: imgFiles[i].path,
             width: width,
             height: height,
             fit: BoxFit.cover,
@@ -1454,7 +1549,7 @@ Widget makeNewPostFinalScreen({
    final List<Tree> trees,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<File> imgFiles,
+   final List<PickedFile> imgFiles,
    final OnPressedFn2 onAddPhoto,
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
@@ -1688,14 +1783,14 @@ Widget makeNewPostLT({
        leading: leading,
        title: Text(title,
 	  maxLines: 1,
-	  overflow: TextOverflow.clip,
+	  overflow: TextOverflow.ellipsis,
 	  style: stl.newPostSubtitleLT,
        ),
        dense: true,
        subtitle:
 	  Text(subTitle,
 	     maxLines: 1,
-	     overflow: TextOverflow.clip,
+	     overflow: TextOverflow.ellipsis,
 	     style: stl.newPostTreeLT,
 	  ),
        onTap: onTap,
@@ -1717,6 +1812,7 @@ ListView makeNewPostListView(List<Widget> list)
 
 Widget makeChooseTreeNodeDialog({
    BuildContext ctx,
+   final int tab,
    final String title,
    final List<int> defaultCode,
    final Node root,
@@ -1738,9 +1834,13 @@ Widget makeChooseTreeNodeDialog({
       icon: iconData,
       onTap: () async
       {
-	 final List<int> code = await showDialog<List<int>>(
+	 final
+	 List<int> code = await showDialog<List<int>>(
 	    context: ctx,
-	    builder: (BuildContext ctx2) { return TreeView(root: root); },
+	    builder: (BuildContext ctx2)
+	    {
+	       return TreeView(root: root, tab: tab);
+	    },
 	 );
 
 	 if (code != null)
@@ -1783,6 +1883,7 @@ Widget makeNewPostInDetailLT({
 
 List<Widget> makeSearchWdgs({
    BuildContext ctx,
+   final int tab,
    final Tree locationTree,
    final Tree productTree,
    final Node exDetailsRootNode,
@@ -1798,6 +1899,7 @@ List<Widget> makeSearchWdgs({
       final Node locRootNode = locationTree.root.first;
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
+	 tab: tab,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.getLocationCode(),
 	 root: locRootNode,
@@ -1816,6 +1918,7 @@ List<Widget> makeSearchWdgs({
       final Node productRootNode = productTree.root.first;
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
+	 tab: tab,
 	 title: g.param.newPostTabNames[1],
 	 defaultCode: post.getProductCode(),
 	 root: productRootNode,
@@ -1926,17 +2029,19 @@ Widget makeNewPostScreenWdgs2({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
-   TextEditingController txtCtrl,
+   final TextEditingController txtCtrl,
+   final List<PickedFile> imgFiles,
    final OnPressedFn12 onSetTreeCode,
    final OnPressedFn3 onSetExDetail,
    final OnPressedFn3 onSetInDetail,
-   final List<File> imgFiles,
    final OnPressedFn2 onAddPhoto,
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
+   final OnPressedFn8 onRangeValueChanged,
 }) {
    List<Widget> list = makeSearchWdgs(
       ctx: ctx,
+      tab: cts.ownIdx,
       locationTree: locationTree,
       productTree: productTree,
       exDetailsRootNode: exDetailsRootNode,
@@ -2048,7 +2153,7 @@ Widget makeNewPostScreenWdgs({
    final int navBar,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<File> imgFiles,
+   final List<PickedFile> imgFiles,
    final bool filenamesTimerActive,
    final OnPressedFn3 onExDetail,
    final OnPressedFn1 onPostLeafPressed,
@@ -2131,12 +2236,12 @@ Widget makeSearchAppBar({
       dense: true,
       title: Text(title,
 	 maxLines: 1,
-	 overflow: TextOverflow.clip,
+	 overflow: TextOverflow.ellipsis,
 	 style: stl.appBarLtTitle.copyWith(color: Colors.white),
       ),
       //subtitle: Text(trees[screen].getStackNames(),
       //   maxLines: 1,
-      //   overflow: TextOverflow.clip,
+      //   overflow: TextOverflow.ellipsis,
       //   style: stl.appBarLtSubtitle,
       //),
    );
@@ -2161,6 +2266,7 @@ Widget makeSearchScreenWdg2({
    {  // Location
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
+	 tab: cts.searchIdx,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.getLocationCode(),
 	 root: locationRootNode,
@@ -2175,6 +2281,7 @@ Widget makeSearchScreenWdg2({
    {  // Product
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
+	 tab: cts.searchIdx,
 	 defaultCode: post.getProductCode(),
 	 title: g.param.newPostTabNames[1],
 	 root: productRootNode,
@@ -2580,6 +2687,7 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
 
 Card makeChatMsgWidget(
    BuildContext ctx,
+   int tab,
    ChatMetadata ch,
    int i,
    Function onChatMsgLongPressed,
@@ -2705,7 +2813,7 @@ Card makeChatMsgWidget(
       marginRight = tmp;
    }
 
-   final double screenWidth = makeWidth(ctx);
+   final double screenWidth = makeMaxWidth(ctx, tab);
    Card w1 = Card(
       margin: EdgeInsets.only(
             left: marginLeft,
@@ -2748,6 +2856,7 @@ Card makeChatMsgWidget(
 }
 
 ListView makeChatMsgListView(
+   int tab,
    ScrollController scrollCtrl,
    ChatMetadata ch,
    Function onChatMsgLongPressed,
@@ -2800,6 +2909,7 @@ ListView makeChatMsgListView(
                                
          Card chatMsgWidget = makeChatMsgWidget(
             ctx,
+	    tab,
             ch,
             i,
             onChatMsgLongPressed,
@@ -2886,7 +2996,7 @@ Widget makeRefChatMsgWidget(
 
    Text body = Text(ch.msgs[i].msg,
       maxLines: 3,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       style: Theme.of(ctx).textTheme.caption.copyWith(
          color: bodyTxtColor,
       ),
@@ -2898,7 +3008,7 @@ Widget makeRefChatMsgWidget(
 
    Text title = Text(nick,
       maxLines: 1,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
          fontSize: stl.mainFontSize,
          fontWeight: FontWeight.bold,
@@ -2951,6 +3061,7 @@ Widget makeChatSecondLayer(
 
 Widget makeChatScreen(
    BuildContext ctx,
+   int tab,
    ChatMetadata ch,
    TextEditingController ctrl,
    ScrollController scrollCtrl,
@@ -2999,6 +3110,7 @@ Widget makeChatScreen(
    Card card = makeChatScreenBotCard(null, null, sb, null, null);
 
    ListView list = makeChatMsgListView(
+      tab,
       scrollCtrl,
       ch,
       onChatMsgLongPressed,
@@ -3115,7 +3227,7 @@ Widget makeChatScreen(
 
       title = Text('$nLongPressed',
             maxLines: 1,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.ellipsis,
       );
    } else {
       Widget child;
@@ -3142,14 +3254,14 @@ Widget makeChatScreen(
           ),
           title: Text(ch.getChatDisplayName(),
              maxLines: 1,
-             overflow: TextOverflow.clip,
+             overflow: TextOverflow.ellipsis,
              style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.onSecondary),
           ),
           dense: true,
           subtitle:
              Text(cps.subtitle,
                 maxLines: 1,
-                overflow: TextOverflow.clip,
+                overflow: TextOverflow.ellipsis,
                 style: stl.appBarLtSubtitle.copyWith(color: cps.color),
              ),
        );
@@ -3306,13 +3418,13 @@ Widget makePayPriceListTile(
 {
    Text subtitleW = Text(subtitle,
       maxLines: 2,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       style: stl.ltSubtitle,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       style: stl.ltTitle,
    );
 
@@ -3456,7 +3568,7 @@ Widget makeListTileTreeSubtitle(Node node)
           node.getChildrenNames(g.param.langIdx),
           style: stl.ltSubtitle,
           maxLines: 2,
-          overflow: TextOverflow.clip,
+          overflow: TextOverflow.ellipsis,
       );
 
    Widget subtitle;
@@ -3557,7 +3669,6 @@ Container makeUnreadMsgsCircle(
    );
 }
 
-//ababab
 Row makePostRowElem(BuildContext ctx, String key, String value)
 {
    RichText left = RichText(
@@ -3578,7 +3689,7 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
       ),
    );
 
-   final double width = makeWidth(ctx);
+   final double width = makeTabWidth(ctx, cts.ownIdx);
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
@@ -3639,18 +3750,18 @@ Widget makePostSectionTitle(
 }
 
 // Assembles the menu information.
-List<Widget> makeMenuInfo(
+List<Widget> makeTreeInfo(
    BuildContext ctx,
    Post post,
-   List<Tree> menus)
-{
+   List<Tree> trees,
+) {
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < post.channel.length; ++i) {
       list.add(makePostSectionTitle(ctx, g.param.newPostTabNames[i]));
 
       List<String> names = loadNames(
-         menus[i].root.first,
+         trees[i].root.first,
          post.channel[i][0],
          g.param.langIdx,
       );
@@ -3822,9 +3933,12 @@ Card putPostElemOnCard(List<Widget> list, double padding)
    );
 }
 
-Widget makePostDescription(BuildContext ctx, String desc)
-{
-   final double width = makeWidth(ctx);
+Widget makePostDescription(
+   BuildContext ctx,
+   int tab,
+   String desc,
+) {
+   final double width = makeMaxWidth(ctx, tab);
 
    return ConstrainedBox(
       constraints: BoxConstraints(
@@ -3833,7 +3947,7 @@ Widget makePostDescription(BuildContext ctx, String desc)
       ),
       child: Text(
          desc,
-         overflow: TextOverflow.clip,
+         overflow: TextOverflow.ellipsis,
          style: stl.textField,
       ),
    );
@@ -3841,6 +3955,7 @@ Widget makePostDescription(BuildContext ctx, String desc)
 
 List<Widget> assemblePostRows(
    BuildContext ctx,
+   int tab,
    Post post,
    List<Tree> menu,
    Node exDetailsRootNode,
@@ -3848,12 +3963,12 @@ List<Widget> assemblePostRows(
 ) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
-   all.addAll(makeMenuInfo(ctx, post, menu));
+   all.addAll(makeTreeInfo(ctx, post, menu));
    all.addAll(makePostExDetails(ctx, post, exDetailsRootNode));
    all.addAll(makePostInDetails(ctx, post, inDetailsRootNode));
    if (post.description.isNotEmpty) {
       all.add(makePostSectionTitle(ctx, g.param.postDescTitle));
-      all.add(makePostDescription(ctx, post.description));
+      all.add(makePostDescription(ctx, tab, post.description));
    }
 
    return all;
@@ -3939,90 +4054,12 @@ Widget makeAddOrRemoveWidget(
 Widget makeImgTextPlaceholder(final String str)
 {
    return Text(str,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
          color: stl.colorScheme.background,
          fontSize: stl.tt.title.fontSize,
       ),
    );
-}
-
-bool isWideScreenImpl(double w)
-{
-   return w > (3 * cts.maxWebTabWidth);
-}
-
-double makeTabWidthImpl(double w)
-{
-   if (isWideScreenImpl(w))
-      return w / 3.0;
-
-   return w;
-}
-
-double makeTabWidth(BuildContext ctx)
-{
-   final double w = MediaQuery.of(ctx).size.width;
-   return makeTabWidthImpl(w);
-}
-
-bool isWideScreen(BuildContext ctx)
-{
-   final double w = MediaQuery.of(ctx).size.width;
-
-   return isWideScreenImpl(w);
-}
-
-double makeImgAvatarWidth(BuildContext ctx)
-{
-   final double w = MediaQuery.of(ctx).size.width;
-   if (isWideScreenImpl(w))
-      return cts.postImgAvatarTabWidthRate * cts.maxWebTabWidth;
-
-   if (w > cts.maxWebTabWidth)
-      return cts.postImgAvatarTabWidthRate * cts.maxWebTabWidth;
-
-   return cts.postImgAvatarTabWidthRate * w;
-}
-
-double makePostTextWidth(BuildContext ctx)
-{
-   final double tabWidth = makeTabWidth(ctx);
-   final double imgWidth = makeImgAvatarWidth(ctx);
-   return tabWidth - imgWidth - 5.00;
-}
-
-double makeDialogWidthHeight(BuildContext ctx)
-{
-   double w = makeTabWidth(ctx);
-   return 0.80 * w;
-}
-
-double makeWidth(BuildContext ctx)
-{
-   final double w = MediaQuery.of(ctx).size.width;
-
-   if (isWideScreenImpl(w))
-      return makeTabWidthImpl(w);
-
-   final double max = w > cts.maxWebTabWidth ? cts.maxWebTabWidth : w;
-   return max;
-}
-
-double makeHeight(BuildContext ctx)
-{
-   return MediaQuery.of(ctx).size.height;
-}
-
-double makeImgWidth(BuildContext ctx)
-{
-   return makeWidth(ctx);
-}
-
-double makeImgHeight(BuildContext ctx, double r)
-{
-   final double width = makeImgWidth(ctx);
-   return width * r;
 }
 
 List<Widget> makePostButtons({
@@ -4150,7 +4187,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx),
+	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
 	 indent: 10.0,
 	 list: list,
@@ -4222,7 +4259,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx),
+	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
 	 indent: 10.0,
 	 list: exDetails,
@@ -4235,11 +4272,12 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 
 class TreeView extends StatefulWidget {
    final Node root;
+   final int tab;
 
    @override
    TreeViewState createState() => TreeViewState();
 
-   TreeView({@required this.root});
+   TreeView({@required this.root, @required this.tab});
 }
 
 class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
@@ -4312,6 +4350,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
       List<Widget> locWdgs = makeNewPostTreeWdgs(
 	 ctx: ctx,
+	 tab: widget.tab,
 	 node: _stack.last,
 	 onLeafPressed: (int i) {_onPostLeafPressed(ctx, i);},
 	 onNodePressed: (int i) {_onPostNodePressed(ctx, i);},
@@ -4347,7 +4386,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx),
+	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
 	 title: titleWdg,
 	 indent: 10.0,
 	 list: locWdgs,
@@ -4359,12 +4398,12 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 //---------------------------------------------------------------------
 
 class PostWidget extends StatefulWidget {
-   int screen;
+   int tab;
    Post post;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    Widget detailsWidget;
-   List<File> imgFiles;
+   List<PickedFile> imgFiles;
    List<Tree> trees;
    OnPressedFn2 onAddPhoto;
    OnPressedFn1 onExpandImg;
@@ -4378,7 +4417,7 @@ class PostWidget extends StatefulWidget {
    PostWidgetState createState() => PostWidgetState();
 
    PostWidget(
-   { @required this.screen
+   { @required this.tab
    , @required this.post
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
@@ -4417,6 +4456,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 {
 	    Widget detailsWdg = makePostDetailsWdg(
 	       ctx: ctx2,
+	       tab: widget.tab,
 	       post: widget.post,
 	       exDetailsRootNode: widget.exDetailsRootNode,
 	       inDetailsRootNode: widget.inDetailsRootNode,
@@ -4462,7 +4502,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		  },
 	    );
 
-	    final double width = makeTabWidth(ctx);
+	    final double width = makeTabWidth(ctx, cts.ownIdx);
 
 	    const double indent = 5.0;
 	    return makeNewPostDialogWdg(
@@ -4483,7 +4523,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       //Text owner = Text(
       //   widget.post.nick,
       //   maxLines: 1,
-      //   overflow: TextOverflow.clip,
+      //   overflow: TextOverflow.ellipsis,
       //   style: TextStyle(
       //      fontSize: stl.listTileSubtitleFontSize,
       //      color: Colors.grey[600],
@@ -4503,7 +4543,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
-      if (widget.screen == cts.searchIdx) {
+      if (widget.tab == cts.searchIdx) {
 	 buttonWdgs.add(buttons[1]);
 	 //buttonWdgs.add(Expanded(child: buttons[2]));
       } else {
@@ -4513,7 +4553,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       Row buttonsRow = Row(children: buttonWdgs);
 
-      final double imgAvatarWidth = makeImgAvatarWidth(ctx);
+      final double imgAvatarWidth = makeImgAvatarWidth(ctx, widget.tab);
 
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
@@ -4556,7 +4596,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    ],
 	 );
       } else if (widget.imgFiles.isNotEmpty) {
-	 imgWdg = Image.file(widget.imgFiles.last,
+	 imgWdg = getImage(
+	    path: widget.imgFiles.last.path,
 	    width: imgAvatarWidth,
 	    height: imgAvatarWidth,
 	    fit: BoxFit.cover,
@@ -4574,7 +4615,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       List<Widget> row1List = List<Widget>();
 
       // The add a photo button should appear only when this function is
-      // called on the new posts screen. We determine that in the
+      // called on the new posts tab. We determine that in the
       // following way.
       if (widget.post.images.isEmpty && (widget.imgFiles.length < cts.maxImgsPerPost)) {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
@@ -4625,7 +4666,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget s1 = makeTextWdg(exDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
       Widget s2 = makeTextWdg(inDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
 
-      final double widthCol2 = makePostTextWidth(ctx);
+      final double widthCol2 = makePostTextWidth(ctx, widget.tab);
 
       Column infoWdg = Column(children: <Widget>
       [ Flexible(child: SizedBox(width: widthCol2, child: Padding(child: modelTitle, padding: EdgeInsets.only(left: 5.0))))
@@ -4650,11 +4691,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 Widget makePostDetailsWdg({
    BuildContext ctx,
+   int tab,
    final Post post,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Tree> trees,
-   final List<File> imgFiles,
+   final List<PickedFile> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
    OnPressedFn0 onReportPost,
@@ -4685,6 +4727,7 @@ Widget makePostDetailsWdg({
 
    List<Widget> tmp = assemblePostRows(
       ctx,
+      tab,
       post,
       trees,
       exDetailsRootNode,
@@ -4702,7 +4745,7 @@ Widget makeNewPost({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Tree> trees,
-   final List<File> imgFiles,
+   final List<PickedFile> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
    OnPressedFn0 onAddPostToFavorite,
@@ -4712,7 +4755,7 @@ Widget makeNewPost({
    OnPressedFn0 onPinPost,
 }) {
    return PostWidget(
-     screen: screen,
+     tab: screen,
      post: post,
      exDetailsRootNode: exDetailsRootNode,
      inDetailsRootNode: inDetailsRootNode,
@@ -4804,7 +4847,7 @@ Widget makeNewPostLv({
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
             trees: trees,
-            imgFiles: List<File>(),
+            imgFiles: List<PickedFile>(),
             onAddPhoto: (var ctx, var i) {print('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(j, k);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, j);},
@@ -4853,7 +4896,7 @@ ListTile makeNewPostTreeWdg({
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx),
 	    maxLines: 1,
-	    overflow: TextOverflow.clip,
+	    overflow: TextOverflow.ellipsis,
 	    style: stl.newPostSubtitleLT,
 	 ),
 	 trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
@@ -4865,6 +4908,7 @@ ListTile makeNewPostTreeWdg({
 
 List<Widget> makeNewPostTreeWdgs({
    BuildContext ctx,
+   int tab,
    Node node,
    OnPressedFn1 onLeafPressed,
    OnPressedFn1 onNodePressed,
@@ -4878,7 +4922,7 @@ List<Widget> makeNewPostTreeWdgs({
 	 onLeafPressed: () {onLeafPressed(i);},
 	 onNodePressed: () {onNodePressed(i);},
       );
-      list.add(SizedBox(width: makeWidth(ctx), child: o));
+      list.add(SizedBox(width: makeMaxWidth(ctx, tab), child: o));
    }
 
    return list;
@@ -4961,7 +5005,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       return Text(
          g.param.msgOnEmptyChat,
          maxLines: 1,
-         overflow: TextOverflow.clip,
+         overflow: TextOverflow.ellipsis,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
             color: stl.colorScheme.secondary,
             //fontWeight: FontWeight.w500,
@@ -4983,7 +5027,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
             color: cps.color,
          ),
          maxLines: 1,
-         overflow: TextOverflow.clip
+         overflow: TextOverflow.ellipsis
       );
 
    return Row(children: <Widget>
@@ -4991,7 +5035,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
    , Expanded(
         child: Text(cps.subtitle,
            maxLines: 1,
-           overflow: TextOverflow.clip,
+           overflow: TextOverflow.ellipsis,
            style: Theme.of(ctx).textTheme.subtitle.copyWith(
               color: cps.color,
            ),
@@ -5138,7 +5182,7 @@ Widget makeChatListTile(
       title: Text(
          chat.getChatDisplayName(),
          maxLines: 1,
-         overflow: TextOverflow.clip,
+         overflow: TextOverflow.ellipsis,
          style: stl.ltTitle,
       ),
    );
@@ -5311,7 +5355,7 @@ Widget makeChatTab({
          Widget title = Text(
             makeTreeItemStr(trees[0].root.first, posts[i].channel[0][0]),
             maxLines: 1,
-            overflow: TextOverflow.clip,
+            overflow: TextOverflow.ellipsis,
          );
 
          // If the post contains no images, which should not happen,
@@ -5325,7 +5369,7 @@ Widget makeChatTab({
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
             trees: trees,
-            imgFiles: List<File>(),
+            imgFiles: List<PickedFile>(),
             onAddPhoto: (var a, var b) {print('Noop10');},
             onExpandImg: onExpandImg,
             onAddPostToFavorite:() {print('Noop14');},
@@ -5803,7 +5847,7 @@ class OccaseState extends State<Occase>
 
    // Used in the final new post screen to store the files while the
    // user chooses the images.
-   List<File> _imgFiles = List<File>();
+   List<PickedFile> _imgFiles = List<PickedFile>();
 
    Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
 
@@ -5816,6 +5860,8 @@ class OccaseState extends State<Occase>
    String _fcmToken = '';
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+   final ImagePicker picker = ImagePicker();
 
    @override
    void initState()
@@ -6072,11 +6118,11 @@ class OccaseState extends State<Occase>
          // It looks like we do not need to show any dialog here to
          // inform the maximum number of photos has been reached.
          if (i == -1) {
-            File img = await ImagePicker.pickImage(
+            PickedFile img = await picker.getImage(
                source: ImageSource.gallery,
-               maxWidth: 2 * makeImgWidth(ctx),
-               maxHeight: makeImgHeight(ctx, 2 * cts.imgHeightFactor),
-               //imageQuality: cts.imgQuality,
+               //maxWidth: makeMaxWidth(ctx),
+               //maxHeight: makeMaxWidth(ctx),
+               imageQuality: cts.imgQuality,
             );
 
             if (img == null)
@@ -6411,9 +6457,8 @@ class OccaseState extends State<Occase>
 
    Future<void> _onChatAttachment() async
    {
-      print('_onChatAttachment.');
-      var image =
-         await ImagePicker.pickImage(source: ImageSource.gallery);
+      //var image =
+      //   await ImagePicker.pickImage(source: ImageSource.gallery);
 
        setState(() { });
    }
@@ -6556,14 +6601,14 @@ class OccaseState extends State<Occase>
 
          final int stCode = response.statusCode;
          if (stCode != 200) {
-            _imgFiles = List<File>();
+            _imgFiles = List<PickedFile>();
             return 0;
          }
 
          _posts[cts.ownIdx].images.add(newname);
       }
 
-      _imgFiles = List<File>();
+      _imgFiles = List<PickedFile>();
       return -1;
    }
 
@@ -7681,32 +7726,33 @@ class OccaseState extends State<Occase>
 
    // Widget factories.
    //
-   // i: screen index.
+   // tab: screen index.
    //
-   Widget _makeChatScreen(BuildContext ctx, int i)
+   Widget _makeChatScreen(BuildContext ctx, int tab)
    {
       return makeChatScreen(
 	 ctx,
-	 _chats[i],
+	 tab,
+	 _chats[tab],
 	 _txtCtrl,
-	 _chatScrollCtrl[i],
-	 _lpChatMsgs[i].length,
-	 _chatFocusNodes[i],
-	 makeTreeItemStr(_trees[0].root.first, _posts[i].channel[1][0]),
-	 _dragedIdxs[i],
-	 _showChatJumpDownButtons[i],
-	 _isOnFavChat() ? _posts[i].avatar : _chats[i].avatar,
+	 _chatScrollCtrl[tab],
+	 _lpChatMsgs[tab].length,
+	 _chatFocusNodes[tab],
+	 makeTreeItemStr(_trees[0].root.first, _posts[tab].channel[1][0]),
+	 _dragedIdxs[tab],
+	 _showChatJumpDownButtons[tab],
+	 _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
 	 _appState.cfg.nick,
-	 () { _onPopChat(i);},
-	 () {_onSendChat(i);},
-	 (int a, bool b) {_toggleLPChatMsgs(a, b, i);},
-	 () {_onFwdChatMsg(i);},
-	 (var a, var b, var d) {_onDragChatMsg(a, b, d, i);},
-	 (var a) {_onChatMsgReply(a, i);},
+	 () { _onPopChat(tab);},
+	 () {_onSendChat(tab);},
+	 (int a, bool b) {_toggleLPChatMsgs(a, b, tab);},
+	 () {_onFwdChatMsg(tab);},
+	 (var a, var b, var d) {_onDragChatMsg(a, b, d, tab);},
+	 (var a) {_onChatMsgReply(a, tab);},
 	 _onChatAttachment,
-	 () {_onCancelFwdLpChat(i);},
-	 () {_onChatJumpDown(i);},
-	 (var s) {_onWritingChat(s, i);},
+	 () {_onCancelFwdLpChat(tab);},
+	 () {_onChatJumpDown(tab);},
+	 (var s) {_onWritingChat(s, tab);},
       );
    }
 
@@ -7948,7 +7994,7 @@ class OccaseState extends State<Occase>
             g.param.changeNickAppBarTitle,
             _appState.cfg.email,
             _appState.cfg.nick,
-	    makeWidth(ctx),
+	    makeMaxWidth(ctx, cts.ownIdx),
          );
       }
 
@@ -8055,11 +8101,11 @@ class OccaseState extends State<Occase>
 	 VerticalDivider vdiv = VerticalDivider(width: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 	 Widget body = Row(children: <Widget>
 	    [ vdiv
-	    , Expanded(child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
+	    , Expanded(flex: cts.tabFlexValues[cts.ownIdx], child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
 	    , vdiv
-	    , Expanded(child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.searchIdx])]))
+	    , Expanded(flex: cts.tabFlexValues[cts.searchIdx], child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.searchIdx])]))
 	    , vdiv
-	    , Expanded(child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.favIdx])]))
+	    , Expanded(flex: cts.tabFlexValues[cts.favIdx], child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.favIdx])]))
 	    , vdiv
 	    ],
 	 );
