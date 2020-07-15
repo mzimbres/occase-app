@@ -631,8 +631,8 @@ class Post {
 
       return
       { 'from': from
-      , 'to': tree.toChannelHashCode(channel[1][0], g.param.filterDepths[1])
-      , 'filter': tree.toChannelHashCode(channel[0][0], g.param.filterDepths[0])
+      , 'to': 0
+      , 'filter': <int>[]
       , 'id': id
       , 'features': exDetails.first
       , 'body': body
@@ -857,23 +857,6 @@ class Config {
    String showDialogOnDelPost;
    NtfConfig notifications;
 
-   // Stores ranges as indexes of g.param.discreteRanges arrays. The
-   // min is followed by the max. For example, assume discreteRanges
-   // is
-   //
-   //    [0, 10, 20, 40, 80]
-   //    [0, 19, 20, 25, 40]
-   //
-   // and the range below is
-   //
-   //    [0, 3, 2, 4]
-   //
-   // This means the user wants the filter [0, 40] for the first and
-   // [25, 40] for the second.
-   List<int> ranges;
-
-   int anyOfFeatures;
-
    Config({
       this.appId = '',
       this.appPwd = '',
@@ -884,40 +867,12 @@ class Config {
       this.showDialogOnSelectPost = 'yes',
       this.showDialogOnReportPost = 'yes',
       this.showDialogOnDelPost = 'yes',
-      this.ranges,
-      this.anyOfFeatures = 0,
       this.notifications,
    })
    {
-      if (ranges == null) {
-         final int l = g.param.discreteRanges.length;
-         ranges = List<int>(2 * l);
-         for (int i = 0; i < l; ++i) {
-            assert(g.param.discreteRanges[i].isNotEmpty);
-            ranges[2 * i + 0] = 0;
-            ranges[2 * i + 1] = g.param.discreteRanges[i].length - 1;
-         }
-      }
-
       if (notifications == null) 
          notifications = NtfConfig(chat: true, post: true);
    }
-}
-
-List<int> convertToValues(final List<int> rangeIdxs)
-{
-   final int l = g.param.discreteRanges.length;
-   List<int> ranges = List<int>(2 * l);
-   assert(rangeIdxs.length == 2 * l);
-
-   for (int i = 0; i < l; ++i) {
-      final int idx1 = 2 * i + 0;
-      final int idx2 = 2 * i + 1;
-      ranges[idx1] = g.param.discreteRanges[i][rangeIdxs[idx1]];
-      ranges[idx2] = g.param.discreteRanges[i][rangeIdxs[idx2]];
-   }
-
-   return ranges;
 }
 
 Map<String, dynamic> configToMap(Config cfg)
@@ -932,8 +887,6 @@ Map<String, dynamic> configToMap(Config cfg)
     , 'show_dialog_on_select_post': cfg.showDialogOnSelectPost
     , 'show_dialog_on_report_post': cfg.showDialogOnReportPost
     , 'show_dialog_on_del_post': cfg.showDialogOnDelPost
-    , 'ranges': cfg.ranges.join(' ')
-    , 'any_of_features': cfg.anyOfFeatures.toString()
     , 'notifications': jsonEncode(cfg.notifications.toJson())
     };
 }

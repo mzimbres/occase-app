@@ -86,14 +86,12 @@ class Parameters {
    List<List<String>> _payments1 = <List<String>>[<String>['']];
    List<List<String>> _payments2 = <List<String>>[<String>['']];
 
-   List<int> filterDepths;
    List<int> rangesMinMax;
    List<int> rangeDivs;
    List<List<int>> discreteRanges;
 
    Parameters(
    { this.appName = 'Occase'
-   , this.filterDepths = const <int>[3, 3]
    , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
    , this.discreteRanges = const <List<int>>
@@ -260,7 +258,6 @@ class Parameters {
       _payments1                   = decodeList3(map['payments1']);
       _payments2                   = decodeList3(map['payments2']);
 
-      filterDepths                = decodeList2(map['filterDepths']);
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
       discreteRanges              = decodeList3(map['discreteRanges']);
@@ -339,7 +336,6 @@ class Parameters {
          'menuDepthNames1':             _menuDepthNames1,
          'payments1':                   _payments1,
          'payments2':                   _payments2,
-         'filterDepths':                filterDepths,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
          'discreteRanges':              discreteRanges,

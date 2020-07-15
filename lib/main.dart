@@ -40,7 +40,7 @@ typedef OnPressedFn2 = void Function(BuildContext, int);
 typedef OnPressedFn3 = void Function(int, int);
 typedef OnPressedFn4 = void Function(BuildContext);
 typedef OnPressedFn5 = void Function(BuildContext, int, int);
-typedef OnPressedFn6 = void Function(int, RangeValues);
+typedef OnPressedFn6 = void Function(int i, double);
 typedef OnPressedFn7 = bool Function();
 typedef OnPressedFn8 = void Function(int, double);
 typedef OnPressedFn9 = void Function(String);
@@ -157,10 +157,6 @@ class Persistency2 {
    {
    }
 
-   Future<void> updateRanges(List<int> ranges) async
-   {
-   }
-
    Future<void> delPostWithId(int id) async
    {
    }
@@ -226,10 +222,6 @@ class Persistency2 {
    {
    }
 
-   Future<void> updateAnyOfFeatures(String str) async
-   {
-   }
-
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
    {
    }
@@ -282,14 +274,6 @@ class Persistency {
 
       return List.generate(maps.length, (i)
       {
-         String str = maps[i]['ranges'];
-         assert(str != null);
-         List<String> fields = str.split(' ');
-         List<int> ranges = List.generate(
-            fields.length,
-            (int i) { return int.parse(fields[i]); },
-         );
-
          Config cfg = Config(
             appId: maps[i]['app_id'],
             appPwd: maps[i]['app_pwd'],
@@ -300,8 +284,6 @@ class Persistency {
             showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
             showDialogOnReportPost: maps[i]['show_dialog_on_report_post'],
             showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
-            ranges: ranges,
-            anyOfFeatures: int.parse(maps[i]['any_of_features']),
             notifications: NtfConfig.fromJson(jsonDecode(maps[i]['notifications'])),
          );
 
@@ -418,11 +400,6 @@ class Persistency {
    Future<void> clearPosts() async
    {
       await _db.execute(sql.clearPosts, [1]);
-   }
-
-   Future<void> updateRanges(List<int> ranges) async
-   {
-      await _db.execute(sql.updateRanges, [ranges.join(' ')]);
    }
 
    Future<void> delPostWithId(int id) async
@@ -544,11 +521,6 @@ class Persistency {
    Future<void> updateNotifications(String str) async
    {
       await _db.execute(sql.updateNotifications, [str]);
-   }
-
-   Future<void> updateAnyOfFeatures(String str) async
-   {
-      await _db.execute(sql.updateAnyOfFeatures, [str]);
    }
 
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
@@ -702,7 +674,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency p) async
+Future<void> removeLpChat(Coord c, Persistency2 p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -2255,9 +2227,10 @@ Widget makeSearchScreenWdg2({
    final Node exDetailsRootNode,
    final Post post,
    final List<int> ranges,
+   final List<int> divisions,
    final OnPressedFn1 onSearchPressed,
    final OnPressedFn1 onSearchDetail,
-   final OnPressedFn6 onRangeChanged,
+   final OnPressedFn6 onValueChanged,
    final OnPressedFn14 onSetLocationCode,
    final OnPressedFn14 onSetProductCode,
 }) {
@@ -2326,33 +2299,24 @@ Widget makeSearchScreenWdg2({
    }
 
    {  // Ranges
-      for (int i = 0; i < g.param.discreteRanges.length; ++i) {
-	 final int vmin = ranges[2 * i + 0];
-	 final int vmax = ranges[2 * i + 1];
-
-	 final int l = g.param.discreteRanges[i].length - 1;
-
-	 final Widget rs = RangeSlider(
-	    min: 0,
-	    max: l.toDouble(),
-	    divisions: g.param.discreteRanges[i].length,
-	    onChanged: (RangeValues rv) {onRangeChanged(i, rv);},
-	    values: RangeValues(vmin.toDouble(), vmax.toDouble()),
+      for (int i = 0; i < divisions.length; ++i) {
+	 final int value = post.rangeValues[i];
+	 Slider slider = Slider(
+	    value: value.toDouble(),
+	    min: ranges[2 * i + 0].toDouble(),
+	    max: ranges[2 * i + 1].toDouble(),
+	    divisions: divisions[i],
+	    onChanged: (double v) {onValueChanged(i, v);},
 	 );
-
-	 final int vmin2 = g.param.discreteRanges[i][vmin];
-	 final int vmax2 = g.param.discreteRanges[i][vmax];
-
-	 final String rangeTitle = '$vmin2 - $vmax2';
 
 	 final RichText rt = makeSearchTitle(
 	    name: g.param.rangePrefixes[i],
-	    value: rangeTitle,
+	    value: '$value',
 	    separator: ': ',
 	 );
 
 	 foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
-	 foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: rs));
+	 foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: slider));
 	 foo.add(stl.newPostDivider);
       }
    }
@@ -5522,7 +5486,7 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency persistency = Persistency();
+   Persistency2 persistency = Persistency2();
 
    AppState()
    {
@@ -5601,13 +5565,6 @@ class AppState {
    {
       posts = List<Post>();
       await persistency.clearPosts();
-   }
-
-   Future<void> setRange(int i, RangeValues rv) async
-   {
-      cfg.ranges[2 * i + 0] = rv.start.round();
-      cfg.ranges[2 * i + 1] = rv.end.round();
-      await persistency.updateRanges(cfg.ranges);
    }
 
    Future<void> setDialogPref(int i, bool v) async
@@ -5837,8 +5794,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   //HtmlWebSocketChannel channel;
-   IOWebSocketChannel channel;
+   HtmlWebSocketChannel channel;
+   //IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not get
@@ -5880,18 +5837,18 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
-      _firebaseMessaging.configure(
-         onMessage: (Map<String, dynamic> message) async {
-           print("onMessage: $message");
-         },
-         onBackgroundMessage: fcmOnBackgroundMessage,
-         onLaunch: (Map<String, dynamic> message) async {
-           print("onLaunch: $message");
-         },
-         onResume: (Map<String, dynamic> message) async {
-           print("onResume: $message");
-         },
-      );
+      //_firebaseMessaging.configure(
+      //   onMessage: (Map<String, dynamic> message) async {
+      //     print("onMessage: $message");
+      //   },
+      //   onBackgroundMessage: fcmOnBackgroundMessage,
+      //   onLaunch: (Map<String, dynamic> message) async {
+      //     print("onLaunch: $message");
+      //   },
+      //   onResume: (Map<String, dynamic> message) async {
+      //     print("onResume: $message");
+      //   },
+      //);
 
       _firebaseMessaging.getToken().then((String token) {
          if (_fcmToken != null)
@@ -6044,8 +6001,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 channel = IOWebSocketChannel.connect(cts.dbHost);
+	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 //channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -6156,10 +6113,11 @@ class OccaseState extends State<Occase>
       setState((){_posts[cts.ownIdx].rangeValues[i] = v.round();});
    }
 
-   Future<void> _onRangeChanged(int i, RangeValues rv) async
+   void _onSearchValueChanged(int i, double v)
    {
-      _appState.setRange(i, rv);
-      setState(() { });
+      setState(() {
+	 _posts[cts.searchIdx].rangeValues[i] = v.round();
+      });
    }
 
    void _onClickOnPost(int i, int j)
@@ -6552,10 +6510,7 @@ class OccaseState extends State<Occase>
          var msgMap = {
             'cmd': 'delete',
             'id': delPost.id,
-            'to': toChannelHashCode(
-               delPost.channel[1][0],
-               g.param.filterDepths[1]
-            ),
+            'to': 0,
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -7158,7 +7113,7 @@ class OccaseState extends State<Occase>
       await _appState.setCredentials(id, pwd);
 
       // Retrieves some posts for the newly registered user.
-      _sendSearchPosts(0);
+      _search(0);
    }
 
    void _leaveNewPostScreen()
@@ -7209,7 +7164,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _sendSearchPosts(0);
+      _search(0);
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -7398,7 +7353,7 @@ class OccaseState extends State<Occase>
 
       await _appState.persistency.updateLastPostId(0);
 
-      _sendSearchPosts(0);
+      _search(0);
 
       // I believe we do not need this dialog anymore.
       //_showSimpleDialog(
@@ -7409,15 +7364,15 @@ class OccaseState extends State<Occase>
       //);
    }
 
-   void _sendSearchPosts(int lastPostId)
+   void _search(int lastPostId)
    {
       var subCmd =
       { 'cmd': 'subscribe'
       , 'last_post_id': lastPostId
       , 'filters': <int>[]
       , 'channels': <int>[]
-      , 'any_of_features': _appState.cfg.anyOfFeatures
-      , 'ranges': convertToValues(_appState.cfg.ranges)
+      , 'any_of_features': _posts[cts.searchIdx].exDetails[0]
+      , 'ranges': <int>[]
       };
 
       final String payload = jsonEncode(subCmd);
@@ -7675,13 +7630,12 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onSearchDetail(int i) async
+   void _onSearchDetail(int i, int state)
    {
-      _appState.cfg.anyOfFeatures = i;
-
-      final String str = _appState.cfg.anyOfFeatures.toString();
-      await _appState.persistency.updateAnyOfFeatures(str);
-      setState(() { });
+      setState(() {
+	 final int a = _posts[cts.searchIdx].exDetails[i];
+	 _posts[cts.searchIdx].exDetails[i] = state;
+      });
    }
 
    void _onNewPostSetTreeCode(List<int> code, int i)
@@ -7783,15 +7737,16 @@ class OccaseState extends State<Occase>
       // common to all products.
       return makeSearchScreenWdg2(
 	 ctx: ctx,
-	 state: _appState.cfg.anyOfFeatures,
+	 state: _posts[cts.searchIdx].exDetails[0],
 	 locationRootNode: _trees[0].root.first,
 	 productRootNode: _trees[1].root.first,
 	 exDetailsRootNode: _exDetailsRoot,
 	 post: _posts[cts.searchIdx],
-	 ranges: _appState.cfg.ranges,
+	 ranges: g.param.rangesMinMax,
+	 divisions: g.param.rangeDivs,
 	 onSearchPressed: (int i) {_onSearch(ctx, i);},
-	 onSearchDetail: _onSearchDetail,
-	 onRangeChanged: _onRangeChanged,
+	 onSearchDetail: (int j) {_onSearchDetail(0, j);},
+	 onValueChanged: _onSearchValueChanged,
 	 onSetLocationCode: _onSetSearchLocationCode,
 	 onSetProductCode: _onSetSearchProductCode,
       );
