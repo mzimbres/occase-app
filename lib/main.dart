@@ -1089,18 +1089,18 @@ Image getImage({
 }
 
 // Generates the image list view of a post.
-Widget makeImgListView2(
+Widget makeImgListView2({
    BuildContext ctx,
+   final double width,
    Post post,
-   BoxFit bf,
+   BoxFit boxFit,
    List<PickedFile> imgFiles,
    OnPressedFn1 onExpandImg,
    OnPressedFn2 addImg,
-) {
+}) {
    final int l1 = post.images.length;
    final int l2 = imgFiles.length;
 
-   final double width = makeTabWidth(ctx, cts.ownIdx);
    if (l1 == 0 && l2 == 0) {
       Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
       return makeImgPlaceholder(width, width, w);
@@ -1130,7 +1130,7 @@ Widget makeImgListView2(
 	 List<Widget> wdgs = List<Widget>();
 
 	 if (post.images.isNotEmpty) {
-	    Widget tmp = makeNetImgBox(width, height, post.images[l -i -1], bf);
+	    Widget tmp = makeNetImgBox(width, height, post.images[l -i -1], boxFit);
 	    wdgs.add(tmp);
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles.isNotEmpty) {
@@ -1604,16 +1604,16 @@ List<Widget> makeTabActions({
 	 ret.add(delChatBut);
       }
    } else if (search) {
-      IconButton clearPosts = IconButton(
-	 icon: Icon(
-	    Icons.delete_forever,
-	    color: stl.colorScheme.onPrimary,
-	 ),
-	 tooltip: g.param.clearPosts,
-	 onPressed: onClearPostsDialog,
-      );
+      //IconButton clearPosts = IconButton(
+      //   icon: Icon(
+      //      Icons.delete_forever,
+      //      color: stl.colorScheme.onPrimary,
+      //   ),
+      //   tooltip: g.param.clearPosts,
+      //   onPressed: onClearPostsDialog,
+      //);
 
-      ret.add(clearPosts);
+      //ret.add(clearPosts);
    }
 
    return ret;
@@ -1675,14 +1675,16 @@ Widget makeAppBarLeading({
    final bool hasLpChatMsgs,
    final bool newPostPressed,
    final bool newSearchPressed,
-   final int screen,
+   final bool isWide,
+   final bool hasNoFavPosts,
+   final int tab,
    final OnPressedFn0 onWillLeaveSearch,
    final OnPressedFn0 onWillLeaveNewPost,
    final OnPressedFn0 onBackFromChatMsgRedirect,
 }) {
-   final bool own = screen == cts.ownIdx;
-   final bool search = screen == cts.searchIdx;
-   final bool fav = screen == cts.favIdx;
+   final bool own = tab == cts.ownIdx;
+   final bool search = tab == cts.searchIdx;
+   final bool fav = tab == cts.favIdx;
 
    if ((fav || own) && hasLpChatMsgs)
       return IconButton(
@@ -1696,7 +1698,13 @@ Widget makeAppBarLeading({
 	 onPressed: onWillLeaveNewPost,
       );
 
-   if (search && newSearchPressed)
+   if (search && newSearchPressed && !isWide)
+      return IconButton(
+	 icon: Icon(Icons.arrow_back),
+	 onPressed: onWillLeaveSearch,
+      );
+
+   if (fav && (newSearchPressed || hasNoFavPosts) && newSearchPressed)
       return IconButton(
 	 icon: Icon(Icons.arrow_back),
 	 onPressed: onWillLeaveSearch,
@@ -1709,13 +1717,15 @@ Widget makeAppBarWdg({
    bool hasLpChatMsgs,
    bool newPostPressed,
    bool newSearchPressed,
-   final int screen,
+   bool isWide,
+   bool hasNoFavPosts,
+   final int tab,
    final List<Tree> trees,
    Widget defaultWdg,
 }) {
-   final bool fav = screen == cts.favIdx;
-   final bool own = screen == cts.ownIdx;
-   final bool search = screen == cts.searchIdx;
+   final bool fav = tab == cts.favIdx;
+   final bool own = tab == cts.ownIdx;
+   final bool search = tab == cts.searchIdx;
 
    if ((fav || own) && hasLpChatMsgs)
       return Text(g.param.msgOnRedirectingChat);
@@ -1726,7 +1736,13 @@ Widget makeAppBarWdg({
 	 title: g.param.newPostAppBarTitle,
       );
 
-   if (search && newSearchPressed)
+   if (search && newSearchPressed && !isWide)
+      return makeSearchAppBar(
+	 trees: trees,
+	 title: g.param.filterAppBarTitle,
+      );
+
+   if (fav && (newSearchPressed || hasNoFavPosts) && isWide)
       return makeSearchAppBar(
 	 trees: trees,
 	 title: g.param.filterAppBarTitle,
@@ -1882,9 +1898,6 @@ List<Widget> makeSearchWdgs({
       list.add(location);
       list.add(stl.newPostDivider);
    }
-
-   if (post.getLocationCode().isEmpty)
-      return list;
 
    {
       final Node productRootNode = productTree.root.first;
@@ -2322,12 +2335,12 @@ Widget makeSearchScreenWdg2({
    }
 
    { // Send cancel
-      Widget w1 = createRaisedButton(
-	 () {onSearchPressed(0);},
-	 g.param.cancel,
-	 stl.expTileCardColor,
-	 Colors.black,
-      );
+      //Widget w1 = createRaisedButton(
+      //   () {onSearchPressed(0);},
+      //   g.param.cancel,
+      //   stl.expTileCardColor,
+      //   Colors.black,
+      //);
 
       Widget w2 = createRaisedButton(
 	 () {onSearchPressed(2);},
@@ -2336,8 +2349,8 @@ Widget makeSearchScreenWdg2({
 	 stl.colorScheme.onSecondary,
       );
 
-      Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
-      foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent), child: r));
+      //Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
+      foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent), child: w2));
    }
 
    return ListView.builder(
@@ -2570,6 +2583,8 @@ Widget makeFaButton(
 }
 
 List<Widget> makeFaButtons({
+   final bool isWide,
+   final bool hasFavPosts,
    final int nOwnPosts,
    final bool newSearchPressed,
    final List<List<Coord>> lpChats,
@@ -2589,8 +2604,10 @@ List<Widget> makeFaButtons({
    );
 
    ret[1] = makeFAButtonMiddleScreen(
-      newSearchPressed,
-      onSearch,
+      onSearchScreen: newSearchPressed,
+      isWide: isWide,
+      hasFavPosts: hasFavPosts,
+      onSearch: onSearch,
    );
 
    ret[2] = makeFaButton(
@@ -2604,11 +2621,14 @@ List<Widget> makeFaButtons({
    return ret;
 }
 
-Widget makeFAButtonMiddleScreen(
+Widget makeFAButtonMiddleScreen({
    final bool onSearchScreen,
+   final bool isWide,
+   final bool hasFavPosts,
    final OnPressedFn0 onSearch,
-) {
-   if (onSearchScreen)
+}) {
+   print('$onSearchScreen $isWide $hasFavPosts');
+   if ((onSearchScreen && isWide) || (isWide && !hasFavPosts))
       return SizedBox.shrink();
 
    return FloatingActionButton(
@@ -4418,9 +4438,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 context: ctx,
 	 builder: (BuildContext ctx2)
 	 {
+	    final int tab = cts.searchIdx;
 	    Widget detailsWdg = makePostDetailsWdg(
 	       ctx: ctx2,
-	       tab: widget.tab,
+	       tab: tab,
 	       post: widget.post,
 	       exDetailsRootNode: widget.exDetailsRootNode,
 	       inDetailsRootNode: widget.inDetailsRootNode,
@@ -4466,7 +4487,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		  },
 	    );
 
-	    final double width = makeTabWidth(ctx, cts.ownIdx);
+	    final double width = makeTabWidth(ctx, tab);
 
 	    const double indent = 5.0;
 	    return makeNewPostDialogWdg(
@@ -4475,7 +4496,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       indent: indent,
 	       list: <Widget>[detailsWdg],
                actions: <Widget>[SizedBox(width: width, child: tmp)],
-	       insetPadding: const EdgeInsets.symmetric(horizontal: indent, vertical: 0.0),
+	       insetPadding: const EdgeInsets.only(
+	          left: indent,
+		  right: indent,
+		  top: 20.0,
+		  bottom: 50.0,
+	       ),
 	    );
 	 },
       );
@@ -4668,12 +4694,13 @@ Widget makePostDetailsWdg({
    List<Widget> rows = List<Widget>();
 
    Widget lv = makeImgListView2(
-      ctx,
-      post,
-      BoxFit.cover,
-      imgFiles,
-      (int j){onExpandImg(j);},
-      onAddPhoto,
+      ctx: ctx,
+      width: makeTabWidth(ctx, tab),
+      post: post,
+      boxFit: BoxFit.cover,
+      imgFiles: imgFiles,
+      onExpandImg: (int j){onExpandImg(j);},
+      addImg: onAddPhoto,
    );
 
    rows.add(lv);
@@ -6214,11 +6241,15 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   bool _onWillPopMenu() {
-      setState(() {
-	 _newPostPressed = false;
-	 _newSearchPressed = false;
-      });
+   bool _onWillPopSearchTab()
+   {
+      setState(() { _newSearchPressed = false; });
+      return false;
+   }
+
+   bool _onWillPopNewPostTab()
+   {
+      setState(() { _newPostPressed = false; });
       return false;
    }
 
@@ -6267,6 +6298,7 @@ class OccaseState extends State<Occase>
    {
       await _appState.setNUnreadMsgs(_posts[i].id, _chats[i].peer);
 
+      _newSearchPressed = false; // Needed only in wide mode.
       _showChatJumpDownButtons[i] = false;
       _dragedIdxs[i] = -1;
       _chats[i].nUnreadMsgs = 0;
@@ -7769,9 +7801,13 @@ class OccaseState extends State<Occase>
       );
    }
 
-   List<Widget> _makeFaButtons(int i)
+   List<Widget> _makeFaButtons(BuildContext ctx)
    {
+      final bool isWide = isWideScreen(ctx);
+
       return makeFaButtons(
+	 isWide: isWide,
+	 hasFavPosts: _appState.favPosts.isNotEmpty,
 	 nOwnPosts: _appState.ownPosts.length,
 	 newSearchPressed: _newSearchPressed,
 	 lpChats: _lpChats,
@@ -7844,27 +7880,31 @@ class OccaseState extends State<Occase>
    }
 
 
-   Widget _makeAppBarLeading(int i)
+   Widget _makeAppBarLeading(bool isWide, int i)
    {
       return makeAppBarLeading(
 	 hasLpChats: _hasLPChats(i),
 	 hasLpChatMsgs: _hasLPChatMsgs(i),
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 screen: i,
-	 onWillLeaveSearch: _onWillPopMenu,
-	 onWillLeaveNewPost: _onWillPopMenu,
+	 isWide: isWide,
+	 hasNoFavPosts: _appState.favPosts.isEmpty,
+	 tab: i,
+	 onWillLeaveSearch: _onWillPopSearchTab,
+	 onWillLeaveNewPost: _onWillPopNewPostTab,
 	 onBackFromChatMsgRedirect: () { _onBackFromChatMsgRedirect(i);},
       );
    }
 
-   Widget _makeAppBarTitleWdg(int i, Widget defaultWdg)
+   Widget _makeAppBarTitleWdg(bool isWide, int i, Widget defaultWdg)
    {
       return makeAppBarWdg(
 	 hasLpChatMsgs: _hasLPChatMsgs(i),
 	 newPostPressed: _newPostPressed,
 	 newSearchPressed: _newSearchPressed,
-	 screen: i,
+	 isWide: isWide,
+	 hasNoFavPosts: _appState.favPosts.isEmpty,
+	 tab: i,
 	 trees: _trees,
 	 defaultWdg: defaultWdg,
       );
@@ -7881,6 +7921,8 @@ class OccaseState extends State<Occase>
 
    List<Widget> _makeAppBodies(BuildContext ctx)
    {
+      final bool isWide = isWideScreen(ctx);
+
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
@@ -7889,41 +7931,40 @@ class OccaseState extends State<Occase>
 	 ret[cts.ownIdx] = _makeChatTab(ctx, cts.ownIdx);
       }
 
-      if (_newSearchPressed) {
+      if (_newSearchPressed && !isWide) {
 	 ret[cts.searchIdx] = _makeSearchScreenWdg2(ctx);
       } else {
 	 ret[cts.searchIdx] = _makeNewPostLv();
       }
 
-      ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
+      if ((_newSearchPressed || _appState.favPosts.isEmpty) && isWide) {
+	 ret[cts.favIdx] = _makeSearchScreenWdg2(ctx);
+      } else {
+	 ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
+      }
 
       return ret;
    }
 
-   List<OnPressedFn7> _makeOnWillPop()
+   bool _makeOnWillPop(int i)
    {
-      List<OnPressedFn7> ret = List<OnPressedFn7>(g.param.tabNames.length);
-
-      ret[cts.ownIdx] = ()
-      {
+      if (i == cts.ownIdx) {
 	 if (_newPostPressed)
-	    return _onWillPopMenu();
+	    return _onWillPopNewPostTab();
 
 	 return _onChatsBackPressed(cts.ownIdx);
       };
 
-      ret[cts.searchIdx] = ()
-      {
+      if (i == cts.searchIdx) {
 	 if (_newSearchPressed)
-	    return _onWillPopMenu();
+	    return _onWillPopSearchTab();
 
 	 setState((){});
 	 return true;
       };
 
-      ret[cts.favIdx] = () {return _onChatsBackPressed(cts.favIdx);};
-
-      return ret;
+      //i == cts.favIdx
+      return _onChatsBackPressed(cts.favIdx);
    }
 
    @override
@@ -7999,12 +8040,12 @@ class OccaseState extends State<Occase>
 	 );
       }
 
-      List<OnPressedFn7> onWillPops = _makeOnWillPop();
-      List<Widget> fltButtons = _makeFaButtons(screenIdx);
+      List<Widget> fltButtons = _makeFaButtons(ctx);
       List<Widget> bodies = _makeAppBodies(ctx);
       List<int> newMsgCounters = _newMsgsCounters();
 
-      if (isWideScreen(ctx)) {
+      final bool isWide = isWideScreen(ctx);
+      if (isWide) {
 	 const double sep = 3.0;
 	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
 
@@ -8016,8 +8057,8 @@ class OccaseState extends State<Occase>
 
 	 Widget ownTopBar = AppBar(
 	    actions: _makeTabActions(ctx, cts.ownIdx),
-	    title: _makeAppBarTitleWdg(cts.ownIdx, tabWdgs[cts.ownIdx]),
-	    leading: _makeAppBarLeading(cts.ownIdx),
+	    title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
+	    leading: _makeAppBarLeading(isWide, cts.ownIdx),
 	 );
 
 	 Widget own;
@@ -8028,8 +8069,8 @@ class OccaseState extends State<Occase>
 
 	 Widget searchTopBar = AppBar(
 	    actions: _makeTabActions(ctx, cts.searchIdx),
-	    title: _makeAppBarTitleWdg(cts.searchIdx, tabWdgs[cts.searchIdx]),
-	    leading: _makeAppBarLeading(cts.searchIdx),
+	    title: _makeAppBarTitleWdg(isWide, cts.searchIdx, tabWdgs[cts.searchIdx]),
+	    leading: _makeAppBarLeading(isWide, cts.searchIdx),
 	 );
 
 	 Widget search = Column(
@@ -8043,8 +8084,8 @@ class OccaseState extends State<Occase>
 
 	 Widget favTopBar = AppBar(
 	    actions: _makeTabActions(ctx, cts.favIdx),
-	    title: _makeAppBarTitleWdg(cts.favIdx, tabWdgs[cts.favIdx]),
-	    leading: _makeAppBarLeading(cts.favIdx),
+	    title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
+	    leading: _makeAppBarLeading(isWide, cts.favIdx),
 	 );
 
          Widget fav;
@@ -8084,10 +8125,10 @@ class OccaseState extends State<Occase>
       List<double> opacities = _getNewMsgsOpacities();
 
       return makeAppScaffoldWdg(
-	 onWillPops: onWillPops[_tabCtrl.index],
+	 onWillPops: () {return _makeOnWillPop(_tabCtrl.index);},
 	 scrollCtrl: _scrollCtrl[_screenIdx()],
-	 appBarTitle: _makeAppBarTitleWdg(screenIdx, Text(g.param.appName)),
-	 appBarLeading: _makeAppBarLeading(screenIdx),
+	 appBarTitle: _makeAppBarTitleWdg(isWide, screenIdx, Text(g.param.appName)),
+	 appBarLeading: _makeAppBarLeading(isWide, screenIdx),
 	 floatBut: fltButtons[_tabCtrl.index],
 	 body: TabBarView(controller: _tabCtrl, children: bodies),
 	 tabBar: makeTabBar(ctx, newMsgCounters, _tabCtrl, opacities, _hasLPChatMsgs(screenIdx)),
