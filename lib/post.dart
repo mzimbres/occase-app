@@ -850,8 +850,6 @@ class Config {
    String appPwd;
    String email;
    String nick;
-   int lastPostId;
-   int lastSeenPostId;
    String showDialogOnSelectPost;
    String showDialogOnReportPost;
    String showDialogOnDelPost;
@@ -862,8 +860,6 @@ class Config {
       this.appPwd = '',
       this.email = '',
       this.nick = '',
-      this.lastPostId = 0,
-      this.lastSeenPostId = 0,
       this.showDialogOnSelectPost = 'yes',
       this.showDialogOnReportPost = 'yes',
       this.showDialogOnDelPost = 'yes',
@@ -882,8 +878,6 @@ Map<String, dynamic> configToMap(Config cfg)
     , 'app_pwd': cfg.appPwd
     , 'email': cfg.email
     , 'nick': cfg.nick
-    , 'last_post_id': cfg.lastPostId
-    , 'last_seen_post_id': cfg.lastSeenPostId
     , 'show_dialog_on_select_post': cfg.showDialogOnSelectPost
     , 'show_dialog_on_report_post': cfg.showDialogOnReportPost
     , 'show_dialog_on_del_post': cfg.showDialogOnDelPost

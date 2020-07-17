@@ -55,8 +55,6 @@ CREATE TABLE config
 , app_pwd TEXT
 , nick TEXT
 , email TEXT
-, last_post_id INTEGER
-, last_seen_post_id INTEGER
 , show_dialog_on_select_post TEXT
 , show_dialog_on_del_post TEXT
 , show_dialog_on_report_post TEXT
@@ -77,16 +75,6 @@ UPDATE config SET nick = ?
 final String updateEmail =
 '''
 UPDATE config SET email = ?
-''';
-
-final String updateLastPostId =
-'''
-UPDATE config SET last_post_id = ?
-''';
-
-final String updateLastSeenPostId =
-'''
-UPDATE config SET last_seen_post_id = ?
 ''';
 
 final String updateNotifications =

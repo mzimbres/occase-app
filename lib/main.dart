@@ -49,6 +49,7 @@ typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
 typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
 typedef OnPressedFn14 = void Function(List<int>);
+typedef OnPressedFn15 = void Function(ConfigActions);
 
 bool isWideScreenImpl(double w)
 {
@@ -161,10 +162,6 @@ class Persistency2 {
    {
    }
 
-   Future<void> updateLastSeenPostId(int id) async
-   {
-   }
-
    Future<void> updateNUnreadMsgs(int postId, String peer) async
    {
    }
@@ -238,10 +235,6 @@ class Persistency2 {
    {
    }
 
-   Future<void> updateLastPostId(int id) async
-   {
-   }
-
    Future<void> delPostWithRowid(int dbId) async
    {
    }
@@ -279,8 +272,6 @@ class Persistency {
             appPwd: maps[i]['app_pwd'],
             email: maps[i]['email'],
             nick: maps[i]['nick'],
-            lastPostId: maps[i]['last_post_id'],
-            lastSeenPostId: maps[i]['last_seen_post_id'],
             showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
             showDialogOnReportPost: maps[i]['show_dialog_on_report_post'],
             showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
@@ -405,11 +396,6 @@ class Persistency {
    Future<void> delPostWithId(int id) async
    {
       await _db.execute(sql.delPostWithId, [id]);
-   }
-
-   Future<void> updateLastSeenPostId(int id) async
-   {
-      await _db.execute(sql.updateLastSeenPostId, [id]);
    }
 
    Future<void> updateNUnreadMsgs(int postId, String peer) async
@@ -550,7 +536,7 @@ class Persistency {
             conflictAlgorithm: ConflictAlgorithm.replace,
          );
 
-         final List<dynamic> tmp = await batch.commit(
+         await batch.commit(
             noResult: false,
             continueOnError: true,
          );
@@ -560,11 +546,6 @@ class Persistency {
    Future<void> updateAppCredentials(String appId, String appPwd) async
    {
       await _db.execute(sql.updateAppCredentials, [appId, appPwd]);
-   }
-
-   Future<void> updateLastPostId(int id) async
-   {
-      await _db.execute(sql.updateLastPostId, [id]);
    }
 
    Future<void> delPostWithRowid(int dbId) async
@@ -674,7 +655,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency2 p) async
+Future<void> removeLpChat(Coord c, Persistency p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -717,9 +698,10 @@ String makePostPayload(final Post post)
 enum ConfigActions
 { ChangeNick
 , Notifications
+, Information
 }
 
-Widget makeAppBarVertAction(Function onSelected)
+Widget makeAppBarVertAction(OnPressedFn15 onSelected)
 {
    return PopupMenuButton<ConfigActions>(
      icon: Icon(Icons.more_vert, color: Colors.white),
@@ -734,6 +716,10 @@ Widget makeAppBarVertAction(Function onSelected)
           PopupMenuItem<ConfigActions>(
              value: ConfigActions.Notifications,
              child: Text(g.param.changeNotifications),
+          ),
+          PopupMenuItem<ConfigActions>(
+             value: ConfigActions.Information,
+             child: Text(g.param.information),
           ),
         ];
      }
@@ -977,6 +963,44 @@ Scaffold makeNtfScreen(
    );
 }
 
+Widget makeInfoScreen(
+   BuildContext ctx,
+   OnPressedFn7 onWillPopScope,
+) {
+   final double width = makeTabWidth(ctx, cts.ownIdx);
+
+   Widget tmp = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: width),
+      child: Center(
+         child: Text(g.param.infoBody,
+	    style: TextStyle(
+	       fontSize: 20.0,
+	       color: stl.colorScheme.primary,
+	       fontWeight: FontWeight.normal,
+	    ),
+	 ),
+      ),
+   );
+
+   return WillPopScope(
+      onWillPop: () async { return onWillPopScope();},
+      child: Scaffold(
+	 appBar: AppBar(
+	    title: Text(g.param.appName),
+	    leading: IconButton(
+	       padding: EdgeInsets.all(0.0),
+	       icon: Icon(Icons.arrow_back, color: stl.colorScheme.onPrimary),
+	       onPressed: onWillPopScope,
+	    ),
+	 ),
+	 body: Padding(
+	    child: Center(child: tmp),
+	    padding: EdgeInsets.symmetric(vertical: 20.0),
+	 ),
+      ),
+   );
+}
+
 Widget makeNetImgBox(
    double width,
    double height,
@@ -996,7 +1020,7 @@ Widget makeNetImgBox(
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
                color: stl.colorScheme.background,
-               fontSize: stl.tt.title.fontSize,
+               fontSize: stl.tt.headline6.fontSize,
             ),
          );
 
@@ -1115,13 +1139,13 @@ Widget makeImgListView2({
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         FlatButton b = FlatButton(
-            onPressed: (){onExpandImg(l -i -1);},
-            child: Container(
-               width: width * 0.9,
-               height: width * 0.9,
-            ),
-         );
+         //FlatButton b = FlatButton(
+         //   onPressed: (){onExpandImg(l -i -1);},
+         //   child: Container(
+         //      width: width * 0.9,
+         //      height: width * 0.9,
+         //   ),
+         //);
 
 	 Widget imgCounter = makeTextWdg('${i + 1}/$l', 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
 
@@ -1237,7 +1261,7 @@ RichText makeExpTileTitle(
          children: <TextSpan>
          [ TextSpan(
               text: second,
-              style: stl.tt.subhead.copyWith(color: color),
+              style: stl.tt.subtitle1.copyWith(color: color),
            ),
          ],
       ),
@@ -1450,7 +1474,7 @@ List<Widget> makeTabActions({
 List<Widget> makeGlobalActionsWeb({
    OnPressedFn0 onSearchPressed,
    OnPressedFn0 onNewPost,
-   Function onAppBarVertPressed,
+   OnPressedFn15 onAppBarVertPressed,
 }) {
    List<Widget> ret = List<Widget>();
 
@@ -1483,7 +1507,7 @@ List<Widget> makeGlobalActionsApp({
    bool hasLPChatMsgs,
    OnPressedFn0 onSearchPressed,
    OnPressedFn0 onNewPost,
-   Function onAppBarVertPressed,
+   OnPressedFn15 onAppBarVertPressed,
 }) {
    // We only add the global action buttons if
    // 1. There is no chat selected for selection.
@@ -1939,15 +1963,15 @@ Widget makeNewPostScreenWdgs2({
 	    onRemovePost: onRemovePost,
 	 );
 
-	 Card c = Card(
-	    margin: const EdgeInsets.all(0.0),
-	    color: Colors.white,
-	    child: finalScreen,
-	    elevation: 2.0,
-	    shape: RoundedRectangleBorder(
-	       borderRadius: BorderRadius.all(Radius.circular(0.0)),
-	    ),
-	 );
+	 //Card c = Card(
+	 //   margin: const EdgeInsets.all(0.0),
+	 //   color: Colors.white,
+	 //   child: finalScreen,
+	 //   elevation: 2.0,
+	 //   shape: RoundedRectangleBorder(
+	 //      borderRadius: BorderRadius.all(Radius.circular(0.0)),
+	 //   ),
+	 //);
 
 	 list.add(finalScreen);
       }
@@ -2769,11 +2793,11 @@ Widget makeChatSecondLayer(
       color: stl.colorScheme.primary,
    );
 
-   IconButton attachmentButton = IconButton(
-      icon: Icon(Icons.add_a_photo),
-      onPressed: onAttachment,
-      color: stl.colorScheme.primary,
-   );
+   //IconButton attachmentButton = IconButton(
+   //   icon: Icon(Icons.add_a_photo),
+   //   onPressed: onAttachment,
+   //   color: stl.colorScheme.primary,
+   //);
 
    // At the moment we do not support sending of multimedia files
    // through the chat, so I will remove the button attachmentButton.
@@ -3442,7 +3466,7 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text(' ${nodes[i].name(g.param.langIdx)}',
-         style: stl.tt.subhead.copyWith(
+         style: stl.tt.subtitle1.copyWith(
             color: stl.infoValueColor,
          ),
       );
@@ -3729,7 +3753,7 @@ ThemeData makeExpTileThemeData()
       accentColor: Colors.black,
       unselectedWidgetColor: stl.colorScheme.primary,
       textTheme: TextTheme(
-         subhead: TextStyle(
+         subtitle1: TextStyle(
             color: Colors.black,
          ),
       ),
@@ -3786,7 +3810,7 @@ Widget makeImgTextPlaceholder(final String str)
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
          color: stl.colorScheme.background,
-         fontSize: stl.tt.title.fontSize,
+         fontSize: stl.tt.headline6.fontSize,
       ),
    );
 }
@@ -3831,6 +3855,7 @@ List<Widget> makePostButtons({
 
 Widget makeNewPostDialogWdg({
    final double width,
+   final double height,
    final Widget title,
    final double indent,
    final List<Widget> list,
@@ -3838,6 +3863,7 @@ Widget makeNewPostDialogWdg({
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
 }) {
    ListView lv = ListView.separated(
+      //shrinkWrap: true,
       separatorBuilder: (BuildContext context, int index)
       {
 	 return stl.alertDivider;
@@ -3854,10 +3880,23 @@ Widget makeNewPostDialogWdg({
       contentPadding: EdgeInsets.all(indent),
       actions: actions,
       insetPadding: insetPadding,
+      backgroundColor: stl.colorScheme.secondary,
       content: Container(
-	 width: width,
-	 height: width,
-	 child: lv,
+	 constraints: BoxConstraints(maxHeight: height, maxWidth: width),
+         width: width,
+         height: height,
+         child: lv,
+	 decoration: BoxDecoration(
+	    color: Colors.white,
+	    shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.all(const Radius.circular(stl.cornerRadius)),
+	 ),
+      ),
+      shape: RoundedRectangleBorder(
+	 borderRadius: BorderRadius.all(
+	    Radius.circular(stl.cornerRadius)
+	 ),
+	 //side: BorderSide(width: 1.0, color: Colors.grey),
       ),
    );
 }
@@ -3915,9 +3954,11 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
 	 _onPressed,
       );
 
+      final double width = makeDialogWidthHeight(ctx, cts.ownIdx);
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
-	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 width: width,
+	 height: width,
+	 title: Text(widget.title, style: stl.newPostTreeLT),
 	 indent: 10.0,
 	 list: list,
 	 actions: <FlatButton>[ok],
@@ -3987,8 +4028,10 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 	 onPressed: () {_onOkPressed(ctx);},
       );
 
+      final double width = makeDialogWidthHeight(ctx, cts.ownIdx);
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
+	 width: width,
+	 height: width,
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
 	 indent: 10.0,
 	 list: exDetails,
@@ -4126,8 +4169,10 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 onPressed: () {_onOk(ctx);},
       );
 
+      final double width = makeDialogWidthHeight(ctx, cts.ownIdx);
       return makeNewPostDialogWdg(
-	 width: makeDialogWidthHeight(ctx, cts.ownIdx),
+	 width: width,
+	 height: width,
 	 title: titleWdg,
 	 indent: 10.0,
 	 list: locWdgs,
@@ -4143,7 +4188,6 @@ class PostWidget extends StatefulWidget {
    Post post;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
-   Widget detailsWidget;
    List<PickedFile> imgFiles;
    List<Tree> trees;
    OnPressedFn2 onAddPhoto;
@@ -4162,7 +4206,6 @@ class PostWidget extends StatefulWidget {
    , @required this.post
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
-   , @required this.detailsWidget
    , @required this.imgFiles
    , @required this.trees
    , @required this.onAddPhoto
@@ -4219,45 +4262,48 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       onPressed: () { Navigator.of(ctx).pop(); },
 	    );
 
-	    ChatMetadata cm = ChatMetadata(
-	      peer: widget.post.from,
-	      nick: widget.post.nick,
-	      avatar: widget.post.avatar,
-	      date: DateTime.now().millisecondsSinceEpoch,
-	      lastChatItem: ChatItem(),
-	    );
-
-	    Widget tmp = makeChatListTile(
-	       ctx,
-	       cm,
-	       0,
-	       false,
-	       '',
-	       stl.chatListTilePadding,
-	       2.0,
-	       () {},
-	       () {},
-	       ()
-	          {
-		     Navigator.of(ctx).pop();
-		     widget.onAddPostToFavorite();
-		  },
-	    );
+	    List<Widget> actions = List<Widget>();
 
 	    final double width = makeTabWidth(ctx, tab);
+	    if (widget.tab == cts.searchIdx) {
+	       ChatMetadata cm = ChatMetadata(
+		 peer: widget.post.from,
+		 nick: widget.post.nick,
+		 avatar: widget.post.avatar,
+		 date: DateTime.now().millisecondsSinceEpoch,
+		 lastChatItem: ChatItem(),
+	       );
+
+	       Widget tmp = makeChatListTile(
+		  ctx: ctx,
+		  chat: cm,
+		  now: 0,
+		  isFwdChatMsgs: false,
+		  avatar: '',
+		  padding: stl.chatListTilePadding,
+		  elevation: 2.0,
+		  onChatLeadingPressed: () {},
+		  onChatLongPressed: () {},
+		  onStartChatPressed: () { Navigator.of(ctx).pop(); widget.onAddPostToFavorite(); },
+	       );
+               
+	       actions.add(SizedBox(width: width, child: tmp));
+	    }
 
 	    const double indent = 5.0;
+	    final double height = makeMaxHeight(ctx);
 	    return makeNewPostDialogWdg(
 	       width: width,
+	       height: height,
                title: null,
 	       indent: indent,
 	       list: <Widget>[detailsWdg],
-               actions: <Widget>[SizedBox(width: width, child: tmp)],
+               actions: actions,
 	       insetPadding: const EdgeInsets.only(
-	          left: indent,
-		  right: indent,
-		  top: 20.0,
-		  bottom: 50.0,
+	          left: 0.0,
+		  right: 0.0,
+		  top: 10.0,
+		  bottom: 10.0,
 	       ),
 	    );
 	 },
@@ -4285,16 +4331,19 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 onPinPost: widget.onPinPost,
       );
 
-      Widget dateWdg = makeTextWdg(makeDateString2(widget.post.date), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      final String dateStr = makeDateString2(widget.post.date);
+      Widget dateWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
       List<Widget> buttonWdgs = List<Widget>();
       //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
       if (widget.tab == cts.searchIdx) {
-	 buttonWdgs.add(buttons[1]);
+	 if (!kIsWeb)
+	    buttonWdgs.add(buttons[1]);
 	 //buttonWdgs.add(Expanded(child: buttons[2]));
       } else {
-	 buttonWdgs.add(Expanded(child: buttons[1]));
+	 if (!kIsWeb)
+	    buttonWdgs.add(Expanded(child: buttons[1]));
 	 buttonWdgs.add(Expanded(child: buttons[2]));
       }
 
@@ -4578,7 +4627,7 @@ Widget makeNewPostLv({
 	 if (i == l) {
 	    Widget ret = createRaisedButton(
 	       onNext,
-	       g.param.next,
+	       '+$nNewPosts', //g.param.next,
 	       stl.colorScheme.secondary,
 	       stl.colorScheme.onSecondary,
 	    );
@@ -4783,6 +4832,7 @@ String makeDateString(int date)
 
 String makeDateString2(int date)
 {
+   date *= 1000;
    DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
    DateFormat format = Intl(g.param.localeName).date().add_yMEd().add_jm();
    return format.format(dateObj);
@@ -4868,7 +4918,7 @@ Color selectColor(int n)
    }
 }
 
-Widget makeChatListTile(
+Widget makeChatListTile({
    BuildContext ctx,
    ChatMetadata chat,
    int now,
@@ -4879,7 +4929,7 @@ Widget makeChatListTile(
    OnPressedFn0 onChatLeadingPressed,
    OnPressedFn0 onChatLongPressed,
    OnPressedFn0 onStartChatPressed,
-) {
+}) {
    Color bgColor;
    if (chat.isLongPressed) {
       bgColor = stl.chatLongPressendColor;
@@ -4955,16 +5005,16 @@ Widget makeChatsExp(
          ++nUnreadChats;
 
       Widget card = makeChatListTile(
-         ctx,
-         ch[i],
-         now,
-         isFwdChatMsgs,
-         isFav ? post.avatar : ch[i].avatar,
-	 0.0,
-	 0.0,
-         (){onLeadingPressed(post.id, i);},
-         () { onLongPressed(i); },
-         () { onPressed(i); },
+         ctx: ctx,
+         chat: ch[i],
+         now: now,
+         isFwdChatMsgs: isFwdChatMsgs,
+         avatar: isFav ? post.avatar : ch[i].avatar,
+	 padding: 0.0,
+	 elevation: 0.0,
+         onChatLeadingPressed: (){onLeadingPressed(post.id, i);},
+         onChatLongPressed: () { onLongPressed(i); },
+         onStartChatPressed: () { onPressed(i); },
       );
 
       list[i] = Padding(
@@ -5252,11 +5302,9 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency2 persistency = Persistency2();
+   Persistency persistency = Persistency();
 
-   AppState()
-   {
-   }
+   AppState();
 
    Future<void> load() async
    {
@@ -5315,16 +5363,6 @@ class AppState {
       appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
 
       print('Login: ${cfg.appId}:${cfg.appPwd}');
-   }
-
-   int getNewPosts()
-   {
-      // NOTE: The posts array is expected to be sorted on its
-      // ids, so we could perform a binary search here instead.
-      final int i = posts.indexWhere((e)
-         { return e.id == cfg.lastSeenPostId; });
-
-      return i == -1 ? 0 : posts.length - i - 1;
    }
 
    Future<void> clearPosts() async
@@ -5442,11 +5480,6 @@ class AppState {
       return rowid;
    }
 
-   Future<void> setLastPostId(int id) async
-   {
-      await persistency.updateLastSeenPostId(id);
-   }
-
    Future<void> setNUnreadMsgs(int id, String from) async
    {
       await persistency.updateNUnreadMsgs(id, from);
@@ -5499,6 +5532,8 @@ class OccaseState extends State<Occase>
    // Set to true when the user wants to change his notification
    // settings.
    bool _goToNtfScreen = false;
+
+   bool _goToInfoScreen = false;
 
    // A flag that is set to true when the floating button (new post)
    // is clicked. It must be carefully set to false when that screen
@@ -5560,12 +5595,12 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   HtmlWebSocketChannel channel;
-   //IOWebSocketChannel channel;
+   //HtmlWebSocketChannel channel;
+   IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
-   // from the server, a value of -1 means we still did not get
-   // disconnected since startup..
+   // from the server, a value of -1 means we still did not got
+   // disconnected since startup.
    int _lastDisconnect = -1;
 
    // Used in the final new post screen to store the files while the
@@ -5603,18 +5638,18 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
-      //_firebaseMessaging.configure(
-      //   onMessage: (Map<String, dynamic> message) async {
-      //     print("onMessage: $message");
-      //   },
-      //   onBackgroundMessage: fcmOnBackgroundMessage,
-      //   onLaunch: (Map<String, dynamic> message) async {
-      //     print("onLaunch: $message");
-      //   },
-      //   onResume: (Map<String, dynamic> message) async {
-      //     print("onResume: $message");
-      //   },
-      //);
+      _firebaseMessaging.configure(
+         onMessage: (Map<String, dynamic> message) async {
+           print("onMessage: $message");
+         },
+         onBackgroundMessage: fcmOnBackgroundMessage,
+         onLaunch: (Map<String, dynamic> message) async {
+           print("onLaunch: $message");
+         },
+         onResume: (Map<String, dynamic> message) async {
+           print("onResume: $message");
+         },
+      );
 
       _firebaseMessaging.getToken().then((String token) {
          if (_fcmToken != null)
@@ -5642,7 +5677,7 @@ class OccaseState extends State<Occase>
 
       await _appState.load();
 
-      _nNewPosts = _appState.getNewPosts();
+      _nNewPosts = 0;
       _goToRegScreen = _appState.cfg.nick.isEmpty;
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
@@ -5750,9 +5785,7 @@ class OccaseState extends State<Occase>
       return opacities;
    }
 
-   OccaseState()
-   {
-   }
+   OccaseState();
 
    void sendOfflinePosts()
    {
@@ -5767,8 +5800,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 //channel = IOWebSocketChannel.connect(cts.dbHost);
+	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -5959,7 +5992,7 @@ class OccaseState extends State<Occase>
    }
 
    // This function has a side effect. It updates _nNewPosts.
-   int _makeLastSeenPostId()
+   int _updateNumberOfNewPosts()
    {
       assert(_nNewPosts >= 0);
 
@@ -5971,20 +6004,11 @@ class OccaseState extends State<Occase>
          n = cts.maxPostsOnDownload;
 
       _nNewPosts -= n;
-
-      final int l = _appState.posts.length;
-
-      assert(l >= _nNewPosts);
-
-      // The index of the last post already shown to the user.
-      return l - _nNewPosts - 1;
    }
 
    Future<void> _onShowNewPosts() async
    {
-      final int idx = _makeLastSeenPostId();
-      await _appState.setLastPostId(_appState.posts[idx].id);
-      setState((){});
+      setState((){_updateNumberOfNewPosts();});
    }
 
    bool _onWillPopSearchTab()
@@ -6891,7 +6915,7 @@ class OccaseState extends State<Occase>
       await _appState.setCredentials(id, pwd);
 
       // Retrieves some posts for the newly registered user.
-      _search(0);
+      _search();
    }
 
    void _leaveNewPostScreen()
@@ -6942,7 +6966,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
-      _search(0);
+      _search();
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -6966,20 +6990,11 @@ class OccaseState extends State<Occase>
       // When we are receiving new posts here as a result of the user
       // clicking the search buttom, we have to clear all old posts before
       // showing the new posts to the user.
-      final bool showPosts = _appState.cfg.lastPostId == 0 || _appState.posts.isEmpty;
-      if (_appState.cfg.lastPostId == 0)
-	 await _appState.clearPosts();
-
+      final bool showPosts = _appState.posts.isEmpty;
       for (var item in ack['items']) {
          try {
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
-
-            // Just in case the server sends us posts out of order I
-            // will check. It should however be considered a server
-            // error.
-            if (post.id > _appState.cfg.lastPostId)
-               _appState.cfg.lastPostId = post.id;
 
             if (post.from == _appState.cfg.appId)
                continue;
@@ -6993,13 +7008,8 @@ class OccaseState extends State<Occase>
          }
       }
 
-      await _appState.persistency.updateLastPostId(_appState.cfg.lastPostId);
-
-      if (showPosts) {
-         final int idx = _makeLastSeenPostId();
-	 if (idx != -1)
-	    await _appState.setLastPostId(_appState.posts[idx].id);
-      }
+      if (showPosts)
+         _updateNumberOfNewPosts();
 
       setState(() { });
    }
@@ -7107,15 +7117,12 @@ class OccaseState extends State<Occase>
    Future<void> _onSearch(BuildContext ctx, int i) async
    {
       if (!isWideScreen(ctx))
-	 _newSearchPressed = false;
+	 setState(() {_newSearchPressed = false;});
 
       if (i == 0) {
          setState(() { });
          return;
       }
-
-      //final int lastPostId = i == 1 ? 0 : _appState.cfg.lastPostId;
-      //final int lastPostId = _appState.cfg.lastPostId;
 
       // I changed my mind in 8.12.2019 and decided it is less confusing to
       // the user if we always search for all posts not only for those that
@@ -7127,12 +7134,9 @@ class OccaseState extends State<Occase>
       // 2. Old posts will be cleared when we receive the answer to this
       //    request.
 
-      _appState.cfg.lastPostId = 0;
       _nNewPosts = 0;
-
-      await _appState.persistency.updateLastPostId(0);
-
-      _search(0);
+      await _appState.clearPosts();
+      _search();
 
       // I believe we do not need this dialog anymore.
       //_showSimpleDialog(
@@ -7143,11 +7147,11 @@ class OccaseState extends State<Occase>
       //);
    }
 
-   void _search(int lastPostId)
+   void _search()
    {
       var subCmd =
       { 'cmd': 'subscribe'
-      , 'last_post_id': lastPostId
+      , 'last_post_id': 0
       , 'filters': <int>[]
       , 'channels': <int>[]
       , 'any_of_features': _posts[cts.searchIdx].exDetails[0]
@@ -7226,17 +7230,23 @@ class OccaseState extends State<Occase>
       _lpChats[i].clear();
    }
 
-   void _onAppBarVertPressed(ConfigActions ca)
+   void _onAppBarVertPressed(ConfigActions c)
    {
-      if (ca == ConfigActions.ChangeNick) {
+      if (c == ConfigActions.ChangeNick) {
          setState(() {
             _goToRegScreen = true;
          });
       }
 
-      if (ca == ConfigActions.Notifications) {
+      if (c == ConfigActions.Notifications) {
          setState(() {
             _goToNtfScreen = true;
+         });
+      }
+
+      if (c == ConfigActions.Information) {
+         setState(() {
+            _goToInfoScreen = true;
          });
       }
    }
@@ -7386,6 +7396,12 @@ class OccaseState extends State<Occase>
       } catch (e) {
          print(e);
       }
+   }
+
+   bool _onWillLeaveInfoScreen()
+   {
+      setState(() {_goToInfoScreen = false;});
+      return false;
    }
 
    Future<void> _onChangeNtf(int i, bool v) async
@@ -7705,7 +7721,7 @@ class OccaseState extends State<Occase>
 
 	 setState((){});
 	 return true;
-      };
+      }
 
       //i == cts.favIdx
       return _onChatsBackPressed(cts.favIdx);
@@ -7747,6 +7763,9 @@ class OccaseState extends State<Occase>
             g.param.ntfTitleDesc,
          );
       }
+
+      if (_goToInfoScreen)
+         return makeInfoScreen(ctx, _onWillLeaveInfoScreen);
 
       if (_onTabSwitch()) {
          _cleanUpLpOnSwitchTab(cts.ownIdx);
@@ -7857,7 +7876,7 @@ class OccaseState extends State<Occase>
 	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
 	    ),
-	    onWillPopScope: () {print('Noop');},
+	    onWillPopScope: () {return true;},
 	 );
       }
 

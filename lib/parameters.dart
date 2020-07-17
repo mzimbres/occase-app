@@ -69,6 +69,8 @@ class Parameters {
    List<String> _share = <String>[''];
    List<String> _shareSubject = <String>[''];
    List<String> _reviewAndSend = <String>[''];
+   List<String> _information = <String>[''];
+   List<String> _infoBody = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -166,6 +168,8 @@ class Parameters {
    String get share                     => _share[_langIdx];
    String get shareSubject              => _shareSubject[_langIdx];
    String get reviewAndSend             => _reviewAndSend[_langIdx];
+   String get information               => _information[_langIdx];
+   String get infoBody                  => _infoBody[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
@@ -242,6 +246,8 @@ class Parameters {
       _share                       = decodeList2(map['share']);
       _shareSubject                = decodeList2(map['shareSubject']);
       _reviewAndSend               = decodeList2(map['reviewAndSend']);
+      _information                 = decodeList2(map['information']);
+      _infoBody                    = decodeList2(map['infoBody']);
       _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
@@ -323,6 +329,8 @@ class Parameters {
          'share':                       _share,
          'shareSubject':                _shareSubject,
          'reviewAndSend':               _reviewAndSend,
+         'information':                 _information,
+         'infoBody':                    _infoBody,
          'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,
