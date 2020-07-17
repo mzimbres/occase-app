@@ -68,6 +68,7 @@ class Parameters {
    List<String> _payments0 = <String>[''];
    List<String> _share = <String>[''];
    List<String> _shareSubject = <String>[''];
+   List<String> _reviewAndSend = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -164,6 +165,7 @@ class Parameters {
    String get changeNtfAppBarTitle      => _changeNtfAppBarTitle[_langIdx];
    String get share                     => _share[_langIdx];
    String get shareSubject              => _shareSubject[_langIdx];
+   String get reviewAndSend             => _reviewAndSend[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
@@ -239,6 +241,7 @@ class Parameters {
       _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
       _share                       = decodeList2(map['share']);
       _shareSubject                = decodeList2(map['shareSubject']);
+      _reviewAndSend               = decodeList2(map['reviewAndSend']);
       _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
@@ -319,6 +322,7 @@ class Parameters {
          'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
          'share':                       _share,
          'shareSubject':                _shareSubject,
+         'reviewAndSend':               _reviewAndSend,
          'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,

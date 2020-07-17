@@ -1106,8 +1106,6 @@ Widget makeImgListView2({
       return makeImgPlaceholder(width, width, w);
    }
 
-   final double height = makeMaxHeight(ctx);
-
    final int l = l1 == 0 ? l2 : l1;
 
    ListView lv = ListView.builder(
@@ -1121,7 +1119,7 @@ Widget makeImgListView2({
             onPressed: (){onExpandImg(l -i -1);},
             child: Container(
                width: width * 0.9,
-               height: height * 0.9,
+               height: width * 0.9,
             ),
          );
 
@@ -1130,7 +1128,7 @@ Widget makeImgListView2({
 	 List<Widget> wdgs = List<Widget>();
 
 	 if (post.images.isNotEmpty) {
-	    Widget tmp = makeNetImgBox(width, height, post.images[l -i -1], boxFit);
+	    Widget tmp = makeNetImgBox(width, width, post.images[l -i -1], boxFit);
 	    wdgs.add(tmp);
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles.isNotEmpty) {
@@ -1168,7 +1166,7 @@ Widget makeImgListView2({
       },
    );
 
-   return constrainBox(width, height, lv);
+   return constrainBox(width, width, lv);
 }
 
 Widget makeImgListView(
@@ -1265,67 +1263,6 @@ RichText makeSearchTitle({
    );
 }
 
-Widget wrapOnDetailExpTitle(
-   Widget title,
-   List<Widget> children,
-   bool initiallyExpanded,
-) {
-   // Passing a global key has the effect that an expansion tile will
-   // collapse after setState is called, but without animation not in
-   // an nice way.
-   //Key key = UniqueKey();
-
-   return Card(
-      color: stl.expTileCardColor,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(10.0)),
-      ),
-      child: Theme(
-         data: makeExpTileThemeData(),
-         child: ExpansionTile(
-             //key: key,
-             backgroundColor: stl.expTileCardColor,
-             title: title,
-             children: children,
-             initiallyExpanded: initiallyExpanded,
-         ),
-      ),
-   );
-}
-
-Widget makeNewPostDetailExpTile(
-   int state,
-   String strDisplay,
-   Node titleNode,
-   Function onInDetail,
-) {
-   List<Widget> bar =
-      makeNewPostDetailElemList(
-         onInDetail,
-         state,
-         titleNode.children,
-      );
-
-   final RichText richTitle = makeExpTileTitle(
-      titleNode.name(g.param.langIdx),
-      strDisplay,
-      ':',
-      state == 0,
-   );
-
-   return wrapOnDetailExpTitle(richTitle, bar, false);
-}
-
-int counterBitsSet(int v)
-{
-   // See https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
-   int c; // c accumulates the total bits set in v
-   for (c = 0; v != 0; c++)
-     v &= v - 1;
-
-   return c;
-}
-
 List<Widget> makeSliderList({
    double value,
    double min,
@@ -1404,115 +1341,6 @@ List<Widget> makeCheckBoxes(
    }
 
    return ret;
-}
-
-List<Widget> makeNewPostDetailScreen(
-   Function onExDetail,
-   Function onInDetail,
-   Post post,
-   Node exDetailsRootNode,
-   Node inDetailsRootNode,
-   TextEditingController txtCtrl,
-   Function onRangeValueChanged,
-) {
-   final int idx = post.getProductDetailIdx();
-   if (idx == -1)
-      return List<Widget>();
-
-   List<String> exDetailsNames = makeExDetailsNamesAll(
-      exDetailsRootNode,
-      post.exDetails,
-      post.getProductDetailIdx(),
-      g.param.langIdx,
-   );
-
-   List<Widget> all = List<Widget>();
-
-   final int l1 = exDetailsRootNode.children[idx].children.length;
-   for (int i = 0; i < l1; ++i) {
-      Widget foo = makeNewPostDetailExpTile(
-         post.exDetails[i],
-         exDetailsNames[i],
-         exDetailsRootNode.children[idx].children[i],
-         (int j) {onExDetail(i, j);},
-      );
-
-      all.add(foo);
-   }
-
-   final int l2 = inDetailsRootNode.children[idx].children.length;
-   for (int i = 0; i < l2; ++i) {
-      final int nBitsSet = counterBitsSet(post.inDetails[i]);
-      Widget foo = makeNewPostDetailExpTile(
-         post.inDetails[i],
-         '$nBitsSet items',
-         inDetailsRootNode.children[idx].children[i],
-         (int j) {onInDetail(i, j);},
-      );
-
-      all.add(foo);
-   }
-
-   for (int i = 0; i < g.param.rangeDivs.length; ++i) {
-      final int j = 2 * i;
-
-      List<Widget> col = makeSliderList(
-         value: post.rangeValues[i].toDouble(),
-         min: g.param.rangesMinMax[j + 0].toDouble(),
-         max: g.param.rangesMinMax[j + 1].toDouble(),
-         divisions: g.param.rangeDivs[i],
-         onValueChanged: (double v) {onRangeValueChanged(i, v);}
-      );
-
-      Column sliderCol = Column(children: col);
-
-      all.add(wrapOnDetailExpTitle(
-            makeExpTileTitle(
-               g.param.rangePrefixes[i],
-               post.rangeValues[i].toString(),
-               ':',
-               false,
-            ),
-            <Widget>[wrapDetailRowOnCard(sliderCol)],
-            false,
-         ),
-      );
-   }
-
-   // __________________________________________________
-   TextField tf = TextField(
-      controller: txtCtrl,
-      keyboardType: TextInputType.multiline,
-      maxLines: null,
-      maxLength: 200,
-      style: stl.textField,
-      decoration: InputDecoration.collapsed(
-         hintText: g.param.newPostTextFieldHist,
-      ),
-   );
-
-   Padding pad = Padding(
-      padding: EdgeInsets.all(10.0),
-      child: tf,
-   );
-
-   all.add(wrapOnDetailExpTitle(
-         Text(g.param.postDescTitle, style: stl.tsSubheadOnPrimary),
-         <Widget>[wrapDetailRowOnCard(pad)],
-         false,
-      ),
-   );
-
-   all.add(
-      createRaisedButton(
-         (){onExDetail(-1, -1);},
-         g.param.next,
-	 stl.colorScheme.secondary,
-	 stl.colorScheme.onSecondary,
-      ),
-   );
-
-   return all;
 }
 
 Widget makeNewPostFinalScreen({
@@ -1869,7 +1697,7 @@ Widget makeNewPostInDetailLT({
    );
 }
 
-List<Widget> makeSearchWdgs({
+List<Widget> makeNewPostWdgs({
    BuildContext ctx,
    final int tab,
    final Tree locationTree,
@@ -1880,10 +1708,11 @@ List<Widget> makeSearchWdgs({
    final OnPressedFn12 onSetTreeCode,
    final OnPressedFn3 onSetExDetail,
    final OnPressedFn3 onSetInDetail,
+   final OnPressedFn6 onNewPostValueChanged,
 }) {
    List<Widget> list = List<Widget>();
 
-   {
+   {  // Location
       final Node locRootNode = locationTree.root.first;
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
@@ -1899,7 +1728,7 @@ List<Widget> makeSearchWdgs({
       list.add(stl.newPostDivider);
    }
 
-   {
+   {  // Product
       final Node productRootNode = productTree.root.first;
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
@@ -1923,6 +1752,18 @@ List<Widget> makeSearchWdgs({
    final int productIdx = post.getProductDetailIdx();
    if (productIdx == -1)
       return list;
+
+   {  // Price, kilometer, year
+      final List<Widget> values = makeValueSliders(
+         post: post,
+	 ranges: g.param.rangesMinMax,
+	 divisions: g.param.rangeDivs,
+	 onValueChanged: onNewPostValueChanged,
+      );
+
+      list.addAll(values);
+      list.add(stl.newPostDivider);
+   }
 
    {  // exDetails
       final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
@@ -2023,8 +1864,9 @@ Widget makeNewPostScreenWdgs2({
    final OnPressedFn4 onPublishPost,
    final OnPressedFn4 onRemovePost,
    final OnPressedFn8 onRangeValueChanged,
+   final OnPressedFn6 onNewPostValueChanged,
 }) {
-   List<Widget> list = makeSearchWdgs(
+   List<Widget> list = makeNewPostWdgs(
       ctx: ctx,
       tab: cts.ownIdx,
       locationTree: locationTree,
@@ -2035,6 +1877,7 @@ Widget makeNewPostScreenWdgs2({
       onSetTreeCode: onSetTreeCode,
       onSetExDetail: onSetExDetail,
       onSetInDetail: onSetInDetail,
+      onNewPostValueChanged: onNewPostValueChanged,
    );
 
    if (list.length < 5)
@@ -2065,7 +1908,7 @@ Widget makeNewPostScreenWdgs2({
       // ---------------------------------------------------
 
       { // Title
-	 Text pageTitle = Text('Review and send',
+	 Text pageTitle = Text(g.param.reviewAndSend,
 	    style: TextStyle(
 	       fontSize: 18.0,
 	       color: stl.colorScheme.primary,
@@ -2130,89 +1973,6 @@ Widget makeNewPostScreenWdgs2({
    return Stack(children: ret);
 }
 
-Widget makeNewPostScreenWdgs({
-   BuildContext ctx,
-   final Post post,
-   final List<Tree> trees,
-   final TextEditingController txtCtrl,
-   final int navBar,
-   final Node exDetailsRootNode,
-   final Node inDetailsRootNode,
-   final List<PickedFile> imgFiles,
-   final bool filenamesTimerActive,
-   final OnPressedFn3 onExDetail,
-   final OnPressedFn1 onPostLeafPressed,
-   final OnPressedFn1 onPostNodePressed,
-   final OnPressedFn3 onInDetail,
-   final OnPressedFn8 onRangeValueChanged,
-   final OnPressedFn2 onAddPhoto,
-   final OnPressedFn4 onPublishPost,
-   final OnPressedFn4 onRemovePost,
-}) {
-   List<Widget> list = List<Widget>();
-   if (navBar == 3) {
-      Widget finalScreen = makeNewPostFinalScreen(
-	 ctx: ctx,
-	 post: post,
-	 trees: trees,
-	 exDetailsRootNode: exDetailsRootNode,
-	 inDetailsRootNode: inDetailsRootNode,
-	 imgFiles: imgFiles,
-	 onAddPhoto: onAddPhoto,
-	 onPublishPost: onPublishPost,
-	 onRemovePost: onRemovePost,
-      );
-
-      list.add(finalScreen);
-
-   } else if (navBar == 2) {
-      final List<Widget> widgets = makeNewPostDetailScreen(
-         onExDetail,
-         onInDetail,
-         post,
-         exDetailsRootNode,
-         inDetailsRootNode,
-         txtCtrl,
-         onRangeValueChanged,
-      );
-
-      // Consider changing this to column.
-      ListView wid = ListView.builder(
-         padding: const EdgeInsets.only(
-            left: stl.postListViewSidePadding,
-            right: stl.postListViewSidePadding,
-            top: stl.postListViewTopPadding,
-         ),
-         itemCount: widgets.length,
-         itemBuilder: (BuildContext ctx, int i)
-         {
-            return widgets[i];
-         },
-      );
-
-      list.add(wid);
-   } else {
-      ListView wid = makeNewPostTreeLV(
-         trees[navBar].root.last,
-         onPostLeafPressed,
-         onPostNodePressed,
-      );
-
-      list.add(wid);
-   }
-
-   if (filenamesTimerActive) {
-      ModalBarrier mb = ModalBarrier(
-         color: Colors.grey.withOpacity(0.4),
-         dismissible: false,
-      );
-      list.add(mb);
-      list.add(Center(child: CircularProgressIndicator()));
-   }
-
-   return Stack(children: list);
-}
-
 Widget makeSearchAppBar({
    final List<Tree> trees,
    final String title,
@@ -2230,6 +1990,38 @@ Widget makeSearchAppBar({
       //   style: stl.appBarLtSubtitle,
       //),
    );
+}
+
+List<Widget> makeValueSliders({
+   final Post post,
+   final List<int> ranges,
+   final List<int> divisions,
+   final OnPressedFn6 onValueChanged,
+}) {
+   List<Widget> sliders = List<Widget>();
+
+   for (int i = 0; i < divisions.length; ++i) {
+      final int value = post.rangeValues[i];
+      Slider slider = Slider(
+	 value: value.toDouble(),
+	 min: ranges[2 * i + 0].toDouble(),
+	 max: ranges[2 * i + 1].toDouble(),
+	 divisions: divisions[i],
+	 onChanged: (double v) {onValueChanged(i, v);},
+      );
+
+      final RichText rt = makeSearchTitle(
+	 name: g.param.rangePrefixes[i],
+	 value: '$value',
+	 separator: ': ',
+      );
+
+      sliders.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
+      sliders.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: slider));
+      sliders.add(stl.newPostDivider);
+   }
+
+   return sliders;
 }
 
 Widget makeSearchScreenWdg2({
@@ -2311,27 +2103,15 @@ Widget makeSearchScreenWdg2({
       foo.add(stl.newPostDivider);
    }
 
-   {  // Ranges
-      for (int i = 0; i < divisions.length; ++i) {
-	 final int value = post.rangeValues[i];
-	 Slider slider = Slider(
-	    value: value.toDouble(),
-	    min: ranges[2 * i + 0].toDouble(),
-	    max: ranges[2 * i + 1].toDouble(),
-	    divisions: divisions[i],
-	    onChanged: (double v) {onValueChanged(i, v);},
-	 );
+   {  // Values
+      final List<Widget> values = makeValueSliders(
+         post: post,
+	 ranges: ranges,
+	 divisions: divisions,
+	 onValueChanged: onValueChanged,
+      );
 
-	 final RichText rt = makeSearchTitle(
-	    name: g.param.rangePrefixes[i],
-	    value: '$value',
-	    separator: ': ',
-	 );
-
-	 foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
-	 foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: slider));
-	 foo.add(stl.newPostDivider);
-      }
+      foo.addAll(values);
    }
 
    { // Send cancel
@@ -2373,43 +2153,6 @@ Widget wrapDetailRowOnCard(Widget body)
          borderRadius: BorderRadius.all(Radius.circular(0.0)),
       ),
    );
-}
-
-List<Widget> makeNewPostDetailElemList(
-   Function proceed,
-   int filter,
-   List<Node> list,
-) {
-   List<Widget> widgets = List<Widget>();
-
-   for (int i = 0; i < list.length; ++i) {
-      bool v = ((filter & (1 << i)) != 0);
-
-      Color avatarBgColor = stl.colorScheme.secondary;
-      Color avatarTxtColor = stl.colorScheme.onSecondary;
-      if (v) {
-         avatarBgColor = stl.colorScheme.primary;
-         avatarTxtColor = stl.colorScheme.onPrimary;
-      }
-
-       CheckboxListTile cblt = CheckboxListTile(
-         dense: true,
-         secondary: CircleAvatar(
-            child: Text(makeStrAbbrev(list[i].name(g.param.langIdx)),
-               style: TextStyle(color: avatarTxtColor)
-            ),
-            backgroundColor: avatarBgColor
-         ),
-         title: Text(list[i].name(g.param.langIdx), style: stl.ltTitle),
-         value: v,
-         onChanged: (bool v) { proceed(i); },
-         activeColor: stl.colorScheme.primary,
-      );
-
-       widgets.add(wrapDetailRowOnCard(cblt));
-   }
-
-   return widgets;
 }
 
 class MyApp extends StatelessWidget {
@@ -3970,7 +3713,9 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
    );
 
    final int l = names.length;
-   assert(names.length >= 2);
+
+   if (l == 1)
+      return names.first;
 
    final String a = names[l - 2];
    final String b = names[l - 1];
@@ -4326,6 +4071,11 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       });
    }
 
+   void _onCancel(BuildContext ctx)
+   {
+      setState((){ Navigator.pop(ctx); });
+   }
+
    @override
    Widget build(BuildContext ctx)
    {
@@ -4362,6 +4112,13 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 onPressed: () {_onBack(ctx);},
       );
 
+      FlatButton cancel =  FlatButton(
+	 child: Text(g.param.cancel,
+	    style: TextStyle(color: stl.colorScheme.primary),
+	 ),
+	 onPressed: () {_onCancel(ctx);},
+      );
+
       FlatButton ok =  FlatButton(
 	 child: Text(g.param.ok,
 	    style: TextStyle(color: stl.colorScheme.primary),
@@ -4374,7 +4131,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 title: titleWdg,
 	 indent: 10.0,
 	 list: locWdgs,
-	 actions: <FlatButton>[back, ok],
+	 actions: <FlatButton>[back, cancel, ok],
       );
    }
 }
@@ -4917,24 +4674,6 @@ List<Widget> makeNewPostTreeWdgs({
    }
 
    return list;
-}
-
-ListView makeNewPostTreeLV(
-   Node o,
-   OnPressedFn1 onLeafPressed,
-   OnPressedFn1 onNodePressed,
-) {
-   return ListView.builder(
-      itemCount: o.children.length,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-	 return makeNewPostTreeWdg(
-	    child: o.children[i],
-	    onLeafPressed: () {onLeafPressed(i);},
-	    onNodePressed: () {onNodePressed(i);},
-	 );
-      },
-   );
 }
 
 // Returns an icon based on the message status.
@@ -6144,6 +5883,13 @@ class OccaseState extends State<Occase>
    {
       setState(() {
 	 _posts[cts.searchIdx].rangeValues[i] = v.round();
+      });
+   }
+
+   void _onNewPostValueChanged(int i, double v)
+   {
+      setState(() {
+	 _posts[cts.ownIdx].rangeValues[i] = v.round();
       });
    }
 
@@ -7360,7 +7106,8 @@ class OccaseState extends State<Occase>
    */
    Future<void> _onSearch(BuildContext ctx, int i) async
    {
-      _newSearchPressed = false;
+      if (!isWideScreen(ctx))
+	 _newSearchPressed = false;
 
       if (i == 0) {
          setState(() { });
@@ -7672,11 +7419,7 @@ class OccaseState extends State<Occase>
 
    void _onNewPostSetTreeCode(List<int> code, int i)
    {
-      if (code.isEmpty)
-	 return;
-
       _posts[cts.ownIdx].channel[i].first = code;
-
       setState(() {});
    }
 
@@ -7760,6 +7503,7 @@ class OccaseState extends State<Occase>
 	 onAddPhoto: _onAddPhoto,
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
+	 onNewPostValueChanged: _onNewPostValueChanged,
       );
    }
 
