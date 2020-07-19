@@ -202,4 +202,6 @@ final Divider newPostDivider = Divider(
    thickness: 1.0,
 );
 
+const double newPostPadding = 10.0;
+
 

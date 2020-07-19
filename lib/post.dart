@@ -632,7 +632,7 @@ class Post {
       return
       { 'from': from
       , 'to': 0
-      , 'filter': <int>[]
+      , 'filter': 0
       , 'id': id
       , 'features': exDetails.first
       , 'body': body

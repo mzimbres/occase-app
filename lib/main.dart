@@ -99,7 +99,7 @@ double makePostTextWidth(BuildContext ctx, int tab)
 double makeDialogWidthHeight(BuildContext ctx, int tab)
 {
    double w = makeTabWidth(ctx, tab);
-   return 0.80 * w;
+   return 0.90 * w;
 }
 
 double makeMaxWidth(BuildContext ctx, int tab)
@@ -511,10 +511,7 @@ class Persistency {
 
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
    {
-      Batch batch = _db.batch();
-      batch.rawInsert(sql.insertChatStOnPost, makeChatMetadataSql(cm, postId));
-      batch.execute(sql.updatePostStatus, [2, postId]);
-      await batch.commit(noResult: true, continueOnError: true);
+      await _db.rawInsert(sql.insertChatStOnPost, makeChatMetadataSql(cm, postId));
    }
 
    Future<void> insertChatOnPost3(
@@ -1615,8 +1612,8 @@ Widget makeNewPostLT({
 	  child: Icon(icon,
 	     color: stl.colorScheme.primary,
 	  ),
-	  backgroundColor: Colors.white,
-       );
+          backgroundColor: Colors.white,
+      );
       
    return ListTile(
        contentPadding: EdgeInsets.all(3.0),
@@ -1786,7 +1783,6 @@ List<Widget> makeNewPostWdgs({
       );
 
       list.addAll(values);
-      list.add(stl.newPostDivider);
    }
 
    {  // exDetails
@@ -1879,7 +1875,6 @@ Widget makeNewPostScreenWdgs2({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
-   final TextEditingController txtCtrl,
    final List<PickedFile> imgFiles,
    final OnPressedFn12 onSetTreeCode,
    final OnPressedFn3 onSetExDetail,
@@ -1889,6 +1884,7 @@ Widget makeNewPostScreenWdgs2({
    final OnPressedFn4 onRemovePost,
    final OnPressedFn8 onRangeValueChanged,
    final OnPressedFn6 onNewPostValueChanged,
+   final OnPressedFn9 onSetPostDescription,
 }) {
    List<Widget> list = makeNewPostWdgs(
       ctx: ctx,
@@ -1908,24 +1904,27 @@ Widget makeNewPostScreenWdgs2({
       return makeNewPostListView(list);
 
    if (list.length > 2) {
-      { // Description
-	 TextField tf = TextField(
-	    controller: txtCtrl,
-	    keyboardType: TextInputType.multiline,
-	    maxLines: null,
-	    maxLength: 300,
-	    style: stl.textField,
-	    decoration: InputDecoration.collapsed(
-	       hintText: g.param.newPostTextFieldHist,
-	    ),
+      {  // Description
+	 Widget descWidget = makeNewPostLT(
+	    title: g.param.postDescTitle,
+	    subTitle: post.description,
+	    icon: null,
+	    onTap: () async
+	    {
+	       final String description = await showDialog<String>(
+		  context: ctx,
+		  builder: (BuildContext ctx2)
+		  {
+		     return PostDescription();
+		  },
+	       );
+
+	       if (description != null)
+		  onSetPostDescription(description);
+	    },
 	 );
 
-	 Padding pad = Padding(
-	    padding: EdgeInsets.all(10.0),
-	    child: tf,
-	 );
-
-	 list.add(pad);
+	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: descWidget));
 	 list.add(stl.newPostDivider);
       }
 
@@ -2394,8 +2393,8 @@ Widget makeFAButtonMiddleScreen({
    final bool hasFavPosts,
    final OnPressedFn0 onSearch,
 }) {
-   print('$onSearchScreen $isWide $hasFavPosts');
-   if ((onSearchScreen && isWide) || (isWide && !hasFavPosts))
+   //print('$onSearchScreen $isWide $hasFavPosts');
+   if (onSearchScreen || (isWide && !hasFavPosts))
       return SizedBox.shrink();
 
    return FloatingActionButton(
@@ -3860,7 +3859,7 @@ Widget makeNewPostDialogWdg({
    final double indent,
    final List<Widget> list,
    final List<Widget> actions,
-   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
+   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
 }) {
    ListView lv = ListView.separated(
       //shrinkWrap: true,
@@ -3880,7 +3879,7 @@ Widget makeNewPostDialogWdg({
       contentPadding: EdgeInsets.all(indent),
       actions: actions,
       insetPadding: insetPadding,
-      backgroundColor: stl.colorScheme.secondary,
+      backgroundColor: Colors.grey[200],
       content: Container(
 	 constraints: BoxConstraints(maxHeight: height, maxWidth: width),
          width: width,
@@ -3959,7 +3958,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
 	 width: width,
 	 height: width,
 	 title: Text(widget.title, style: stl.newPostTreeLT),
-	 indent: 10.0,
+	 indent: stl.newPostPadding,
 	 list: list,
 	 actions: <FlatButton>[ok],
       );
@@ -4033,9 +4032,72 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 	 width: width,
 	 height: width,
 	 title: Text(widget.title, style: stl.newPostSubtitleLT),
-	 indent: 10.0,
+	 indent: stl.newPostPadding,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
+      );
+   }
+}
+
+//---------------------------------------------------------------
+
+class PostDescription extends StatefulWidget {
+   @override
+   PostDescriptionState createState() => PostDescriptionState();
+   PostDescription();
+}
+
+class PostDescriptionState extends State<PostDescription> with TickerProviderStateMixin {
+   TextEditingController _txtCtrl = TextEditingController();
+
+   @override
+   void dispose()
+   {
+      _txtCtrl.dispose();
+      super.dispose();
+   }
+
+   @override
+   void initState()
+   {
+      super.initState();
+   }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      TextField tf = TextField(
+	 autofocus: true,
+	 controller: _txtCtrl,
+	 keyboardType: TextInputType.multiline,
+	 maxLines: null,
+	 maxLength: 1000,
+	 style: stl.textField,
+	 decoration: InputDecoration.collapsed(
+	    hintText: g.param.newPostTextFieldHist,
+	 ),
+      );
+
+      Padding content = Padding(
+	 padding: EdgeInsets.all(10.0),
+	 child: tf,
+      );
+
+      final FlatButton ok = FlatButton(
+	 child: Text(g.param.ok),
+	 onPressed: ()
+	 {
+	    Navigator.pop(ctx, _txtCtrl.text);
+	 });
+
+      return AlertDialog(
+	 contentPadding: EdgeInsets.all(stl.newPostPadding),
+	 title: Text(
+            g.param.postDescTitle,
+	    style: stl.newPostTreeLT,
+	 ),
+	 content: content,
+	 actions: <Widget>[ok],
       );
    }
 }
@@ -4174,7 +4236,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 width: width,
 	 height: width,
 	 title: titleWdg,
-	 indent: 10.0,
+	 indent: stl.newPostPadding,
 	 list: locWdgs,
 	 actions: <FlatButton>[back, cancel, ok],
       );
@@ -4290,13 +4352,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       actions.add(SizedBox(width: width, child: tmp));
 	    }
 
-	    const double indent = 5.0;
 	    final double height = makeMaxHeight(ctx);
 	    return makeNewPostDialogWdg(
 	       width: width,
 	       height: height,
                title: null,
-	       indent: indent,
+	       indent: stl.newPostPadding,
 	       list: <Widget>[detailsWdg],
                actions: actions,
 	       insetPadding: const EdgeInsets.only(
@@ -4568,9 +4629,24 @@ Widget makeNewPost({
    );
 }
 
+Widget makeEmptyTabText(String msg)
+{
+   return Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Text(msg,
+	 style: TextStyle(
+	    fontSize: 16.0,
+	    color: stl.colorScheme.primary,
+	 ),
+      ),
+   );
+}
+
 Widget makeOwnEmptyScreenWidget({
    final OnPressedFn0 onPressed,
 }) {
+   Widget text = makeEmptyTabText(g.param.newPostMessage);
+
    Widget button = createRaisedButton(
       onPressed,
       g.param.newPostAppBarTitle,
@@ -4578,19 +4654,18 @@ Widget makeOwnEmptyScreenWidget({
       stl.colorScheme.onSecondary,
    );
 
-   return Center(child: button);
+   return Center(
+      child: Column(
+	 mainAxisAlignment: MainAxisAlignment.center,
+         children: <Widget>[text, button],
+      ),
+   );
 }
 
 Widget makeFavEmptyScreenWidget()
 {
-   return Center(
-      child: Text(g.param.appName,
-         style: TextStyle(
-            color: Colors.grey,
-            fontSize: 30.0,
-         ),
-      ),
-   );
+   Widget text = makeEmptyTabText(g.param.emptyFavTab);
+   return Center(child: text);
 }
 
 Widget makeNewPostLv({
@@ -5403,6 +5478,7 @@ class AppState {
       
       post.status = 2;
       final int k = post.addChat(post.from, post.nick, post.avatar);
+      await persistency.insertPost(post, ConflictAlgorithm.ignore);
       await persistency.insertChatOnPost2(post.id, post.chats[k]);
 
       favPosts.add(post);
@@ -5926,6 +6002,13 @@ class OccaseState extends State<Occase>
       });
    }
 
+   void _onSetPostDescription(String description)
+   {
+      setState(() {
+	 _posts[cts.ownIdx].description = description;
+      });
+   }
+
    void _onClickOnPost(int i, int j)
    {
       if (j == 1) {
@@ -5938,6 +6021,7 @@ class OccaseState extends State<Occase>
    Future<void> _onMovePostToFav(int i) async
    {
       final int h = await _appState.moveToFavorite(i);
+
       assert(h != -1);
 
       // We should be using the animate function below, but there is no way
@@ -6294,6 +6378,7 @@ class OccaseState extends State<Occase>
             return;
 
          final String payload = makePostPayload(_appState.outPostsQueue.first);
+	 print(payload);
          channel.sink.add(payload);
       } catch (e) {
          print(e);
@@ -6692,6 +6777,7 @@ class OccaseState extends State<Occase>
          if (_appState.appMsgQueue.isNotEmpty) {
             assert(!_appState.appMsgQueue.first.sent);
             _appState.appMsgQueue.first.sent = true;
+	    print(_appState.appMsgQueue.first.payload);
             channel.sink.add(_appState.appMsgQueue.first.payload);
          }
       } catch (e) {
@@ -6999,7 +7085,7 @@ class OccaseState extends State<Occase>
             if (post.from == _appState.cfg.appId)
                continue;
 
-	    await _appState.persistency.insertPost(post, ConflictAlgorithm.ignore);
+	    //await _appState.persistency.insertPost(post, ConflictAlgorithm.ignore);
 
             _appState.posts.add(post);
             ++_nNewPosts;
@@ -7088,7 +7174,7 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
-               child: Text('Ok'),
+               child: Text(g.param.ok),
                onPressed: ()
                {
                   onOk();
@@ -7511,7 +7597,6 @@ class OccaseState extends State<Occase>
 	 exDetailsRootNode: _exDetailsRoot,
 	 inDetailsRootNode: _inDetailsRoot,
 	 post: _posts[cts.ownIdx],
-	 txtCtrl: _txtCtrl,
 	 onSetTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
 	 onSetInDetail: _onSetInDetail,
@@ -7520,6 +7605,7 @@ class OccaseState extends State<Occase>
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
+	 onSetPostDescription: _onSetPostDescription,
       );
    }
 
