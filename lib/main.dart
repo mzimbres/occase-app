@@ -652,7 +652,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency p) async
+Future<void> removeLpChat(Coord c, Persistency2 p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -5377,7 +5377,7 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency persistency = Persistency();
+   Persistency2 persistency = Persistency2();
 
    AppState();
 
@@ -5671,8 +5671,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   //HtmlWebSocketChannel channel;
-   IOWebSocketChannel channel;
+   HtmlWebSocketChannel channel;
+   //IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not got
@@ -5695,7 +5695,7 @@ class OccaseState extends State<Occase>
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-   final ImagePicker picker = ImagePicker();
+   final ImagePicker _picker = ImagePicker();
 
    @override
    void initState()
@@ -5714,18 +5714,18 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
-      _firebaseMessaging.configure(
-         onMessage: (Map<String, dynamic> message) async {
-           print("onMessage: $message");
-         },
-         onBackgroundMessage: fcmOnBackgroundMessage,
-         onLaunch: (Map<String, dynamic> message) async {
-           print("onLaunch: $message");
-         },
-         onResume: (Map<String, dynamic> message) async {
-           print("onResume: $message");
-         },
-      );
+      //_firebaseMessaging.configure(
+      //   onMessage: (Map<String, dynamic> message) async {
+      //     print("onMessage: $message");
+      //   },
+      //   onBackgroundMessage: fcmOnBackgroundMessage,
+      //   onLaunch: (Map<String, dynamic> message) async {
+      //     print("onLaunch: $message");
+      //   },
+      //   onResume: (Map<String, dynamic> message) async {
+      //     print("onResume: $message");
+      //   },
+      //);
 
       _firebaseMessaging.getToken().then((String token) {
          if (_fcmToken != null)
@@ -5876,8 +5876,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 channel = IOWebSocketChannel.connect(cts.dbHost);
+	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 //channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -5950,12 +5950,14 @@ class OccaseState extends State<Occase>
          // It looks like we do not need to show any dialog here to
          // inform the maximum number of photos has been reached.
          if (i == -1) {
-            PickedFile img = await picker.getImage(
+	    print('1 ------------');
+            PickedFile img = await _picker.getImage(
                source: ImageSource.gallery,
                //maxWidth: makeMaxWidth(ctx),
                //maxHeight: makeMaxWidth(ctx),
-               imageQuality: cts.imgQuality,
+               //imageQuality: cts.imgQuality,
             );
+	    print('2 ------------');
 
             if (img == null)
                return;
