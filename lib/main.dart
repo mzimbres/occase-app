@@ -23,6 +23,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -652,7 +653,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency2 p) async
+Future<void> removeLpChat(Coord c, Persistency p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -963,17 +964,21 @@ Scaffold makeNtfScreen(
 Widget makeInfoScreen(
    BuildContext ctx,
    OnPressedFn7 onWillPopScope,
+   OnPressedFn0 onSendEmail,
 ) {
    final double width = makeTabWidth(ctx, cts.ownIdx);
 
    Widget tmp = ConstrainedBox(
       constraints: BoxConstraints(maxWidth: width),
       child: Center(
-         child: Text(g.param.infoBody,
-	    style: TextStyle(
-	       fontSize: 20.0,
-	       color: stl.colorScheme.primary,
-	       fontWeight: FontWeight.normal,
+         child: RaisedButton(
+	    onPressed: onSendEmail,
+	    child: Text(g.param.supportEmail,
+	       style: TextStyle(
+		  fontSize: 20.0,
+		  color: stl.colorScheme.primary,
+		  fontWeight: FontWeight.normal,
+	       ),
 	    ),
 	 ),
       ),
@@ -1217,9 +1222,9 @@ Widget makeImgListView(
          );
 
          Widget delPhotoWidget = makeAddOrRemoveWidget(
-            () {onAddPhoto(ctx, i);},
-            Icons.clear,
-            stl.colorScheme.secondaryVariant,
+            onPressed: () {onAddPhoto(ctx, i);},
+            icon: Icons.clear,
+            color: stl.colorScheme.secondaryVariant,
          );
 
          return Stack(children: <Widget>[img, delPhotoWidget]);
@@ -1273,11 +1278,11 @@ RichText makeSearchTitle({
    return RichText(
       text: TextSpan(
          text: '$name$separator',
-         style: stl.newPostSubtitleLT,
+         style: stl.newPostTitleLT.copyWith(fontSize: stl.ltTitleFontSize),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.newPostTreeLT,
+              style: stl.newPostSubtitleLT.copyWith(fontSize: stl.ltTitleFontSize),
            ),
          ],
       ),
@@ -1351,7 +1356,7 @@ List<Widget> makeCheckBoxes(
       final bool v = ((state & (1 << i)) != 0);
       CheckboxListTile tmp = CheckboxListTile(
          dense: true,
-         title: Text(items[i], style: stl.newPostTreeLT),
+         title: Text(items[i], style: stl.newPostTitleLT),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
          activeColor: stl.colorScheme.primary,
@@ -1621,14 +1626,14 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.newPostSubtitleLT,
+	  style: stl.newPostTitleLT,
        ),
        dense: true,
        subtitle:
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.ellipsis,
-	     style: stl.newPostTreeLT,
+	     style: stl.newPostSubtitleLT.copyWith(fontSize: stl.ltTitleFontSize),
 	  ),
        onTap: onTap,
        enabled: true,
@@ -3786,18 +3791,19 @@ Widget makeTextWdg(
    );
 }
 
-Widget makeAddOrRemoveWidget(
-   Function add,
-   IconData id,
+Widget makeAddOrRemoveWidget({
+   OnPressedFn0 onPressed,
+   IconData icon,
    Color color,
-) {
+}) {
    return Padding(
       padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
       child: IconButton(
-         onPressed: add,
-         icon: Icon(id,
+         onPressed: onPressed,
+	 padding: EdgeInsets.all(0.0),
+         icon: Icon(icon,
             color: color,
-            size: 30.0,
+            //size: 30.0,
          ),
       ),
    );
@@ -3862,16 +3868,11 @@ Widget makeNewPostDialogWdg({
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
 }) {
    ListView lv = ListView.separated(
-      //shrinkWrap: true,
       separatorBuilder: (BuildContext context, int index)
-      {
-	 return stl.alertDivider;
-      },
+	 { return stl.alertDivider; },
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i)
-      {
-	 return list[i];
-      }
+	 { return list[i]; }
    );
 
    return AlertDialog(
@@ -3957,7 +3958,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: width,
 	 height: width,
-	 title: Text(widget.title, style: stl.newPostTreeLT),
+	 title: Text(widget.title, style: stl.newPostTitleLT),
 	 indent: stl.newPostPadding,
 	 list: list,
 	 actions: <FlatButton>[ok],
@@ -4011,7 +4012,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       for (int i = 0; i < widget.names.length; ++i) {
 	 CheckboxListTile cb = CheckboxListTile(
 	    dense: true,
-	    title: Text(widget.names[i], style: stl.newPostTreeLT),
+	    title: Text(widget.names[i], style: stl.newPostTitleLT),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
 	    activeColor: stl.colorScheme.primary,
@@ -4094,7 +4095,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 contentPadding: EdgeInsets.all(stl.newPostPadding),
 	 title: Text(
             g.param.postDescTitle,
-	    style: stl.newPostTreeLT,
+	    style: stl.newPostTitleLT,
 	 ),
 	 content: content,
 	 actions: <Widget>[ok],
@@ -4200,11 +4201,11 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       Widget titleWdg = RichText(
 	 text: TextSpan(
 	    text: '${g.param.newPostTabNames[0]}: ',
-	    style: stl.newPostTreeLT,
+	    style: stl.newPostTitleLT,
 	    children: <TextSpan>
 	    [ TextSpan(
 		 text: titleStr,
-		 style: stl.newPostTreeLT.copyWith(color: stl.colorScheme.secondary),
+		 style: stl.newPostTitleLT.copyWith(color: stl.colorScheme.secondary),
 	      ),
 	    ],
 	 ),
@@ -4352,8 +4353,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       actions.add(SizedBox(width: width, child: tmp));
 	    }
 
+	    const double insetPadding = 10.0;
 	    final double height = makeMaxHeight(ctx);
-	    return makeNewPostDialogWdg(
+	    Widget ret = makeNewPostDialogWdg(
 	       width: width,
 	       height: height,
                title: null,
@@ -4363,9 +4365,31 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       insetPadding: const EdgeInsets.only(
 	          left: 0.0,
 		  right: 0.0,
-		  top: 10.0,
-		  bottom: 10.0,
+		  top: insetPadding,
+		  bottom: insetPadding,
 	       ),
+	    );
+
+	    return Stack(children: <Widget>
+               [ ret
+	       , Positioned(
+		   right: 0.0,
+		   top: 0.0,
+		   child: Card(
+		      elevation: 0.0,
+		      color: Colors.white.withOpacity(0.3),
+		      margin: EdgeInsets.only(
+		         top: stl.newPostPadding + insetPadding,
+		         right: insetPadding,
+		      ),
+		      child: IconButton(
+		         onPressed:  () {Navigator.of(ctx).pop();},
+		         //padding: EdgeInsets.all(0.0),
+		         icon: Icon(Icons.clear, color: Colors.black),
+		      ),
+		    ),
+		 ),
+	       ],
 	    );
 	 },
       );
@@ -4476,9 +4500,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       // following way.
       if (widget.post.images.isEmpty && (widget.imgFiles.length < cts.maxImgsPerPost)) {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
-	    () {widget.onAddPhoto(ctx, -1);},
-	    Icons.add_a_photo,
-	    stl.colorScheme.primary,
+	    onPressed: () {widget.onAddPhoto(ctx, -1);},
+	    icon: Icons.add_a_photo,
+	    color: stl.colorScheme.primary,
 	 );
 
 	 Stack st = Stack(
@@ -4664,7 +4688,7 @@ Widget makeOwnEmptyScreenWidget({
 
 Widget makeFavEmptyScreenWidget()
 {
-   Widget text = makeEmptyTabText(g.param.emptyFavTab);
+   Widget text = makeEmptyTabText(g.param.emptyFavMessage);
    return Center(child: text);
 }
 
@@ -4745,7 +4769,7 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style: stl.newPostTreeLT),
+	 title: Text(child.name(g.param.langIdx), style: stl.newPostTitleLT),
 	 dense: true,
 	 onTap: onLeafPressed,
 	 enabled: true,
@@ -4763,7 +4787,7 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style: stl.newPostTreeLT),
+	 title: Text(child.name(g.param.langIdx), style: stl.newPostTitleLT),
 	 dense: true,
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx),
@@ -5377,7 +5401,7 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency2 persistency = Persistency2();
+   Persistency persistency = Persistency();
 
    AppState();
 
@@ -5671,8 +5695,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   HtmlWebSocketChannel channel;
-   //IOWebSocketChannel channel;
+   //HtmlWebSocketChannel channel;
+   IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we still did not got
@@ -5876,8 +5900,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 //channel = IOWebSocketChannel.connect(cts.dbHost);
+	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -7492,6 +7516,26 @@ class OccaseState extends State<Occase>
       return false;
    }
 
+   Future<void> _onSendEmailToSupport() async
+   {
+      // The email must have the form:
+      //
+      //   mailto:<email address>?subject=<subject>&body=<body>
+      //
+
+      final String email = g.param.supportEmail;
+      final String subject = g.param.supportEmailSubject;
+      final String body = '';
+
+      final String url = 'mailto:${email}?subject=${subject}&body=${body}';
+
+      if (await canLaunch(url)) {
+         await launch(url);
+      } else {
+         print('Unable to send email.');
+      }
+   }
+
    Future<void> _onChangeNtf(int i, bool v) async
    {
       try {
@@ -7853,7 +7897,11 @@ class OccaseState extends State<Occase>
       }
 
       if (_goToInfoScreen)
-         return makeInfoScreen(ctx, _onWillLeaveInfoScreen);
+         return makeInfoScreen(
+            ctx,
+	    _onWillLeaveInfoScreen,
+	    _onSendEmailToSupport,
+	 );
 
       if (_onTabSwitch()) {
          _cleanUpLpOnSwitchTab(cts.ownIdx);

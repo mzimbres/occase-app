@@ -72,9 +72,15 @@ const TextStyle ltTitle = TextStyle(
    fontWeight: FontWeight.w500,
 );
 
-final TextStyle newPostTreeLT = TextStyle(
+final TextStyle newPostTitleLT = TextStyle(
    fontSize: ltTitleFontSize,
    color: colorScheme.primary,
+   fontWeight: FontWeight.normal,
+);
+
+final TextStyle newPostSubtitleLT = TextStyle(
+   fontSize: ltSubtitleFontSize,
+   color: colorScheme.secondary,
    fontWeight: FontWeight.normal,
 );
 
@@ -85,12 +91,6 @@ const TextStyle ltTitleOnPrimary = TextStyle(
 );
 
 final TextStyle ltSubtitle = TextStyle(
-   fontSize: ltSubtitleFontSize,
-   color: Colors.grey[700],
-   fontWeight: FontWeight.w300,
-);
-
-final TextStyle newPostSubtitleLT = TextStyle(
    fontSize: ltSubtitleFontSize,
    color: Colors.grey[700],
    fontWeight: FontWeight.w300,

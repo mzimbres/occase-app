@@ -70,9 +70,10 @@ class Parameters {
    List<String> _shareSubject = <String>[''];
    List<String> _reviewAndSend = <String>[''];
    List<String> _information = <String>[''];
-   List<String> _infoBody = <String>[''];
+   List<String> _supportEmail = <String>[''];
+   List<String> _supportEmailSubject = <String>[''];
    List<String> _newPostMessage = <String>[''];
-   List<String> _emptyFavTab = <String>[''];
+   List<String> _emptyFavMessage = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -171,9 +172,10 @@ class Parameters {
    String get shareSubject              => _shareSubject[_langIdx];
    String get reviewAndSend             => _reviewAndSend[_langIdx];
    String get information               => _information[_langIdx];
-   String get infoBody                  => _infoBody[_langIdx];
+   String get supportEmail              => _supportEmail[_langIdx];
+   String get supportEmailSubject       => _supportEmailSubject[_langIdx];
    String get newPostMessage            => _newPostMessage[_langIdx];
-   String get emptyFavTab               => _emptyFavTab[_langIdx];
+   String get emptyFavMessage           => _emptyFavMessage[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
@@ -251,9 +253,10 @@ class Parameters {
       _shareSubject                = decodeList2(map['shareSubject']);
       _reviewAndSend               = decodeList2(map['reviewAndSend']);
       _information                 = decodeList2(map['information']);
-      _infoBody                    = decodeList2(map['infoBody']);
+      _supportEmail                = decodeList2(map['supportEmail']);
+      _supportEmailSubject         = decodeList2(map['supportEmailSubject']);
       _newPostMessage              = decodeList2(map['newPostMessage']);
-      _emptyFavTab                 = decodeList2(map['emptyFavTab']);
+      _emptyFavMessage             = decodeList2(map['emptyFavMessage']);
       _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
@@ -336,9 +339,10 @@ class Parameters {
          'shareSubject':                _shareSubject,
          'reviewAndSend':               _reviewAndSend,
          'information':                 _information,
-         'infoBody':                    _infoBody,
+         'supportEmail':                _supportEmail,
+         'supportEmailSubject':         _supportEmailSubject,
          'newPostMessage':              _newPostMessage,
-         'emptyFavTab':                 _emptyFavTab,
+         'emptyFavMessage':             _emptyFavMessage,
          'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,
