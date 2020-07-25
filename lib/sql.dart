@@ -48,54 +48,11 @@ DELETE FROM posts WHERE status = ?
 ''';
 
 //___________________________________________________________
-final String createConfig =
-'''
-CREATE TABLE config
-( app_id TEXT PRIMARY KEY
-, app_pwd TEXT
-, nick TEXT
-, email TEXT
-, show_dialog_on_select_post TEXT
-, show_dialog_on_del_post TEXT
-, show_dialog_on_report_post TEXT
-, notifications TEXT)
-''';
 
-final String updateAppCredentials =
-'''
-UPDATE config
-SET app_id = ?, app_pwd = ?
-''';
-
-final String updateNick =
-'''
-UPDATE config SET nick = ?
-''';
-
-final String updateEmail =
-'''
-UPDATE config SET email = ?
-''';
-
-final String updateNotifications =
-'''
-UPDATE config SET notifications = ?
-''';
-
-final String updateShowDialogOnSelectPost =
-'''
-UPDATE config SET show_dialog_on_select_post = ?
-''';
-
-final String updateShowDialogOnDelPost =
-'''
-UPDATE config SET show_dialog_on_del_post = ?
-''';
-
-final String updateShowDialogOnReportPost =
-'''
-UPDATE config SET show_dialog_on_report_post = ?
-''';
+final String createConfig = 'CREATE TABLE config (cfg TEXT)';
+final String updateConfig = 'UPDATE config SET cfg = ? WHERE rowid = ?' ;
+final String readConfig =   'SELECT * FROM config';
+final String insertConfig = 'INSERT INTO config (cfg) VALUES (?)';
 
 //___________________________________________________________
 

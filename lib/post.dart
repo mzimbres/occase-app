@@ -7,6 +7,19 @@ import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
 
+class AppMsgQueueElem {
+   int rowid;
+   int isChat;
+   String payload;
+   bool sent; // Used for debugging.
+   AppMsgQueueElem({
+      this.rowid = 0,
+      this.isChat = 0,
+      this.payload = '',
+      this.sent = false,
+   });
+}
+
 String makeConnCmd(
    final String appId,
    final String appPwd,
@@ -323,14 +336,6 @@ ChatMetadata selectMostRecentChat(
    return t1 >= t2 ? lhs : rhs;
 }
 
-List<List<List<int>>> makeEmptyChannels()
-{
-   return <List<List<int>>>
-   [ <List<int>>[<int>[]]
-   , <List<int>>[<int>[]]
-   ];
-}
-
 List<T> decodeList<T>(int size, T init, List<dynamic> details)
 {
    List<T> ret = List.filled(size, init);
@@ -360,12 +365,8 @@ class Post {
    // Publisher avatar hash code from gravatar.
    String avatar;
 
-   // Contains the channel this post was published in. It has the
-   // following form
-   //
-   //  [[[1, 2]], [[3, 2]]]
-   //
-   List<List<List<int>>> channel;
+   List<int> location = <int>[];
+   List<int> product = <int>[];
 
    // Stores indexes.
    List<int> exDetails;
@@ -408,14 +409,15 @@ class Post {
    })
    {
       final int rangeDivsLength = rangesMinMax.length >> 1;
-      channel = makeEmptyChannels();
       exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
       inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
       rangeValues = List.generate(rangeDivsLength, (int i) {
          return rangesMinMax[2 * i];
       });
 
-      images = List<String>();
+      location = <int>[];
+      product = <int>[];
+      images = <String>[];
       chats = List<ChatMetadata>();
    }
 
@@ -429,52 +431,15 @@ class Post {
       rangeValues = List.generate(l, (int i) { return g.param.rangesMinMax[2 * i]; });
    }
 
-   List<int> getLocationCode()
-   {
-      if (channel == null)
-	 return <int>[];
-
-      if (channel[0] == null)
-	 return <int>[];
-
-      if (channel[0][0] == null)
-	 return <int>[];
-
-      return channel[0][0];
-   }
-
-   List<int> getProductCode()
-   {
-      if (channel == null)
-	 return <int>[];
-
-      if (channel[1] == null)
-	 return <int>[];
-
-      if (channel[1][0] == null)
-	 return <int>[];
-
-      return channel[1][0];
-   }
-
    int getPrice()
       { return rangeValues[0]; }
 
    int getProductDetailIdx()
    {
-      if (channel == null)
+      if (product.isEmpty)
 	 return -1;
 
-      if (channel[1] == null)
-	 return -1;
-
-      if (channel[1][0] == null)
-	 return -1;
-
-      if (channel[1][0].isEmpty)
-	 return -1;
-
-      return channel[1][0][0];
+      return product[0];
    }
 
    Post clone()
@@ -485,7 +450,8 @@ class Post {
       ret.from = this.from;
       ret.nick = this.nick;
       ret.avatar = this.avatar;
-      ret.channel = List<List<List<int>>>.from(this.channel);
+      ret.location = List<int>.from(this.location);
+      ret.product = List<int>.from(this.product);
       ret.exDetails = this.exDetails;
       ret.inDetails = this.inDetails;
       ret.date = this.date;
@@ -569,28 +535,38 @@ class Post {
       Map<String, dynamic> map,
       int rangeDivsLength, // g.param.rangeDivs.length,
    ) {
-      dbId = -1;
-      id = map['id'];
-      from = map['from'];
-      date = map['date'];
-      pinDate = 0;
-      status = -1;
+      try {
+	 print('===============================================================');
+	 print(map);
+	 print('===============================================================');
+	 dbId = map['rowid'] ?? -1;
+	 id = map['id'];
+	 //print('$id');
+	 from = map['from'];
+	 nick = map['nick'] ?? '';
+	 avatar = map['avatar'] ?? '';
+	 location = map['location'] ?? <int>[];
+	 product = map['product'] ?? <int>[];
+	 exDetails = decodeList(cts.maxExDetailSize, 1, map['ex_details']);
+	 inDetails = decodeList(cts.maxInDetailSize, 1, map['in_details']);
+	 date = map['date'];
+	 pinDate = map['pin_date'] ?? 0;
+	 //rangeValues = map['range_values'];
+	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
+	 status = map['status'] ?? -1;
+	 description = map['description'] ?? '';
+	 images = decodeList(1, '', map['images']) ?? <String>[];
 
-      rangeValues = decodeList(
-         rangeDivsLength,
-         0,
-         map['range_values']
-      );
-
-      final String body = map['body'];
-      Map<String, dynamic> bodyMap = jsonDecode(body);
-      nick = bodyMap['nick'] ?? '';
-      avatar = bodyMap['avatar'] ?? '';
-      images = decodeList(1, '', bodyMap['images']) ?? <String>[];
-      description = bodyMap['msg'];
-      exDetails = decodeList(cts.maxExDetailSize, 1, bodyMap['ex_details']);
-      inDetails = decodeList(cts.maxInDetailSize, 0, bodyMap['in_details']);
-      channel = decodeChannel(bodyMap['channel']);
+	 final String body = map['body'];
+	 Map<String, dynamic> bodyMap = jsonDecode(body);
+	 nick = bodyMap['nick'] ?? '';
+	 avatar = bodyMap['avatar'] ?? '';
+	 images = decodeList(1, '', bodyMap['images']) ?? <String>[];
+	 description = bodyMap['msg'] ?? '';
+      } catch (e) {
+	 print('lkdjf');
+	 print(e);
+      }
    }
 
    Map<String, dynamic> toJson()
@@ -613,29 +589,39 @@ class Post {
       // txt.exDetails[index].length) and similar to the inDetails
       // array.
 
-      assert(channel.length == 2);
-
-      var subCmd = {
-         'msg': description,
-         'nick': nick,
-         'avatar': avatar,
-         'images': images,
-         'ex_details': exDetails,
-         'in_details': inDetails,
-         'channel': channel,
+      var subCmd =
+      { 'msg': description
+      , 'nick': nick
+      , 'avatar': avatar
+      , 'images': images
+      , 'ex_details': exDetails
+      , 'in_details': inDetails
+      , 'location': location
+      , 'product': product
       };
 
       final String body = jsonEncode(subCmd);
 
       return
-      { 'from': from
+      { 'rowid': dbId
+      , 'id': id
+      , 'from': from
+      , 'nick': nick
+      , 'avatar': avatar
+      , 'location': location
+      , 'product': product
+      , 'ex_details': exDetails
+      , 'in_details': inDetails
+      , 'date': date
+      , 'pin_date': pinDate
+      , 'range_values': rangeValues
+      , 'status': status
+      , 'description': description
+      , 'images': images
       , 'to': 0
       , 'filter': 0
-      , 'id': id
       , 'features': exDetails.first
       , 'body': body
-      , 'date': date
-      , 'range_values': rangeValues
       };
    }
 }
@@ -651,7 +637,8 @@ Map<String, dynamic> postToMap(Post post)
      'from': post.from,
      'nick': post.nick,
      'avatar': post.avatar,
-     'channel': jsonEncode(post.channel),
+     'location': post.location,
+     'product': post.product,
      'ex_details': jsonEncode(post.exDetails),
      'in_details': jsonEncode(post.inDetails),
      'range_values': jsonEncode(post.rangeValues),
@@ -784,26 +771,6 @@ bool markPresence(
    return true;
 }
 
-List<List<List<int>>> decodeChannel(List<dynamic> to)
-{
-   List<List<List<int>>> channel = List<List<List<int>>>();
-
-   for (List<dynamic> a in to) {
-      List<List<int>> foo = List<List<int>>();
-      for (List<dynamic> b in a) {
-         List<int> bar = List<int>();
-         for (int c in b) {
-            bar.add(c);
-         }
-         foo.add(bar);
-      }
-
-      channel.add(foo);
-   }
-
-   return channel;
-}
-
 class NtfConfig {
    bool chat;
    bool post;
@@ -848,9 +815,7 @@ class Config {
    String appPwd;
    String email;
    String nick;
-   String showDialogOnSelectPost;
-   String showDialogOnReportPost;
-   String showDialogOnDelPost;
+   List<bool> dialogPreferences = List<bool>.filled(20, true);
    NtfConfig notifications;
 
    Config({
@@ -858,28 +823,24 @@ class Config {
       this.appPwd = '',
       this.email = '',
       this.nick = '',
-      this.showDialogOnSelectPost = 'yes',
-      this.showDialogOnReportPost = 'yes',
-      this.showDialogOnDelPost = 'yes',
-      this.notifications,
    })
    {
-      if (notifications == null) 
-         notifications = NtfConfig(chat: true, post: true);
+      notifications = NtfConfig(chat: true, post: true);
+      dialogPreferences = List<bool>.filled(20, true);
    }
 
    Config.fromJson(Map<String, dynamic> map)
    {
+      print(map);
       try {
-	 appId = map['app_id'];
-	 appPwd = map['app_pwd'];
-	 email = map['email'];
-	 nick = map['nick'];
-	 showDialogOnSelectPost = map['show_dialog_on_select_post'];
-	 showDialogOnReportPost = map['show_dialog_on_report_post'];
-	 showDialogOnDelPost = map['show_dialog_on_del_post'];
+	 appId = map['app_id'] ?? '';
+	 appPwd = map['app_pwd'] ?? '';
+	 email = map['email'] ?? '';
+	 nick = map['nick'] ?? '';
+	 dialogPreferences = decodeList(20, true, map['dialogPreferences']);
 	 notifications = NtfConfig.fromJson(map['notifications']);
       } catch (e) {
+	 print('oowoow');
 	 print(e);
       }
    }
@@ -891,9 +852,7 @@ class Config {
       , 'app_pwd': appPwd
       , 'email': email
       , 'nick': nick
-      , 'show_dialog_on_select_post': showDialogOnSelectPost
-      , 'show_dialog_on_report_post': showDialogOnReportPost
-      , 'show_dialog_on_del_post': showDialogOnDelPost
+      , 'dialogPreferences': dialogPreferences
       , 'notifications': notifications.toJson()
       };
    }

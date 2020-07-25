@@ -1,12 +1,20 @@
 import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
-import 'dart:html' show window;
 import 'dart:collection';
 
 import 'dart:io'
-       if (dart.library.io) 'package:web_socket_channel/io.dart'
-       if (dart.library.html) 'package:web_socket_channel/html.dart';
+       if (dart.library.io)
+          'package:web_socket_channel/io.dart'
+       if (dart.library.html)
+          'package:web_socket_channel/html.dart';
+
+import 'dart:io'
+       if (dart.library.io)
+          'package:occase/persistency_app.dart'
+       if (dart.library.html)
+          'package:occase/persistency_web.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
@@ -32,9 +40,7 @@ import 'package:occase/tree.dart';
 import 'package:occase/constants.dart' as cts;
 import 'package:occase/parameters.dart';
 import 'package:occase/globals.dart' as g;
-import 'package:occase/sql.dart' as sql;
 import 'package:occase/stl.dart' as stl;
-import 'package:occase/persistency.dart';
 
 typedef OnPressedFn0 = void Function();
 typedef OnPressedFn1 = void Function(int);
@@ -120,486 +126,6 @@ double makeMaxHeight(BuildContext ctx)
    return MediaQuery.of(ctx).size.height;
 }
 
-class Persistency2 {
-   int insertPostId = 0;
-   int chatRowId = 0;
-   Config _config = Config(nick: g.param.unknownNick);
-
-   static const String _configKey = 'config';
-
-   Future<void> _persistConfig() async
-   {
-      final String str = jsonEncode(_config.toJson());
-      window.localStorage[_configKey] = str;
-   }
-
-   Future<Config> loadConfig() async
-   {
-      final String str = window.localStorage[_configKey];
-      if (str != null)
-	 _config = Config.fromJson(jsonDecode(str));
-
-      return _config;
-   }
-
-   Future<List<Post>> loadPosts(List<int> rangesMinMax) async
-   {
-      return List<Post>();
-   }
-
-   Future<List<ChatMetadata>> loadChatMetadata(int postId) async
-   {
-      return List<ChatMetadata>();
-   }
-
-   Future<List<AppMsgQueueElem>> loadOutChatMsg() async
-   {
-      return List<AppMsgQueueElem>();
-   }
-
-   Future<void> updateShowDialogOnDelPost(bool v) async
-   {
-      _config.showDialogOnDelPost = v ? 'yes' : 'no';
-      await _persistConfig();
-   }
-
-   Future<void> updateShowDialogOnSelectPost(bool v) async
-   {
-      _config.showDialogOnSelectPost = v ? 'yes' : 'no';
-      await _persistConfig();
-   }
-
-   Future<void> updateShowDialogOnReportPost(bool v) async
-   {
-      _config.showDialogOnReportPost = v ? 'yes' : 'no';
-      await _persistConfig();
-   }
-
-   Future<void> clearPosts() async
-   {
-   }
-
-   Future<void> delPostWithId(int id) async
-   {
-   }
-
-   Future<void> updateNUnreadMsgs(int postId, String peer) async
-   {
-   }
-
-   Future<int> insertPost(Post post, ConflictAlgorithm v) async
-   {
-      return ++insertPostId;
-   }
-
-   Future<void> updatePostPinDate(int pinDate, int postId) async
-   {
-   }
-
-   Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
-   {
-      return List<ChatItem>();
-   }
-
-   Future<int> insertOutChatMsg(int isChat, String payload) async
-   {
-      return ++chatRowId;
-   }
-
-   Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
-   {
-      return ++chatRowId;
-   }
-
-   Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
-   {
-   }
-
-   Future<void> _onCreateDb(Database a, int version) async
-   {
-   }
-
-   Future<void> open() async
-   {
-   }
-
-   Future<int> deleteChatStElem(int postId, String peer) async
-   {
-      return 1;
-   }
-
-   Future<void> updateEmail(String email) async
-   {
-      _config.email = email;
-      await _persistConfig();
-   }
-
-   Future<void> updateNick(String nick) async
-   {
-      if (nick != null) {
-	 _config.nick = nick;
-	 await _persistConfig();
-      }
-   }
-
-   Future<void> updateNotifications(NtfConfig c) async
-   {
-      _config.notifications = c;
-      await _persistConfig();
-   }
-
-   Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
-   {
-   }
-
-   Future<void> insertChatOnPost3(
-      int postId,
-      ChatMetadata chat,
-      String peer,
-      ChatItem ci,
-   ) async {
-   }
-
-   Future<void> updateAppCredentials(String appId, String appPwd) async
-   {
-      _config.appId = appId;
-      _config.appPwd = appPwd;
-      await _persistConfig();
-   }
-
-   Future<void> delPostWithRowid(int dbId) async
-   {
-   }
-
-   Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
-   {
-   }
-
-   Future<void> updateAckStatus(
-      ChatItem ci,
-      int status,
-      int rowid,
-      int postId,
-      String from,
-   ) async {
-   }
-
-   Future<void> deleteOutChatMsg(int rowid) async
-   {
-   }
-}
-
-class Persistency {
-   Database _db;
-
-   Future<Config> loadConfig() async
-   {
-      final List<Map<String, dynamic>> maps = await _db.query('config');
-      return Config(
-	 appId: maps[0]['app_id'],
-	 appPwd: maps[0]['app_pwd'],
-	 email: maps[0]['email'],
-	 nick: maps[0]['nick'],
-	 showDialogOnSelectPost: maps[0]['show_dialog_on_select_post'],
-	 showDialogOnReportPost: maps[0]['show_dialog_on_report_post'],
-	 showDialogOnDelPost: maps[0]['show_dialog_on_del_post'],
-	 notifications: NtfConfig.fromJson(maps[0]['notifications']),
-      );
-   }
-
-   Future<List<Post>> loadPosts(List<int> rangesMinMax) async
-   {
-      List<Map<String, dynamic>> maps = await _db.rawQuery(sql.loadPosts);
-
-      return List.generate(maps.length, (i)
-      {
-         Post post = Post(rangesMinMax: rangesMinMax);
-         post.dbId = maps[i]['rowid'];
-         post.id = maps[i]['id'];
-         post.date = maps[i]['date'];
-         post.pinDate = maps[i]['pin_date'];
-         post.status = maps[i]['status'];
-
-         final String body = maps[i]['body'];
-         Map<String, dynamic> bodyMap = jsonDecode(body);
-
-
-         post.from = bodyMap['from'];
-         post.nick = bodyMap['nick'];
-         post.avatar = bodyMap['avatar'];
-         post.channel = decodeChannel(jsonDecode(bodyMap['channel']));
-
-         post.exDetails = decodeList(
-            cts.maxExDetailSize,
-            1,
-            jsonDecode(bodyMap['ex_details']),
-         );
-
-         post.inDetails = decodeList(
-            cts.maxInDetailSize,
-            0,
-            jsonDecode(bodyMap['in_details']),
-         );
-
-         final int rangeDivsLength = rangesMinMax.length >> 1;
-         post.rangeValues = decodeList(
-            rangeDivsLength,
-            0,
-            jsonDecode(bodyMap['range_values']),
-         );
-
-         post.images = decodeList(1, '', bodyMap['images']) ?? <String>[];
-
-         post.description = bodyMap['description'] ?? '';
-         return post;
-      });
-   }
-
-   Future<List<ChatMetadata>> loadChatMetadata(int postId) async
-   {
-     final List<Map<String, dynamic>> maps =
-	await _db.rawQuery(sql.selectChatStatusItem, [postId]);
-
-     return List.generate(maps.length, (i)
-     {
-	final String str = maps[i]['last_chat_item'];
-	ChatItem lastChatItem = ChatItem();
-	if (str.isNotEmpty)
-	    lastChatItem = ChatItem.fromJson(jsonDecode(str));
-
-	return ChatMetadata(
-	   peer: maps[i]['user_id'],
-	   nick: maps[i]['nick'],
-	   avatar: maps[i]['avatar'],
-	   date: maps[i]['date'],
-	   pinDate: maps[i]['pin_date'],
-	   chatLength: maps[i]['chat_length'],
-	   nUnreadMsgs: maps[i]['n_unread_msgs'],
-	   lastChatItem: lastChatItem,
-	);
-     });
-   }
-
-   Future<List<AppMsgQueueElem>> loadOutChatMsg() async
-   {
-     final List<Map<String, dynamic>> maps =
-	await _db.rawQuery(sql.loadOutChats);
-
-     return List.generate(maps.length, (i)
-     {
-	return AppMsgQueueElem(
-	   rowid: maps[i]['rowid'],
-	   isChat: maps[i]['is_chat'],
-	   payload: maps[i]['payload'],
-	   sent: false);
-     });
-   }
-
-   Future<void> updateShowDialogOnDelPost(bool v) async
-   {
-      final String str = v ? 'yes' : 'no';
-      await _db.execute(sql.updateShowDialogOnDelPost, [str]);
-   }
-
-   Future<void> updateShowDialogOnSelectPost(bool v) async
-   {
-      final String str = v ? 'yes' : 'no';
-      await _db.execute(sql.updateShowDialogOnSelectPost, [str]);
-   }
-
-   Future<void> updateShowDialogOnReportPost(bool v) async
-   {
-      final String str = v ? 'yes' : 'no';
-      await _db.execute(sql.updateShowDialogOnReportPost, [str]);
-   }
-
-   Future<void> clearPosts() async
-   {
-      await _db.execute(sql.clearPosts, [1]);
-   }
-
-   Future<void> delPostWithId(int id) async
-   {
-      await _db.execute(sql.delPostWithId, [id]);
-   }
-
-   Future<void> updateNUnreadMsgs(int postId, String peer) async
-   {
-      await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
-   }
-
-   Future<int> insertPost(Post post, ConflictAlgorithm v) async
-   {
-      return await _db.insert('posts', postToMap(post), conflictAlgorithm: v);
-   }
-
-   Future<void> updatePostPinDate(int pinDate, int postId) async
-   {
-      await _db.execute(sql.updatePostPinDate, [pinDate, postId]);
-   }
-
-   Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
-   {
-      try {
-	 final List<Map<String, dynamic>> maps =
-	    await _db.rawQuery(sql.selectChats, [postId, userId]);
-
-	 return List.generate(maps.length, (i)
-	 {
-	    return ChatItem(
-	       rowid: maps[i]['rowid'],
-	       peerRowid: maps[i]['peer_rowid'],
-	       isRedirected: maps[i]['is_redirected'],
-	       date: maps[i]['date'],
-	       msg: maps[i]['msg'],
-	       refersTo: maps[i]['refers_to'],
-	       status: maps[i]['status'],
-	    );
-	 });
-
-      } catch (e) {
-	 print(e);
-      }
-
-      return null;
-   }
-
-   Future<int> insertOutChatMsg(int isChat, String payload) async
-   {
-      return await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
-   }
-
-   Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
-   {
-      return await _db.insert(
-	 'chats',
-	 makeChatItemToMap(postId, peer, ci),
-	 conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-   }
-
-   Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
-   {
-      await _db.rawInsert(sql.insertOrReplaceChatOnPost, makeChatMetadataSql(cm, postId));
-   }
-
-   Future<void> _onCreateDb(Database a, int version) async
-   {
-      await a.execute(sql.createPostsTable);
-      await a.execute(sql.createConfig);
-      await a.execute(sql.createChats);
-      await a.execute(sql.createChatStatus);
-      await a.execute(sql.creatOutChatTable);
-
-      Batch batch = a.batch();
-
-      Config cfg = Config();
-      cfg.nick = g.param.unknownNick;
-      batch.insert(
-         'config',
-         cfg.toJson(),
-         conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-
-      await batch.commit(noResult: true, continueOnError: true);
-   }
-
-   Future<void> open() async
-   {
-      _db = await openDatabase(
-	 p.join(await getDatabasesPath(), 'main.db'),
-	 readOnly: false,
-	 onCreate: _onCreateDb,
-	 version: 1,
-      );
-   }
-
-   Future<int> deleteChatStElem(int postId, String peer) async
-   {
-      return await _db.rawDelete(sql.deleteChatStElem, [postId, peer]);
-   }
-
-   Future<void> updateEmail(String email) async
-   {
-      await _db.execute(sql.updateEmail, [email]);
-   }
-
-   Future<void> updateNick(String nick) async
-   {
-      await _db.execute(sql.updateNick, [nick]);
-   }
-
-   Future<void> updateNotifications(NtfConfig c) async
-   {
-      final String str = jsonEncode(c.toJson());
-      await _db.execute(sql.updateNotifications, [str]);
-   }
-
-   Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
-   {
-      await _db.rawInsert(sql.insertChatStOnPost, makeChatMetadataSql(cm, postId));
-   }
-
-   Future<void> insertChatOnPost3(
-      int postId,
-      ChatMetadata chat,
-      String peer,
-      ChatItem ci,
-   ) async {
-      await _db.transaction((txn) async {
-         Batch batch = txn.batch();
-         batch.rawInsert(
-            sql.insertOrReplaceChatOnPost,
-            makeChatMetadataSql(chat, postId),
-         );
-
-         batch.insert(
-            'chats',
-            makeChatItemToMap(postId, peer, ci),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-         );
-
-         await batch.commit(
-            noResult: false,
-            continueOnError: true,
-         );
-      });
-   }
-
-   Future<void> updateAppCredentials(String appId, String appPwd) async
-   {
-      await _db.execute(sql.updateAppCredentials, [appId, appPwd]);
-   }
-
-   Future<void> delPostWithRowid(int dbId) async
-   {
-      await _db.execute(sql.delPostWithRowid, [dbId]);
-   }
-
-   Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
-   {
-      await _db.execute(sql.updatePostOnAck, [status, id, date, dbId]);
-   }
-
-   Future<void> updateAckStatus(
-      ChatItem ci,
-      int status,
-      int rowid,
-      int postId,
-      String from,
-   ) async {
-      Batch batch = _db.batch();
-      batch.rawUpdate(sql.updateAckStatus, [status, rowid]);
-      batch.rawUpdate(sql.updateLastChat, [jsonEncode(ci), postId, from]);
-      await batch.commit(noResult: true, continueOnError: true);
-   }
-
-   Future<void> deleteOutChatMsg(int rowid) async
-   {
-      await _db.rawDelete(sql.deleteOutChatMsg, [rowid]);
-   }
-}
-
 Future<List<Tree>> readTreeFromAsset() async
 {
    // When the database is created, we also have to create the
@@ -678,7 +204,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency2 p) async
+Future<void> removeLpChat(Coord c, Persistency p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -693,19 +219,6 @@ Future<void> removeLpChat(Coord c, Persistency2 p) async
 Future<Null> main() async
 {
   runApp(MyApp());
-}
-
-class AppMsgQueueElem {
-   int rowid;
-   int isChat;
-   String payload;
-   bool sent; // Used for debugging.
-   AppMsgQueueElem({
-      this.rowid = 0,
-      this.isChat = 0,
-      this.payload = '',
-      this.sent = false,
-   });
 }
 
 String makePostPayload(final Post post)
@@ -1769,7 +1282,7 @@ List<Widget> makeNewPostWdgs({
 	 ctx: ctx,
 	 tab: tab,
 	 title: g.param.newPostTabNames[0],
-	 defaultCode: post.getLocationCode(),
+	 defaultCode: post.location,
 	 root: locRootNode,
 	 iconData: Icons.edit_location,
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
@@ -1785,7 +1298,7 @@ List<Widget> makeNewPostWdgs({
 	 ctx: ctx,
 	 tab: tab,
 	 title: g.param.newPostTabNames[1],
-	 defaultCode: post.getProductCode(),
+	 defaultCode: post.product,
 	 root: productRootNode,
 	 iconData: Icons.directions_car,
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
@@ -1797,7 +1310,7 @@ List<Widget> makeNewPostWdgs({
 
    // ---------------------------------------------------
 
-   if (post.getProductCode().isEmpty)
+   if (post.product.isEmpty)
       return list;
 
    final int productIdx = post.getProductDetailIdx();
@@ -2099,7 +1612,7 @@ Widget makeSearchScreenWdg2({
 	 ctx: ctx,
 	 tab: cts.searchIdx,
 	 title: g.param.newPostTabNames[0],
-	 defaultCode: post.getLocationCode(),
+	 defaultCode: post.location,
 	 root: locationRootNode,
 	 iconData: Icons.edit_location,
 	 onSetTreeCode: onSetLocationCode,
@@ -2113,7 +1626,7 @@ Widget makeSearchScreenWdg2({
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: cts.searchIdx,
-	 defaultCode: post.getProductCode(),
+	 defaultCode: post.product,
 	 title: g.param.newPostTabNames[1],
 	 root: productRootNode,
 	 iconData: Icons.directions_car,
@@ -3537,14 +3050,13 @@ List<Widget> makeTreeInfo(
 ) {
    List<Widget> list = List<Widget>();
 
-   for (int i = 0; i < post.channel.length; ++i) {
-      list.add(makePostSectionTitle(ctx, g.param.newPostTabNames[i]));
+   for (int i = 0; i < 2; ++i) {
+      List<int> tmp = post.location;
+      if (i == 1)
+	 tmp = post.product;
 
-      List<String> names = loadNames(
-         trees[i].root.first,
-         post.channel[i][0],
-         g.param.langIdx,
-      );
+      list.add(makePostSectionTitle(ctx, g.param.newPostTabNames[i]));
+      List<String> names = loadNames(trees[i].root.first, tmp, g.param.langIdx);
 
       List<Widget> items = List.generate(names.length, (int j)
       {
@@ -4548,9 +4060,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       }
 
       final String locationStr =
-         makeTreeItemStr(widget.trees[0].root.first, widget.post.channel[0][0]);
+         makeTreeItemStr(widget.trees[0].root.first, widget.post.location);
       final String modelStr =
-	 makeTreeItemStr(widget.trees[1].root.first, widget.post.channel[1][0]);
+	 makeTreeItemStr(widget.trees[1].root.first, widget.post.product);
 
       List<String> exDetailsNames = makeExDetailsNamesAll(
          widget.exDetailsRootNode,
@@ -5257,7 +4769,7 @@ Widget makeChatTab({
          }
 
          Widget title = Text(
-            makeTreeItemStr(trees[0].root.first, posts[i].channel[0][0]),
+            makeTreeItemStr(trees[0].root.first, posts[i].location),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
          );
@@ -5394,19 +4906,17 @@ class AppState {
    Config cfg = Config();
 
    // The list of posts received from the server. Our own posts that the
-   // server echoes back to us (if we are subscribed to the channel)
-   // will be filtered out.
+   // server echoes back to us will be filtered out.
    List<Post> posts = List<Post>();
 
    // The list of posts the user has selected in the posts screen.
    // They are moved from posts to here.
    List<Post> favPosts = List<Post>();
 
-   // Posts the user wrote itself and sent to the server. One issue we
-   // have to observe is that if the user is subscribed to the channel
-   // the post belongs to, it will be received back and shouldn't be
-   // displayed or duplicated on this list. The posts received from
-   // the server will not be inserted in posts.
+   // Posts the user wrote itself and sent to the server. One issue we have to
+   // observe is that if the post is received back it shouldn't be displayed
+   // or duplicated on this list. The posts received from the server will not
+   // be inserted in posts.
    //
    // The only posts inserted here are those that have been acked with
    // ok by the server, before that they will live in outPostsQueue
@@ -5422,11 +4932,7 @@ class AppState {
    // to the server is lost. 
    Queue<AppMsgQueueElem> appMsgQueue = Queue<AppMsgQueueElem>();
 
-   // Whether or not to show the dialog informing the user what
-   // happens to selected or deleted posts in the posts screen.
-   List<bool> dialogPrefs = List<bool>.filled(6, false);
-
-   Persistency2 persistency = Persistency2();
+   Persistency persistency = Persistency();
 
    AppState();
 
@@ -5450,10 +4956,6 @@ class AppState {
          print(e);
       }
 
-      dialogPrefs[0] = cfg.showDialogOnDelPost == 'yes';
-      dialogPrefs[1] = cfg.showDialogOnSelectPost == 'yes';
-      dialogPrefs[2] = cfg.showDialogOnReportPost == 'yes';
-
       try {
          final List<Post> posts = await persistency.loadPosts(g.param.rangesMinMax);
          for (Post p in posts) {
@@ -5470,7 +4972,7 @@ class AppState {
             } else if (p.status == 3) {
                outPostsQueue.add(p);
             } else {
-               assert(false);
+	       print('Wrong post status ${p.status}');
             }
          }
 
@@ -5493,18 +4995,15 @@ class AppState {
       await persistency.clearPosts();
    }
 
-   Future<void> setDialogPref(int i, bool v) async
+   Future<void> setDialogPreferences(int i, bool v) async
    {
-      dialogPrefs[i] = v;
+      cfg.dialogPreferences[i] = v;
+      await persistency.updateConfig(cfg);
+   }
 
-      final String str = v ? 'yes' : 'no';
-
-      if (i == 0)
-         await persistency.updateShowDialogOnDelPost(v);
-      else if (i == 1)
-         await persistency.updateShowDialogOnSelectPost(v);
-      else if (i == 2)
-         await persistency.updateShowDialogOnReportPost(v);
+   Future<void> updateConfig() async
+   {
+      await persistency.updateConfig(cfg);
    }
 
    // Return the index where the post in located in favPosts.
@@ -5573,7 +5072,7 @@ class AppState {
    {
       cfg.appId = id;
       cfg.appPwd = password;
-      await persistency.updateAppCredentials(id, password);
+      await persistency.updateConfig(cfg);
    }
 
    Future<int>
@@ -5718,8 +5217,8 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   HtmlWebSocketChannel channel;
-   //IOWebSocketChannel channel;
+   HtmlWebSocketChannel websocket;
+   //IOWebSocketChannel websocket;
 
    // This variable is set to the last time the app was disconnected
    // from the server, a value of -1 means we are connected.
@@ -5933,16 +5432,16 @@ class OccaseState extends State<Occase>
          return;
        
       final String payload = makePostPayload(_appState.outPostsQueue.first);
-      channel.sink.add(payload);
+      websocket.sink.add(payload);
    }
 
    void _stablishNewConnection(String fcmToken)
    {
       try {
 	 // For the web
-	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 //channel = IOWebSocketChannel.connect(cts.dbHost);
-	 channel.stream.listen(
+	 websocket = HtmlWebSocketChannel.connect(cts.dbHost);
+	 //websocket = IOWebSocketChannel.connect(cts.dbHost);
+	 websocket.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
 	    onDone: _onWSDone,
@@ -5955,7 +5454,7 @@ class OccaseState extends State<Occase>
 	    _appState.cfg.notifications.getFlag(),
 	 );
 
-	 channel.sink.add(cmd);
+	 websocket.sink.add(cmd);
       } catch (e) {
 	 print('Unable to stablish ws connection to server.');
 	 print(e);
@@ -5964,13 +5463,13 @@ class OccaseState extends State<Occase>
 
    Future<void> _setDialogPref(int i, bool v) async
    {
-      _appState.setDialogPref(i, v);
+      _appState.setDialogPreferences(i, v);
    }
 
    Future<void>
    _alertUserOnPressed(BuildContext ctx, int i, int j) async
    {
-      if (!_appState.dialogPrefs[j]) {
+      if (!_appState.cfg.dialogPreferences[j]) {
          await _onPostSelection(i, j);
          return;
       }
@@ -5980,7 +5479,7 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             return DialogWithOp(
-               () {return _appState.dialogPrefs[j];},
+               () {return _appState.cfg.dialogPreferences[j];},
                (bool v) async {await _setDialogPref(j, v);},
                () async {await _onPostSelection(i, j);},
                g.param.dialogTitles[j],
@@ -6305,7 +5804,7 @@ class OccaseState extends State<Occase>
 
       final String payload = jsonEncode(subCmd);
       print(payload);
-      channel.sink.add(payload);
+      websocket.sink.add(payload);
    }
 
    void _chatScrollListener(int i)
@@ -6390,10 +5889,9 @@ class OccaseState extends State<Occase>
 
       final bool isEmpty = _appState.outPostsQueue.isEmpty;
 
-      // We add it here in our own list of posts and keep in mind it
-      // will be echoed back to us if we are subscribed to its
-      // channel. It has to be filtered out from _appState.posts since that
-      // list should not contain our own posts.
+      // We add it here in our own list of posts and keep in mind it may be
+      // echoed back to us. It has to be filtered out from _appState.posts
+      // since that list should not contain our own posts.
 
       post.dbId = await _appState.persistency.insertPost(post, ConflictAlgorithm.replace);
       _appState.outPostsQueue.add(post);
@@ -6406,7 +5904,7 @@ class OccaseState extends State<Occase>
 
       final String payload = makePostPayload(_appState.outPostsQueue.first);
       print(payload);
-      channel.sink.add(payload);
+      websocket.sink.add(payload);
    }
 
    Future<void> _handlePublishAck(final int id, final int date) async
@@ -6445,7 +5943,7 @@ class OccaseState extends State<Occase>
 
          final String payload = makePostPayload(_appState.outPostsQueue.first);
 	 print(payload);
-         channel.sink.add(payload);
+         websocket.sink.add(payload);
       } catch (e) {
          print(e);
       }
@@ -6536,7 +6034,7 @@ class OccaseState extends State<Occase>
 
       String payload = jsonEncode(cmd);
       print(payload);
-      channel.sink.add(payload);
+      websocket.sink.add(payload);
 
       _filenamesTimer = Timer(
          Duration(seconds: cts.filenamesTimeout), () {
@@ -6759,7 +6257,7 @@ class OccaseState extends State<Occase>
          assert(!_appState.appMsgQueue.first.sent);
          _appState.appMsgQueue.first.sent = true;
          print(_appState.appMsgQueue.first.payload);
-         channel.sink.add(_appState.appMsgQueue.first.payload);
+         websocket.sink.add(_appState.appMsgQueue.first.payload);
       }
    }
 
@@ -6768,7 +6266,7 @@ class OccaseState extends State<Occase>
       if (_appState.appMsgQueue.isNotEmpty) {
          assert(!_appState.appMsgQueue.first.sent);
          _appState.appMsgQueue.first.sent = true;
-         channel.sink.add(_appState.appMsgQueue.first.payload);
+         websocket.sink.add(_appState.appMsgQueue.first.payload);
       }
    }
 
@@ -6851,7 +6349,7 @@ class OccaseState extends State<Occase>
             assert(!_appState.appMsgQueue.first.sent);
             _appState.appMsgQueue.first.sent = true;
 	    print(_appState.appMsgQueue.first.payload);
-            channel.sink.add(_appState.appMsgQueue.first.payload);
+            websocket.sink.add(_appState.appMsgQueue.first.payload);
          }
       } catch (e) {
          print(e);
@@ -7117,8 +6615,8 @@ class OccaseState extends State<Occase>
 
       _lastDisconnect = -1;
 
-      // We are loggen in and can send the channels we are
-      // subscribed to to receive posts sent while we were offline.
+      // We are loggen in and can subscribe to receive posts sent while we were
+      // offline.
       _search();
 
       // Sends any chat messages that may have been written while
@@ -7313,7 +6811,7 @@ class OccaseState extends State<Occase>
 
       final String payload = jsonEncode(subCmd);
       print(payload);
-      channel.sink.add(payload);
+      websocket.sink.add(payload);
    }
 
    // Called when the main tab changes.
@@ -7533,11 +7031,11 @@ class OccaseState extends State<Occase>
 
          if (_txtCtrl2.text.isNotEmpty) {
             _appState.cfg.email = _txtCtrl2.text;
-            await _appState.persistency.updateEmail(_appState.cfg.email);
+	    await _appState.updateConfig();
          }
 
          _appState.cfg.nick = _txtCtrl.text;
-         await _appState.persistency.updateNick(_appState.cfg.nick);
+         await _appState.updateConfig();
 
          setState(()
          {
@@ -7586,7 +7084,7 @@ class OccaseState extends State<Occase>
          if (i == 1)
             _appState.cfg.notifications.post = v;
 
-         await _appState.persistency.updateNotifications(_appState.cfg.notifications);
+         await _appState.updateConfig();
 
          if (i == -1)
             _goToNtfScreen = false;
@@ -7607,7 +7105,12 @@ class OccaseState extends State<Occase>
 
    void _onNewPostSetTreeCode(List<int> code, int i)
    {
-      _posts[cts.ownIdx].channel[i].first = code;
+      if (i == 0)
+	 _posts[cts.ownIdx].location = code;
+
+      if (i == 1)
+	 _posts[cts.ownIdx].product = code;
+
       setState(() {});
    }
 
@@ -7616,7 +7119,7 @@ class OccaseState extends State<Occase>
       if (code.isEmpty)
 	 return;
 
-      _posts[cts.searchIdx].channel[0].first = code;
+      _posts[cts.searchIdx].location = code;
 
       setState(() {});
    }
@@ -7626,7 +7129,7 @@ class OccaseState extends State<Occase>
       if (code.isEmpty)
 	 return;
 
-      _posts[cts.searchIdx].channel[1].first = code;
+      _posts[cts.searchIdx].product = code;
 
       setState(() {});
    }
@@ -7655,7 +7158,7 @@ class OccaseState extends State<Occase>
 	 _chatScrollCtrl[tab],
 	 _lpChatMsgs[tab].length,
 	 _chatFocusNodes[tab],
-	 makeTreeItemStr(_trees[0].root.first, _posts[tab].channel[1][0]),
+	 makeTreeItemStr(_trees[0].root.first, _posts[tab].product),
 	 _dragedIdxs[tab],
 	 _showChatJumpDownButtons[tab],
 	 _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
