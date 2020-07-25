@@ -625,9 +625,7 @@ class Post {
          'channel': channel,
       };
 
-      print('sssss');
       final String body = jsonEncode(subCmd);
-      print('$body');
 
       return
       { 'from': from
@@ -869,20 +867,36 @@ class Config {
       if (notifications == null) 
          notifications = NtfConfig(chat: true, post: true);
    }
-}
 
-Map<String, dynamic> configToMap(Config cfg)
-{
-    return
-    { 'app_id': cfg.appId
-    , 'app_pwd': cfg.appPwd
-    , 'email': cfg.email
-    , 'nick': cfg.nick
-    , 'show_dialog_on_select_post': cfg.showDialogOnSelectPost
-    , 'show_dialog_on_report_post': cfg.showDialogOnReportPost
-    , 'show_dialog_on_del_post': cfg.showDialogOnDelPost
-    , 'notifications': jsonEncode(cfg.notifications.toJson())
-    };
+   Config.fromJson(Map<String, dynamic> map)
+   {
+      try {
+	 appId = map['app_id'];
+	 appPwd = map['app_pwd'];
+	 email = map['email'];
+	 nick = map['nick'];
+	 showDialogOnSelectPost = map['show_dialog_on_select_post'];
+	 showDialogOnReportPost = map['show_dialog_on_report_post'];
+	 showDialogOnDelPost = map['show_dialog_on_del_post'];
+	 notifications = NtfConfig.fromJson(map['notifications']);
+      } catch (e) {
+	 print(e);
+      }
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      { 'app_id': appId
+      , 'app_pwd': appPwd
+      , 'email': email
+      , 'nick': nick
+      , 'show_dialog_on_select_post': showDialogOnSelectPost
+      , 'show_dialog_on_report_post': showDialogOnReportPost
+      , 'show_dialog_on_del_post': showDialogOnDelPost
+      , 'notifications': notifications.toJson()
+      };
+   }
 }
 
 List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)

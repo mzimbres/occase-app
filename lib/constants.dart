@@ -46,8 +46,9 @@ const int minImgsPerPost = 1;
 // filenames.
 const int filenamesTimeout = 5;
 
-// The pong timeout used by the server. (in milliseconds)
-const int pongTimeout = 30 * 1000;
+// The pong timeout used by the server.
+const int pongTimeoutSeconds = 30;
+const int pongTimeoutMilliseconds = pongTimeoutSeconds * 1000;
 
 // Interval used to send presence messages to the peer in
 // milliseconds.

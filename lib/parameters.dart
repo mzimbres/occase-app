@@ -36,7 +36,7 @@ class Parameters {
    List<String> _pinChat = <String>[''];
    List<String> _clearPosts = <String>[''];
    List<String> _notificationsButton = <String>[''];
-   List<String> _unknownNick = <String>[''];
+   List<String> _unknownNick = <String>['Unknown'];
    List<String> _selectAll = <String>[''];
    List<String> _changeNickHint = <String>[''];
    List<String> _changeNotifications = <String>[''];

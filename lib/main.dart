@@ -1,6 +1,7 @@
 import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
+import 'dart:html' show window;
 import 'dart:collection';
 
 import 'dart:io'
@@ -122,10 +123,23 @@ double makeMaxHeight(BuildContext ctx)
 class Persistency2 {
    int insertPostId = 0;
    int chatRowId = 0;
+   Config _config = Config(nick: g.param.unknownNick);
 
-   Future<List<Config>> loadConfig() async
+   static const String _configKey = 'config';
+
+   Future<void> _persistConfig() async
    {
-      return <Config>[Config(nick: g.param.unknownNick)];
+      final String str = jsonEncode(_config.toJson());
+      window.localStorage[_configKey] = str;
+   }
+
+   Future<Config> loadConfig() async
+   {
+      final String str = window.localStorage[_configKey];
+      if (str != null)
+	 _config = Config.fromJson(jsonDecode(str));
+
+      return _config;
    }
 
    Future<List<Post>> loadPosts(List<int> rangesMinMax) async
@@ -145,14 +159,20 @@ class Persistency2 {
 
    Future<void> updateShowDialogOnDelPost(bool v) async
    {
+      _config.showDialogOnDelPost = v ? 'yes' : 'no';
+      await _persistConfig();
    }
 
    Future<void> updateShowDialogOnSelectPost(bool v) async
    {
+      _config.showDialogOnSelectPost = v ? 'yes' : 'no';
+      await _persistConfig();
    }
 
    Future<void> updateShowDialogOnReportPost(bool v) async
    {
+      _config.showDialogOnReportPost = v ? 'yes' : 'no';
+      await _persistConfig();
    }
 
    Future<void> clearPosts() async
@@ -210,14 +230,22 @@ class Persistency2 {
 
    Future<void> updateEmail(String email) async
    {
+      _config.email = email;
+      await _persistConfig();
    }
 
    Future<void> updateNick(String nick) async
    {
+      if (nick != null) {
+	 _config.nick = nick;
+	 await _persistConfig();
+      }
    }
 
-   Future<void> updateNotifications(String str) async
+   Future<void> updateNotifications(NtfConfig c) async
    {
+      _config.notifications = c;
+      await _persistConfig();
    }
 
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
@@ -234,6 +262,9 @@ class Persistency2 {
 
    Future<void> updateAppCredentials(String appId, String appPwd) async
    {
+      _config.appId = appId;
+      _config.appPwd = appPwd;
+      await _persistConfig();
    }
 
    Future<void> delPostWithRowid(int dbId) async
@@ -261,26 +292,19 @@ class Persistency2 {
 class Persistency {
    Database _db;
 
-   Future<List<Config>> loadConfig() async
+   Future<Config> loadConfig() async
    {
-      final List<Map<String, dynamic>> maps =
-         await _db.query('config');
-
-      return List.generate(maps.length, (i)
-      {
-         Config cfg = Config(
-            appId: maps[i]['app_id'],
-            appPwd: maps[i]['app_pwd'],
-            email: maps[i]['email'],
-            nick: maps[i]['nick'],
-            showDialogOnSelectPost: maps[i]['show_dialog_on_select_post'],
-            showDialogOnReportPost: maps[i]['show_dialog_on_report_post'],
-            showDialogOnDelPost: maps[i]['show_dialog_on_del_post'],
-            notifications: NtfConfig.fromJson(jsonDecode(maps[i]['notifications'])),
-         );
-
-         return cfg;
-      });
+      final List<Map<String, dynamic>> maps = await _db.query('config');
+      return Config(
+	 appId: maps[0]['app_id'],
+	 appPwd: maps[0]['app_pwd'],
+	 email: maps[0]['email'],
+	 nick: maps[0]['nick'],
+	 showDialogOnSelectPost: maps[0]['show_dialog_on_select_post'],
+	 showDialogOnReportPost: maps[0]['show_dialog_on_report_post'],
+	 showDialogOnDelPost: maps[0]['show_dialog_on_del_post'],
+	 notifications: NtfConfig.fromJson(maps[0]['notifications']),
+      );
    }
 
    Future<List<Post>> loadPosts(List<int> rangesMinMax) async
@@ -473,7 +497,7 @@ class Persistency {
       cfg.nick = g.param.unknownNick;
       batch.insert(
          'config',
-         configToMap(cfg),
+         cfg.toJson(),
          conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
@@ -505,8 +529,9 @@ class Persistency {
       await _db.execute(sql.updateNick, [nick]);
    }
 
-   Future<void> updateNotifications(String str) async
+   Future<void> updateNotifications(NtfConfig c) async
    {
+      final String str = jsonEncode(c.toJson());
       await _db.execute(sql.updateNotifications, [str]);
    }
 
@@ -653,7 +678,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency p) async
+Future<void> removeLpChat(Coord c, Persistency2 p) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -5401,7 +5426,7 @@ class AppState {
    // happens to selected or deleted posts in the posts screen.
    List<bool> dialogPrefs = List<bool>.filled(6, false);
 
-   Persistency persistency = Persistency();
+   Persistency2 persistency = Persistency2();
 
    AppState();
 
@@ -5420,9 +5445,7 @@ class AppState {
          // the use of global variable from within its constructor,
          // for now I will construct it again before it is used to
          // initialize the db.
-         List<Config> configs = await persistency.loadConfig();
-         if (configs.isNotEmpty)
-            cfg = configs.first;
+	 cfg = await persistency.loadConfig();
       } catch (e) {
          print(e);
       }
@@ -5695,18 +5718,22 @@ class OccaseState extends State<Occase>
    TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
-   //HtmlWebSocketChannel channel;
-   IOWebSocketChannel channel;
+   HtmlWebSocketChannel channel;
+   //IOWebSocketChannel channel;
 
    // This variable is set to the last time the app was disconnected
-   // from the server, a value of -1 means we still did not got
-   // disconnected since startup.
+   // from the server, a value of -1 means we are connected.
    int _lastDisconnect = -1;
 
    // Used in the final new post screen to store the files while the
    // user chooses the images.
    List<PickedFile> _imgFiles = List<PickedFile>();
 
+   // When the user clicks to send the post, we first request the image
+   // filenames from the websocket server. This timer sets a limit on how long
+   // we are willing to wait. During this time, the screen remains blocked for
+   // the user. This will be changed when we implement filename requests over
+   // HTTP and not websocket. The timer can be set differently in this case.
    Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
 
    // These indexes will be set to values different from -1 when the
@@ -5714,7 +5741,7 @@ class OccaseState extends State<Occase>
    List<int> _expPostIdxs = List<int>.filled(3, -1);
    List<int> _expImgIdxs = List<int>.filled(3, -1);
 
-   // Used to cache to fcmToken.
+   // Used to cache the fcm token.
    String _fcmToken = '';
 
    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -5734,7 +5761,7 @@ class OccaseState extends State<Occase>
       _chatScrollCtrl[cts.ownIdx].addListener(() {_chatScrollListener(cts.ownIdx);});
       _chatScrollCtrl[cts.favIdx].addListener(() {_chatScrollListener(cts.favIdx);});
 
-      _lastDisconnect = -1;
+      Timer.periodic(Duration(seconds: cts.pongTimeoutSeconds), _reconnectCallback);
 
       WidgetsBinding.instance.addObserver(this);
 
@@ -5742,7 +5769,7 @@ class OccaseState extends State<Occase>
       //   onMessage: (Map<String, dynamic> message) async {
       //     print("onMessage: $message");
       //   },
-      //   onBackgroundMessage: fcmOnBackgroundMessage,
+      //   //onBackgroundMessage: fcmOnBackgroundMessage,
       //   onLaunch: (Map<String, dynamic> message) async {
       //     print("onLaunch: $message");
       //   },
@@ -5759,6 +5786,31 @@ class OccaseState extends State<Occase>
       });
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
+   }
+
+   bool _tryNewWSConnection()
+   {
+      // We should not try to reconnect if disconnection happened just
+      // a couples of seconds ago. This is needed because it may
+      // haven't been a clean disconnect with a close websocket frame.
+      // The server will wait until the pong answer times out.  To
+      // solve this we compare _lastDisconnect with the current time.
+
+      if (_lastDisconnect != -1) {
+         final int now = DateTime.now().millisecondsSinceEpoch;
+         final int interval = now - _lastDisconnect;
+         return interval > cts.pongTimeoutMilliseconds;
+      }
+
+      return false;
+   }
+
+   void _reconnectCallback(Timer timer)
+   {
+      if (_tryNewWSConnection()) {
+         print('Trying to reconnect.');
+         _stablishNewConnection(_fcmToken);
+      }
    }
 
    Future<void> _init() async
@@ -5807,23 +5859,11 @@ class OccaseState extends State<Occase>
    @override
    void didChangeAppLifecycleState(AppLifecycleState state)
    {
-      // We should not try to reconnect if disconnection happened just
-      // a couples of seconds ago. This is needed because it may
-      // haven't been a clean disconnect with a close websocket frame.
-      // The server will wait until the pong answer times out.  To
-      // solve this we compare _lastDisconnect with the current time.
-
-      bool doConnect = false;
-      if (_lastDisconnect != -1) {
-         final int now = DateTime.now().millisecondsSinceEpoch;
-         final int interval = now - _lastDisconnect;
-         doConnect = interval > cts.pongTimeout;
-      }
-
-      if (state == AppLifecycleState.resumed && doConnect) {
-         print('Trying to reconnect.');
-         _stablishNewConnection(_fcmToken);
-      }
+      //final bool tryWsReconnect = _tryNewWSConnection();
+      //if (state == AppLifecycleState.resumed && tryWsReconnect) {
+      //   print('Trying to reconnect.');
+      //   _stablishNewConnection(_fcmToken);
+      //}
    }
 
    int _screenIdx()
@@ -5900,8 +5940,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 //channel = HtmlWebSocketChannel.connect(cts.dbHost);
-	 channel = IOWebSocketChannel.connect(cts.dbHost);
+	 channel = HtmlWebSocketChannel.connect(cts.dbHost);
+	 //channel = IOWebSocketChannel.connect(cts.dbHost);
 	 channel.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -6480,6 +6520,12 @@ class OccaseState extends State<Occase>
       return -1;
    }
 
+   void _leaveNewPostScreen()
+   {
+      _newPostPressed = false;
+      _posts[cts.ownIdx] = null;
+   }
+
    void _requestFilenames()
    {
       // Consider: Check if the app is online before sending.
@@ -6493,10 +6539,11 @@ class OccaseState extends State<Occase>
       channel.sink.add(payload);
 
       _filenamesTimer = Timer(
-         Duration(seconds: cts.filenamesTimeout),
-         () {
-            _leaveNewPostScreen();
-            _newPostErrorCode = 0;
+         Duration(seconds: cts.filenamesTimeout), () {
+	    setState((){
+	       _leaveNewPostScreen();
+	       _newPostErrorCode = 0;
+	    });
          },
       );
 
@@ -7030,14 +7077,6 @@ class OccaseState extends State<Occase>
       _search();
    }
 
-   void _leaveNewPostScreen()
-   {
-      setState((){
-         _newPostPressed = false;
-         _posts[cts.ownIdx] = null;
-      });
-   }
-
    Future<void> _onFilenamesAck(Map<String, dynamic> ack) async
    {
       try {
@@ -7075,6 +7114,8 @@ class OccaseState extends State<Occase>
          print("login_ack: fail.");
          return;
       }
+
+      _lastDisconnect = -1;
 
       // We are loggen in and can send the channels we are
       // subscribed to to receive posts sent while we were offline.
@@ -7545,8 +7586,7 @@ class OccaseState extends State<Occase>
          if (i == 1)
             _appState.cfg.notifications.post = v;
 
-         final String str = jsonEncode(_appState.cfg.notifications.toJson());
-         await _appState.persistency.updateNotifications(str);
+         await _appState.persistency.updateNotifications(_appState.cfg.notifications);
 
          if (i == -1)
             _goToNtfScreen = false;
