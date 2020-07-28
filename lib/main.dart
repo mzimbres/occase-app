@@ -9,12 +9,6 @@ import 'dart:io'
        if (dart.library.html)
           'package:web_socket_channel/html.dart';
 
-import 'dart:io'
-       if (dart.library.io)
-          'package:occase/persistency_app.dart'
-       if (dart.library.html)
-          'package:occase/persistency_web.dart';
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/scheduler.dart';
@@ -41,6 +35,7 @@ import 'package:occase/constants.dart' as cts;
 import 'package:occase/parameters.dart';
 import 'package:occase/globals.dart' as g;
 import 'package:occase/stl.dart' as stl;
+import 'package:occase/appstate.dart';
 
 typedef OnPressedFn0 = void Function();
 typedef OnPressedFn1 = void Function(int);
@@ -204,7 +199,7 @@ void handleLPChats(
    }
 }
 
-Future<void> removeLpChat(Coord c, Persistency p) async
+Future<void> removeLpChat(Coord c, AppState appState) async
 {
    // removeWhere could also be used, but that traverses all elements
    // always and we know there is only one element to remove.
@@ -212,7 +207,7 @@ Future<void> removeLpChat(Coord c, Persistency p) async
    final bool ret = c.post.chats.remove(c.chat);
    assert(ret);
 
-   final int n = await p.deleteChatStElem(c.post.id, c.chat.peer);
+   final int n = await appState.deleteChatStElem(c.post.id, c.chat.peer);
    assert(n == 1);
 }
 
@@ -4902,226 +4897,6 @@ class DialogWithOpState extends State<DialogWithOp> {
 
 //_____________________________________________________________________
 
-class AppState {
-   Config cfg = Config();
-
-   // The list of posts received from the server. Our own posts that the
-   // server echoes back to us will be filtered out.
-   List<Post> posts = List<Post>();
-
-   // The list of posts the user has selected in the posts screen.
-   // They are moved from posts to here.
-   List<Post> favPosts = List<Post>();
-
-   // Posts the user wrote itself and sent to the server. One issue we have to
-   // observe is that if the post is received back it shouldn't be displayed
-   // or duplicated on this list. The posts received from the server will not
-   // be inserted in posts.
-   //
-   // The only posts inserted here are those that have been acked with
-   // ok by the server, before that they will live in outPostsQueue
-   List<Post> ownPosts = List<Post>();
-
-   // Posts sent to the server that haven't been acked yet. At the
-   // moment this queue will contain only one element. It is needed if
-   // to handle the case where we go offline between a publish and a
-   // publish_ack.
-   Queue<Post> outPostsQueue = Queue<Post>();
-
-   // Stores chat messages that cannot be lost in case the connection
-   // to the server is lost. 
-   Queue<AppMsgQueueElem> appMsgQueue = Queue<AppMsgQueueElem>();
-
-   Persistency persistency = Persistency();
-
-   AppState();
-
-   Future<void> load() async
-   {
-      try {
-	 await persistency.open();
-      } catch (e) {
-         print(e);
-      }
-
-      try {
-         // Warning: The construction of Config depends on the
-         // parameters that have been load above, but where not loaded
-         // by the time it was inititalized. Ideally we would remove
-         // the use of global variable from within its constructor,
-         // for now I will construct it again before it is used to
-         // initialize the db.
-	 cfg = await persistency.loadConfig();
-      } catch (e) {
-         print(e);
-      }
-
-      try {
-         final List<Post> posts = await persistency.loadPosts(g.param.rangesMinMax);
-         for (Post p in posts) {
-            if (p.status == 0) {
-               ownPosts.add(p);
-               for (Post o in ownPosts)
-                  o.chats = await persistency.loadChatMetadata(o.id);
-            } else if (p.status == 1) {
-               posts.add(p);
-            } else if (p.status == 2) {
-               favPosts.add(p);
-               for (Post o in favPosts)
-                  o.chats = await persistency.loadChatMetadata(o.id);
-            } else if (p.status == 3) {
-               outPostsQueue.add(p);
-            } else {
-	       print('Wrong post status ${p.status}');
-            }
-         }
-
-         ownPosts.sort(compPosts);
-         favPosts.sort(compPosts);
-      } catch (e) {
-         print(e);
-      }
-
-      List<AppMsgQueueElem> tmp = await persistency.loadOutChatMsg();
-
-      appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
-
-      print('Login: ${cfg.appId}:${cfg.appPwd}');
-   }
-
-   Future<void> clearPosts() async
-   {
-      posts = List<Post>();
-      await persistency.clearPosts();
-   }
-
-   Future<void> setDialogPreferences(int i, bool v) async
-   {
-      cfg.dialogPreferences[i] = v;
-      await persistency.updateConfig(cfg);
-   }
-
-   Future<void> updateConfig() async
-   {
-      await persistency.updateConfig(cfg);
-   }
-
-   // Return the index where the post in located in favPosts.
-   Future<int> moveToFavorite(int i) async
-   {
-      // i refers to a post in the posts array.  We have to prevent the user
-      // from adding a chat twice. This can happen when he makes a new search,
-      // since in that case the lastPostId will be updated to 0.
-
-      Post post = posts[i];
-      posts.removeAt(i);
-
-      var f = (e) { return e.id == post.id; };
-
-      final int a = favPosts.indexWhere(f);
-      if (a != -1)
-	 return a;
-      
-      post.status = 2;
-      final int k = post.addChat(post.from, post.nick, post.avatar);
-      await persistency.insertPost(post, ConflictAlgorithm.ignore);
-      await persistency.insertChatOnPost2(post.id, post.chats[k]);
-
-      favPosts.add(post);
-      favPosts.sort(compPosts);
-
-      return favPosts.indexWhere(f);
-   }
-
-   Future<void> delPostWithId(int i) async
-   {
-      await persistency.delPostWithId(posts[i].id);
-      posts.removeAt(i);
-   }
-
-   Future<void>
-   setChatAckStatus(String from, int postId, List<int> rowids, int status) async
-   {
-      List<Post> list = favPosts;
-      IdxPair p = findChat(list, from, postId);
-      if (IsInvalidPair(p)) {
-	 list = ownPosts;
-	 p = findChat(ownPosts, from, postId);
-      }
-
-      if (IsInvalidPair(p)) {
-	 print('Chat not found: from = $from, postId = $postId');
-	 return;
-      }
-
-      for (int rowid in rowids) {
-	 final ChatMetadata cm = list[p.i].chats[p.j];
-	 cm.setAckStatus(rowid, status);
-	 cm.lastChatItem.status = status;
-
-	 // Typically there won't be many rowids in this loop so it is fine to
-	 // use await here. The ideal case however is to offer a List<ChatItem>
-	 // interface in Persistency and use batch there.
-
-	 await persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
-      }
-   }
-
-   Future<void>
-   setCredentials(String id, String password) async
-   {
-      cfg.appId = id;
-      cfg.appPwd = password;
-      await persistency.updateConfig(cfg);
-   }
-
-   Future<int>
-   setChatMessage(int postId, String peer, ChatItem ci, bool fav) async
-   {
-      List<Post> list = ownPosts;
-      if (fav)
-	 list = favPosts;
-
-      final int i = list.indexWhere((e) { return e.id == postId;});
-      assert(i != -1);
-
-      Post post = list[i];
-      // We have to make sure every unread msg is marked as read
-      // before we receive any reply.
-      final int j = post.getChatHistIdx(peer);
-      assert(j != -1);
-
-      final int rowid = await persistency.insertChatMsg(postId, peer, ci);
-      ci.rowid = rowid;
-      post.chats[j].addChatItem(ci);
-
-      await persistency.insertChatOnPost(postId, post.chats[j]);
-
-      post.chats.sort(compChats);
-      list.sort(compPosts);
-      return rowid;
-   }
-
-   Future<void> setNUnreadMsgs(int id, String from) async
-   {
-      await persistency.updateNUnreadMsgs(id, from);
-   }
-
-   Future<void> setPinPostDate(int i, bool fav) async
-   {
-      List<Post> list = ownPosts;
-      if (fav)
-	 list = favPosts;
-
-      Post post = list[i];
-      await persistency.updatePostPinDate(post.pinDate, post.id);
-      post.pinDate = post.pinDate == 0 ? DateTime.now().millisecondsSinceEpoch : 0;
-      list.sort(compPosts);
-   }
-}
-
-//_____________________________________________________________________
-
 class Occase extends StatefulWidget {
   Occase();
 
@@ -5426,15 +5201,6 @@ class OccaseState extends State<Occase>
 
    OccaseState();
 
-   void sendOfflinePosts()
-   {
-      if (_appState.outPostsQueue.isEmpty)
-         return;
-       
-      final String payload = makePostPayload(_appState.outPostsQueue.first);
-      websocket.sink.add(payload);
-   }
-
    void _stablishNewConnection(String fcmToken)
    {
       try {
@@ -5513,14 +5279,12 @@ class OccaseState extends State<Occase>
          // It looks like we do not need to show any dialog here to
          // inform the maximum number of photos has been reached.
          if (i == -1) {
-	    print('1 ------------');
             PickedFile img = await _picker.getImage(
                source: ImageSource.gallery,
                //maxWidth: makeMaxWidth(ctx),
                //maxHeight: makeMaxWidth(ctx),
                //imageQuality: cts.imgQuality,
             );
-	    print('2 ------------');
 
             if (img == null)
                return;
@@ -5585,7 +5349,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onMovePostToFav(int i) async
    {
-      final int h = await _appState.moveToFavorite(i);
+      final int h = await _appState.movePostToFav(i);
 
       assert(h != -1);
 
@@ -5872,12 +5636,6 @@ class OccaseState extends State<Occase>
        setState(() { });
    }
 
-   Future<void> _onTreeLeafNodePressed(int k) async
-   {
-      print('Dummy');
-      setState(() { });
-   }
-
    Future<void> _sendPost() async
    {
       _posts[cts.ownIdx].from = _appState.cfg.appId;
@@ -5885,24 +5643,10 @@ class OccaseState extends State<Occase>
       _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[cts.ownIdx].status = 3;
 
-      Post post = _posts[cts.ownIdx].clone();
-
-      final bool isEmpty = _appState.outPostsQueue.isEmpty;
-
       // We add it here in our own list of posts and keep in mind it may be
       // echoed back to us. It has to be filtered out from _appState.posts
       // since that list should not contain our own posts.
-
-      post.dbId = await _appState.persistency.insertPost(post, ConflictAlgorithm.replace);
-      _appState.outPostsQueue.add(post);
-
-      if (!isEmpty)
-         return;
-
-      // The queue was empty before we inserted the new post.
-      // Therefore we are not waiting for an ack.
-
-      final String payload = makePostPayload(_appState.outPostsQueue.first);
+      final String payload = makePostPayload(_appState.outPost);
       print(payload);
       websocket.sink.add(payload);
    }
@@ -5910,10 +5654,10 @@ class OccaseState extends State<Occase>
    Future<void> _handlePublishAck(final int id, final int date) async
    {
       try {
-         assert(_appState.outPostsQueue.isNotEmpty);
-         Post post = _appState.outPostsQueue.removeFirst();
+         assert(_appState.outPost.status == 3);
+         Post post = _appState.outPost;
          if (id == -1) {
-	    await _appState.persistency.delPostWithRowid(post.dbId);
+	    await _appState.persistency.delPostWithRowid(post.rowid);
             setState(() {_newPostErrorCode = 0;});
             return;
          }
@@ -5934,16 +5678,9 @@ class OccaseState extends State<Occase>
          _appState.ownPosts.add(post);
          _appState.ownPosts.sort(compPosts);
 
-         await _appState.persistency.updatePostOnAck(0, id, date, post.dbId);
+         await _appState.persistency.updatePostOnAck(0, id, date, post.rowid);
 
          setState(() {_newPostErrorCode = 1;});
-
-         if (_appState.outPostsQueue.isEmpty)
-            return;
-
-         final String payload = makePostPayload(_appState.outPostsQueue.first);
-	 print(payload);
-         websocket.sink.add(payload);
       } catch (e) {
          print(e);
       }
@@ -6622,9 +6359,6 @@ class OccaseState extends State<Occase>
       // Sends any chat messages that may have been written while
       // the app were offline.
       _sendOfflineChatMsgs();
-
-      // The same for posts.
-      sendOfflinePosts();
    }
 
    void _onSubscribeAck(Map<String, dynamic> ack)
@@ -6649,8 +6383,6 @@ class OccaseState extends State<Occase>
 
             if (post.from == _appState.cfg.appId)
                continue;
-
-	    //await _appState.persistency.insertPost(post, ConflictAlgorithm.ignore);
 
             _appState.posts.add(post);
             ++_nNewPosts;
@@ -6803,10 +6535,6 @@ class OccaseState extends State<Occase>
       var subCmd =
       { 'cmd': 'subscribe'
       , 'last_post_id': 0
-      , 'filters': <int>[]
-      , 'channels': <int>[]
-      , 'any_of_features': _posts[cts.searchIdx].exDetails[0]
-      , 'ranges': <int>[]
       };
 
       final String payload = jsonEncode(subCmd);
@@ -6940,7 +6668,7 @@ class OccaseState extends State<Occase>
       // FIXME: For _fav chats we can directly delete the post since
       // it will only have one chat element.
 
-      _lpChats[i].forEach((e) async {removeLpChat(e, _appState.persistency);});
+      _lpChats[i].forEach((e) async {removeLpChat(e, _appState);});
 
       if (_isOnFav()) {
          for (Post o in _appState.favPosts)

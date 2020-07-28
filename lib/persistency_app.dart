@@ -23,15 +23,15 @@ class Persistency {
       return Config.fromJson(jsonDecode(maps[0]['cfg']));
    }
 
-   Future<List<Post>> loadPosts(List<int> rangesMinMax) async
+   Future<List<Post>> loadPosts() async
    {
       List<Map<String, dynamic>> maps = await _db.rawQuery(sql.loadPosts);
 
       return List.generate(maps.length, (i)
       {
-	 Post post = Post(rangesMinMax: rangesMinMax);
+	 Post post = Post(rangesMinMax: g.param.rangesMinMax);
 	 try {
-	    post.dbId = maps[i]['rowid'];
+	    post.rowid = maps[i]['rowid'];
 	    post.id = maps[i]['id'];
 	    post.date = maps[i]['date'];
 	    post.pinDate = maps[i]['pin_date'];
@@ -121,11 +121,6 @@ class Persistency {
      });
    }
 
-   Future<void> clearPosts() async
-   {
-      await _db.execute(sql.clearPosts, [1]);
-   }
-
    Future<void> delPostWithId(int id) async
    {
       await _db.execute(sql.delPostWithId, [id]);
@@ -136,9 +131,17 @@ class Persistency {
       await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
 
-   Future<int> insertPost(Post post, ConflictAlgorithm v) async
+   Future<int> insertFavPost(List<Post> posts, int i) async
    {
-      return await _db.insert('posts', postToMap(post), conflictAlgorithm: v);
+      return await insertPost(posts[i], ConflictAlgorithm.ignore);
+   }
+
+   Future<int> _insertPost(Post post) async
+   {
+      return
+	 await _db.insert('posts',
+	                  postToMap(post),
+			  conflictAlgorithm: ConflictAlgorithm.replace);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async
@@ -222,7 +225,7 @@ class Persistency {
       return await _db.rawDelete(sql.deleteChatStElem, [postId, peer]);
    }
 
-   Future<void> updateConfig(Config cfg) async
+   Future<void> persistConfig(Config cfg) async
    {
       final String str = jsonEncode(cfg.toJson());
       await _db.execute(sql.updateConfig, [str, 1]);
@@ -259,14 +262,14 @@ class Persistency {
       });
    }
 
-   Future<void> delPostWithRowid(int dbId) async
+   Future<void> delPostWithRowid(int rowid) async
    {
-      await _db.execute(sql.delPostWithRowid, [dbId]);
+      await _db.execute(sql.delPostWithRowid, [rowid]);
    }
 
-   Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
+   Future<void> updatePostOnAck(int status, int id, int date, int rowid) async
    {
-      await _db.execute(sql.updatePostOnAck, [status, id, date, dbId]);
+      await _db.execute(sql.updatePostOnAck, [status, id, date, rowid]);
    }
 
    Future<void> updateAckStatus(

@@ -10,68 +10,62 @@ import 'package:occase/globals.dart' as g;
 
 class Persistency {
    int chatRowId = 0;
-   List<Post> _posts = List<Post>();
-   Config _config = Config(nick: g.param.unknownNick);
 
    static const String _configKey = 'config';
-   static const String _postsKey = 'posts';
+   static const String _ownPostsKey = 'ownPosts';
+   static const String _favPostsKey = 'favPosts';
 
-   Future<void> _persistPosts() async
+   Future<void> _persistPosts(List<Post> posts, String key) async
    {
-      final String str = jsonEncode(_posts);
-      window.localStorage[_postsKey] = str;
+      final String str = jsonEncode(posts);
+      window.localStorage[key] = str;
    }
 
-   Future<void> _persistConfig(Config c) async
+   Future<void> persistConfig(Config c) async
    {
-      final String str = jsonEncode(_config.toJson());
+      final String str = jsonEncode(c.toJson());
       window.localStorage[_configKey] = str;
    }
 
    Future<Config> loadConfig() async
    {
-      // TODO: Implement a clone method.
       final String str = window.localStorage[_configKey];
       if (str != null)
-	 _config = Config.fromJson(jsonDecode(str));
+	 return Config.fromJson(jsonDecode(str));
 
-      return _config;
+      return Config(nick: g.param.unknownNick);
    }
 
-   Future<List<Post>> loadPosts(List<int> rangesMinMax) async
+   List<Post> _loadPostsImpl(String key)
    {
-      _posts.clear();
+      List<Post> posts = <Post>[];
 
-      final String str = window.localStorage[_postsKey];
-      print(str);
+      final String str = window.localStorage[key];
       if (str != null) {
 	 var l = jsonDecode(str);
-	 l.forEach((v) => _posts.add(Post.fromJson(v, g.param.rangeDivs.length)));
+	 l.forEach((v) => posts.add(Post.fromJson(v, g.param.rangeDivs.length)));
       }
 
-      return List<Post>.from(_posts);
+      return posts;
    }
 
-   Future<void> setDialogPreferences(int i, bool v) async
+   Future<List<Post>> loadPosts() async
    {
-      _config.dialogPreferences[i] = v;
-      await _persistConfig(Config());
+      List<Post> posts = <Post>[];
+      posts.addAll(_loadPostsImpl(_ownPostsKey));
+      posts.addAll(_loadPostsImpl(_favPostsKey));
+      return posts;
    }
 
    Future<List<ChatMetadata>> loadChatMetadata(int postId) async
    {
-      return List<ChatMetadata>();
+      // NOOP
+      return <ChatMetadata>[];
    }
 
    Future<List<AppMsgQueueElem>> loadOutChatMsg() async
    {
       return List<AppMsgQueueElem>();
-   }
-
-   Future<void> clearPosts() async
-   {
-      _posts.clear();
-      await _persistPosts();
    }
 
    Future<void> delPostWithId(int id) async
@@ -82,16 +76,14 @@ class Persistency {
    {
    }
 
-   Future<int> insertPost(Post post, ConflictAlgorithm v) async
+   Future<void> insertFavPost(List<Post> posts, int i) async
    {
-      final int i = _posts.length;
-      _posts.add(post); // TODO: Handle conflict?
-      await _persistPosts();
-      return i;
+      await _persistPosts(posts, _favPostsKey);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async
    {
+      // TODO
    }
 
    Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
@@ -126,22 +118,9 @@ class Persistency {
       return 1;
    }
 
-   Future<void> updateNick(String nick) async
-   {
-      if (nick != null) {
-	 _config.nick = nick;
-	 await _persistConfig(Config());
-      }
-   }
-
-   Future<void> updateConfig(Config c) async
-   {
-      _config = c;
-      await _persistConfig(Config());
-   }
-
    Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
    {
+      // NOOP
    }
 
    Future<void> insertChatOnPost3(
@@ -152,11 +131,11 @@ class Persistency {
    ) async {
    }
 
-   Future<void> delPostWithRowid(int dbId) async
+   Future<void> delPostWithRowid(int rowid) async
    {
    }
 
-   Future<void> updatePostOnAck(int status, int id, int date, int dbId) async
+   Future<void> updatePostOnAck(int status, int id, int date, int rowid) async
    {
    }
 

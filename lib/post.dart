@@ -181,7 +181,6 @@ class ChatMetadata {
    int nUnreadMsgs;
    ChatItem lastChatItem;
 
-   bool isLongPressed;
    List<ChatItem> msgs;
 
    // The number of unread msgs shown int the new msgs divisor shown
@@ -192,13 +191,13 @@ class ChatMetadata {
    // The index where the divisor above shall be shown.
    int divisorUnreadMsgsIdx;
 
-   // This variable contains the timestamps of the last time we sent a
-   // presence-writing message to the peer.
+   // The timestamps of the last time we sent a presence-writing message to the
+   // peer.
    int lastPresenceSent;
 
-   // This variable contains the timestamp from the last presence
-   // message received from the peer.
+   // The timestamp from the last presence message received from the peer.
    int lastPresenceReceived;
+   bool isLongPressed;
 
    ChatMetadata(
    { this.peer = ''
@@ -271,6 +270,45 @@ class ChatMetadata {
          return nick;
 
       return nick.substring(0, 2);
+   }
+
+   ChatMetadata.fromJson(Map<String, dynamic> map)
+   {
+      peer = map["peer"];
+      nick = map["nick"];
+      avatar = map["avatar"];
+      date = map["date"];
+      pinDate = map["pinDate"];
+      chatLength = map["chatLength"];
+      nUnreadMsgs = map["nUnreadMsgs"];
+      lastChatItem = map["lastChatItem"];
+      msgs = map["msgs"]; // <== TODO: use decode.
+
+      isLongPressed = false;
+      divisorUnreadMsgs = nUnreadMsgs;
+      divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
+      lastPresenceSent = 0;
+      lastPresenceReceived = 0;
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      { 'peer': peer
+      , 'nick': nick
+      , 'avatar': avatar
+      , 'date':   date
+      , 'pinDate': pinDate
+      , 'chatLength': chatLength
+      , 'nUnreadMsgs': nUnreadMsgs
+      , 'lastChatItem': lastChatItem
+      , 'msgs': jsonEncode(msgs),
+      //, 'isLongPressed': isLongPressed
+      //, 'divisorUnreadMsgs': divisorUnreadMsgs
+      //, 'divisorUnreadMsgsIdx': divisorUnreadMsgsIdx
+      //, 'lastPresenceSent': lastPresenceSent
+      //, 'lastPresenceReceived': lastPresenceReceived
+      };
    }
 }
 
@@ -349,29 +387,31 @@ List<T> decodeList<T>(int size, T init, List<dynamic> details)
 }
 
 class Post {
-   // The auto increment sqlite rowid. TODO: Rename this to rowid.
-   int dbId;
+   // The auto increment sqlite rowid.
+   int rowid;
 
-   // The post unique identifier.  Its value is sent back by the
-   // server when the post publication is acknowledged.
+   // Post id received from on publish ack from the server.
    int id;
 
-   // The person that published this post.
+   // Post publisher id.
    String from;
 
-   // Publisher nick name.
+   // Publisher nickname.
    String nick;
 
    // Publisher avatar hash code from gravatar.
    String avatar;
 
+   // Location tree code.
    List<int> location = <int>[];
+
+   // Product tree code.
    List<int> product = <int>[];
 
-   // Stores indexes.
+   // Each element is an index in an array of exclusive details.
    List<int> exDetails;
 
-   // Stores bits.
+   // Integers containing which elements have been selected.
    List<int> inDetails;
 
    // The publication date.
@@ -386,17 +426,26 @@ class Post {
    //   0: Posts published by the app.
    //   1: Posts received
    //   2: Posts moved to favorites.
-   //   3: Posts published by the app but still unacked by the server.
    int status;
 
    // The string *description* inputed when user writes an post.
    String description;
 
+   // URLs of the images in the post.
    List<String> images;
+
+   // The chats that belongs to this post.
    List<ChatMetadata> chats = List<ChatMetadata>();
 
+   // Determines what toJson does. We need full serializaiton for persistency.
+   // When we send the post however we need only some fields.
+   //
+   // 0: Full serialization.
+   // 1: Partial serializaiton needed to send the post to the server.
+   int serialization = 1;
+
    Post(
-   { this.dbId = -1
+   { this.rowid = -1
    , this.id = -1
    , this.from = ''
    , this.nick = ''
@@ -444,8 +493,8 @@ class Post {
 
    Post clone()
    {
-      Post ret = Post(rangesMinMax: List<int>());
-      ret.dbId = -1;
+      Post ret = Post(rangesMinMax: <int>[]);
+      ret.rowid = -1;
       ret.id = this.id;
       ret.from = this.from;
       ret.nick = this.nick;
@@ -459,8 +508,8 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.description = this.description;
-      ret.chats = List<ChatMetadata>.from(this.chats);
       ret.images = List<String>.from(this.images);
+      ret.chats = List<ChatMetadata>.from(this.chats);
       return ret;
    }
 
@@ -536,17 +585,16 @@ class Post {
       int rangeDivsLength, // g.param.rangeDivs.length,
    ) {
       try {
-	 print('===============================================================');
-	 print(map);
-	 print('===============================================================');
-	 dbId = map['rowid'] ?? -1;
+	 rowid = map['rowid'] ?? -1;
 	 id = map['id'];
 	 //print('$id');
 	 from = map['from'];
 	 nick = map['nick'] ?? '';
 	 avatar = map['avatar'] ?? '';
-	 location = map['location'] ?? <int>[];
-	 product = map['product'] ?? <int>[];
+	 //location = map['location'] ?? <int>[];
+	 //product = map['product'] ?? <int>[];
+	 location = <int>[];
+	 product = <int>[];
 	 exDetails = decodeList(cts.maxExDetailSize, 1, map['ex_details']);
 	 inDetails = decodeList(cts.maxInDetailSize, 1, map['in_details']);
 	 date = map['date'];
@@ -603,7 +651,7 @@ class Post {
       final String body = jsonEncode(subCmd);
 
       return
-      { 'rowid': dbId
+      { 'rowid': rowid
       , 'id': id
       , 'from': from
       , 'nick': nick
@@ -620,8 +668,8 @@ class Post {
       , 'images': images
       , 'to': 0
       , 'filter': 0
-      , 'features': exDetails.first
       , 'body': body
+      , 'chats': jsonEncode(chats)
       };
    }
 }
@@ -831,7 +879,6 @@ class Config {
 
    Config.fromJson(Map<String, dynamic> map)
    {
-      print(map);
       try {
 	 appId = map['app_id'] ?? '';
 	 appPwd = map['app_pwd'] ?? '';
