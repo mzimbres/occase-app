@@ -138,16 +138,10 @@ class AppState {
 	 favPosts.sort(compPosts);
 	 j = favPosts.indexWhere(f);
 	 assert(j != -1);
-	 await persistency.insertFavPost(favPosts, j);
+	 await persistency.insertPost(favPosts, j);
       }
 
       return j;
-   }
-
-   Future<void> delPostWithId(int i) async
-   {
-      await persistency.delPostWithId(posts[i].id);
-      posts.removeAt(i);
    }
 
    Future<void>
@@ -233,6 +227,56 @@ class AppState {
    Future<int> deleteChatStElem(int id, String peer) async
    {
       return await persistency.deleteChatStElem(id, peer);
+   }
+
+   Future<void> addOwnPost(int id, int date) async
+   {
+      outPost.id = id;
+      outPost.date = date;
+      outPost.status = 0;
+      outPost.pinDate = 0;
+      final int i = ownPosts.length;
+      ownPosts.add(outPost);
+      await persistency.insertPost(ownPosts, i);
+      ownPosts.sort(compPosts);
+   }
+
+   Future<Post> delFavPost(int i) async
+   {
+      await persistency.delFavPost(favPosts, i);
+      return favPosts.removeAt(i);
+   }
+
+   Future<Post> delOwnPost(int i) async
+   {
+      await persistency.delOwnPost(ownPosts, i);
+      return ownPosts.removeAt(i);
+   }
+
+   Post delPost(int i)
+   {
+      return posts.removeAt(i);
+   }
+
+   Future<void> removeFavWithNoChats() async
+   {
+      // If performance becomes a thing, we should call persistency only once.
+      for (int i = 0; i < favPosts.length; ++i)
+	 if (favPosts[i].chats.isEmpty)
+	    await persistency.delFavPost(favPosts, i);
+
+      favPosts.removeWhere((e) { return e.chats.isEmpty; });
+   }
+
+   Future<void> insertChatOnPost3(
+      int postId,
+      ChatMetadata chat,
+      String peer,
+      ChatItem ci,
+      bool isFav,
+   ) async {
+      List<Post> posts = isFav ? favPosts : ownPosts;
+      await persistency.insertChatOnPost3(postId, chat, peer, ci, isFav, posts);
    }
 }
 

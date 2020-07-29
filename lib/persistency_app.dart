@@ -121,9 +121,14 @@ class Persistency {
      });
    }
 
-   Future<void> delPostWithId(int id) async
+   Future<void> delFavPost(List<Post> post, int i) async
    {
-      await _db.execute(sql.delPostWithId, [id]);
+      await _db.execute(sql.delPostWithId, [post[i].id]);
+   }
+
+   Future<void> delOwnPost(List<Post> post, int i) async
+   {
+      await _db.execute(sql.delPostWithId, [post[i].id]);
    }
 
    Future<void> updateNUnreadMsgs(int postId, String peer) async
@@ -131,16 +136,11 @@ class Persistency {
       await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
 
-   Future<int> insertFavPost(List<Post> posts, int i) async
-   {
-      return await insertPost(posts[i], ConflictAlgorithm.ignore);
-   }
-
-   Future<int> _insertPost(Post post) async
+   Future<int> insertPost(List<Post> posts, int i) async
    {
       return
 	 await _db.insert('posts',
-	                  postToMap(post),
+	                  postToMap(posts[i]),
 			  conflictAlgorithm: ConflictAlgorithm.replace);
    }
 
@@ -241,6 +241,8 @@ class Persistency {
       ChatMetadata chat,
       String peer,
       ChatItem ci,
+      bool isFav,
+      List<Post> posts,
    ) async {
       await _db.transaction((txn) async {
          Batch batch = txn.batch();
@@ -260,16 +262,6 @@ class Persistency {
             continueOnError: true,
          );
       });
-   }
-
-   Future<void> delPostWithRowid(int rowid) async
-   {
-      await _db.execute(sql.delPostWithRowid, [rowid]);
-   }
-
-   Future<void> updatePostOnAck(int status, int id, int date, int rowid) async
-   {
-      await _db.execute(sql.updatePostOnAck, [status, id, date, rowid]);
    }
 
    Future<void> updateAckStatus(

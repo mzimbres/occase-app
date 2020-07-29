@@ -5351,8 +5351,6 @@ class OccaseState extends State<Occase>
    {
       final int h = await _appState.movePostToFav(i);
 
-      assert(h != -1);
-
       // We should be using the animate function below, but there is no way
       // one can wait until the animation is ready. The is needed to be able to call
       // _onChatPressed(i, 0) correctly. I will let it commented out for now.
@@ -5381,7 +5379,7 @@ class OccaseState extends State<Occase>
       if (j == 1) {
 	 await _onMovePostToFav(i);
       } else {
-         await _appState.delPostWithId(i);
+         await _appState.delPost(i);
          // TODO: Send command to server to report if j = 2.
       }
 
@@ -5654,31 +5652,12 @@ class OccaseState extends State<Occase>
    Future<void> _handlePublishAck(final int id, final int date) async
    {
       try {
-         assert(_appState.outPost.status == 3);
-         Post post = _appState.outPost;
          if (id == -1) {
-	    await _appState.persistency.delPostWithRowid(post.rowid);
             setState(() {_newPostErrorCode = 0;});
             return;
          }
 
-         // When working with the simulator I noticed on my machine
-         // that it replies before the post could be moved from the
-         // output queue to the . In normal cases users won't
-         // be so fast. But since this is my test condition, I will
-         // cope with that by inserting the post in _appState.ownPosts and only
-         // after that removing from the queue.
-         // TODO: I think this does not hold anymore after I
-         // introduced a message queue.
-
-         post.id = id;
-         post.date = date;
-         post.status = 0;
-         post.pinDate = 0;
-         _appState.ownPosts.add(post);
-         _appState.ownPosts.sort(compPosts);
-
-         await _appState.persistency.updatePostOnAck(0, id, date, post.rowid);
+         await _appState.addOwnPost(id, date);
 
          setState(() {_newPostErrorCode = 1;});
       } catch (e) {
@@ -5689,11 +5668,9 @@ class OccaseState extends State<Occase>
    Future<void> _onRemovePost(int i) async
    {
       if (_isOnFav()) {
-         await _appState.persistency.delPostWithId(_appState.favPosts[i].id);
-         _appState.favPosts.removeAt(i);
+         await _appState.delFavPost(i);
       } else {
-         await _appState.persistency.delPostWithId(_appState.ownPosts[i].id);
-         final Post delPost = _appState.ownPosts.removeAt(i);
+         final Post delPost = await _appState.delOwnPost(i);
 
          var msgMap = {
             'cmd': 'delete',
@@ -6132,6 +6109,7 @@ class OccaseState extends State<Occase>
          isRedirected,
          refersTo,
          peerRowid,
+	 favIdx != -1,
       );
    }
 
@@ -6146,6 +6124,7 @@ class OccaseState extends State<Occase>
       int isRedirected,
       int refersTo,
       int peerRowid,
+      bool isFav,
    ) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
@@ -6227,7 +6206,8 @@ class OccaseState extends State<Occase>
       // Generating the payload before the async operation to avoid
       // problems.
       final String payload = jsonEncode(msgMap);
-      await _appState.persistency.insertChatOnPost3(postId, chat, peer, ci);
+
+      await _appState.insertChatOnPost3(postId, chat, peer, ci, isFav);
       await _sendAppMsg(payload, 0);
    }
 
@@ -6660,8 +6640,6 @@ class OccaseState extends State<Occase>
 
    Future<void> _removeLPChats(int i) async
    {
-      assert(_isOnFav() || _isOnOwn());
-
       if (_lpChats[i].isEmpty)
          return;
 
@@ -6671,11 +6649,7 @@ class OccaseState extends State<Occase>
       _lpChats[i].forEach((e) async {removeLpChat(e, _appState);});
 
       if (_isOnFav()) {
-         for (Post o in _appState.favPosts)
-            if (o.chats.isEmpty)
-	       await _appState.persistency.delPostWithId(o.id);
-
-         _appState.favPosts.removeWhere((e) { return e.chats.isEmpty; });
+	 await _appState.removeFavWithNoChats();
       } else {
          _appState.ownPosts.sort(compPosts);
       }

@@ -127,6 +127,14 @@ class ChatItem {
    }
 }
 
+List<ChatItem> decChatItemList(List<dynamic> list)
+{
+   if (list == null)
+      return null;
+
+   return List.generate(list.length, (int i) { return ChatItem.fromJson(list[i]);});
+}
+
 // To be able to ack unread chat messages as the user clicks on the chat,
 // we need the peer rowids.
 List<int> readPeerRowIdsToAck(
@@ -281,8 +289,8 @@ class ChatMetadata {
       pinDate = map["pinDate"];
       chatLength = map["chatLength"];
       nUnreadMsgs = map["nUnreadMsgs"];
-      lastChatItem = map["lastChatItem"];
-      msgs = map["msgs"]; // <== TODO: use decode.
+      lastChatItem = ChatItem.fromJson(map["lastChatItem"]);
+      msgs = decChatItemList(map["msgs"]);
 
       isLongPressed = false;
       divisorUnreadMsgs = nUnreadMsgs;
@@ -302,7 +310,7 @@ class ChatMetadata {
       , 'chatLength': chatLength
       , 'nUnreadMsgs': nUnreadMsgs
       , 'lastChatItem': lastChatItem
-      , 'msgs': jsonEncode(msgs),
+      , 'msgs': msgs,
       //, 'isLongPressed': isLongPressed
       //, 'divisorUnreadMsgs': divisorUnreadMsgs
       //, 'divisorUnreadMsgsIdx': divisorUnreadMsgsIdx
@@ -376,14 +384,20 @@ ChatMetadata selectMostRecentChat(
 
 List<T> decodeList<T>(int size, T init, List<dynamic> details)
 {
-   List<T> ret = List.filled(size, init);
-   if (details != null) {
-      ret = List.generate(details.length, (int i) { return details[i]; });
-   } else {
+   if (details == null) {
       print('Value not found.');
+      return List.filled(size, init);
    }
 
-   return ret;
+   return List.generate(details.length, (int i) { return details[i]; });
+}
+
+List<ChatMetadata> decChatMetadataList(List<dynamic> list)
+{
+   if (list == null)
+      return <ChatMetadata>[];
+
+   return List.generate(list.length, (int i) { return ChatMetadata.fromJson(list[i]);});
 }
 
 class Post {
@@ -604,6 +618,7 @@ class Post {
 	 status = map['status'] ?? -1;
 	 description = map['description'] ?? '';
 	 images = decodeList(1, '', map['images']) ?? <String>[];
+	 chats = decChatMetadataList(map['chats']);
 
 	 final String body = map['body'];
 	 Map<String, dynamic> bodyMap = jsonDecode(body);
@@ -666,10 +681,9 @@ class Post {
       , 'status': status
       , 'description': description
       , 'images': images
-      , 'to': 0
       , 'filter': 0
       , 'body': body
-      , 'chats': jsonEncode(chats)
+      , 'chats': chats
       };
    }
 }

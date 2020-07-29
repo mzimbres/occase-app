@@ -13,15 +13,6 @@ final String updatePostStatus =
 UPDATE posts SET status = ? WHERE id = ?
 ''';
 
-final String updatePostOnAck =
-'''
-UPDATE posts
-SET status = ?,
-    id = ?,
-    date = ?
-WHERE rowid = ?
-''';
-
 final String updatePostPinDate =
 '''
 UPDATE posts SET pin_date = ? WHERE id = ?
@@ -30,11 +21,6 @@ UPDATE posts SET pin_date = ? WHERE id = ?
 final String delPostWithId =
 '''
 DELETE FROM posts WHERE id = ?
-''';
-
-final String delPostWithRowid =
-'''
-DELETE FROM posts WHERE rowid = ?
 ''';
 
 final String loadPosts =

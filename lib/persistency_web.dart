@@ -41,6 +41,9 @@ class Persistency {
       List<Post> posts = <Post>[];
 
       final String str = window.localStorage[key];
+      print('-------------------');
+      print(str);
+      print('-------------------');
       if (str != null) {
 	 var l = jsonDecode(str);
 	 l.forEach((v) => posts.add(Post.fromJson(v, g.param.rangeDivs.length)));
@@ -68,26 +71,34 @@ class Persistency {
       return List<AppMsgQueueElem>();
    }
 
-   Future<void> delPostWithId(int id) async
+   Future<void> delFavPost(List<Post> posts, int i) async
    {
+      await _persistPosts(posts, _favPostsKey);
+   }
+
+   Future<void> delOwnPost(List<Post> posts, int i) async
+   {
+      await _persistPosts(posts, _ownPostsKey);
    }
 
    Future<void> updateNUnreadMsgs(int postId, String peer) async
    {
    }
 
-   Future<void> insertFavPost(List<Post> posts, int i) async
+   Future<void> insertPost(List<Post> posts, int i) async
    {
       await _persistPosts(posts, _favPostsKey);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async
    {
-      // TODO
+      // NOOP
    }
 
    Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
    {
+      // This function should not be called in web persistency.
+      //assert(false);
       return List<ChatItem>();
    }
 
@@ -128,15 +139,11 @@ class Persistency {
       ChatMetadata chat,
       String peer,
       ChatItem ci,
+      bool isFav,
+      List<Post> posts,
    ) async {
-   }
-
-   Future<void> delPostWithRowid(int rowid) async
-   {
-   }
-
-   Future<void> updatePostOnAck(int status, int id, int date, int rowid) async
-   {
+      String s = isFav ? _favPostsKey : _ownPostsKey;
+      await _persistPosts(posts, s);
    }
 
    Future<void> updateAckStatus(
