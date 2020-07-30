@@ -9,13 +9,11 @@ import 'package:occase/constants.dart' as cts;
 import 'package:occase/globals.dart' as g;
 
 class Persistency {
-   int chatRowId = 0;
-
    static const String _configKey = 'config';
    static const String _ownPostsKey = 'ownPosts';
    static const String _favPostsKey = 'favPosts';
 
-   Future<void> _persistPosts(List<Post> posts, String key) async
+   void _persistPosts(List<Post> posts, String key)
    {
       final String str = jsonEncode(posts);
       window.localStorage[key] = str;
@@ -73,12 +71,12 @@ class Persistency {
 
    Future<void> delFavPost(List<Post> posts, int i) async
    {
-      await _persistPosts(posts, _favPostsKey);
+      _persistPosts(posts, _favPostsKey);
    }
 
    Future<void> delOwnPost(List<Post> posts, int i) async
    {
-      await _persistPosts(posts, _ownPostsKey);
+      _persistPosts(posts, _ownPostsKey);
    }
 
    Future<void> updateNUnreadMsgs(int postId, String peer) async
@@ -87,7 +85,7 @@ class Persistency {
 
    Future<void> insertPost(List<Post> posts, int i) async
    {
-      await _persistPosts(posts, _favPostsKey);
+      _persistPosts(posts, _favPostsKey);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async
@@ -104,12 +102,11 @@ class Persistency {
 
    Future<int> insertOutChatMsg(int isChat, String payload) async
    {
-      return ++chatRowId;
+      return 0;
    }
 
-   Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
+   Future<void> insertChatMsg(int postId, String peer, ChatItem ci) async
    {
-      return ++chatRowId;
    }
 
    Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
@@ -143,7 +140,7 @@ class Persistency {
       List<Post> posts,
    ) async {
       String s = isFav ? _favPostsKey : _ownPostsKey;
-      await _persistPosts(posts, s);
+      _persistPosts(posts, s);
    }
 
    Future<void> updateAckStatus(
@@ -157,6 +154,16 @@ class Persistency {
 
    Future<void> deleteOutChatMsg(int rowid) async
    {
+   }
+
+   void persistFavPosts(List<Post> posts)
+   {
+      _persistPosts(posts, _favPostsKey);
+   }
+
+   void persistOwnPosts(List<Post> posts)
+   {
+      _persistPosts(posts, _ownPostsKey);
    }
 }
 

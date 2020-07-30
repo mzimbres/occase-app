@@ -44,9 +44,6 @@ String makeConnCmd(
 }
 
 class ChatItem {
-   // The auto increment sqlite rowid.
-   int rowid = -1;
-
    // This field is -1 if the message belongs to this app or the peer row id
    // if it belongs to the peer.
    int peerRowid = -1;
@@ -75,8 +72,7 @@ class ChatItem {
    bool isLongPressed;
 
    ChatItem(
-   { this.rowid = -1
-   , this.peerRowid = -1
+   { this.peerRowid = -1
    , this.isRedirected = 0
    , this.refersTo = -1
    , this.status = 0
@@ -167,18 +163,6 @@ Map<String, dynamic> makeChatItemToMap(
     };
 }
 
-int indexWhereBackwards(final List<ChatItem> list, int rowid)
-{
-   int l = list.length;
-   while (l != 0) {
-      --l;
-      if (list[l].rowid == rowid)
-         return l;
-   }
-
-   return -1;
-}
-
 class ChatMetadata {
    String peer;
    String nick;
@@ -229,31 +213,30 @@ class ChatMetadata {
       return msgs != null;
    }
 
-   void addChatItem(ChatItem ci)
+   int addChatItem(ChatItem ci)
    {
       lastChatItem = ci;
+
       if (isLoaded()) {
          msgs.add(ci);
          chatLength = msgs.length;
       } else {
-         ++chatLength;
+	 ++chatLength;
       }
+
+      return chatLength - 1;
    }
 
-   void setAckStatus(int rowid, int status)
+   void setAckStatus(int i, int status)
    {
-      if (lastChatItem.rowid == rowid)
+      //if (lastChatItem.id == i)
          lastChatItem.status = status;
 
       if (isLoaded()) {
-         // Searching backwards to improve performance. We may also want to
-         // add a limit on how many messages back we are willing to search.
-         final int i = indexWhereBackwards(msgs, rowid);
-         if (i != -1) {
+         if (i < msgs.length)
             msgs[i].status = status;
-         } else {
-            print('===> rowid $rowid not found.');
-         }
+         else
+            print('Error: Index $i does not belong in the array.');
       }
    }
 

@@ -196,15 +196,19 @@ class AppState {
       final int j = post.getChatHistIdx(peer);
       assert(j != -1);
 
-      final int rowid = await persistency.insertChatMsg(postId, peer, ci);
-      ci.rowid = rowid;
-      post.chats[j].addChatItem(ci);
+      await persistency.insertChatMsg(postId, peer, ci);
+      final int id = post.chats[j].addChatItem(ci);
 
       await persistency.insertChatOnPost(postId, post.chats[j]);
 
       post.chats.sort(compChats);
       list.sort(compPosts);
-      return rowid;
+      if (fav)
+	 persistency.persistFavPosts(favPosts);
+      else
+	 persistency.persistFavPosts(ownPosts);
+
+      return id;
    }
 
    Future<void> setNUnreadMsgs(int id, String from) async

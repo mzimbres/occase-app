@@ -180,9 +180,9 @@ class Persistency {
       return await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
    }
 
-   Future<int> insertChatMsg(int postId, String peer, ChatItem ci) async
+   Future<void> insertChatMsg(int postId, String peer, ChatItem ci) async
    {
-      return await _db.insert(
+      await _db.insert(
 	 'chats',
 	 makeChatItemToMap(postId, peer, ci),
 	 conflictAlgorithm: ConflictAlgorithm.replace,
@@ -280,6 +280,14 @@ class Persistency {
    Future<void> deleteOutChatMsg(int rowid) async
    {
       await _db.rawDelete(sql.deleteOutChatMsg, [rowid]);
+   }
+
+   void persistFavPosts(List<Post> posts)
+   {
+   }
+
+   void persistOwnPosts(List<Post> posts)
+   {
    }
 }
 

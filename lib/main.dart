@@ -5508,6 +5508,7 @@ class OccaseState extends State<Occase>
    Future<void> _onSendChat(int i) async
    {
       _chats[i].nUnreadMsgs = 0;
+      print('${_txtCtrl.text}');
       await _onSendChatImpl(
          _posts[i].id,
          _chats[i].peer,
@@ -6014,8 +6015,7 @@ class OccaseState extends State<Occase>
 	 if (ci.msg.isEmpty)
 	    return;
 
-	 final int rowid = 
-	    await _appState.setChatMessage(postId, peer, ci, _isOnFav());
+	 final int id = await _appState.setChatMessage(postId, peer, ci, _isOnFav());
 
          // At a certain point in the future, I want to stop sending
          // the user avatar on every message and deduced it from the
@@ -6029,7 +6029,7 @@ class OccaseState extends State<Occase>
          , 'refers_to': ci.refersTo
          , 'post_id': postId
          , 'nick': _appState.cfg.nick
-         , 'id': rowid
+         , 'id': id
          , 'avatar': emailToGravatarHash(_appState.cfg.email)
          };
 
