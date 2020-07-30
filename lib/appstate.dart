@@ -138,7 +138,7 @@ class AppState {
 	 favPosts.sort(compPosts);
 	 j = favPosts.indexWhere(f);
 	 assert(j != -1);
-	 await persistency.insertPost(favPosts, j);
+	 await persistency.insertPost(favPosts, j, true);
       }
 
       return j;
@@ -241,7 +241,7 @@ class AppState {
       outPost.pinDate = 0;
       final int i = ownPosts.length;
       ownPosts.add(outPost);
-      await persistency.insertPost(ownPosts, i);
+      await persistency.insertPost(ownPosts, i, false);
       ownPosts.sort(compPosts);
    }
 

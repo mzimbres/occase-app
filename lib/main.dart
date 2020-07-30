@@ -5641,6 +5641,7 @@ class OccaseState extends State<Occase>
       _posts[cts.ownIdx].nick = _appState.cfg.nick;
       _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[cts.ownIdx].status = 3;
+      _appState.outPost = _posts[cts.ownIdx].clone();
 
       // We add it here in our own list of posts and keep in mind it may be
       // echoed back to us. It has to be filtered out from _appState.posts

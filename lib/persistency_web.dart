@@ -83,9 +83,10 @@ class Persistency {
    {
    }
 
-   Future<void> insertPost(List<Post> posts, int i) async
+   Future<void> insertPost(List<Post> posts, int i, bool isFav) async
    {
-      _persistPosts(posts, _favPostsKey);
+      final String key = isFav ? _favPostsKey : _ownPostsKey;
+      _persistPosts(posts, key);
    }
 
    Future<void> updatePostPinDate(int pinDate, int postId) async

@@ -136,7 +136,7 @@ class Persistency {
       await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
 
-   Future<int> insertPost(List<Post> posts, int i) async
+   Future<int> insertPost(List<Post> posts, int i, bool isFav) async
    {
       return
 	 await _db.insert('posts',
