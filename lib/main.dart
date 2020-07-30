@@ -1453,7 +1453,7 @@ Widget makeNewPostScreenWdgs2({
 		  context: ctx,
 		  builder: (BuildContext ctx2)
 		  {
-		     return PostDescription();
+		     return PostDescription(description: post.description);
 		  },
 	       );
 
@@ -2186,8 +2186,10 @@ ListView makeChatMsgListView(
                );
             }
 
-            if (i > ch.divisorUnreadMsgsIdx)
+            if (i > ch.divisorUnreadMsgsIdx) {
+	       print('$i ${ch.divisorUnreadMsgsIdx}');
                i -= 1; // For the shift
+	    }
          }
 
          final bool isNewMsg =
@@ -3234,7 +3236,7 @@ Widget makePostDescription(
       ),
       child: Text(
          desc,
-         overflow: TextOverflow.ellipsis,
+         //overflow: TextOverflow.ellipsis,
          style: stl.textField,
       ),
    );
@@ -3397,7 +3399,7 @@ Widget makeNewPostDialogWdg({
    final double indent,
    final List<Widget> list,
    final List<Widget> actions,
-   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+   final EdgeInsets insetPadding = const EdgeInsets.symmetric( horizontal: stl.alertDialogInsetPadding, vertical: stl.alertDialogInsetPadding),
 }) {
    ListView lv = ListView.separated(
       separatorBuilder: (BuildContext context, int index)
@@ -3575,13 +3577,15 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 //---------------------------------------------------------------
 
 class PostDescription extends StatefulWidget {
+   String description;
+
    @override
    PostDescriptionState createState() => PostDescriptionState();
-   PostDescription();
+   PostDescription({this.description = ''});
 }
 
 class PostDescriptionState extends State<PostDescription> with TickerProviderStateMixin {
-   TextEditingController _txtCtrl = TextEditingController();
+   TextEditingController _txtCtrl;
 
    @override
    void dispose()
@@ -3594,11 +3598,13 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
    void initState()
    {
       super.initState();
+      _txtCtrl = TextEditingController(text: widget.description);
    }
 
    @override
    Widget build(BuildContext ctx)
    {
+      String hint = widget.description.isEmpty ? g.param.newPostTextFieldHist : widget.description;
       TextField tf = TextField(
 	 autofocus: true,
 	 controller: _txtCtrl,
@@ -3606,9 +3612,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 maxLines: null,
 	 maxLength: 1000,
 	 style: stl.textField,
-	 decoration: InputDecoration.collapsed(
-	    hintText: g.param.newPostTextFieldHist,
-	 ),
+	 decoration: InputDecoration.collapsed(hintText: hint),
       );
 
       Padding content = Padding(
@@ -3618,13 +3622,26 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 
       final FlatButton ok = FlatButton(
 	 child: Text(g.param.ok),
-	 onPressed: ()
-	 {
-	    Navigator.pop(ctx, _txtCtrl.text);
-	 });
+	 onPressed: () { Navigator.pop(ctx, _txtCtrl.text); });
+
+      EdgeInsets insetPadding;
+
+      if (isWideScreen(ctx)) {
+	 final double width = makeTabWidth(ctx, cts.ownIdx);
+	 insetPadding = EdgeInsets.symmetric(
+	    horizontal: width,
+	    vertical: stl.alertDialogInsetPadding,
+	 );
+      } else {
+	 insetPadding = EdgeInsets.symmetric(
+	    horizontal: stl.alertDialogInsetPadding,
+	    vertical: stl.alertDialogInsetPadding,
+	 );
+      }
 
       return AlertDialog(
 	 contentPadding: EdgeInsets.all(stl.newPostPadding),
+	 insetPadding: insetPadding,
 	 title: Text(
             g.param.postDescTitle,
 	    style: stl.newPostTitleLT,
@@ -3866,7 +3883,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		 nick: widget.post.nick,
 		 avatar: widget.post.avatar,
 		 date: DateTime.now().millisecondsSinceEpoch,
-		 lastChatItem: ChatItem(),
 	       );
 
 	       Widget tmp = makeChatListTile(
@@ -4390,8 +4406,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
    final int now = DateTime.now().millisecondsSinceEpoch;
    final int last = cm.lastPresenceReceived + cts.presenceInterval;
 
-   final bool moreRecent =
-      cm.lastPresenceReceived > cm.lastChatItem.date;
+   final bool moreRecent = cm.lastPresenceReceived > cm.getLastChatMsgDate();
 
    if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
@@ -4408,7 +4423,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
 
 Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
 {
-   String str = ch.lastChatItem.msg;
+   String str = ch.getLastChatMsg();
 
    // Chats that are empty have always prevalence
    if (str.isEmpty) {
@@ -4430,7 +4445,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       Colors.grey,
    );
 
-   if (ch.nUnreadMsgs > 0 || !ch.lastChatItem.isFromThisApp())
+   if (ch.nUnreadMsgs > 0 || !ch.isLastChatMsgFromThisApp())
       return Text(
          cps.subtitle,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
@@ -4441,7 +4456,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       );
 
    return Row(children: <Widget>
-   [ chooseMsgStatusIcon(ch.lastChatItem.status)
+   [ chooseMsgStatusIcon(ch.getLastChatMsgStatus())
    , Expanded(
         child: Text(cps.subtitle,
            maxLines: 1,
@@ -4571,7 +4586,7 @@ Widget makeChatListTile({
    Widget trailing = makeChatListTileTrailingWidget(
       ctx,
       chat.nUnreadMsgs,
-      chat.lastChatItem.date,
+      chat.getLastChatMsgDate(),
       chat.pinDate,
       now,
       isFwdChatMsgs
@@ -5220,6 +5235,8 @@ class OccaseState extends State<Occase>
 	    _appState.cfg.notifications.getFlag(),
 	 );
 
+	 print(cmd);
+
 	 websocket.sink.add(cmd);
       } catch (e) {
 	 print('Unable to stablish ws connection to server.');
@@ -5360,7 +5377,7 @@ class OccaseState extends State<Occase>
       _tabCtrl.index = cts.favIdx;
 
       // The chat index in the fav screen is always zero.
-      await _onChatPressed(h, 0);
+      await _onChatPressed(cts.favIdx, h, 0);
    }
 
    // For the meaning of the index j see makeNewPostImpl.
@@ -5667,9 +5684,9 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onRemovePost(int i) async
+   Future<void> _onRemovePost(int screen, int i) async
    {
-      if (_isOnFav()) {
+      if (screen == cts.favIdx) {
          await _appState.delFavPost(i);
       } else {
          final Post delPost = await _appState.delOwnPost(i);
@@ -5686,9 +5703,9 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void> _onPinPost(int i) async
+   Future<void> _onPinPost(int screen, int i) async
    {
-      await _appState.setPinPostDate(i, _isOnFav());
+      await _appState.setPinPostDate(i, screen == cts.favIdx);
       setState(() { });
    }
 
@@ -5821,11 +5838,11 @@ class OccaseState extends State<Occase>
       );
    }
 
-   void _removePostDialog(BuildContext ctx, int i)
+   void _removePostDialog(BuildContext ctx, int screen, int i)
    {
       _showSimpleDialog(
          ctx,
-         () async { await _onRemovePost(i);},
+         () async { await _onRemovePost(screen, i);},
          g.param.dialogTitles[4],
          Text(g.param.dialogBodies[4]),
       );
@@ -5835,28 +5852,25 @@ class OccaseState extends State<Occase>
       List<Post> posts,
       int i,
       int j,
-      int k,
+      int screen,
    ) async {
-      if (_lpChats[k].isNotEmpty || _lpChatMsgs[i].isNotEmpty) {
-         _onChatLPImpl(posts, i, j, k);
+      if (_lpChats[screen].isNotEmpty || _lpChatMsgs[i].isNotEmpty) {
+         _onChatLPImpl(posts, i, j, screen);
          setState(() { });
          return;
       }
 
-      _showChatJumpDownButtons[k] = false;
+      _showChatJumpDownButtons[screen] = false;
       Post post = posts[i];
       ChatMetadata chat = posts[i].chats[j];
 
-      if (!chat.isLoaded())
-         chat.msgs = await _appState.persistency.loadChatMsgs(post.id, chat.peer);
-      
       // These variables must be set after the chats are loaded. Otherwise
       // chat.msgs may be called on null if a message arrives. 
-      _posts[k] = post;
-      _chats[k] = chat;
+      _posts[screen] = post;
+      _chats[screen] = chat;
 
-      if (_chats[k].nUnreadMsgs != 0) {
-         _chats[k].divisorUnreadMsgsIdx = _chats[k].msgs.length - _chats[k].nUnreadMsgs;
+      if (_chats[screen].nUnreadMsgs != 0) {
+         _chats[screen].divisorUnreadMsgsIdx = _chats[screen].msgs.length - _chats[screen].nUnreadMsgs;
 
          // We know the number of unread messages, now we have to generate
          // the array with the messages peer rowid.
@@ -5867,7 +5881,7 @@ class OccaseState extends State<Occase>
          , 'to': posts[i].chats[j].peer
          , 'post_id': posts[i].id
          , 'id': -1
-         , 'ack_ids': readPeerRowIdsToAck(_chats[k].msgs, _chats[k].nUnreadMsgs)
+         , 'ack_ids': makeAckIds(_chats[screen].msgs.length, _chats[screen].nUnreadMsgs)
          };
 
          await _sendAppMsg(jsonEncode(msgMap), 0);
@@ -5876,7 +5890,7 @@ class OccaseState extends State<Occase>
       setState(() {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            _chatScrollCtrl[k].jumpTo(_chatScrollCtrl[k].position.maxScrollExtent);
+            _chatScrollCtrl[screen].jumpTo(_chatScrollCtrl[screen].position.maxScrollExtent);
          });
       });
    }
@@ -5889,12 +5903,12 @@ class OccaseState extends State<Occase>
       });
    }
 
-   Future<void> _onChatPressed(int i, int j) async
+   Future<void> _onChatPressed(int screen, int j, int k) async
    {
-      if (_isOnFav())
-         await _onChatPressedImpl(_appState.favPosts, i, j, cts.favIdx);
+      if (screen == cts.favIdx)
+         await _onChatPressedImpl(_appState.favPosts, j, k, screen);
       else
-         await _onChatPressedImpl(_appState.ownPosts, i, j, cts.ownIdx);
+         await _onChatPressedImpl(_appState.ownPosts, j, k, screen);
    }
 
    void _onUserInfoPressed(BuildContext ctx, int postId, int j)
@@ -5944,12 +5958,12 @@ class OccaseState extends State<Occase>
       );
    }
 
-   void _onChatLP(int i, int j)
+   void _onChatLP(int i, int j, int k)
    {
-      if (_isOnFav()) {
-         _onChatLPImpl(_appState.favPosts, i, j, cts.favIdx);
+      if (i == cts.favIdx) {
+         _onChatLPImpl(_appState.favPosts, j, k, cts.favIdx);
       } else {
-         _onChatLPImpl(_appState.ownPosts, i, j, cts.ownIdx);
+         _onChatLPImpl(_appState.ownPosts, j, k, cts.ownIdx);
       }
 
       setState(() { });
@@ -6087,7 +6101,7 @@ class OccaseState extends State<Occase>
       final String nick = ack['nick'];
       final String avatar = ack['avatar'] ?? '';
       final int refersTo = ack['refers_to'];
-      final int peerRowid = ack['id'];
+      final int peerMsgId = ack['id'];
 
       final int favIdx = _appState.favPosts.indexWhere((e) {
          return e.id == postId;
@@ -6109,7 +6123,7 @@ class OccaseState extends State<Occase>
          posts,
          isRedirected,
          refersTo,
-         peerRowid,
+         peerMsgId,
 	 favIdx != -1,
       );
    }
@@ -6124,7 +6138,7 @@ class OccaseState extends State<Occase>
       List<Post> posts,
       int isRedirected,
       int refersTo,
-      int peerRowid,
+      int peerMsgId,
       bool isFav,
    ) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
@@ -6141,7 +6155,7 @@ class OccaseState extends State<Occase>
          msg: msg,
          date: now,
          refersTo: refersTo,
-         peerRowid: peerRowid,
+         peerId: peerMsgId,
       );
 
       posts[i].chats[j].addChatItem(ci);
@@ -6186,7 +6200,7 @@ class OccaseState extends State<Occase>
          ack = 'chat_ack_received';
          final int n = posts[i].chats[j].nUnreadMsgs;
          posts[i].chats[j].divisorUnreadMsgs = n;
-         final int l = posts[i].chats[j].chatLength;
+         final int l = posts[i].chats[j].msgs.length;
          posts[i].chats[j].divisorUnreadMsgsIdx = l - n;
       }
 
@@ -6201,7 +6215,7 @@ class OccaseState extends State<Occase>
       , 'to': peer
       , 'post_id': postId
       , 'id': -1
-      , 'ack_ids': <int>[peerRowid]
+      , 'ack_ids': <int>[peerMsgId]
       };
 
       // Generating the payload before the async operation to avoid
@@ -6513,10 +6527,7 @@ class OccaseState extends State<Occase>
 
    void _search()
    {
-      var subCmd =
-      { 'cmd': 'subscribe'
-      , 'last_post_id': 0
-      };
+      var subCmd = { 'cmd': 'subscribe' };
 
       final String payload = jsonEncode(subCmd);
       print(payload);
@@ -6969,10 +6980,10 @@ class OccaseState extends State<Occase>
 	 inDetailsRootNode: _inDetailsRoot,
 	 posts: posts,
 	 trees: _trees,
-	 onPressed: _onChatPressed,
-	 onLongPressed: _onChatLP,
-	 onDelPost1: (int i) { _removePostDialog(ctx, i);},
-	 onPinPost1: _onPinPost,
+	 onPressed: (int j, int k) {_onChatPressed(i, j, k);},
+	 onLongPressed: (int j, int k) {_onChatLP(i, j, k);},
+	 onDelPost1: (int j) { _removePostDialog(ctx, i, j);},
+	 onPinPost1: (int j) {_onPinPost(i, j);},
 	 onUserInfoPressed: _onUserInfoPressed,
 	 onExpandImg1: (int i, int j) {_onExpandImg(i, j, i);},
 	 onSharePost: (int i) {_onClickOnPost(i, 1);},

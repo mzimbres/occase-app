@@ -145,7 +145,6 @@ class Persistency {
    }
 
    Future<void> updateAckStatus(
-      ChatItem ci,
       int status,
       int rowid,
       int postId,

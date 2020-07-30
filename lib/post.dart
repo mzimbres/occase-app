@@ -44,9 +44,9 @@ String makeConnCmd(
 }
 
 class ChatItem {
-   // This field is -1 if the message belongs to this app or the peer row id
+   // This field is -1 if the message belongs to this app or the peer id
    // if it belongs to the peer.
-   int peerRowid = -1;
+   int peerId = -1;
 
    // If the message is redirected, be it from this app or from the peer, this
    // field will be set to 1.
@@ -63,7 +63,7 @@ class ChatItem {
    // 2: The peer has received the message.
    // 3: The peer has read the message.
    //
-   // This field is only meaningfull when the message belongs to this app.
+   // This field is only meaningful when the message belongs to this app.
    int status;
 
    String msg;
@@ -72,7 +72,7 @@ class ChatItem {
    bool isLongPressed;
 
    ChatItem(
-   { this.peerRowid = -1
+   { this.peerId = -1
    , this.isRedirected = 0
    , this.refersTo = -1
    , this.status = 0
@@ -88,7 +88,7 @@ class ChatItem {
 
    bool isFromThisApp()
    {
-      return peerRowid == -1;
+      return peerId == -1;
    }
 
    bool refersToOther()
@@ -100,20 +100,19 @@ class ChatItem {
    // without requiring load of all messages.
    ChatItem.fromJson(Map<String, dynamic> map)
    {
-      peerRowid = map["peer_rowid"];
-      refersTo = map['refers_to'];
-      status = map['status'];
-      isRedirected = map['is_redirected'];
-      msg = map['msg'];
-      date = map['date'];
-
+      peerId = map["peer_id"] ?? -1;
+      refersTo = map['refers_to'] ?? -1;
+      status = map['status'] ?? 3;
+      isRedirected = map['is_redirected'] ?? 0;
+      msg = map['msg'] ?? '';
+      date = map['date'] ?? 0;
       isLongPressed = false;
    }
 
    Map<String, dynamic> toJson()
    {
       return
-      { 'peer_rowid': peerRowid
+      { 'peer_id': peerId
       , 'refers_to': refersTo
       , 'status': status
       , 'is_redirected': isRedirected
@@ -133,15 +132,16 @@ List<ChatItem> decChatItemList(List<dynamic> list)
 
 // To be able to ack unread chat messages as the user clicks on the chat,
 // we need the peer rowids.
-List<int> readPeerRowIdsToAck(
-   final List<ChatItem> chats,
+List<int> makeAckIds(
+   final int size,
    final int n,
 ) {
+   if (n > size)
+      return <int>[];
    
    List<int> res = List<int>();
-   final int l = chats.length;
-   for (int i = l - n; i < l; ++i)
-      res.add(chats[i].peerRowid);
+   for (int i = n; i < size; ++i)
+      res.add(i);
 
    return res;
 }
@@ -154,7 +154,7 @@ Map<String, dynamic> makeChatItemToMap(
     return
     { 'post_id': postId
     , 'user_id': userId
-    , 'peer_rowid': ci.peerRowid
+    , 'peer_id': ci.peerId
     , 'is_redirected': ci.isRedirected
     , 'refers_to': ci.refersTo
     , 'status': ci.refersTo
@@ -167,15 +167,15 @@ class ChatMetadata {
    String peer;
    String nick;
    String avatar;
+
+   // The date the chat has been selected to fav.
    int date;
    int pinDate;
-   int chatLength;
    int nUnreadMsgs;
-   ChatItem lastChatItem;
 
-   List<ChatItem> msgs;
+   List<ChatItem> msgs = <ChatItem>[];
 
-   // The number of unread msgs shown int the new msgs divisor shown
+   // The number of unread messages shown in the new msgs divisor shown
    // in the chat screen when one enters it and threre were unread
    // msgs in the chat.
    int divisorUnreadMsgs;
@@ -191,53 +191,74 @@ class ChatMetadata {
    int lastPresenceReceived;
    bool isLongPressed;
 
+   int getLastChatMsgDate()
+   {
+      if (msgs.isEmpty)
+	 return 0;
+
+      return msgs.last.date;
+   }
+
+   int getLastChatMsgStatus()
+   {
+      if (msgs.isEmpty)
+	 return -1;
+
+      return msgs.last.status;
+   }
+
+   String getLastChatMsg()
+   {
+      if (msgs.isEmpty)
+	 return '';
+
+      return msgs.last.msg;
+   }
+
+   bool isLastChatMsgFromThisApp()
+   {
+      if (msgs.isEmpty)
+	 return false;
+
+      return msgs.last.isFromThisApp();
+   }
+
+   int getMostRecentChatDate()
+   {
+      if (msgs.isEmpty)
+	 return date;
+
+      return msgs.last.date;
+   }
+
    ChatMetadata(
    { this.peer = ''
    , this.nick = ''
    , this.avatar = ''
    , this.date = 0
    , this.pinDate = 0
-   , this.chatLength = 0
    , this.nUnreadMsgs = 0
-   , this.lastChatItem
    , this.isLongPressed = false
    , this.lastPresenceSent = 0
    , this.lastPresenceReceived = 0
    }) {
       divisorUnreadMsgs = nUnreadMsgs;
-      divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
-   }
-
-   bool isLoaded()
-   {
-      return msgs != null;
+      divisorUnreadMsgsIdx = msgs.length - nUnreadMsgs;
+      assert(divisorUnreadMsgsIdx >= 0);
    }
 
    int addChatItem(ChatItem ci)
    {
-      lastChatItem = ci;
-
-      if (isLoaded()) {
-         msgs.add(ci);
-         chatLength = msgs.length;
-      } else {
-	 ++chatLength;
-      }
-
-      return chatLength - 1;
+      msgs.add(ci);
+      return msgs.length - 1;
    }
 
    void setAckStatus(int i, int status)
    {
-      //if (lastChatItem.id == i)
-         lastChatItem.status = status;
-
-      if (isLoaded()) {
-         if (i < msgs.length)
-            msgs[i].status = status;
-         else
-            print('Error: Index $i does not belong in the array.');
-      }
+      if (i < msgs.length)
+	 msgs[i].status = status;
+      else
+	 print('Error: Index $i does not belong in the array.');
    }
 
    String getChatDisplayName()
@@ -270,14 +291,12 @@ class ChatMetadata {
       avatar = map["avatar"];
       date = map["date"];
       pinDate = map["pinDate"];
-      chatLength = map["chatLength"];
       nUnreadMsgs = map["nUnreadMsgs"];
-      lastChatItem = ChatItem.fromJson(map["lastChatItem"]);
       msgs = decChatItemList(map["msgs"]);
 
       isLongPressed = false;
       divisorUnreadMsgs = nUnreadMsgs;
-      divisorUnreadMsgsIdx = chatLength - nUnreadMsgs;
+      divisorUnreadMsgsIdx = msgs.length - nUnreadMsgs;
       lastPresenceSent = 0;
       lastPresenceReceived = 0;
    }
@@ -290,9 +309,7 @@ class ChatMetadata {
       , 'avatar': avatar
       , 'date':   date
       , 'pinDate': pinDate
-      , 'chatLength': chatLength
       , 'nUnreadMsgs': nUnreadMsgs
-      , 'lastChatItem': lastChatItem
       , 'msgs': msgs,
       //, 'isLongPressed': isLongPressed
       //, 'divisorUnreadMsgs': divisorUnreadMsgs
@@ -307,10 +324,11 @@ class ChatMetadata {
  *
  * (applies to chats belonging to the same post)
  *
- * 1. A pined chat alwas wins, even if it contains no messages. The
- *    need to sort chats that contain no messages however won't
- *    happen.  If _favPosts there is only one chat, and in _ownPosts
- *    they will always contain messages.
+ * 1. A pined chat always wins, even if it contains no messages. The
+ *    need to sort chats that contain no messages however won't happen.  In
+ *    favPosts there will only be one chat and in _ownPosts they will always
+ *    contain messages.
+ *
  * 2. If two chats are pined, the one with the most recent date wins.
  *    The date to be used is the date of the last chat message. Again,
  *    two or more chats with no message won't happen as said above.
@@ -319,48 +337,53 @@ class ChatMetadata {
  *        other messages. The function bellow has to be adapted to
  *        such cases.
  */
+int compChatByMsg(final ChatMetadata lhs, final ChatMetadata rhs)
+{
+   if (lhs.msgs.isEmpty && rhs.msgs.isEmpty)
+      return lhs.date > rhs.date ? -1
+           : lhs.date < rhs.date ? 1 : 0;
+
+   if (lhs.msgs.isEmpty)
+      return 1;
+
+   if (rhs.msgs.isEmpty)
+      return -1;
+
+   if (lhs.msgs.last.msg.isEmpty && rhs.msgs.last.msg.isEmpty)
+      return lhs.date > rhs.date ? -1
+           : lhs.date < rhs.date ? 1 : 0;
+
+   if (lhs.msgs.last.msg.isEmpty)
+      return 1;
+
+   if (rhs.msgs.last.msg.isEmpty)
+      return -1;
+
+   return lhs.msgs.last.date > rhs.msgs.last.date ? -1
+        : lhs.msgs.last.date < rhs.msgs.last.date ? 1 : 0;
+}
+
 int compChats(final ChatMetadata lhs, final ChatMetadata rhs)
 {
    if (lhs.pinDate != 0 && rhs.pinDate != 0)
       return lhs.pinDate > rhs.pinDate ? -1
            : lhs.pinDate < rhs.pinDate ? 1 : 0;
 
-   if (lhs.pinDate != 0)
-      return -1;
-
-   if (rhs.pinDate != 0)
+   if (lhs.pinDate == 0)
       return 1;
 
-   if (lhs.lastChatItem.msg == '' && rhs.lastChatItem.msg == '')
-      return lhs.date > rhs.date ? -1
-           : lhs.date < rhs.date ? 1 : 0;
-
-   if (lhs.lastChatItem.msg.isEmpty)
-      return 1;
-
-   if (rhs.lastChatItem.msg.isEmpty)
+   if (rhs.pinDate == 0)
       return -1;
 
-   if (lhs.lastChatItem.msg.isEmpty && rhs.lastChatItem.msg.isEmpty)
-      return lhs.date > rhs.date ? -1
-           : lhs.date < rhs.date ? 1 : 0;
-
-   if (lhs.lastChatItem.msg.isEmpty)
-      return 1;
-
-   if (rhs.lastChatItem.msg.isEmpty)
-      return -1;
-
-   return lhs.lastChatItem.date > rhs.lastChatItem.date ? -1
-        : lhs.lastChatItem.date < rhs.lastChatItem.date ? 1 : 0;
+   return compChatByMsg(lhs, rhs);
 }
 
 ChatMetadata selectMostRecentChat(
    final ChatMetadata lhs,
    final ChatMetadata rhs
 ) {
-   final int t1 = lhs.lastChatItem.date;
-   final int t2 = rhs.lastChatItem.date;
+   final int t1 = lhs.getMostRecentChatDate();
+   final int t2 = rhs.getMostRecentChatDate();
 
    return t1 >= t2 ? lhs : rhs;
 }
@@ -390,6 +413,18 @@ class Post {
    // Post id received from on publish ack from the server.
    int id;
 
+   // The publication date.
+   int date;
+
+   // The date this post has been pinned by the user.
+   int pinDate;
+
+   // Post status.
+   //   0: Posts published by the app.
+   //   1: Posts received
+   //   2: Posts moved to favorites.
+   int status;
+
    // Post publisher id.
    String from;
 
@@ -398,6 +433,9 @@ class Post {
 
    // Publisher avatar hash code from gravatar.
    String avatar;
+
+   // The string *description* inputed when user writes an post.
+   String description;
 
    // Location tree code.
    List<int> location = <int>[];
@@ -411,35 +449,13 @@ class Post {
    // Integers containing which elements have been selected.
    List<int> inDetails;
 
-   // The publication date.
-   int date;
-
-   // The date this post has been pinned by the user.
-   int pinDate;
-
    List<int> rangeValues;
-
-   // Post status.
-   //   0: Posts published by the app.
-   //   1: Posts received
-   //   2: Posts moved to favorites.
-   int status;
-
-   // The string *description* inputed when user writes an post.
-   String description;
 
    // URLs of the images in the post.
    List<String> images;
 
    // The chats that belongs to this post.
    List<ChatMetadata> chats = List<ChatMetadata>();
-
-   // Determines what toJson does. We need full serializaiton for persistency.
-   // When we send the post however we need only some fields.
-   //
-   // 0: Full serialization.
-   // 1: Partial serializaiton needed to send the post to the server.
-   int serialization = 1;
 
    Post(
    { this.rowid = -1
@@ -519,7 +535,6 @@ class Post {
             nick: nick,
             avatar: avatar,
             date: now,
-            lastChatItem: ChatItem(date: now),
          ),
       );
 
@@ -565,16 +580,6 @@ class Post {
       return false;
    }
 
-   int getMostRecentTimestamp()
-   {
-      if (chats.isEmpty)
-         return 0;
-
-      final ChatMetadata hist = chats.reduce(selectMostRecentChat);
-
-      return hist.lastChatItem.date;
-   }
-
    // This serialization is used to communicate with the occase-db,
    // not the one used in the sqlite localy.
    Post.fromJson(
@@ -584,34 +589,22 @@ class Post {
       try {
 	 rowid = map['rowid'] ?? -1;
 	 id = map['id'];
-	 //print('$id');
 	 from = map['from'];
 	 nick = map['nick'] ?? '';
 	 avatar = map['avatar'] ?? '';
-	 //location = map['location'] ?? <int>[];
-	 //product = map['product'] ?? <int>[];
-	 location = <int>[];
-	 product = <int>[];
+	 location = decodeList(0, 0, map['location']);
+	 product = decodeList(0, 0, map['product']);
 	 exDetails = decodeList(cts.maxExDetailSize, 1, map['ex_details']);
 	 inDetails = decodeList(cts.maxInDetailSize, 1, map['in_details']);
-	 date = map['date'];
+	 date = map['date'] ?? 0;
 	 pinDate = map['pin_date'] ?? 0;
-	 //rangeValues = map['range_values'];
 	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
 	 status = map['status'] ?? -1;
 	 description = map['description'] ?? '';
-	 images = decodeList(1, '', map['images']) ?? <String>[];
+	 images = decodeList(0, '', map['images']);
 	 chats = decChatMetadataList(map['chats']);
-
-	 final String body = map['body'];
-	 Map<String, dynamic> bodyMap = jsonDecode(body);
-	 nick = bodyMap['nick'] ?? '';
-	 avatar = bodyMap['avatar'] ?? '';
-	 images = decodeList(1, '', bodyMap['images']) ?? <String>[];
-	 description = bodyMap['msg'] ?? '';
       } catch (e) {
-	 print('lkdjf');
-	 print(e);
+	 print('Post.fromJson: ${e}');
       }
    }
 
@@ -620,33 +613,18 @@ class Post {
       assert(exDetails.isNotEmpty);
       assert(inDetails.isNotEmpty);
 
-      // NOTE2: The ex- and inDetails arrays are initialized to a size
-      // that is bigger than usually need (see maxExDetailSize and
-      // maxInDetailSize). We could spare some space in the json
-      // payload by reducing their size to the minimum needed before
-      // serialization, this may come with a cost of not being able to
-      // provide backwards compatibility if expansion of these fields
-      // is required in the future. I think the better strategy is to
-      // choose these arrays to have two unused elements.
+      // NOTE2: The ex- and inDetails arrays are initialized to a size that is
+      // bigger than usually needed (see maxExDetailSize and maxInDetailSize).
+      // We could spare some space in the json payload by reducing their size
+      // to the minimum needed before serialization, this may come with a cost
+      // of not being able to provide backwards compatibility if expansion of
+      // these fields is required in the future. I think the better strategy is
+      // to choose these arrays to have two unused elements.
       //
-      // To reduce the size to what is exactly needed one has to first
-      // get the product index with *int getProductDetailIdx()* and
-      // then the size from txt.exDetailTitles[index].length (or
-      // txt.exDetails[index].length) and similar to the inDetails
-      // array.
-
-      var subCmd =
-      { 'msg': description
-      , 'nick': nick
-      , 'avatar': avatar
-      , 'images': images
-      , 'ex_details': exDetails
-      , 'in_details': inDetails
-      , 'location': location
-      , 'product': product
-      };
-
-      final String body = jsonEncode(subCmd);
+      // To reduce the size to what is exactly needed one has to first get the
+      // product index with *int getProductDetailIdx()* and then the size from
+      // txt.exDetailTitles[index].length (or txt.exDetails[index].length) and
+      // similar to the inDetails array.
 
       return
       { 'rowid': rowid
@@ -654,6 +632,7 @@ class Post {
       , 'from': from
       , 'nick': nick
       , 'avatar': avatar
+      , 'description': description
       , 'location': location
       , 'product': product
       , 'ex_details': exDetails
@@ -662,10 +641,7 @@ class Post {
       , 'pin_date': pinDate
       , 'range_values': rangeValues
       , 'status': status
-      , 'description': description
       , 'images': images
-      , 'filter': 0
-      , 'body': body
       , 'chats': chats
       };
    }
@@ -747,31 +723,19 @@ int compPosts(final Post lhs, final Post rhs)
    if (rhs.pinDate != 0)
       return 1;
 
-   if (lhs.chats.length == 0 && rhs.chats.length == 0)
+   if (lhs.chats.isEmpty && rhs.chats.isEmpty)
       return lhs.date > rhs.date ? -1
            : lhs.date < rhs.date ? 1 : 0;
 
-   if (lhs.chats.length == 0)
+   if (lhs.chats.isEmpty)
       return 1;
 
-   if (rhs.chats.length == 0)
+   if (rhs.chats.isEmpty)
       return -1;
 
    final ChatMetadata c1 = lhs.chats.reduce(selectMostRecentChat);
    final ChatMetadata c2 = rhs.chats.reduce(selectMostRecentChat);
-
-   if (c1.lastChatItem.msg.isEmpty && c2.lastChatItem.msg.isEmpty)
-      return c1.date > c2.date ? -1
-           : c1.date < c2.date ? 1 : 0;
-
-   if (c1.lastChatItem.msg.isEmpty)
-      return 1;
-
-   if (c2.lastChatItem.msg.isEmpty)
-      return -1;
-
-   return c1.lastChatItem.date > c2.lastChatItem.date ? -1
-        : c1.lastChatItem.date < c2.lastChatItem.date ? 1 : 0;
+   return compChatByMsg(c1, c2);
 }
 
 class IdxPair {
@@ -904,8 +868,6 @@ class Config {
 
 List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)
 {
-   final String payload = jsonEncode(chat.lastChatItem);
-
    return <dynamic>
    [ postId
    , chat.peer
@@ -913,9 +875,7 @@ List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)
    , chat.pinDate
    , chat.nick
    , chat.avatar
-   , chat.chatLength
    , chat.nUnreadMsgs
-   , payload
    ];
 }
 

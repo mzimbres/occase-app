@@ -143,24 +143,9 @@ const Icon unknownPersonIcon = Icon(
    size: 30.0,
 );
 
-const List<IconData> newPostTabIcons = <IconData>
-[ Icons.home
-, Icons.directions_car
-, Icons.details
-, Icons.publish
-];
-
 const Icon favIcon = Icon(Icons.chat, color: Colors.lightGreen);
-const Icon pubIcon = Icon(Icons.publish, color: Colors.amber);
 
-const List<IconData> filterTabIcons = <IconData>
-[ Icons.home
-, Icons.directions_car
-, Icons.filter_list
-, Icons.search
-];
-
-const IconData newPostIcon = Icons.publish;
+const IconData newPostIcon = Icons.add;
 
 const double imgInfoWidgetPadding = 10.0;
 
@@ -204,4 +189,5 @@ final Divider newPostDivider = Divider(
 
 const double newPostPadding = 10.0;
 
+const double alertDialogInsetPadding = 10.0;
 

@@ -162,13 +162,12 @@ class AppState {
       for (int rowid in rowids) {
 	 final ChatMetadata cm = list[p.i].chats[p.j];
 	 cm.setAckStatus(rowid, status);
-	 cm.lastChatItem.status = status;
 
 	 // Typically there won't be many rowids in this loop so it is fine to
 	 // use await here. The ideal case however is to offer a List<ChatItem>
 	 // interface in Persistency and use batch there.
 
-	 await persistency.updateAckStatus(cm.lastChatItem, status, rowid, postId, from);
+	 await persistency.updateAckStatus(status, rowid, postId, from);
       }
    }
 

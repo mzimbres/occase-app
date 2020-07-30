@@ -53,7 +53,6 @@ CREATE TABLE chat_status
 , avatar TEXT
 , chat_length INTEGER
 , n_unread_msgs INTEGER
-, last_chat_item TEXT
 , FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE
 , UNIQUE(post_id, user_id)
 )
@@ -61,12 +60,12 @@ CREATE TABLE chat_status
 
 final String insertChatStOnPost =
 '''
-INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String insertOrReplaceChatOnPost =
 '''
-INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT OR REPLACE INTO chat_status VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 ''';
 
 final String selectChatStatusItem =
@@ -82,12 +81,6 @@ DELETE FROM chat_status WHERE post_id = ? AND user_id == ?
 final String updateNUnreadMsgs =
 '''
 UPDATE chat_status SET n_unread_msgs = ?
-WHERE post_id = ? AND user_id == ?
-''';
-
-final String updateLastChat =
-'''
-UPDATE chat_status SET last_chat_item = ?
 WHERE post_id = ? AND user_id == ?
 ''';
 

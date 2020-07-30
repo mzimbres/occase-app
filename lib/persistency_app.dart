@@ -89,11 +89,6 @@ class Persistency {
 
      return List.generate(maps.length, (i)
      {
-	final String str = maps[i]['last_chat_item'];
-	ChatItem lastChatItem = ChatItem();
-	if (str.isNotEmpty)
-	    lastChatItem = ChatItem.fromJson(jsonDecode(str));
-
 	return ChatMetadata(
 	   peer: maps[i]['user_id'],
 	   nick: maps[i]['nick'],
@@ -102,7 +97,6 @@ class Persistency {
 	   pinDate: maps[i]['pin_date'],
 	   chatLength: maps[i]['chat_length'],
 	   nUnreadMsgs: maps[i]['n_unread_msgs'],
-	   lastChatItem: lastChatItem,
 	);
      });
    }
@@ -265,7 +259,6 @@ class Persistency {
    }
 
    Future<void> updateAckStatus(
-      ChatItem ci,
       int status,
       int rowid,
       int postId,
@@ -273,7 +266,6 @@ class Persistency {
    ) async {
       Batch batch = _db.batch();
       batch.rawUpdate(sql.updateAckStatus, [status, rowid]);
-      batch.rawUpdate(sql.updateLastChat, [jsonEncode(ci), postId, from]);
       await batch.commit(noResult: true, continueOnError: true);
    }
 
