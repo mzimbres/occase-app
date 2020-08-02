@@ -5133,7 +5133,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
-      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
       setState(() { });
    }
 
@@ -6315,7 +6315,7 @@ class OccaseState extends State<Occase>
       await _appState.setCredentials(id, pwd);
 
       // Retrieves some posts for the newly registered user.
-      _search();
+      _subscribeToPosts();
    }
 
    Future<void> _onFilenamesAck(Map<String, dynamic> ack) async
@@ -6360,7 +6360,7 @@ class OccaseState extends State<Occase>
 
       // We are loggen in and can subscribe to receive posts sent while we were
       // offline.
-      _search();
+      _subscribeToPosts();
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -6376,13 +6376,13 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onPost(Map<String, dynamic> ack) async
+   void _onPost(Map<String, dynamic> ack)
    {
       // When we are receiving new posts here as a result of the user
       // clicking the search buttom, we have to clear all old posts before
       // showing the new posts to the user.
       final bool showPosts = _appState.posts.isEmpty;
-      for (var item in ack['items']) {
+      for (var item in ack['posts']) {
          try {
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
@@ -6430,7 +6430,7 @@ class OccaseState extends State<Occase>
          } else if (cmd == "subscribe_ack") {
             _onSubscribeAck(ack);
          } else if (cmd == "post") {
-            await _onPost(ack);
+            _onPost(ack);
          } else if (cmd == "publish_ack") {
             await _onPublishAck(ack);
          } else if (cmd == "delete_ack") {
@@ -6496,53 +6496,36 @@ class OccaseState extends State<Occase>
       );
    }
 
-  /* The variable i can assume the following values
-   * 0: Leaves the screen.
-   * 1: Retrieve all posts from the server. (I think we do not need this
-   *    option).
-   * 2: Notifications: When the user presses search we will zero the
-   *    lastPostId and search.
-   */
+   // The variable i can assume the following values
+   // 0: Leaves the screen.
+   //
    Future<void> _onSearch(BuildContext ctx, int i) async
    {
-      if (!isWideScreen(ctx))
-	 setState(() {_newSearchPressed = false;});
+      try {
+	 if (!isWideScreen(ctx))
+	    setState(() {_newSearchPressed = false;});
 
-      if (i == 0) {
-         setState(() { });
-         return;
+	 if (i == 0) {
+	    setState(() { });
+	    return;
+	 }
+
+	 _nNewPosts = 0;
+	 await _appState.clearPosts();
+
+	 final String body = await _searchPosts(cts.dbSearchPostsUrl);
+	 if (body.isEmpty)
+	    return; // Perhaps show a dialog with an error message?
+
+	 _onPost(jsonDecode(body));
+      } catch (e) {
+	 print(e);
       }
-
-      // I changed my mind in 8.12.2019 and decided it is less confusing to
-      // the user if we always search for all posts not only for those that
-      // have a more recent post id than what is stored in the app. For
-      // that we rely on the fact that
-      //
-      // 1. When the user moves a post to the chats screen it will not be
-      //    added twice.
-      // 2. Old posts will be cleared when we receive the answer to this
-      //    request.
-
-      _nNewPosts = 0;
-      await _appState.clearPosts();
-      _search();
-
-      // I believe we do not need this dialog anymore.
-      //_showSimpleDialog(
-      //   ctx,
-      //   () { setState(() { }); }
-      //   g.param.dialogTitles[3],
-      //   Text(g.param.dialogBodies[3]),
-      //);
    }
 
-   void _search()
+   void _subscribeToPosts()
    {
-      var subCmd = { 'cmd': 'subscribe' };
-
-      final String payload = jsonEncode(subCmd);
-      print(payload);
-      websocket.sink.add(payload);
+      websocket.sink.add(jsonEncode({ 'cmd': 'subscribe' }));
    }
 
    // Called when the main tab changes.
@@ -6839,11 +6822,11 @@ class OccaseState extends State<Occase>
       setState(() {});
    }
 
-   Future<String> _getNumberOfMatchingPosts() async
+   Future<String> _searchPosts(String url) async
    {
-      // Set a timeout on the http request.
+      // TODO: Set a timeout on the http request.
 
-      var response = await http.post(cts.dbPostMatchesUrl,
+      var response = await http.post(url,
          body: jsonEncode(_posts[cts.searchIdx].toJson()),
       );
 
@@ -6860,7 +6843,7 @@ class OccaseState extends State<Occase>
 	 return;
 
       _posts[cts.searchIdx].location = code;
-      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
 
       setState(() { });
    }
@@ -6871,7 +6854,7 @@ class OccaseState extends State<Occase>
 	 return;
 
       _posts[cts.searchIdx].product = code;
-      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
 
       setState(() {});
    }
