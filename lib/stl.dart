@@ -190,4 +190,5 @@ final Divider newPostDivider = Divider(
 const double newPostPadding = 10.0;
 
 const double alertDialogInsetPadding = 10.0;
+const double minButtonWidth = 100.0;
 

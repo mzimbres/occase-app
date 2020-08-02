@@ -1588,6 +1588,7 @@ List<Widget> makeValueSliders({
 Widget makeSearchScreenWdg2({
    BuildContext ctx,
    final int state,
+   String numberOfMatchingPosts,
    final Node locationRootNode,
    final Node productRootNode,
    final Node exDetailsRootNode,
@@ -1683,11 +1684,16 @@ Widget makeSearchScreenWdg2({
       //   Colors.black,
       //);
 
+      if (numberOfMatchingPosts.isEmpty)
+	  numberOfMatchingPosts = g.param.filterAppBarTitle;
+
+      final String buttonTitle = '${g.param.filterAppBarTitle}: $numberOfMatchingPosts';
+
       Widget w2 = createRaisedButton(
-	 () {onSearchPressed(2);},
-	 g.param.filterAppBarTitle,
-	 stl.colorScheme.secondary,
-	 stl.colorScheme.onSecondary,
+         () {onSearchPressed(2);},
+         buttonTitle,
+         stl.colorScheme.secondary,
+         stl.colorScheme.onSecondary,
       );
 
       //Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
@@ -2909,17 +2915,18 @@ Widget createRaisedButton(
 ) {
    RaisedButton but = RaisedButton(
       child: Text(txt,
-         style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: stl.mainFontSize,
-            color: textColor,
-         ),
+	 style: TextStyle(
+	    fontWeight: FontWeight.bold,
+	    fontSize: stl.mainFontSize,
+	    color: textColor,
+	 ),
+	 //textAlign: TextAlign.center,
       ),
       color: color,
       onPressed: onPressed,
    );
 
-   return Center(child: ButtonTheme(minWidth: 100.0, child: but));
+   return Center(child: ButtonTheme(minWidth: stl.minButtonWidth, child: but));
 }
 
 // Study how to convert this into an elipsis like whatsapp.
@@ -5014,6 +5021,9 @@ class OccaseState extends State<Occase>
    // from the server, a value of -1 means we are connected.
    int _lastDisconnect = -1;
 
+   // The number of posts that match the search criteria.
+   String _numberOfMatchingPosts = '';
+
    // Used in the final new post screen to store the files while the
    // user chooses the images.
    List<PickedFile> _imgFiles = List<PickedFile>();
@@ -5123,6 +5133,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
+      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
       setState(() { });
    }
 
@@ -5220,8 +5231,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 // For the web
-	 websocket = HtmlWebSocketChannel.connect(cts.dbHost);
-	 //websocket = IOWebSocketChannel.connect(cts.dbHost);
+	 websocket = HtmlWebSocketChannel.connect(cts.dbWebsocketUrl);
+	 //websocket = IOWebSocketChannel.connect(cts.dbWebsocketUrl);
 	 websocket.stream.listen(
 	    _onWSData,
 	    onError: _onWSError,
@@ -6828,22 +6839,39 @@ class OccaseState extends State<Occase>
       setState(() {});
    }
 
-   void _onSetSearchLocationCode(List<int> code)
+   Future<String> _getNumberOfMatchingPosts() async
+   {
+      // Set a timeout on the http request.
+
+      var response = await http.post(cts.dbPostMatchesUrl,
+         body: jsonEncode(_posts[cts.searchIdx].toJson()),
+      );
+
+      if (response.statusCode == 200)
+         return response.body;
+
+      print('Error: Unable to find search matches.');
+      return '';
+   }
+
+   Future<void> _onSetSearchLocationCode(List<int> code) async
    {
       if (code.isEmpty)
 	 return;
 
       _posts[cts.searchIdx].location = code;
+      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
 
-      setState(() {});
+      setState(() { });
    }
 
-   void _onSetSearchProductCode(List<int> code)
+   Future<void> _onSetSearchProductCode(List<int> code) async
    {
       if (code.isEmpty)
 	 return;
 
       _posts[cts.searchIdx].product = code;
+      _numberOfMatchingPosts = await _getNumberOfMatchingPosts();
 
       setState(() {});
    }
@@ -6914,11 +6942,10 @@ class OccaseState extends State<Occase>
 
    Widget _makeSearchScreenWdg2(BuildContext ctx)
    {
-      // Below we use txt.exDetails[0][0], because the filter is
-      // common to all products.
       return makeSearchScreenWdg2(
 	 ctx: ctx,
 	 state: _posts[cts.searchIdx].exDetails[0],
+	 numberOfMatchingPosts: _numberOfMatchingPosts,
 	 locationRootNode: _trees[0].root.first,
 	 productRootNode: _trees[1].root.first,
 	 exDetailsRootNode: _exDetailsRoot,
