@@ -220,7 +220,7 @@ String makePostPayload(final Post post)
 {
    var pubMap = {
       'cmd': 'publish',
-      'items': <Post>[post]
+      'posts': <Post>[post]
    };
 
    return jsonEncode(pubMap);
@@ -5028,13 +5028,6 @@ class OccaseState extends State<Occase>
    // user chooses the images.
    List<PickedFile> _imgFiles = List<PickedFile>();
 
-   // When the user clicks to send the post, we first request the image
-   // filenames from the websocket server. This timer sets a limit on how long
-   // we are willing to wait. During this time, the screen remains blocked for
-   // the user. This will be changed when we implement filename requests over
-   // HTTP and not websocket. The timer can be set differently in this case.
-   Timer _filenamesTimer = Timer(Duration(seconds: 0), (){});
-
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
    List<int> _expPostIdxs = List<int>.filled(3, -1);
@@ -5742,10 +5735,7 @@ class OccaseState extends State<Occase>
          print('=====> New name $newname');
          print('=====> Http target $newname');
 
-         //var headers = {'Accept-Encoding': 'identity'};
-
          var response = await http.post(newname,
-            //headers: headers,
             body: await _imgFiles[i].readAsBytes(),
          );
 
@@ -5768,28 +5758,38 @@ class OccaseState extends State<Occase>
       _posts[cts.ownIdx] = null;
    }
 
-   void _requestFilenames()
+   Future<void> _requestFilenames() async
    {
-      // Consider: Check if the app is online before sending.
+      try {
+	 var resp = await http.post(cts.dbUploadCreditUrl, body: '');
+	 if (resp.statusCode != 200) {
+	    print('Error: _requestFilenames ${resp.statusCode}');
+	    setState(() { _leaveNewPostScreen(); });
+	 }
 
-      var cmd = {
-         'cmd': 'filenames',
-      };
+	 if (resp.body.isEmpty) {
+	    _leaveNewPostScreen();
+	    _newPostErrorCode = 0;
+	    print('Error: _requestFilenames, empty body.');
+	    return; // TODO: Perhaps show a dialog with an error message?
+	 }
 
-      String payload = jsonEncode(cmd);
-      print(payload);
-      websocket.sink.add(payload);
+	 var map = jsonDecode(resp.body);
+	 List<dynamic> names = map["credit"];
+	 List<String> fnames = List.generate(names.length, (i) {
+	    return names[i];
+	 });
 
-      _filenamesTimer = Timer(
-         Duration(seconds: cts.filenamesTimeout), () {
-	    setState((){
-	       _leaveNewPostScreen();
-	       _newPostErrorCode = 0;
-	    });
-         },
-      );
+	 _newPostErrorCode = await _uploadImgs(fnames);
 
-      setState(() { });
+	 if (_newPostErrorCode == -1)
+	    await _sendPost();
+
+      } catch (e) {
+         print(e);
+      }
+
+      setState(() { _leaveNewPostScreen(); });
    }
 
    Future<void> _onSendNewPost(BuildContext ctx, int i) async
@@ -5798,9 +5798,6 @@ class OccaseState extends State<Occase>
       // progress indicator on the screen. To prevent the user from
       // interacting with the screen after clicking we use a modal
       // barrier.
-
-      if (_filenamesTimer.isActive)
-         return;
 
       assert(i != 2);
 
@@ -5839,10 +5836,10 @@ class OccaseState extends State<Occase>
          {
             return makePaymentChoiceWidget(
                ctx,
-               (BuildContext ctx)
+               (BuildContext ctx) async
                {
                   Navigator.of(ctx).pop();
-                  _requestFilenames();
+                  await _requestFilenames();
                },
             );
          },
@@ -6318,32 +6315,6 @@ class OccaseState extends State<Occase>
       _subscribeToPosts();
    }
 
-   Future<void> _onFilenamesAck(Map<String, dynamic> ack) async
-   {
-      try {
-         final String res = ack["result"];
-         if (res == 'fail') {
-            _newPostErrorCode = 0;
-         } else if (_filenamesTimer.isActive) {
-            _filenamesTimer.cancel();
-
-            List<dynamic> names = ack["names"];
-            List<String> fnames = List.generate(names.length, (i) {
-               return names[i];
-            });
-
-            _newPostErrorCode = await _uploadImgs(fnames);
-
-            if (_newPostErrorCode == -1)
-               await _sendPost();
-         }
-      } catch (e) {
-         print(e);
-      }
-
-      _leaveNewPostScreen();
-   }
-
    void _onLoginAck(Map<String, dynamic> ack, final String msg)
    {
       final String res = ack["result"];
@@ -6437,8 +6408,6 @@ class OccaseState extends State<Occase>
             await _onServerAck(ack);
          } else if (cmd == "register_ack") {
             await _onRegisterAck(ack, msg);
-         } else if (cmd == "filenames_ack") {
-            await _onFilenamesAck(ack);
          } else {
             print('Unhandled message received from the server:\n$msg.');
          }
@@ -6905,7 +6874,7 @@ class OccaseState extends State<Occase>
    {
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
-	 filenamesTimerActive: _filenamesTimer.isActive,
+	 filenamesTimerActive: false, // TODO: Use the correct value.
 	 locationTree: _trees[0],
 	 productTree: _trees[1],
 	 exDetailsRootNode: _exDetailsRoot,
