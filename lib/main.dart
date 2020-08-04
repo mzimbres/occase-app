@@ -3372,7 +3372,7 @@ List<Widget> makePostButtons({
       onPressed: onDelPost,
       icon: Icon(
          Icons.clear,
-         color: Colors.grey,
+         color: stl.colorScheme.primary,
       ),
    );
 
@@ -3981,6 +3981,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 if (!kIsWeb)
 	    buttonWdgs.add(buttons[1]);
 	 //buttonWdgs.add(Expanded(child: buttons[2]));
+      } else if (widget.tab == cts.ownIdx) {
+	 buttonWdgs.add(Expanded(child: buttons[0]));
+	 if (!kIsWeb)
+	    buttonWdgs.add(Expanded(child: buttons[1]));
+	 buttonWdgs.add(Expanded(child: buttons[2]));
       } else {
 	 if (!kIsWeb)
 	    buttonWdgs.add(Expanded(child: buttons[1]));
@@ -5695,13 +5700,14 @@ class OccaseState extends State<Occase>
       } else {
          final Post delPost = await _appState.delOwnPost(i);
 
-         var msgMap = {
-            'cmd': 'delete',
-            'id': delPost.id,
-            'to': 0,
+         var map = {
+            'from': delPost.from,
+            'post_id': delPost.id,
          };
 
-         await _sendAppMsg(jsonEncode(msgMap), 0);
+	 var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
+	 if (resp.statusCode != 200)
+	    print('Error on _onRemovePost:  ${resp.statusCode}');
       }
 
       setState(() { });
@@ -6404,8 +6410,6 @@ class OccaseState extends State<Occase>
             _onPost(ack);
          } else if (cmd == "publish_ack") {
             await _onPublishAck(ack);
-         } else if (cmd == "delete_ack") {
-            await _onServerAck(ack);
          } else if (cmd == "register_ack") {
             await _onRegisterAck(ack, msg);
          } else {

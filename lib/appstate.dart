@@ -252,8 +252,9 @@ class AppState {
 
    Future<Post> delOwnPost(int i) async
    {
+      final Post post = ownPosts.removeAt(i);
       await persistency.delOwnPost(ownPosts, i);
-      return ownPosts.removeAt(i);
+      return post;
    }
 
    Post delPost(int i)

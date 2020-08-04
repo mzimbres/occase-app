@@ -43,9 +43,10 @@ const String dbWebsocketUrl = 'wss://' + dbHost;
 
 const String dbHttpUrl = 'https://' + dbHost;
 
-const String dbCountPostsUrl = dbHttpUrl + '/count';
-const String dbSearchPostsUrl = dbHttpUrl + '/search';
+const String dbCountPostsUrl =   dbHttpUrl + '/count';
+const String dbSearchPostsUrl =  dbHttpUrl + '/search';
 const String dbUploadCreditUrl = dbHttpUrl + '/upload-credit';
+const String dbDeletePostUrl =   dbHttpUrl + '/delete';
 
 const int maxImgsPerPost = 6;
 const int minImgsPerPost = 1;
