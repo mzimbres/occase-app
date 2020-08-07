@@ -703,7 +703,7 @@ Widget makeImgListView2({
          //   ),
          //);
 
-	 Widget imgCounter = makeTextWdg('${i + 1}/$l', 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+	 Widget imgCounter = makeTextWdg(text: '${i + 1}/$l');
 
 	 List<Widget> wdgs = List<Widget>();
 
@@ -3333,25 +3333,26 @@ String makePriceStr(int price)
    return 'R\$$s';
 }
 
-Widget makeTextWdg(
-   String str,
-   double paddingTop,
-   double paddingBot,
-   double paddingLeft,
-   double paddingRight,
-   FontWeight fw,
-) {
-   return Padding(
-      child: Text(str,
+Widget makeTextWdg({
+   String text,
+   EdgeInsets edgeInsets = const EdgeInsets.all(3.0),
+   FontWeight fontWeight = FontWeight.normal,
+   Color backgroundColor = const Color(0xFFFFFFFF),
+}) {
+   Widget w = Padding(
+      child: Text(text,
          style: TextStyle(
             color: Colors.black,
 	    fontSize: stl.subtitleFontSize,
-	    fontWeight: fw,
+	    fontWeight: fontWeight,
+            backgroundColor: backgroundColor,
          ),
          overflow: TextOverflow.ellipsis,
       ),
-      padding: EdgeInsets.only(right: paddingRight, left: paddingLeft, top: paddingTop, bottom: paddingBot),
+      padding: edgeInsets,
    );
+
+   return w;
 }
 
 Widget makeAddOrRemoveWidget({
@@ -3824,6 +3825,39 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 //---------------------------------------------------------------------
 
+List<Widget> makeWrap({
+   List<String> fields
+}) {
+   return List<Widget>.generate(
+      fields.length,
+      (int i) {
+	 Chip chip = Chip(
+	    label: Text(fields[i]),
+	    backgroundColor: Colors.blue[100],
+	    padding: EdgeInsets.all(0.0),
+	    labelPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 4.0),
+	    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+	    labelStyle: TextStyle(
+		  fontSize: 20.0,
+		  fontWeight: FontWeight.normal,
+		  color: Colors.black,
+	    ),
+	    shape: RoundedRectangleBorder(
+	       borderRadius: BorderRadius.all(
+		     Radius.circular(stl.cornerRadius)
+	       ),
+	       //side: BorderSide(width: 1.0, color: Colors.grey),
+	    ),
+	 );
+
+	 return Transform(
+	    transform: Matrix4.identity()..scale(0.7),
+	    child: chip,
+	 );
+      },
+   );
+}
+
 class PostWidget extends StatefulWidget {
    bool showDelAdminButton;
    int tab;
@@ -3977,17 +4011,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
    @override
    Widget build(BuildContext ctx)
    {
-      //Text owner = Text(
-      //   widget.post.nick,
-      //   maxLines: 1,
-      //   overflow: TextOverflow.ellipsis,
-      //   style: TextStyle(
-      //      fontSize: stl.listTileSubtitleFontSize,
-      //      color: Colors.grey[600],
-      //      fontWeight: FontWeight.normal,
-      //   ),
-      //);
-
       final List<Widget> buttons = makePostButtons(
 	 pinDate: widget.post.pinDate,
 	 onDelPost: widget.onDelPost,
@@ -3995,8 +4018,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 onPinPost: widget.onPinPost,
       );
 
-      final String dateStr = makeDateString2(widget.post.date);
-      Widget dateWdg = makeTextWdg(dateStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget dateWdg = makeTextWdg(
+	 text: makeDateString2(widget.post.date),
+	 edgeInsets: const EdgeInsets.all(3.0),
+	 backgroundColor: null,
+      );
+
       List<Widget> buttonWdgs = List<Widget>();
       //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
@@ -4034,8 +4061,15 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    ),
 	 );
 
-	 Widget kmText = makeTextWdg(makeRangeStr(widget.post, 2), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
-	 Widget priceText = makeTextWdg(makeRangeStr(widget.post, 0), 3.0, 3.0, 3.0, 3.0, FontWeight.normal);
+	 Widget kmText = makeTextWdg(
+	    text: makeRangeStr(widget.post, 2),
+	    backgroundColor: null,
+	 );
+
+	 Widget priceText = makeTextWdg(
+	    text: makeRangeStr(widget.post, 0),
+	    backgroundColor: null,
+	 );
 
 	 imgWdg = Stack(
 	    //alignment: Alignment.topLeft,
@@ -4126,11 +4160,25 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 g.param.langIdx,
       );
 
-      Widget modelTitle = makeTextWdg(modelStr, 3.0, 3.0, 3.0, 3.0, FontWeight.w500);
-      Widget location = makeTextWdg(locationStr, 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget modelTitle = makeTextWdg(
+	 text: modelStr,
+	 fontWeight: FontWeight.w500,
+	 backgroundColor: Colors.white,
+      );
 
-      Widget s1 = makeTextWdg(exDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
-      Widget s2 = makeTextWdg(inDetailsNames.join(', '), 0.0, 0.0, 0.0, 0.0, FontWeight.normal);
+      Widget location = makeTextWdg(
+	 text: locationStr,
+      );
+
+      Widget s1 = makeTextWdg(
+	 text: exDetailsNames.join(', '),
+	 edgeInsets: const EdgeInsets.all(0.0),
+      );
+
+      Widget s2 = makeTextWdg(
+	 text: inDetailsNames.join(', '),
+	 edgeInsets: const EdgeInsets.all(0.0),
+      );
 
       final double widthCol2 = makePostTextWidth(ctx, widget.tab);
 
