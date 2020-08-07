@@ -257,7 +257,7 @@ class AppState {
       return post;
    }
 
-   Post delPost(int i)
+   Post delSearchPost(int i)
    {
       return posts.removeAt(i);
    }

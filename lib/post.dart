@@ -437,6 +437,9 @@ class Post {
    // The string *description* inputed when user writes an post.
    String description;
 
+   // Post delete key, that only the post owner knows.
+   String delete_key;
+
    // Location tree code.
    List<int> location = <int>[];
 
@@ -467,6 +470,7 @@ class Post {
    , this.pinDate = 0
    , this.status = -1
    , this.description = ''
+   , this.delete_key = ''
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
@@ -521,6 +525,7 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.description = this.description;
+      ret.delete_key = this.delete_key;
       ret.images = List<String>.from(this.images);
       ret.chats = List<ChatMetadata>.from(this.chats);
       return ret;
@@ -601,6 +606,7 @@ class Post {
 	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
 	 status = map['status'] ?? -1;
 	 description = map['description'] ?? '';
+	 delete_key = map['delete_key'] ?? '';
 	 images = decodeList(0, '', map['images']);
 	 chats = decChatMetadataList(map['chats']);
       } catch (e) {
@@ -633,6 +639,7 @@ class Post {
       , 'nick': nick
       , 'avatar': avatar
       , 'description': description
+      , 'delete_key': delete_key
       , 'location': location
       , 'product': product
       , 'ex_details': exDetails
@@ -664,6 +671,7 @@ Map<String, dynamic> postToMap(Post post)
      'in_details': jsonEncode(post.inDetails),
      'range_values': jsonEncode(post.rangeValues),
      'description': post.description,
+     'delete_key': post.delete_key,
      'images': post.images,
    };
 

@@ -494,17 +494,33 @@ Scaffold makeNtfScreen(
    );
 }
 
+Widget makeHiddenButton(OnPressedFn0 onHiddenButtonLP)
+{
+   return FlatButton(
+      onPressed: onHiddenButtonLP,
+      child: Text(''),
+      color: Colors.white,
+      textColor: Colors.white,
+      disabledTextColor: Colors.white,
+      disabledColor: Colors.white,
+      focusColor: Colors.white,
+      hoverColor: Colors.white,
+      highlightColor: Colors.white,
+      splashColor: Colors.white,
+   );
+}
+
 Widget makeInfoScreen(
    BuildContext ctx,
    OnPressedFn7 onWillPopScope,
    OnPressedFn0 onSendEmail,
+   OnPressedFn0 onHiddenButtonLP,
 ) {
    final double width = makeTabWidth(ctx, cts.ownIdx);
 
-   Widget tmp = ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: width),
-      child: Center(
-         child: RaisedButton(
+   Column col = Column(children: <Widget>
+      [ makeHiddenButton(onHiddenButtonLP),
+        RaisedButton(
 	    onPressed: onSendEmail,
 	    child: Text(g.param.supportEmail,
 	       style: TextStyle(
@@ -514,7 +530,12 @@ Widget makeInfoScreen(
 	       ),
 	    ),
 	 ),
-      ),
+	 makeHiddenButton((){}),
+      ]);
+
+   Widget tmp = ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: width),
+      child: Center(child: col),
    );
 
    return WillPopScope(
@@ -919,6 +940,7 @@ Widget makeNewPostFinalScreen({
    // the new context.
 
    Widget w0 = makeNewPost(
+      showDelAdminButton: false,
       screen: cts.ownIdx,
       post: post,
       exDetailsRootNode: exDetailsRootNode,
@@ -1407,7 +1429,7 @@ List<Widget> makeNewPostWdgs({
 
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
-   final bool filenamesTimerActive,
+   final bool sendingPost,
    final Tree locationTree,
    final Tree productTree,
    final Node exDetailsRootNode,
@@ -1517,7 +1539,7 @@ Widget makeNewPostScreenWdgs2({
 
    final Widget lv = makeNewPostListView(list);
 
-   if (!filenamesTimerActive)
+   if (!sendingPost)
       return lv;
 
    List<Widget> ret = List<Widget>();
@@ -3803,6 +3825,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 //---------------------------------------------------------------------
 
 class PostWidget extends StatefulWidget {
+   bool showDelAdminButton;
    int tab;
    Post post;
    Node exDetailsRootNode;
@@ -3821,7 +3844,8 @@ class PostWidget extends StatefulWidget {
    PostWidgetState createState() => PostWidgetState();
 
    PostWidget(
-   { @required this.tab
+   { @required this.showDelAdminButton
+   , @required this.tab
    , @required this.post
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
@@ -3978,9 +4002,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
 
       if (widget.tab == cts.searchIdx) {
+	 if (widget.showDelAdminButton)
+	    buttonWdgs.add(Expanded(child: buttons[0]));
 	 if (!kIsWeb)
 	    buttonWdgs.add(buttons[1]);
-	 //buttonWdgs.add(Expanded(child: buttons[2]));
       } else if (widget.tab == cts.ownIdx) {
 	 buttonWdgs.add(Expanded(child: buttons[0]));
 	 if (!kIsWeb)
@@ -4182,6 +4207,7 @@ Widget makePostDetailsWdg({
 }
 
 Widget makeNewPost({
+   final bool showDelAdminButton,
    final int screen,
    final Post post,
    final Node exDetailsRootNode,
@@ -4197,6 +4223,7 @@ Widget makeNewPost({
    OnPressedFn0 onPinPost,
 }) {
    return PostWidget(
+     showDelAdminButton: showDelAdminButton,
      tab: screen,
      post: post,
      exDetailsRootNode: exDetailsRootNode,
@@ -4253,6 +4280,7 @@ Widget makeFavEmptyScreenWidget()
 }
 
 Widget makeNewPostLv({
+   final bool showDelAdminButton,
    final int nNewPosts,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
@@ -4298,6 +4326,7 @@ Widget makeNewPostLv({
 	 }
 
          return makeNewPost(
+	    showDelAdminButton: showDelAdminButton,
 	    screen: cts.searchIdx,
             post: posts[j],
             exDetailsRootNode: exDetailsRootNode,
@@ -4802,6 +4831,7 @@ Widget makeChatTab({
             onExpandImg = (int j){print('Error: post.images is empty.');};
 
 	 Widget bbb = makeNewPost(
+	    showDelAdminButton: false,
 	    screen: screen,
             post: posts[i],
             exDetailsRootNode: exDetailsRootNode,
@@ -4958,6 +4988,12 @@ class OccaseState extends State<Occase>
    bool _goToNtfScreen = false;
 
    bool _goToInfoScreen = false;
+
+   int _hiddenButtonCounter = 0;
+   int _hiddenButtonDate = 0;
+   String _deletePostPwd = '';
+
+   bool _sendingPost = false;
 
    // A flag that is set to true when the floating button (new post)
    // is clicked. It must be carefully set to false when that screen
@@ -5132,6 +5168,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
       _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
+      await _searchPosts2();
       setState(() { });
    }
 
@@ -5255,11 +5292,14 @@ class OccaseState extends State<Occase>
 
    Future<void> _setDialogPref(int i, bool v) async
    {
+
+      if (i == 0)
+	 return;
+
       _appState.setDialogPreferences(i, v);
    }
 
-   Future<void>
-   _alertUserOnPressed(BuildContext ctx, int i, int j) async
+   Future<void> _alertUserOnPressed(BuildContext ctx, int i, int j) async
    {
       if (!_appState.cfg.dialogPreferences[j]) {
          await _onPostSelection(i, j);
@@ -5405,7 +5445,7 @@ class OccaseState extends State<Occase>
       if (j == 1) {
 	 await _onMovePostToFav(i);
       } else {
-         await _appState.delPost(i);
+         await _onRemovePost(cts.searchIdx, i);
          // TODO: Send command to server to report if j = 2.
       }
 
@@ -5428,8 +5468,7 @@ class OccaseState extends State<Occase>
       });
    }
 
-   // This function has a side effect. It updates _nNewPosts.
-   int _updateNumberOfNewPosts()
+   void _updateNumberOfNewPosts()
    {
       assert(_nNewPosts >= 0);
 
@@ -5693,21 +5732,30 @@ class OccaseState extends State<Occase>
       }
    }
 
+   Future<void> deletePostFromServer(Post post) async
+   {
+      var map = {
+	 'from': post.from,
+	 'post_id': post.id,
+	 'delete_key': post.delete_key,
+	 'master_delete_key': _deletePostPwd,
+      };
+
+      var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
+      if (resp.statusCode != 200)
+	 print('Error on _onRemovePost:  ${resp.statusCode}');
+   }
+
    Future<void> _onRemovePost(int screen, int i) async
    {
       if (screen == cts.favIdx) {
          await _appState.delFavPost(i);
-      } else {
-         final Post delPost = await _appState.delOwnPost(i);
-
-         var map = {
-            'from': delPost.from,
-            'post_id': delPost.id,
-         };
-
-	 var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
-	 if (resp.statusCode != 200)
-	    print('Error on _onRemovePost:  ${resp.statusCode}');
+      } else if (screen == cts.ownIdx) {
+         final Post post = await _appState.delOwnPost(i);
+	 await deletePostFromServer(post);
+      } else if (screen == cts.searchIdx) {
+         final Post post = await _appState.delSearchPost(i);
+	 await deletePostFromServer(post);
       }
 
       setState(() { });
@@ -5767,6 +5815,7 @@ class OccaseState extends State<Occase>
    Future<void> _requestFilenames() async
    {
       try {
+	 setState(() {_sendingPost = true;});
 	 var resp = await http.post(cts.dbUploadCreditUrl, body: '');
 	 if (resp.statusCode != 200) {
 	    print('Error: _requestFilenames ${resp.statusCode}');
@@ -5795,7 +5844,10 @@ class OccaseState extends State<Occase>
          print(e);
       }
 
-      setState(() { _leaveNewPostScreen(); });
+      setState(() {
+	 _sendingPost = false;
+	 _leaveNewPostScreen();
+      });
    }
 
    Future<void> _onSendNewPost(BuildContext ctx, int i) async
@@ -6355,10 +6407,6 @@ class OccaseState extends State<Occase>
 
    void _onPost(Map<String, dynamic> ack)
    {
-      // When we are receiving new posts here as a result of the user
-      // clicking the search buttom, we have to clear all old posts before
-      // showing the new posts to the user.
-      final bool showPosts = _appState.posts.isEmpty;
       for (var item in ack['posts']) {
          try {
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
@@ -6374,9 +6422,7 @@ class OccaseState extends State<Occase>
          }
       }
 
-      if (showPosts)
-         _updateNumberOfNewPosts();
-
+      _updateNumberOfNewPosts();
       setState(() { });
    }
 
@@ -6483,14 +6529,7 @@ class OccaseState extends State<Occase>
 	    return;
 	 }
 
-	 _nNewPosts = 0;
-	 await _appState.clearPosts();
-
-	 final String body = await _searchPosts(cts.dbSearchPostsUrl);
-	 if (body.isEmpty)
-	    return; // Perhaps show a dialog with an error message?
-
-	 _onPost(jsonDecode(body));
+	 await _searchPosts2();
       } catch (e) {
 	 print(e);
       }
@@ -6736,6 +6775,32 @@ class OccaseState extends State<Occase>
       return false;
    }
 
+   Future<void> _onHiddenButtonLp(BuildContext ctx) async
+   {
+      ++_hiddenButtonCounter;
+
+      int lastDate = DateTime.now().millisecondsSinceEpoch;
+      if ((lastDate - _hiddenButtonDate) > 1000)
+	 _hiddenButtonCounter = 0;
+
+      _hiddenButtonDate = lastDate;
+
+      if (_hiddenButtonCounter == 6) {
+	 final String pwd = await showDialog<String>(
+	    context: ctx,
+	    builder: (BuildContext ctx2) { return PostDescription(description: ''); },
+	 );
+
+	 if (pwd == null)
+	    return; 
+
+	 setState(() {
+	    _deletePostPwd = pwd;
+	    _goToInfoScreen = false;
+	 });
+      }
+   }
+
    Future<void> _onSendEmailToSupport() async
    {
       // The email must have the form:
@@ -6810,6 +6875,19 @@ class OccaseState extends State<Occase>
       return '';
    }
 
+   Future<void> _searchPosts2() async
+   {
+      _nNewPosts = 0;
+      await _appState.clearPosts();
+
+      _posts[cts.ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
+      final String body = await _searchPosts(cts.dbSearchPostsUrl);
+      if (body.isEmpty)
+	 return; // Perhaps show a dialog with an error message?
+
+      _onPost(jsonDecode(body));
+   }
+
    Future<void> _onSetSearchLocationCode(List<int> code) async
    {
       if (code.isEmpty)
@@ -6878,7 +6956,7 @@ class OccaseState extends State<Occase>
    {
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
-	 filenamesTimerActive: false, // TODO: Use the correct value.
+	 sendingPost: _sendingPost,
 	 locationTree: _trees[0],
 	 productTree: _trees[1],
 	 exDetailsRootNode: _exDetailsRoot,
@@ -6919,6 +6997,7 @@ class OccaseState extends State<Occase>
    Widget _makeNewPostLv()
    {
       return makeNewPostLv(
+	showDelAdminButton: _deletePostPwd.isNotEmpty,
 	nNewPosts: _nNewPosts,
 	exDetailsRootNode: _exDetailsRoot,
 	inDetailsRootNode: _inDetailsRoot,
@@ -7141,6 +7220,7 @@ class OccaseState extends State<Occase>
             ctx,
 	    _onWillLeaveInfoScreen,
 	    _onSendEmailToSupport,
+	    () {_onHiddenButtonLp(ctx);},
 	 );
 
       if (_onTabSwitch()) {
