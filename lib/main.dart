@@ -121,21 +121,6 @@ double makeMaxHeight(BuildContext ctx)
    return MediaQuery.of(ctx).size.height;
 }
 
-Future<List<Tree>> readTreeFromAsset() async
-{
-   // When the database is created, we also have to create the
-   // default tree table.
-   List<Tree> l = List<Tree>(2);
-
-   final String tree0 = await rootBundle.loadString('data/menu0.txt');
-   l[0] = treeReader(jsonDecode(tree0)).first;
-
-   final String tree1 = await rootBundle.loadString('data/menu1.txt');
-   l[1] = treeReader(jsonDecode(tree1)).first;
-
-   return l;
-}
-
 Future<void> fcmOnBackgroundMessage(Map<String, dynamic> message) async
 {
   print("onBackgroundMessage: $message");
@@ -926,7 +911,8 @@ List<Widget> makeCheckBoxes(
 Widget makeNewPostFinalScreen({
    BuildContext ctx,
    final Post post,
-   final List<Tree> trees,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
@@ -945,7 +931,8 @@ Widget makeNewPostFinalScreen({
       post: post,
       exDetailsRootNode: exDetailsRootNode,
       inDetailsRootNode: inDetailsRootNode,
-      trees: trees,
+      locRootNode: locRootNode,
+      prodRootNode: prodRootNode,
       imgFiles: imgFiles,
       onAddPhoto: onAddPhoto,
       onExpandImg: (int j){ print('Noop00'); },
@@ -1129,7 +1116,6 @@ Widget makeAppBarWdg({
    bool isWide,
    bool hasNoFavPosts,
    final int tab,
-   final List<Tree> trees,
    Widget defaultWdg,
 }) {
    final bool fav = tab == cts.favIdx;
@@ -1140,22 +1126,13 @@ Widget makeAppBarWdg({
       return Text(g.param.msgOnRedirectingChat);
 
    if (own && newPostPressed)
-      return makeSearchAppBar(
-	 trees: trees,
-	 title: g.param.newPostAppBarTitle,
-      );
+      return makeSearchAppBar(title: g.param.newPostAppBarTitle);
 
    if (search && newSearchPressed && !isWide)
-      return makeSearchAppBar(
-	 trees: trees,
-	 title: g.param.filterAppBarTitle,
-      );
+      return makeSearchAppBar(title: g.param.filterAppBarTitle);
 
    if (fav && (newSearchPressed || hasNoFavPosts) && isWide)
-      return makeSearchAppBar(
-	 trees: trees,
-	 title: g.param.filterAppBarTitle,
-      );
+      return makeSearchAppBar(title: g.param.filterAppBarTitle);
 
    return defaultWdg;
 }
@@ -1281,8 +1258,8 @@ Widget makeNewPostInDetailLT({
 List<Widget> makeNewPostWdgs({
    BuildContext ctx,
    final int tab,
-   final Tree locationTree,
-   final Tree productTree,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
@@ -1294,7 +1271,6 @@ List<Widget> makeNewPostWdgs({
    List<Widget> list = List<Widget>();
 
    {  // Location
-      final Node locRootNode = locationTree.root.first;
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: tab,
@@ -1310,13 +1286,12 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // Product
-      final Node productRootNode = productTree.root.first;
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: tab,
 	 title: g.param.newPostTabNames[1],
 	 defaultCode: post.product,
-	 root: productRootNode,
+	 root: prodRootNode,
 	 iconData: Icons.directions_car,
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
       );
@@ -1430,8 +1405,8 @@ List<Widget> makeNewPostWdgs({
 Widget makeNewPostScreenWdgs2({
    BuildContext ctx,
    final bool sendingPost,
-   final Tree locationTree,
-   final Tree productTree,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
@@ -1449,8 +1424,8 @@ Widget makeNewPostScreenWdgs2({
    List<Widget> list = makeNewPostWdgs(
       ctx: ctx,
       tab: cts.ownIdx,
-      locationTree: locationTree,
-      productTree: productTree,
+      locRootNode: locRootNode,
+      prodRootNode: prodRootNode,
       exDetailsRootNode: exDetailsRootNode,
       inDetailsRootNode: inDetailsRootNode,
       post: post,
@@ -1513,7 +1488,8 @@ Widget makeNewPostScreenWdgs2({
 	 Widget finalScreen = makeNewPostFinalScreen(
 	    ctx: ctx,
 	    post: post,
-	    trees: <Tree>[locationTree, productTree],
+	    locRootNode: locRootNode,
+	    prodRootNode: prodRootNode,
 	    exDetailsRootNode: exDetailsRootNode,
 	    inDetailsRootNode: inDetailsRootNode,
 	    imgFiles: imgFiles,
@@ -1556,10 +1532,8 @@ Widget makeNewPostScreenWdgs2({
    return Stack(children: ret);
 }
 
-Widget makeSearchAppBar({
-   final List<Tree> trees,
-   final String title,
-}) {
+Widget makeSearchAppBar({final String title})
+{
    return ListTile(
       dense: true,
       title: Text(title,
@@ -1567,11 +1541,6 @@ Widget makeSearchAppBar({
 	 overflow: TextOverflow.ellipsis,
 	 style: stl.appBarLtTitle.copyWith(color: Colors.white),
       ),
-      //subtitle: Text(trees[screen].getStackNames(),
-      //   maxLines: 1,
-      //   overflow: TextOverflow.ellipsis,
-      //   style: stl.appBarLtSubtitle,
-      //),
    );
 }
 
@@ -1611,8 +1580,8 @@ Widget makeSearchScreenWdg2({
    BuildContext ctx,
    final int state,
    String numberOfMatchingPosts,
-   final Node locationRootNode,
-   final Node productRootNode,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Post post,
    final List<int> ranges,
@@ -1631,7 +1600,7 @@ Widget makeSearchScreenWdg2({
 	 tab: cts.searchIdx,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
-	 root: locationRootNode,
+	 root: locRootNode,
 	 iconData: Icons.edit_location,
 	 onSetTreeCode: onSetLocationCode,
       );
@@ -1646,7 +1615,7 @@ Widget makeSearchScreenWdg2({
 	 tab: cts.searchIdx,
 	 defaultCode: post.product,
 	 title: g.param.newPostTabNames[1],
-	 root: productRootNode,
+	 root: prodRootNode,
 	 iconData: Icons.directions_car,
 	 onSetTreeCode: onSetProductCode,
       );
@@ -3050,9 +3019,7 @@ List<Widget> makePostInRows(
    return list;
 }
 
-Widget makePostSectionTitle(
-   BuildContext ctx,
-   String str)
+Widget makePostSectionTitle(String str)
 {
    return Align(
       alignment: Alignment.centerLeft,
@@ -3071,40 +3038,22 @@ Widget makePostSectionTitle(
 // Assembles the menu information.
 List<Widget> makeTreeInfo(
    BuildContext ctx,
-   Post post,
-   List<Tree> trees,
+   final Node rootNode,
+   final List<int> code,
+   final String title,
+   List<String> menuDepthNames,
 ) {
-   List<Widget> list = List<Widget>();
+   List<Widget> ret = <Widget>[];
+   ret.add(makePostSectionTitle(title));
+   List<String> names = loadNames(rootNode, code, g.param.langIdx);
 
-   for (int i = 0; i < 2; ++i) {
-      List<int> tmp = post.location;
-      if (i == 1)
-	 tmp = post.product;
+   List<Widget> tmp = List<Widget>.generate(names.length, (int j)
+   {
+      return makePostRowElem(ctx, menuDepthNames[j], names[j]);
+   });
 
-      list.add(makePostSectionTitle(ctx, g.param.newPostTabNames[i]));
-      List<String> names = loadNames(trees[i].root.first, tmp, g.param.langIdx);
-
-      List<Widget> items = List.generate(names.length, (int j)
-      {
-         assert(i == 0 || i == 1);
-
-         List<String> menuDepthNames;
-         if (i == 0)
-            menuDepthNames = g.param.menuDepthNames0;
-         else 
-            menuDepthNames = g.param.menuDepthNames1;
-
-         return makePostRowElem(
-            ctx,
-            menuDepthNames[j],
-            names[j],
-         );
-      });
-
-      list.addAll(items); // The menu info.
-   }
-
-   return list;
+   ret.addAll(tmp);
+   return ret;
 }
 
 String makeRangeStr(Post post, int i)
@@ -3124,16 +3073,11 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 {
    List<Widget> list = List<Widget>();
 
-   list.add(makePostSectionTitle(ctx, g.param.rangesTitle));
+   list.add(makePostSectionTitle(g.param.rangesTitle));
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
    {
-
-      return makePostRowElem(
-         ctx,
-         g.param.rangePrefixes[i],
-         makeRangeStr(post, i),
-      );
+      return makePostRowElem(ctx, g.param.rangePrefixes[i], makeRangeStr(post, i));
    });
 
    list.addAll(items); // The menu info.
@@ -3141,11 +3085,8 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
    return list;
 }
 
-List<Widget> makePostExDetails(
-   BuildContext ctx,
-   Post post,
-   Node exDetailsRootNode,
-) {
+List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNode)
+{
    // Post details varies according to the first index of the products
    // entry in the menu.
    final int idx = post.getProductDetailIdx();
@@ -3153,7 +3094,7 @@ List<Widget> makePostExDetails(
       return List<Widget>();
 
    List<Widget> list = List<Widget>();
-   list.add(makePostSectionTitle(ctx, g.param.postExDetailsTitle));
+   list.add(makePostSectionTitle(g.param.postExDetailsTitle));
 
    final int l1 = exDetailsRootNode.children[idx].children.length;
    for (int i = 0; i < l1; ++i) {
@@ -3163,15 +3104,14 @@ List<Widget> makePostExDetails(
 	 continue;
       
       list.add(
-         makePostRowElem(
-            ctx,
+         makePostRowElem(ctx,
             exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
             exDetailsRootNode.children[idx].children[i].children[k].name(g.param.langIdx),
          ),
       );
    }
 
-   list.add(makePostSectionTitle(ctx, g.param.postRefSectionTitle));
+   list.add(makePostSectionTitle(g.param.postRefSectionTitle));
 
    List<String> values = List<String>();
    values.add(post.nick);
@@ -3195,10 +3135,7 @@ List<Widget> makePostExDetails(
    return list;
 }
 
-List<Widget> makePostInDetails(
-   BuildContext ctx,
-   Post post,
-   Node inDetailsRootNode)
+List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 {
    List<Widget> all = List<Widget>();
 
@@ -3215,7 +3152,6 @@ List<Widget> makePostInDetails(
 
       if (foo.length != 0) {
          all.add(makePostSectionTitle(
-               ctx,
                inDetailsRootNode.children[i].children[j].name(g.param.langIdx),
             ),
          );
@@ -3251,11 +3187,8 @@ Card putPostElemOnCard(List<Widget> list, double padding)
    );
 }
 
-Widget makePostDescription(
-   BuildContext ctx,
-   int tab,
-   String desc,
-) {
+Widget makePostDescription(BuildContext ctx, int tab, String desc)
+{
    final double width = makeMaxWidth(ctx, tab);
 
    return ConstrainedBox(
@@ -3271,21 +3204,25 @@ Widget makePostDescription(
    );
 }
 
-List<Widget> assemblePostRows(
+List<Widget> assemblePostRows({
    BuildContext ctx,
-   int tab,
-   Post post,
-   List<Tree> menu,
-   Node exDetailsRootNode,
-   Node inDetailsRootNode,
-) {
+   final int tab,
+   final Post post,
+   final Node locRootNode,
+   final Node prodRootNode,
+   final Node exDetailsRootNode,
+   final Node inDetailsRootNode,
+}) {
    List<Widget> all = List<Widget>();
    all.addAll(makePostValues(ctx, post));
-   all.addAll(makeTreeInfo(ctx, post, menu));
+
+   all.addAll(makeTreeInfo(ctx, locRootNode, post.location, g.param.newPostTabNames[0], g.param.menuDepthNames0));
+   all.addAll(makeTreeInfo(ctx, prodRootNode, post.product, g.param.newPostTabNames[1], g.param.menuDepthNames1));
+
    all.addAll(makePostExDetails(ctx, post, exDetailsRootNode));
-   all.addAll(makePostInDetails(ctx, post, inDetailsRootNode));
+   all.addAll(makePostInDetails(post, inDetailsRootNode));
    if (post.description.isNotEmpty) {
-      all.add(makePostSectionTitle(ctx, g.param.postDescTitle));
+      all.add(makePostSectionTitle(g.param.postDescTitle));
       all.add(makePostDescription(ctx, tab, post.description));
    }
 
@@ -3862,10 +3799,11 @@ class PostWidget extends StatefulWidget {
    bool showDelAdminButton;
    int tab;
    Post post;
+   Node locRootNode;
+   Node prodRootNode;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    List<PickedFile> imgFiles;
-   List<Tree> trees;
    OnPressedFn2 onAddPhoto;
    OnPressedFn1 onExpandImg;
    OnPressedFn0 onAddPostToFavorite;
@@ -3881,10 +3819,11 @@ class PostWidget extends StatefulWidget {
    { @required this.showDelAdminButton
    , @required this.tab
    , @required this.post
+   , @required this.locRootNode
+   , @required this.prodRootNode
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
    , @required this.imgFiles
-   , @required this.trees
    , @required this.onAddPhoto
    , @required this.onExpandImg
    , @required this.onAddPostToFavorite
@@ -3920,17 +3859,18 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       ctx: ctx2,
 	       tab: tab,
 	       post: widget.post,
+	       locRootNode: widget.locRootNode,
+	       prodRootNode: widget.prodRootNode,
 	       exDetailsRootNode: widget.exDetailsRootNode,
 	       inDetailsRootNode: widget.inDetailsRootNode,
-	       trees: widget.trees,
 	       imgFiles: widget.imgFiles,
 	       onAddPhoto: widget.onAddPhoto,
 	       onExpandImg: widget.onExpandImg,
 	       onReportPost: () 
-	          {
-		     Navigator.of(ctx).pop();
-		     widget.onReportPost();
-		  },
+	       {
+		  Navigator.of(ctx).pop();
+		  widget.onReportPost();
+	       },
 	    );
 
             final
@@ -4142,9 +4082,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       }
 
       final String locationStr =
-         makeTreeItemStr(widget.trees[0].root.first, widget.post.location);
+         makeTreeItemStr(widget.locRootNode, widget.post.location);
       final String modelStr =
-	 makeTreeItemStr(widget.trees[1].root.first, widget.post.product);
+	 makeTreeItemStr(widget.prodRootNode, widget.post.product);
 
       List<String> exDetailsNames = makeExDetailsNamesAll(
          widget.exDetailsRootNode,
@@ -4207,9 +4147,10 @@ Widget makePostDetailsWdg({
    BuildContext ctx,
    int tab,
    final Post post,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<Tree> trees,
    final List<PickedFile> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
@@ -4241,12 +4182,13 @@ Widget makePostDetailsWdg({
    rows.add(inapropriate);
 
    List<Widget> tmp = assemblePostRows(
-      ctx,
-      tab,
-      post,
-      trees,
-      exDetailsRootNode,
-      inDetailsRootNode,
+      ctx: ctx,
+      tab: tab,
+      post: post,
+      locRootNode: locRootNode,
+      prodRootNode: prodRootNode,
+      exDetailsRootNode: exDetailsRootNode,
+      inDetailsRootNode: inDetailsRootNode,
    );
 
    rows.add(putPostElemOnCard(tmp, 4.0));
@@ -4258,9 +4200,10 @@ Widget makeNewPost({
    final bool showDelAdminButton,
    final int screen,
    final Post post,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<Tree> trees,
    final List<PickedFile> imgFiles,
    OnPressedFn2 onAddPhoto,
    OnPressedFn1 onExpandImg,
@@ -4274,10 +4217,11 @@ Widget makeNewPost({
      showDelAdminButton: showDelAdminButton,
      tab: screen,
      post: post,
+     locRootNode: locRootNode,
+     prodRootNode: prodRootNode,
      exDetailsRootNode: exDetailsRootNode,
      inDetailsRootNode: inDetailsRootNode,
      imgFiles: imgFiles,
-     trees: trees,
      onAddPhoto: onAddPhoto,
      onExpandImg: onExpandImg,
      onAddPostToFavorite: onAddPostToFavorite,
@@ -4330,10 +4274,11 @@ Widget makeFavEmptyScreenWidget()
 Widget makeNewPostLv({
    final bool showDelAdminButton,
    final int nNewPosts,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
-   final List<Tree> trees,
    final OnPressedFn3 onExpandImg,
    final OnPressedFn2 onAddPostToFavorite,
    final OnPressedFn2 onDelPost,
@@ -4379,7 +4324,8 @@ Widget makeNewPostLv({
             post: posts[j],
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
-            trees: trees,
+	    locRootNode: locRootNode,
+	    prodRootNode: prodRootNode,
             imgFiles: List<PickedFile>(),
             onAddPhoto: (var ctx, var i) {print('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(j, k);},
@@ -4823,15 +4769,16 @@ Widget wrapPostOnButton(
 Widget makeChatTab({
    final bool isFwdChatMsgs,
    final int screen,
+   final Node locRootNode,
+   final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
-   final List<Tree> trees,
    final OnPressedFn3 onPressed,
    final OnPressedFn3 onLongPressed,
    final OnPressedFn1 onDelPost1,
    final OnPressedFn1 onPinPost1,
-   OnPressedFn5 onUserInfoPressed,
+         OnPressedFn5 onUserInfoPressed,
    final OnPressedFn3 onExpandImg1,
    final OnPressedFn1 onSharePost,
    final OnPressedFn0 onPost,
@@ -4868,7 +4815,7 @@ Widget makeChatTab({
          }
 
          Widget title = Text(
-            makeTreeItemStr(trees[0].root.first, posts[i].location),
+            makeTreeItemStr(locRootNode, posts[i].location),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
          );
@@ -4882,9 +4829,10 @@ Widget makeChatTab({
 	    showDelAdminButton: false,
 	    screen: screen,
             post: posts[i],
+	    locRootNode: locRootNode,
+	    prodRootNode: prodRootNode,
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
-            trees: trees,
             imgFiles: List<PickedFile>(),
             onAddPhoto: (var a, var b) {print('Noop10');},
             onExpandImg: onExpandImg,
@@ -5012,13 +4960,9 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
-   // The trees holding the locations and product trees.
-   List<Tree> _trees = List<Tree>();
-
-   // The ex details tree root node.
+   Node _locRootNode;
+   Node _prodRootNode;
    Node _exDetailsRoot;
-
-   // The in details tree root node.
    Node _inDetailsRoot;
 
    AppState _appState = AppState();
@@ -5200,13 +5144,17 @@ class OccaseState extends State<Occase>
       g.param = Parameters.fromJson(jsonDecode(text));
       await initializeDateFormatting(g.param.localeName, null);
 
-      _trees = await readTreeFromAsset();
+      final String locTreeStr = await rootBundle.loadString('data/locations.txt');
+      _locRootNode = treeReader(jsonDecode(locTreeStr));
 
-      final String exDetailsStr = await rootBundle.loadString('data/ex_details_menu.txt');
-      _exDetailsRoot = treeReader(jsonDecode(exDetailsStr)).first.root.first;
+      final String prodTreeStr = await rootBundle.loadString('data/products.txt');
+      _prodRootNode = treeReader(jsonDecode(prodTreeStr));
 
-      final String inDetailsStr = await rootBundle.loadString('data/in_details_menu.txt');
-      _inDetailsRoot = treeReader(jsonDecode(inDetailsStr)).first.root.first;
+      final String exDetailsStr = await rootBundle.loadString('data/ex_details.txt');
+      _exDetailsRoot = treeReader(jsonDecode(exDetailsStr));
+
+      final String inDetailsStr = await rootBundle.loadString('data/in_details.txt');
+      _inDetailsRoot = treeReader(jsonDecode(inDetailsStr));
 
       await _appState.load();
 
@@ -5512,8 +5460,6 @@ class OccaseState extends State<Occase>
       setState(() {
 	 _newPostPressed = true;
 	 prepareNewPost(cts.ownIdx);
-	 _trees[0].restoreMenuStack();
-	 _trees[1].restoreMenuStack();
       });
    }
 
@@ -6982,7 +6928,7 @@ class OccaseState extends State<Occase>
 	 _chatScrollCtrl[tab],
 	 _lpChatMsgs[tab].length,
 	 _chatFocusNodes[tab],
-	 makeTreeItemStr(_trees[0].root.first, _posts[tab].product),
+	 makeTreeItemStr(_locRootNode, _posts[tab].product),
 	 _dragedIdxs[tab],
 	 _showChatJumpDownButtons[tab],
 	 _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
@@ -7005,8 +6951,8 @@ class OccaseState extends State<Occase>
       return makeNewPostScreenWdgs2(
 	 ctx: ctx,
 	 sendingPost: _sendingPost,
-	 locationTree: _trees[0],
-	 productTree: _trees[1],
+	 locRootNode: _locRootNode,
+	 prodRootNode: _prodRootNode,
 	 exDetailsRootNode: _exDetailsRoot,
 	 inDetailsRootNode: _inDetailsRoot,
 	 post: _posts[cts.ownIdx],
@@ -7028,8 +6974,8 @@ class OccaseState extends State<Occase>
 	 ctx: ctx,
 	 state: _posts[cts.searchIdx].exDetails[0],
 	 numberOfMatchingPosts: _numberOfMatchingPosts,
-	 locationRootNode: _trees[0].root.first,
-	 productRootNode: _trees[1].root.first,
+	 locRootNode: _locRootNode,
+	 prodRootNode: _prodRootNode,
 	 exDetailsRootNode: _exDetailsRoot,
 	 post: _posts[cts.searchIdx],
 	 ranges: g.param.rangesMinMax,
@@ -7047,10 +6993,11 @@ class OccaseState extends State<Occase>
       return makeNewPostLv(
 	showDelAdminButton: _deletePostPwd.isNotEmpty,
 	nNewPosts: _nNewPosts,
+	locRootNode: _locRootNode,
+	prodRootNode: _prodRootNode,
 	exDetailsRootNode: _exDetailsRoot,
 	inDetailsRootNode: _inDetailsRoot,
 	posts: _appState.posts,
-	trees: _trees,
 	onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
 	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
@@ -7086,10 +7033,11 @@ class OccaseState extends State<Occase>
       return makeChatTab(
 	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
 	 screen: i,
+	 locRootNode: _locRootNode,
+	 prodRootNode: _prodRootNode,
 	 exDetailsRootNode: _exDetailsRoot,
 	 inDetailsRootNode: _inDetailsRoot,
 	 posts: posts,
-	 trees: _trees,
 	 onPressed: (int j, int k) {_onChatPressed(i, j, k);},
 	 onLongPressed: (int j, int k) {_onChatLP(i, j, k);},
 	 onDelPost1: (int j) { _removePostDialog(ctx, i, j);},
@@ -7164,7 +7112,6 @@ class OccaseState extends State<Occase>
 	 isWide: isWide,
 	 hasNoFavPosts: _appState.favPosts.isEmpty,
 	 tab: i,
-	 trees: _trees,
 	 defaultWdg: defaultWdg,
       );
    }
@@ -7230,7 +7177,8 @@ class OccaseState extends State<Occase>
    Widget build(BuildContext ctx)
    {
       final bool mustWait =
-         _trees.isEmpty    ||
+	 (_locRootNode   == null) ||
+	 (_prodRootNode  == null) ||
          (_exDetailsRoot == null) ||
          (_inDetailsRoot == null) ||
          (g.param == null);

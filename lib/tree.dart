@@ -263,64 +263,23 @@ class NodeInfo2 {
    });
 }
 
-class Tree {
-   int filterDepth;
+Node TreefromJson(Map<String, dynamic> map)
+{
+   final String rawMenu = map["data"];
+   List<String> lines = rawMenu.split("=");
+   lines.removeWhere((String o) {return o.isEmpty;});
+   final List<NodeInfo> elems = List.generate(lines.length,
+      (int i) { return parseFields(lines[i]); });
 
-   // The list below is used as a stack whose first element is the
-   // menu root node. When a menu entries is selected it is pushed on
-   // the stack and the element is treated a the root of the subtree.
-   List<Node> root;
-
-   Tree({this.filterDepth = 0}) {
-      root = List<Node>();
-   }
-
-   bool isFilterLeaf()
-   {
-      return root.length == filterDepth;
-   }
-
-   void restoreMenuStack()
-   {
-      if (root.isEmpty)
-         return;
-
-      while (root.length != 1)
-         root.removeLast();
-   }
-
-   Tree.fromJson(Map<String, dynamic> map)
-   {
-      filterDepth = map["depth"];
-      root = List<Node>();
-
-      final String rawMenu = map["data"];
-      List<String> lines = rawMenu.split("=");
-      lines.removeWhere((String o) {return o.isEmpty;});
-      final List<NodeInfo> elems = List.generate(lines.length,
-         (int i) { return parseFields(lines[i]); });
-
-      final int menuDepth = findTreeDepth(elems);
-      if (menuDepth != 0) {
-         Node node = parseTree(elems, menuDepth);
-         loadLeafCounters(node);
-         root.add(node);
-      }
-   }
-
-   Map<String, dynamic> toJson()
-   {
-      return
-      {
-         'depth': filterDepth,
-         'data': serializeTreeToStr(root.first),
-      };
-   }
+   final int menuDepth = findTreeDepth(elems);
+   assert(menuDepth != 0);
+   Node node = parseTree(elems, menuDepth);
+   loadLeafCounters(node);
+   return node;
 }
 
-/* Counts all leaf counters of the children. If the leaf counter of a
- * child is zero it is itself a leaf and contributes with one.
- */
+// Counts all leaf counters of the children. If the leaf counter of a child is
+// zero it is itself a leaf and contributes with one.
 int accumulateLeafCounters(Node node)
 {
    if (node.children.isEmpty)
@@ -333,12 +292,11 @@ int accumulateLeafCounters(Node node)
    return c;
 }
 
-/* Traverses the tree and loads each node with number of leaf nodes it
- * is parent from. 
- */
+// Traverses the tree and loads each node with number of leaf nodes it is
+// parent from. 
 void loadLeafCounters(Node root)
 {
-   // Here I will choose a depth that is big enough.
+   // Uses a depth that is big enough.
    TreeTraversal iter = TreeTraversal(root, 1000);
    Node current = iter.advanceToLeaf();
    while (current != null) {
@@ -356,11 +314,10 @@ int accumulateLeafReach(Node node)
    return c;
 }
 
-/* Traverses the tree accumulating the leaf reaches.
- */
-void loadLeafReaches(Node root, int filterDepth)
+// Traverses the tree accumulating the leaf reaches.
+void loadLeafReaches(Node root, int depth)
 {
-   TreeTraversal iter = TreeTraversal(root, filterDepth - 1);
+   TreeTraversal iter = TreeTraversal(root, depth - 1);
    Node current = iter.advanceToLeaf();
    while (current != null) {
       current.leafReach = accumulateLeafReach(current);
@@ -368,18 +325,10 @@ void loadLeafReaches(Node root, int filterDepth)
    }
 }
 
-List<Tree> treeReader(Map<String, dynamic> menusMap)
+Node treeReader(Map<String, dynamic> menusMap)
 {
    List<dynamic> rawMenus = menusMap['menus'];
-
-   List<Tree> trees = List<Tree>();
-
-   for (var raw in rawMenus) {
-      Tree item = Tree.fromJson(raw);
-      trees.add(item);
-   }
-
-   return trees;
+   return TreefromJson(rawMenus.first);
 }
 
 class TreeTraversal {
