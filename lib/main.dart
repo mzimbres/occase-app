@@ -3345,7 +3345,7 @@ Widget makeTextWdg({
             color: Colors.black,
 	    fontSize: stl.subtitleFontSize,
 	    fontWeight: fontWeight,
-            backgroundColor: backgroundColor,
+            //backgroundColor: backgroundColor,
          ),
          overflow: TextOverflow.ellipsis,
       ),
@@ -4163,7 +4163,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget modelTitle = makeTextWdg(
 	 text: modelStr,
 	 fontWeight: FontWeight.w500,
-	 backgroundColor: Colors.white,
+	 backgroundColor: null,
       );
 
       Widget location = makeTextWdg(
@@ -5216,6 +5216,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
       _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
+      print(_numberOfMatchingPosts);
       await _searchPosts2();
       setState(() { });
    }
@@ -6474,8 +6475,7 @@ class OccaseState extends State<Occase>
       setState(() { });
    }
 
-   Future<void>
-   _onPublishAck(Map<String, dynamic> ack) async
+   Future<void> _onPublishAck(Map<String, dynamic> ack) async
    {
       final String res = ack['result'];
       if (res == 'ok') {
