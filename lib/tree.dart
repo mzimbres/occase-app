@@ -19,9 +19,9 @@ class NodeInfo {
    });
 }
 
-// To avoid using global variable for the language index I will will
-// set them lazily as they are used. Unfourtunately we cannot store
-// the index only once as the toString method has no argument.
+// To avoid using global variable for the language index I will will set them
+// lazily as they are used. Unfourtunately we cannot store the index only once
+// as the toString method has no argument.
 class Node {
    List<String> _name = <String>[''];
    List<int> code;
@@ -130,9 +130,9 @@ List<String> loadNames(
 int findTreeDepth(List<NodeInfo> elems)
 {
    int maxDepth = 0;
-   for (NodeInfo me in elems)
-      if (maxDepth < me.depth)
-         maxDepth = me.depth;
+   for (NodeInfo o in elems)
+      if (maxDepth < o.depth)
+         maxDepth = o.depth;
 
    return maxDepth;
 }
@@ -156,30 +156,27 @@ String genCode(List<int> codes, int depth)
    return code;
 }
 
-// This function does not fill all fields of NodeInfo.
 NodeInfo parseFields(String line)
 {
-   List<String> fields = line.split(";");
-   if (fields.length != 3) {
-      print('=====> $line');
-   }
+   final List<String> fields = line.split("\t");
 
-   assert(fields.length == 3);
+   assert(fields.length == 2);
 
    return NodeInfo(
       name: fields[1],
-      depth: int.parse(fields.first),
-      leafReach: int.parse(fields[2]), // Remove this later.
+      depth: int.parse(fields[0]),
    );
 }
 
-Node parseTree(List<NodeInfo> elems, int menuDepth)
+Node parseTree(List<NodeInfo> elems)
 {
-   List<int> codes = List<int>(menuDepth);
-   for (int i = 0; i < codes.length; ++i)
-      codes[i] = -1;
+   // The first pass finds out the tree depth.
+   final int menuDepth = findTreeDepth(elems);
+   assert(menuDepth != 0);
 
-   List<Node> st = List<Node>();
+   List<int> codes = List.filled(menuDepth, -1);
+
+   List<Node> st = <Node>[];
    int lastDepth = 0;
    Node root = Node('');
    for (NodeInfo me in elems) {
@@ -209,10 +206,7 @@ Node parseTree(List<NodeInfo> elems, int menuDepth)
          }
 
          // We found the child of the last node pushed on the stack.
-         Node p = Node(me.name,
-            code: code,
-            leafReach: me.leafReach,
-         );
+         Node p = Node(me.name, code: code);
 
          st.last.children.add(p);
          st.add(p);
@@ -228,22 +222,14 @@ Node parseTree(List<NodeInfo> elems, int menuDepth)
          st.removeLast();
 
          // Now we can add the new node.
-         Node p = Node(me.name,
-            code: code,
-            leafReach: me.leafReach,
-         );
-
+         Node p = Node(me.name, code: code);
          st.last.children.add(p);
          st.add(p);
 
          lastDepth = me.depth;
       } else {
          st.removeLast();
-         Node p = Node(me.name,
-            code: code,
-            leafReach: me.leafReach,
-         );
-
+         Node p = Node(me.name, code: code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -253,28 +239,16 @@ Node parseTree(List<NodeInfo> elems, int menuDepth)
    return root;
 }
 
-class NodeInfo2 {
-   int leafReach;
-   String code;
-
-   NodeInfo2(
-   { this.leafReach
-   , this.code,
-   });
-}
-
-Node TreefromJson(Map<String, dynamic> map)
+Node makeTree(String tree)
 {
-   final String rawMenu = map["data"];
-   List<String> lines = rawMenu.split("=");
+   List<String> lines = tree.split('\n');
    lines.removeWhere((String o) {return o.isEmpty;});
-   final List<NodeInfo> elems = List.generate(lines.length,
-      (int i) { return parseFields(lines[i]); });
 
-   final int menuDepth = findTreeDepth(elems);
-   assert(menuDepth != 0);
-   Node node = parseTree(elems, menuDepth);
-   loadLeafCounters(node);
+   List<NodeInfo> elems = List.generate(lines.length, (int i)
+      { return parseFields(lines[i]); });
+
+   Node node = parseTree(elems);
+   //loadLeafCounters(node);
    return node;
 }
 
@@ -323,12 +297,6 @@ void loadLeafReaches(Node root, int depth)
       current.leafReach = accumulateLeafReach(current);
       current = iter.nextNode();
    }
-}
-
-Node treeReader(Map<String, dynamic> menusMap)
-{
-   List<dynamic> rawMenus = menusMap['menus'];
-   return TreefromJson(rawMenus.first);
 }
 
 class TreeTraversal {

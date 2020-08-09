@@ -5144,17 +5144,17 @@ class OccaseState extends State<Occase>
       g.param = Parameters.fromJson(jsonDecode(text));
       await initializeDateFormatting(g.param.localeName, null);
 
-      final String locTreeStr = await rootBundle.loadString('data/locations.txt');
-      _locRootNode = treeReader(jsonDecode(locTreeStr));
+      final String locTreeStr = await rootBundle.loadString('data/locations.comp.tree');
+      _locRootNode = makeTree(locTreeStr);
 
-      final String prodTreeStr = await rootBundle.loadString('data/products.txt');
-      _prodRootNode = treeReader(jsonDecode(prodTreeStr));
+      final String prodTreeStr = await rootBundle.loadString('data/products.comp.tree');
+      _prodRootNode = makeTree(prodTreeStr);
 
-      final String exDetailsStr = await rootBundle.loadString('data/ex_details.txt');
-      _exDetailsRoot = treeReader(jsonDecode(exDetailsStr));
+      final String exDetailsStr = await rootBundle.loadString('data/ex_details.comp.tree');
+      _exDetailsRoot = makeTree(exDetailsStr);
 
-      final String inDetailsStr = await rootBundle.loadString('data/in_details.txt');
-      _inDetailsRoot = treeReader(jsonDecode(inDetailsStr));
+      final String inDetailsStr = await rootBundle.loadString('data/in_details.comp.tree');
+      _inDetailsRoot = makeTree(inDetailsStr);
 
       await _appState.load();
 
