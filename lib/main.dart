@@ -5344,9 +5344,9 @@ class OccaseState extends State<Occase>
          if (i == -1) {
             PickedFile img = await _picker.getImage(
                source: ImageSource.gallery,
-               //maxWidth: makeMaxWidth(ctx),
-               //maxHeight: makeMaxWidth(ctx),
-               //imageQuality: cts.imgQuality,
+               maxWidth: cts.imgWidgth,
+               maxHeight: cts.imgWidgth,
+               imageQuality: cts.imgQuality,
             );
 
             if (img == null)

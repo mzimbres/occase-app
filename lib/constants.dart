@@ -1,11 +1,7 @@
 
-// The image width will be determined by the device screen WIDTH times
-// this factor, that means, a factor 1.0 means a square image.
-const double imgHeightFactor = 1.0;
-
 // Quality of the image, see
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
-const int imgQuality = 50;
+const int imgQuality = 75;
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
 const int emailMaxLength = 50;
@@ -51,10 +47,6 @@ const String dbDeletePostUrl =   dbHttpUrl + '/delete';
 const int maxImgsPerPost = 6;
 const int minImgsPerPost = 1;
 
-// The time we are willing to wait for the server to send us the
-// filenames.
-const int filenamesTimeout = 5;
-
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;
 const int pongTimeoutMilliseconds = pongTimeoutSeconds * 1000;
@@ -79,3 +71,4 @@ const double postWidth = 0.58;
 
 const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
 
+const double imgWidgth = tabDefaultWidth;
