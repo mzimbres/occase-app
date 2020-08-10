@@ -1731,11 +1731,13 @@ class MyApp extends StatelessWidget {
                GlobalWidgetsLocalizations.delegate,
                GlobalCupertinoLocalizations.delegate,
             ],
-         supportedLocales: [
+         supportedLocales:
+	 [
             const Locale('de'),
             const Locale('pt'),
             const Locale('es'),
             const Locale('fr'),
+            const Locale('en'),
          ],
       );
    }
