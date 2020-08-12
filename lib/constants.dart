@@ -56,10 +56,6 @@ const int pongTimeoutMilliseconds = pongTimeoutSeconds * 1000;
 // milliseconds.
 const int presenceInterval = 5 * 1000;
 
-// The number of that are shown to the user when he clicks the
-// download button. 
-const int maxPostsOnDownload = 10;
-
 const int ownIdx = 0;
 const int searchIdx = 1;
 const int favIdx = 2;

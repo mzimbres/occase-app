@@ -4277,55 +4277,34 @@ Widget makeNewPostLv({
    final OnPressedFn2 onDelPost,
    final OnPressedFn2 onSharePost,
    final OnPressedFn2 onReportPost,
-   final OnPressedFn0 onNext,
 }) {
-   final int l = posts.length - nNewPosts;
-   if (l == 0)
-      return makeFavEmptyScreenWidget();
-
-   final int shift = nNewPosts == 0 ? 0 : 1;
-   // No controller should be assigned to this listview. This will
-   // break the automatic hiding of the tabbar
+   // No controller should be assigned to this listview. This will break the
+   // automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
-      itemCount: l + shift,
+      itemCount: posts.length,
       separatorBuilder: (BuildContext context, int index)
       {
 	 return Divider(color: Colors.black, height: 5.0);
       },
       itemBuilder: (BuildContext ctx, int i)
       {
-         final int j = l - i - 1;
-	 if (i == l) {
-	    Widget ret = createRaisedButton(
-	       onNext,
-	       '+$nNewPosts', //g.param.next,
-	       stl.colorScheme.secondary,
-	       stl.colorScheme.onSecondary,
-	    );
-
-	    return Padding(
-	       child: ret,
-	       padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-	    );
-	 }
-
          return makeNewPost(
 	    showDelAdminButton: showDelAdminButton,
 	    screen: cts.searchIdx,
-            post: posts[j],
+            post: posts[i],
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
             imgFiles: List<PickedFile>(),
             onAddPhoto: (var ctx, var i) {log('Error: Please fix.');},
-            onExpandImg: (int k) {onExpandImg(j, k);},
-            onAddPostToFavorite: () {onAddPostToFavorite(ctx, j);},
-	    onDelPost: () {onDelPost(ctx, j);},
-	    onSharePost: () {onSharePost(ctx, j);},
-	    onReportPost: () {onReportPost(ctx, j);},
+            onExpandImg: (int k) {onExpandImg(i, k);},
+            onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
+	    onDelPost: () {onDelPost(ctx, i);},
+	    onSharePost: () {onSharePost(ctx, i);},
+	    onReportPost: () {onReportPost(ctx, i);},
 	    onPinPost: (){log('Noop20');},
          );
       },
@@ -5456,25 +5435,6 @@ class OccaseState extends State<Occase>
       });
    }
 
-   void _updateNumberOfNewPosts()
-   {
-      assert(_nNewPosts >= 0);
-
-      // The number of posts that will be shown to the user when he
-      // clicks the download button. It is at most maxPostsOnDownload.
-      // If it is less than that number we show all.
-      int n = _nNewPosts;
-      if (n > cts.maxPostsOnDownload)
-         n = cts.maxPostsOnDownload;
-
-      _nNewPosts -= n;
-   }
-
-   Future<void> _onShowNewPosts() async
-   {
-      setState((){_updateNumberOfNewPosts();});
-   }
-
    bool _onWillPopSearchTab()
    {
       setState(() { _newSearchPressed = false; });
@@ -6387,14 +6347,16 @@ class OccaseState extends State<Occase>
                continue;
 
             _appState.posts.add(post);
-            ++_nNewPosts;
          } catch (e) {
             log("Error: Invalid post detected.");
          }
       }
 
-      _updateNumberOfNewPosts();
-      setState(() { });
+      _appState.posts.sort(compPostByDate);
+
+      setState(() {
+	 _nNewPosts = _appState.posts.length;
+      });
    }
 
    Future<void> _onPublishAck(Map<String, dynamic> ack) async
@@ -6979,7 +6941,6 @@ class OccaseState extends State<Occase>
 	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
 	onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
 	onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
-	onNext: _onShowNewPosts,
       );
    }
 
@@ -7096,7 +7057,8 @@ class OccaseState extends State<Occase>
    {
       List<int> ret = List<int>(g.param.tabNames.length);
       ret[cts.ownIdx] = _getNUnreadOwnChats();
-      ret[cts.searchIdx] = _nNewPosts;
+      //ret[cts.searchIdx] = _nNewPosts; // Let this out for the moment.
+      ret[cts.searchIdx] = 0;
       ret[cts.favIdx] = _getNUnreadFavChats();
       return ret;
    }

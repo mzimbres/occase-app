@@ -404,6 +404,12 @@ ChatMetadata selectMostRecentChat(
    return t1 >= t2 ? lhs : rhs;
 }
 
+int compPostByDate(Post a, Post b)
+{
+   return a.date > b.date ? -1
+	: a.date < b.date ? 1 : 0;
+}
+
 List<T> decodeList<T>(int size, T init, List<dynamic> details)
 {
    if (details == null) {
