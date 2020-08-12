@@ -6,18 +6,34 @@ import 'package:occase/tree.dart' as tree;
 import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 import 'package:sqflite/sqflite.dart';
+import 'dart:developer';
 
 class AppMsgQueueElem {
    int rowid;
    int isChat;
    String payload;
-   bool sent; // Used for debugging.
+
    AppMsgQueueElem({
       this.rowid = 0,
       this.isChat = 0,
       this.payload = '',
-      this.sent = false,
    });
+
+   AppMsgQueueElem.fromJson(Map<String, dynamic> map)
+   {
+      rowid = map['rowid'] ?? -1;
+      isChat = map['is_chat'] ?? false;
+      payload = map['payload'] ?? '';
+   }
+
+   Map<String, dynamic> toJson()
+   {
+      return
+      { 'rowid': rowid
+      , 'is_chat': isChat
+      , 'payload': payload
+      };
+   }
 }
 
 String makeConnCmd(
@@ -258,7 +274,7 @@ class ChatMetadata {
       if (i < msgs.length)
 	 msgs[i].status = status;
       else
-	 print('Error: Index $i does not belong in the array.');
+	 log('Error: Index $i does not belong in the array.');
    }
 
    String getChatDisplayName()
@@ -391,7 +407,7 @@ ChatMetadata selectMostRecentChat(
 List<T> decodeList<T>(int size, T init, List<dynamic> details)
 {
    if (details == null) {
-      print('Value not found.');
+      log('Value not found.');
       return List.filled(size, init);
    }
 
@@ -610,7 +626,7 @@ class Post {
 	 images = decodeList(0, '', map['images']);
 	 chats = decChatMetadataList(map['chats']);
       } catch (e) {
-	 print('Post.fromJson: ${e}');
+	 log('Post.fromJson: ${e}');
       }
    }
 
@@ -856,8 +872,8 @@ class Config {
 	 dialogPreferences = decodeList(20, true, map['dialogPreferences']);
 	 notifications = NtfConfig.fromJson(map['notifications']);
       } catch (e) {
-	 print('oowoow');
-	 print(e);
+	 log('oowoow');
+	 log(e);
       }
    }
 

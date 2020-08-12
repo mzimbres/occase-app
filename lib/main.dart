@@ -2,6 +2,7 @@ import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:collection';
+import 'dart:developer';
 
 import 'dart:io'
        if (dart.library.io)
@@ -124,7 +125,7 @@ double makeMaxHeight(BuildContext ctx)
 
 Future<void> fcmOnBackgroundMessage(Map<String, dynamic> message) async
 {
-  print("onBackgroundMessage: $message");
+  log("onBackgroundMessage: $message");
 }
 
 String emailToGravatarHash(String email)
@@ -151,7 +152,7 @@ class Coord {
 
 void myprint(Coord c, String prefix)
 {
-   print('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
+   log('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
 }
 
 void toggleChatPinDate(ChatMetadata chat)
@@ -282,7 +283,7 @@ Widget makeImgExpandScreen(Function onWillPopScope, Post post)
       reverse: true,
       //backgroundDecoration: widget.backgroundDecoration,
       //pageController: widget.pageController,
-      onPageChanged: (int i){ print('===> New index: $i');},
+      onPageChanged: (int i){ log('===> New index: $i');},
       builder: (BuildContext context, int i) {
          // No idea why this is showing in reverse order, I will have
          // to manually reverse the indexes.
@@ -470,19 +471,19 @@ Scaffold makeNtfScreen(
    );
 }
 
-Widget makeHiddenButton(OnPressedFn0 onHiddenButtonLP)
+Widget makeHiddenButton(OnPressedFn0 onHiddenButtonLP, Color color)
 {
    return FlatButton(
       onPressed: onHiddenButtonLP,
       child: Text(''),
-      color: Colors.white,
-      textColor: Colors.white,
-      disabledTextColor: Colors.white,
-      disabledColor: Colors.white,
-      focusColor: Colors.white,
-      hoverColor: Colors.white,
-      highlightColor: Colors.white,
-      splashColor: Colors.white,
+      color: color,
+      textColor: color,
+      disabledTextColor: color,
+      disabledColor: color,
+      focusColor: color,
+      hoverColor: color,
+      highlightColor: color,
+      splashColor: color,
    );
 }
 
@@ -494,8 +495,10 @@ Widget makeInfoScreen(
 ) {
    final double width = makeTabWidth(ctx, cts.ownIdx);
 
-   Column col = Column(children: <Widget>
-      [ makeHiddenButton(onHiddenButtonLP),
+   Column col = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>
+      [ makeHiddenButton(onHiddenButtonLP, Colors.white),
         RaisedButton(
 	    onPressed: onSendEmail,
 	    child: Text(g.param.supportEmail,
@@ -506,17 +509,14 @@ Widget makeInfoScreen(
 	       ),
 	    ),
 	 ),
-	 makeHiddenButton((){}),
-      ]);
-
-   Widget tmp = ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: width),
-      child: Center(child: col),
+	 makeHiddenButton((){}, Colors.white),
+      ],
    );
 
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
       child: Scaffold(
+	 backgroundColor: Colors.white,
 	 appBar: AppBar(
 	    title: Text(g.param.appName),
 	    leading: IconButton(
@@ -526,7 +526,7 @@ Widget makeInfoScreen(
 	    ),
 	 ),
 	 body: Padding(
-	    child: Center(child: tmp),
+	    child: Center(child: col),
 	    padding: EdgeInsets.symmetric(vertical: 20.0),
 	 ),
       ),
@@ -546,7 +546,7 @@ Widget makeNetImgBox(
       fit: bf,
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
-         print('====> $error $url $error');
+         log('====> $error $url $error');
          //Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
          Widget w = Text(g.param.unreachableImgError,
             overflow: TextOverflow.ellipsis,
@@ -926,12 +926,12 @@ Widget makeNewPostFinalScreen({
       prodRootNode: prodRootNode,
       imgFiles: imgFiles,
       onAddPhoto: onAddPhoto,
-      onExpandImg: (int j){ print('Noop00'); },
-      onAddPostToFavorite: () { print('Noop01'); },
-      onDelPost: () { print('Noop02');},
-      onSharePost: () { print('Noop03');},
-      onReportPost: () { print('Noop05');},
-      onPinPost: () { print('Noop06');},
+      onExpandImg: (int j){ log('Noop00'); },
+      onAddPostToFavorite: () { log('Noop01'); },
+      onDelPost: () { log('Noop02');},
+      onSharePost: () { log('Noop03');},
+      onReportPost: () { log('Noop05');},
+      onPinPost: () { log('Noop06');},
    );
 
    Widget w1 = createRaisedButton(
@@ -1921,7 +1921,7 @@ Widget makeFAButtonMiddleScreen({
    final bool hasFavPosts,
    final OnPressedFn0 onSearch,
 }) {
-   //print('$onSearchScreen $isWide $hasFavPosts');
+   //log('$onSearchScreen $isWide $hasFavPosts');
    if (onSearchScreen || (isWide && !hasFavPosts))
       return SizedBox.shrink();
 
@@ -2177,7 +2177,7 @@ ListView makeChatMsgListView(
             }
 
             if (i > ch.divisorUnreadMsgsIdx) {
-	       print('$i ${ch.divisorUnreadMsgsIdx}');
+	       log('$i ${ch.divisorUnreadMsgsIdx}');
                i -= 1; // For the shift
 	    }
          }
@@ -2747,7 +2747,7 @@ Widget makePayPriceListTile(
 //void cardNonceRequestSuccess(sq.CardDetails result)
 //{
 //   // Use this nonce from your backend to pay via Square API
-//   print(result.nonce);
+//   log(result.nonce);
 //
 //   final bool invalidZipCode = false;
 //
@@ -2778,8 +2778,8 @@ Widget makePaymentChoiceWidget(
    // isThreeLine: false,
    List<Function> payments = <Function>
    [ () { freePayment(ctx);   }
-   , () { print('===> pay1'); }
-   , () { print('===> pay2'); }
+   , () { log('===> pay1'); }
+   , () { log('===> pay2'); }
    ];
    for (int i = 0; i < g.param.payments0.length; ++i) {
       Widget p = makePayPriceListTile(
@@ -4320,13 +4320,13 @@ Widget makeNewPostLv({
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
             imgFiles: List<PickedFile>(),
-            onAddPhoto: (var ctx, var i) {print('Error: Please fix.');},
+            onAddPhoto: (var ctx, var i) {log('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(j, k);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, j);},
 	    onDelPost: () {onDelPost(ctx, j);},
 	    onSharePost: () {onSharePost(ctx, j);},
 	    onReportPost: () {onReportPost(ctx, j);},
-	    onPinPost: (){print('Noop20');},
+	    onPinPost: (){log('Noop20');},
          );
       },
    );
@@ -4816,7 +4816,7 @@ Widget makeChatTab({
          // If the post contains no images, which should not happen,
          // we provide no expand image button.
          if (posts[i].images.isEmpty)
-            onExpandImg = (int j){print('Error: post.images is empty.');};
+            onExpandImg = (int j){log('Error: post.images is empty.');};
 
 	 Widget bbb = makeNewPost(
 	    showDelAdminButton: false,
@@ -4827,12 +4827,12 @@ Widget makeChatTab({
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
             imgFiles: List<PickedFile>(),
-            onAddPhoto: (var a, var b) {print('Noop10');},
+            onAddPhoto: (var a, var b) {log('Noop10');},
             onExpandImg: onExpandImg,
-            onAddPostToFavorite:() {print('Noop14');},
+            onAddPostToFavorite:() {log('Noop14');},
 	    onDelPost: onDelPost,
 	    onSharePost: () {onSharePost(i);},
-	    onReportPost:() {print('Noop18');},
+	    onReportPost:() {log('Noop18');},
 	    onPinPost: onPinPost,
 	 );
 
@@ -5085,14 +5085,14 @@ class OccaseState extends State<Occase>
 
       //_firebaseMessaging.configure(
       //   onMessage: (Map<String, dynamic> message) async {
-      //     print("onMessage: $message");
+      //     log("onMessage: $message");
       //   },
       //   //onBackgroundMessage: fcmOnBackgroundMessage,
       //   onLaunch: (Map<String, dynamic> message) async {
-      //     print("onLaunch: $message");
+      //     log("onLaunch: $message");
       //   },
       //   onResume: (Map<String, dynamic> message) async {
-      //     print("onResume: $message");
+      //     log("onResume: $message");
       //   },
       //);
 
@@ -5100,7 +5100,7 @@ class OccaseState extends State<Occase>
          if (_fcmToken != null)
             _fcmToken = token;
 
-         print('Token: $token');
+         log('Token: $token');
       });
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
@@ -5126,7 +5126,7 @@ class OccaseState extends State<Occase>
    void _reconnectCallback(Timer timer)
    {
       if (_tryNewWSConnection()) {
-         print('Trying to reconnect.');
+         log('Trying to reconnect.');
          _stablishNewConnection(_fcmToken);
       }
    }
@@ -5157,7 +5157,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
       _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
-      print(_numberOfMatchingPosts);
+      log(_numberOfMatchingPosts);
       await _searchPosts2();
       setState(() { });
    }
@@ -5186,7 +5186,7 @@ class OccaseState extends State<Occase>
    {
       //final bool tryWsReconnect = _tryNewWSConnection();
       //if (state == AppLifecycleState.resumed && tryWsReconnect) {
-      //   print('Trying to reconnect.');
+      //   log('Trying to reconnect.');
       //   _stablishNewConnection(_fcmToken);
       //}
    }
@@ -5271,12 +5271,12 @@ class OccaseState extends State<Occase>
 	    _appState.cfg.notifications.getFlag(),
 	 );
 
-	 print(cmd);
+	 log(cmd);
 
 	 websocket.sink.add(cmd);
       } catch (e) {
-	 print('Unable to stablish ws connection to server.');
-	 print(e);
+	 log('Unable to stablish ws connection to server.');
+	 log(e);
       }
    }
 
@@ -5350,7 +5350,7 @@ class OccaseState extends State<Occase>
             setState((){_imgFiles.removeAt(i); });
          }
       } catch (e) {
-         print(e);
+         log(e);
       }
    }
 
@@ -5358,7 +5358,7 @@ class OccaseState extends State<Occase>
    // j = image index in the post.
    void _onExpandImg(int i, int j, int k)
    {
-      //print('Expand image clicked with $i $j.');
+      //log('Expand image clicked with $i $j.');
 
       //_nNewPosts
 
@@ -5397,7 +5397,7 @@ class OccaseState extends State<Occase>
    void _onClickOnPost(int i, int j)
    {
       if (j == 1) {
-	 print('Sharing post $i');
+	 log('Sharing post $i');
          Share.share(g.param.share, subject: g.param.shareSubject);
          return;
       }
@@ -5561,7 +5561,7 @@ class OccaseState extends State<Occase>
    Future<void> _onSendChat(int i) async
    {
       _chats[i].nUnreadMsgs = 0;
-      print('${_txtCtrl.text}');
+      log('${_txtCtrl.text}');
       await _onSendChatImpl(
          _posts[i].id,
          _chats[i].peer,
@@ -5619,7 +5619,7 @@ class OccaseState extends State<Occase>
       };
 
       final String payload = jsonEncode(subCmd);
-      print(payload);
+      log(payload);
       websocket.sink.add(payload);
    }
 
@@ -5628,7 +5628,7 @@ class OccaseState extends State<Occase>
       if (i != _screenIdx()) {
 	 // The control listener seems to be bound to all screens, thats why I
 	 // have to filter it here.
-	 print('Ignoring ---> $i');
+	 log('Ignoring ---> $i');
 	 return;
       }
 
@@ -5706,7 +5706,7 @@ class OccaseState extends State<Occase>
       };
 
       final String payload = jsonEncode(pubMap);
-      print(payload);
+      log(payload);
       websocket.sink.add(payload);
    }
 
@@ -5722,7 +5722,7 @@ class OccaseState extends State<Occase>
 
          setState(() {_newPostErrorCode = 1;});
       } catch (e) {
-         print(e);
+         log(e);
       }
    }
 
@@ -5737,7 +5737,7 @@ class OccaseState extends State<Occase>
 
       var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
       if (resp.statusCode != 200)
-	 print('Error on _onRemovePost:  ${resp.statusCode}');
+	 log('Error on _onRemovePost:  ${resp.statusCode}');
    }
 
    Future<void> _onRemovePost(int screen, int i) async
@@ -5777,11 +5777,11 @@ class OccaseState extends State<Occase>
          //String newname = fnames[i] + '.' + extension;
          final String newname = fnames[i] + '.jpg';
 
-         print('=====> Path $path');
-         print('=====> Image name $basename');
-         print('=====> Image extention $extension');
-         print('=====> New name $newname');
-         print('=====> Http target $newname');
+         log('=====> Path $path');
+         log('=====> Image name $basename');
+         log('=====> Image extention $extension');
+         log('=====> New name $newname');
+         log('=====> Http target $newname');
 
          var response = await http.post(newname,
             body: await _imgFiles[i].readAsBytes(),
@@ -5812,14 +5812,14 @@ class OccaseState extends State<Occase>
 	 setState(() {_sendingPost = true;});
 	 var resp = await http.post(cts.dbUploadCreditUrl, body: '');
 	 if (resp.statusCode != 200) {
-	    print('Error: _requestFilenames ${resp.statusCode}');
+	    log('Error: _requestFilenames ${resp.statusCode}');
 	    setState(() { _leaveNewPostScreen(); });
 	 }
 
 	 if (resp.body.isEmpty) {
 	    _leaveNewPostScreen();
 	    _newPostErrorCode = 0;
-	    print('Error: _requestFilenames, empty body.');
+	    log('Error: _requestFilenames, empty body.');
 	    return; // TODO: Perhaps show a dialog with an error message?
 	 }
 
@@ -5835,7 +5835,7 @@ class OccaseState extends State<Occase>
 	    await _sendPost();
 
       } catch (e) {
-         print(e);
+         log(e);
       }
 
       setState(() {
@@ -6032,32 +6032,17 @@ class OccaseState extends State<Occase>
    Future<void> _sendAppMsg(String payload, int isChat) async
    {
       final bool isEmpty = _appState.appMsgQueue.isEmpty;
-      AppMsgQueueElem tmp = AppMsgQueueElem(
-         rowid: -1,
-         isChat: isChat,
-         payload: payload,
-         sent: false
-      );
 
-      _appState.appMsgQueue.add(tmp);
+      await _appState.insertOutChatMsg(payload, isChat);
 
-      tmp.rowid = await _appState.persistency.insertOutChatMsg(isChat, payload);
-
-      if (isEmpty) {
-         assert(!_appState.appMsgQueue.first.sent);
-         _appState.appMsgQueue.first.sent = true;
-         print(_appState.appMsgQueue.first.payload);
+      if (isEmpty)
          websocket.sink.add(_appState.appMsgQueue.first.payload);
-      }
    }
 
    void _sendOfflineChatMsgs()
    {
-      if (_appState.appMsgQueue.isNotEmpty) {
-         assert(!_appState.appMsgQueue.first.sent);
-         _appState.appMsgQueue.first.sent = true;
+      if (_appState.appMsgQueue.isNotEmpty)
          websocket.sink.add(_appState.appMsgQueue.first.payload);
-      }
    }
 
    void _toggleLPChatMsgs(int k, bool isTap, int i)
@@ -6112,36 +6097,28 @@ class OccaseState extends State<Occase>
          await _sendAppMsg(payload, 1);
 
       } catch(e) {
-         print(e);
+         log(e);
       }
    }
 
    Future<void> _onServerAck(Map<String, dynamic> ack) async
    {
       try {
-         assert(_appState.appMsgQueue.first.sent);
          assert(_appState.appMsgQueue.isNotEmpty);
 
          final String res = ack['result'];
 
-         await _appState.persistency.deleteOutChatMsg(_appState.appMsgQueue.first.rowid);
-
-         final bool isChat = _appState.appMsgQueue.first.isChat == 1;
-         _appState.appMsgQueue.removeFirst();
+         final bool isChat = await _appState.deleteOutChatMsg();
 
          if (res == 'ok' && isChat) {
             await _onChatAck(ack['from'], ack['post_id'], <int>[ack['ack_id']], 1);
             setState(() { });
          }
 
-         if (_appState.appMsgQueue.isNotEmpty) {
-            assert(!_appState.appMsgQueue.first.sent);
-            _appState.appMsgQueue.first.sent = true;
-	    print(_appState.appMsgQueue.first.payload);
+         if (_appState.appMsgQueue.isNotEmpty)
             websocket.sink.add(_appState.appMsgQueue.first.payload);
-         }
       } catch (e) {
-         print(e);
+         log(e);
       }
    }
 
@@ -6153,7 +6130,7 @@ class OccaseState extends State<Occase>
    ) async {
       final String to = ack['to'];
       if (to != _appState.cfg.appId) {
-         print("Server bug caught. Please report.");
+         log("Server bug caught. Please report.");
          return;
       }
 
@@ -6203,7 +6180,7 @@ class OccaseState extends State<Occase>
    ) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
-         print('Ignoring message to postId $postId.');
+         log('Ignoring message to postId $postId.');
          return;
       }
 
@@ -6351,7 +6328,7 @@ class OccaseState extends State<Occase>
    ) async {
       final String res = ack["result"];
       if (res == 'fail') {
-         print("register_ack: fail.");
+         log("register_ack: fail.");
          return;
       }
 
@@ -6375,7 +6352,7 @@ class OccaseState extends State<Occase>
       // Perhaps send a new register command? It can only happen if
       // the server is blocking this user.
       if (res == 'fail') {
-         print("login_ack: fail.");
+         log("login_ack: fail.");
          return;
       }
 
@@ -6394,7 +6371,7 @@ class OccaseState extends State<Occase>
    {
       final String res = ack["result"];
       if (res == 'fail') {
-         print("subscribe_ack: $res");
+         log("subscribe_ack: $res");
          return;
       }
    }
@@ -6412,7 +6389,7 @@ class OccaseState extends State<Occase>
             _appState.posts.add(post);
             ++_nNewPosts;
          } catch (e) {
-            print("Error: Invalid post detected.");
+            log("Error: Invalid post detected.");
          }
       }
 
@@ -6452,14 +6429,14 @@ class OccaseState extends State<Occase>
          } else if (cmd == "register_ack") {
             await _onRegisterAck(ack, msg);
          } else {
-            print('Unhandled message received from the server:\n$msg.');
+            log('Unhandled message received from the server:\n$msg.');
          }
       }
    }
 
    Future<void> _onWSData(msg) async
    {
-      print(msg);
+      log(msg);
       final bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(msg);
       if (isEmpty)
@@ -6468,13 +6445,13 @@ class OccaseState extends State<Occase>
 
    void _onWSError(error)
    {
-      print("Error: _onWSError $error");
+      log("Error: _onWSError $error");
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
    void _onWSDone()
    {
-      print("Communication closed by peer.");
+      log("Communication closed by peer.");
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
@@ -6524,7 +6501,7 @@ class OccaseState extends State<Occase>
 
 	 await _searchPosts2();
       } catch (e) {
-	 print(e);
+	 log(e);
       }
    }
 
@@ -6539,7 +6516,7 @@ class OccaseState extends State<Occase>
       // This function is meant to change the tab widgets when we
       // switch tab. This is needed to show the number of unread
       // messages.
-      setState(() { print('Tab changed');});
+      setState(() { log('Tab changed');});
    }
 
    int _getNUnreadFavChats()
@@ -6758,7 +6735,7 @@ class OccaseState extends State<Occase>
          });
 
       } catch (e) {
-         print(e);
+         log(e);
       }
    }
 
@@ -6810,7 +6787,7 @@ class OccaseState extends State<Occase>
       if (await canLaunch(url)) {
          await launch(url);
       } else {
-         print('Unable to send email.');
+         log('Unable to send email.');
       }
    }
 
@@ -6830,7 +6807,7 @@ class OccaseState extends State<Occase>
 
          setState(() { });
       } catch (e) {
-         print(e);
+         log(e);
       }
    }
 
@@ -6864,7 +6841,7 @@ class OccaseState extends State<Occase>
       if (response.statusCode == 200)
          return response.body;
 
-      print('Error: Unable to find search matches.');
+      log('Error: Unable to find search matches.');
       return '';
    }
 

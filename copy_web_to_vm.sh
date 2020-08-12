@@ -4,3 +4,4 @@ flutter build web
 tar cf web.tar build/web
 gzip web.tar
 scp web.tar.gz occase.de:~/
+rm web.tar.gz

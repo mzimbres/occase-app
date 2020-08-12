@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:collection';
 import 'package:path/path.dart' as p;
+import 'dart:developer';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:occase/sql.dart' as sql;
@@ -19,7 +20,7 @@ class Persistency {
       //cfg.nick = g.param.unknownNick;
       //return cfg;
       List<Map<String, dynamic>> maps = await _db.rawQuery(sql.readConfig);
-      print(maps);
+      log(maps);
       return Config.fromJson(jsonDecode(maps[0]['cfg']));
    }
 
@@ -44,13 +45,13 @@ class Persistency {
 	    post.nick = bodyMap['nick'];
 	    post.avatar = bodyMap['avatar'];
 	    // TODO: Remove comment after server implementation.
-	    //print('------');
+	    //log('------');
 	    //post.location = jsonDecode(bodyMap['location'] ?? <int>[]);
-	    //print('------');
+	    //log('------');
 	    //post.product = jsonDecode(bodyMap['product'] ?? <int>[]);
-	    //print('------');
-	    //print(post.location);
-	    //print(post.product);
+	    //log('------');
+	    //log(post.location);
+	    //log(post.product);
 
 	    post.exDetails = decodeList(
 	       cts.maxExDetailSize,
@@ -75,8 +76,8 @@ class Persistency {
 
 	    post.description = bodyMap['description'] ?? '';
 	 } catch (e) {
-	    print('kadjlaalskk  aklsdjf');
-	    print(e);
+	    log('kadjlaalskk  aklsdjf');
+	    log(e);
 	 }
          return post;
       });
@@ -163,15 +164,18 @@ class Persistency {
 	 });
 
       } catch (e) {
-	 print(e);
+	 log(e);
       }
 
       return null;
    }
 
-   Future<int> insertOutChatMsg(int isChat, String payload) async
+   Future<int> insertOutChatMsg(Queue<AppMsgQueueElem> q) async
    {
-      return await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
+      return await _db.rawInsert(
+	 sql.insertOutChatMsg,
+	 [q.last.isChat, q.last.payload],
+      );
    }
 
    Future<void> insertChatMsg(String postId, String peer, ChatItem ci) async
@@ -269,9 +273,9 @@ class Persistency {
       await batch.commit(noResult: true, continueOnError: true);
    }
 
-   Future<void> deleteOutChatMsg(int rowid) async
+   Future<void> deleteOutChatMsg(Queue<AppMsgQueueElem> q) async
    {
-      await _db.rawDelete(sql.deleteOutChatMsg, [rowid]);
+      await _db.rawDelete(sql.deleteOutChatMsg, [q.first.rowid]);
    }
 
    void persistFavPosts(List<Post> posts)

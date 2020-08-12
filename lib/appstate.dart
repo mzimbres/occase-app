@@ -2,6 +2,7 @@ import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:collection';
+import 'dart:developer';
 
 import 'dart:io'
        if (dart.library.io)
@@ -21,7 +22,7 @@ class AppState {
 
    // The list of posts received from the server. Our own posts that the
    // server echoes back to us will be filtered out.
-   List<Post> posts = List<Post>();
+   List<Post> _posts = List<Post>();
 
    // The list of posts the user has selected in the posts screen.
    // They are moved from posts to here.
@@ -46,16 +47,18 @@ class AppState {
    // to the server is lost. 
    Queue<AppMsgQueueElem> appMsgQueue = Queue<AppMsgQueueElem>();
 
-   Persistency persistency = Persistency();
+   Persistency _persistency = Persistency();
+
+   List<Post> get posts => _posts;
 
    AppState();
 
    Future<void> load() async
    {
       try {
-	 await persistency.open();
+	 await _persistency.open();
       } catch (e) {
-         print(e);
+         log(e);
       }
 
       try {
@@ -65,65 +68,65 @@ class AppState {
          // the use of global variable from within its constructor,
          // for now I will construct it again before it is used to
          // initialize the db.
-	 cfg = await persistency.loadConfig();
+	 cfg = await _persistency.loadConfig();
       } catch (e) {
-         print(e);
+         log(e);
       }
 
       try {
-         final List<Post> posts = await persistency.loadPosts();
+         final List<Post> posts = await _persistency.loadPosts();
          for (Post p in posts) {
             if (p.status == 0) {
                ownPosts.add(p);
                for (Post o in ownPosts) {
 		  if (o.chats.isEmpty)
-		     o.chats = await persistency.loadChatMetadata(o.id);
+		     o.chats = await _persistency.loadChatMetadata(o.id);
 	       }
             } else if (p.status == 2) {
                favPosts.add(p);
                for (Post o in favPosts)
 		  if (o.chats.isEmpty)
-		     o.chats = await persistency.loadChatMetadata(o.id);
+		     o.chats = await _persistency.loadChatMetadata(o.id);
             } else {
-	       print('Wrong post status ${p.status}');
+	       log('Wrong post status ${p.status}');
             }
          }
 
          ownPosts.sort(compPosts);
          favPosts.sort(compPosts);
       } catch (e) {
-         print(e);
+         log(e);
       }
 
-      List<AppMsgQueueElem> tmp = await persistency.loadOutChatMsg();
+      List<AppMsgQueueElem> tmp = await _persistency.loadOutChatMsg();
       appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
-      print('Login: ${cfg.appId}:${cfg.appPwd}');
+      log('Login: ${cfg.appId}:${cfg.appPwd}');
    }
 
    Future<void> clearPosts() async
    {
-      posts = List<Post>();
+      _posts = List<Post>();
    }
 
    Future<void> setDialogPreferences(int i, bool v) async
    {
       cfg.dialogPreferences[i] = v;
-      await persistency.persistConfig(cfg);
+      await _persistency.persistConfig(cfg);
    }
 
    Future<void> updateConfig() async
    {
-      await persistency.persistConfig(cfg);
+      await _persistency.persistConfig(cfg);
    }
 
    // Return the index where the post in located in favPosts.
    Future<int> movePostToFav(int i) async
    {
       // i refers to a post in the posts array. 
-      Post post = posts[i];
+      Post post = _posts[i];
 
       // Remove from the posts array so that the user does not see it anymore?
-      posts.removeAt(i);
+      _posts.removeAt(i);
 
       var f = (e) { return e.id == post.id; };
 
@@ -133,12 +136,12 @@ class AppState {
       if (j == -1) { // The post is already in favorites?
 	 post.status = 2; // fav status.
 	 final int k = post.addChat(post.from, post.nick, post.avatar);
-	 await persistency.insertChatOnPost2(post.id, post.chats[k]);
+	 await _persistency.insertChatOnPost2(post.id, post.chats[k]);
 	 favPosts.add(post);
 	 favPosts.sort(compPosts);
 	 j = favPosts.indexWhere(f);
 	 assert(j != -1);
-	 await persistency.insertPost(favPosts, j, true);
+	 await _persistency.insertPost(favPosts, j, true);
       }
 
       return j;
@@ -155,7 +158,7 @@ class AppState {
       }
 
       if (IsInvalidPair(p)) {
-	 print('Chat not found: from = $from, postId = $postId');
+	 log('Chat not found: from = $from, postId = $postId');
 	 return;
       }
 
@@ -167,7 +170,7 @@ class AppState {
 	 // use await here. The ideal case however is to offer a List<ChatItem>
 	 // interface in Persistency and use batch there.
 
-	 await persistency.updateAckStatus(status, rowid, postId, from);
+	 await _persistency.updateAckStatus(status, rowid, postId, from);
       }
    }
 
@@ -176,7 +179,7 @@ class AppState {
    {
       cfg.appId = id;
       cfg.appPwd = password;
-      await persistency.persistConfig(cfg);
+      await _persistency.persistConfig(cfg);
    }
 
    Future<int>
@@ -195,24 +198,24 @@ class AppState {
       final int j = post.getChatHistIdx(peer);
       assert(j != -1);
 
-      await persistency.insertChatMsg(postId, peer, ci);
+      await _persistency.insertChatMsg(postId, peer, ci);
       final int id = post.chats[j].addChatItem(ci);
 
-      await persistency.insertChatOnPost(postId, post.chats[j]);
+      await _persistency.insertChatOnPost(postId, post.chats[j]);
 
       post.chats.sort(compChats);
       list.sort(compPosts);
       if (fav)
-	 persistency.persistFavPosts(favPosts);
+	 _persistency.persistFavPosts(favPosts);
       else
-	 persistency.persistFavPosts(ownPosts);
+	 _persistency.persistFavPosts(ownPosts);
 
       return id;
    }
 
    Future<void> setNUnreadMsgs(String id, String from) async
    {
-      await persistency.updateNUnreadMsgs(id, from);
+      await _persistency.updateNUnreadMsgs(id, from);
    }
 
    Future<void> setPinPostDate(int i, bool fav) async
@@ -222,14 +225,14 @@ class AppState {
 	 list = favPosts;
 
       Post post = list[i];
-      await persistency.updatePostPinDate(post.pinDate, post.id);
+      await _persistency.updatePostPinDate(post.pinDate, post.id);
       post.pinDate = post.pinDate == 0 ? DateTime.now().millisecondsSinceEpoch : 0;
       list.sort(compPosts);
    }
 
    Future<int> deleteChatStElem(String post_id, String peer) async
    {
-      return await persistency.deleteChatStElem(post_id, peer);
+      return await _persistency.deleteChatStElem(post_id, peer);
    }
 
    Future<void> addOwnPost(String id, int date) async
@@ -240,26 +243,26 @@ class AppState {
       outPost.pinDate = 0;
       final int i = ownPosts.length;
       ownPosts.add(outPost);
-      await persistency.insertPost(ownPosts, i, false);
+      await _persistency.insertPost(ownPosts, i, false);
       ownPosts.sort(compPosts);
    }
 
    Future<Post> delFavPost(int i) async
    {
-      await persistency.delFavPost(favPosts, i);
+      await _persistency.delFavPost(favPosts, i);
       return favPosts.removeAt(i);
    }
 
    Future<Post> delOwnPost(int i) async
    {
       final Post post = ownPosts.removeAt(i);
-      await persistency.delOwnPost(ownPosts, i);
+      await _persistency.delOwnPost(ownPosts, i);
       return post;
    }
 
    Post delSearchPost(int i)
    {
-      return posts.removeAt(i);
+      return _posts.removeAt(i);
    }
 
    Future<void> removeFavWithNoChats() async
@@ -267,7 +270,7 @@ class AppState {
       // If performance becomes a thing, we should call persistency only once.
       for (int i = 0; i < favPosts.length; ++i)
 	 if (favPosts[i].chats.isEmpty)
-	    await persistency.delFavPost(favPosts, i);
+	    await _persistency.delFavPost(favPosts, i);
 
       favPosts.removeWhere((e) { return e.chats.isEmpty; });
    }
@@ -280,7 +283,29 @@ class AppState {
       bool isFav,
    ) async {
       List<Post> posts = isFav ? favPosts : ownPosts;
-      await persistency.insertChatOnPost3(postId, chat, peer, ci, isFav, posts);
+      await _persistency.insertChatOnPost3(postId, chat, peer, ci, isFav, posts);
+   }
+
+   Future<void> insertOutChatMsg(String payload, int isChat) async
+   {
+      final bool isEmpty = appMsgQueue.isEmpty;
+
+      AppMsgQueueElem tmp = AppMsgQueueElem(
+         rowid: -1,
+         isChat: isChat,
+         payload: payload,
+      );
+
+      appMsgQueue.add(tmp);
+
+      tmp.rowid = await _persistency.insertOutChatMsg(appMsgQueue);
+   }
+
+   Future<bool> deleteOutChatMsg() async
+   {
+      final AppMsgQueueElem e = appMsgQueue.removeFirst();
+      await _persistency.deleteOutChatMsg(appMsgQueue);
+      return e.isChat == 1;
    }
 }
 

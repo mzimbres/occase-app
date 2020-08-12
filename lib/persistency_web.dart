@@ -2,6 +2,7 @@ import 'dart:async' show Future, Timer;
 import 'dart:html' show window;
 import 'dart:convert';
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:occase/post.dart';
@@ -9,9 +10,16 @@ import 'package:occase/constants.dart' as cts;
 import 'package:occase/globals.dart' as g;
 
 class Persistency {
-   static const String _configKey = 'config';
+   static const String _configKey =   'config';
    static const String _ownPostsKey = 'ownPosts';
    static const String _favPostsKey = 'favPosts';
+   static const String _msgQueueKey = 'msgQueueKey';
+
+   void _persistMsgQueue(List<AppMsgQueueElem> msgQueue)
+   {
+      final String str = jsonEncode(msgQueue);
+      window.localStorage[_msgQueueKey] = str;
+   }
 
    void _persistPosts(List<Post> posts, String key)
    {
@@ -39,9 +47,6 @@ class Persistency {
       List<Post> posts = <Post>[];
 
       final String str = window.localStorage[key];
-      print('-------------------');
-      print(str);
-      print('-------------------');
       if (str != null) {
 	 var l = jsonDecode(str);
 	 l.forEach((v) => posts.add(Post.fromJson(v, g.param.rangeDivs.length)));
@@ -66,7 +71,15 @@ class Persistency {
 
    Future<List<AppMsgQueueElem>> loadOutChatMsg() async
    {
-      return List<AppMsgQueueElem>();
+      List<AppMsgQueueElem> msgs = <AppMsgQueueElem>[];
+
+      final String str = window.localStorage[_msgQueueKey];
+      if (str != null) {
+	 var m = jsonDecode(str);
+	 m.forEach((v) => msgs.add(AppMsgQueueElem.fromJson(v)));
+      }
+
+      return msgs;
    }
 
    Future<void> delFavPost(List<Post> posts, int i) async
@@ -101,8 +114,9 @@ class Persistency {
       return List<ChatItem>();
    }
 
-   Future<int> insertOutChatMsg(int isChat, String payload) async
+   Future<int> insertOutChatMsg(Queue<AppMsgQueueElem> q) async
    {
+      _persistMsgQueue(q.toList());
       return 0;
    }
 
@@ -152,7 +166,7 @@ class Persistency {
    ) async {
    }
 
-   Future<void> deleteOutChatMsg(int rowid) async
+   Future<void> deleteOutChatMsg(Queue<AppMsgQueueElem> appMsgQueue) async
    {
    }
 
