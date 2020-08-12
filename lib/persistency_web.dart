@@ -58,7 +58,7 @@ class Persistency {
       return posts;
    }
 
-   Future<List<ChatMetadata>> loadChatMetadata(int postId) async
+   Future<List<ChatMetadata>> loadChatMetadata(String postId) async
    {
       // NOOP
       return <ChatMetadata>[];
@@ -79,7 +79,7 @@ class Persistency {
       _persistPosts(posts, _ownPostsKey);
    }
 
-   Future<void> updateNUnreadMsgs(int postId, String peer) async
+   Future<void> updateNUnreadMsgs(String postId, String peer) async
    {
    }
 
@@ -89,12 +89,12 @@ class Persistency {
       _persistPosts(posts, key);
    }
 
-   Future<void> updatePostPinDate(int pinDate, int postId) async
+   Future<void> updatePostPinDate(int pinDate, String postId) async
    {
       // NOOP
    }
 
-   Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
+   Future<List<ChatItem>> loadChatMsgs(String postId, String userId) async
    {
       // This function should not be called in web persistency.
       //assert(false);
@@ -106,11 +106,11 @@ class Persistency {
       return 0;
    }
 
-   Future<void> insertChatMsg(int postId, String peer, ChatItem ci) async
+   Future<void> insertChatMsg(String postId, String peer, ChatItem ci) async
    {
    }
 
-   Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
+   Future<void> insertChatOnPost(String postId, ChatMetadata cm) async
    {
    }
 
@@ -122,18 +122,18 @@ class Persistency {
    {
    }
 
-   Future<int> deleteChatStElem(int postId, String peer) async
+   Future<int> deleteChatStElem(String postId, String peer) async
    {
       return 1;
    }
 
-   Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
+   Future<void> insertChatOnPost2(String postId, ChatMetadata cm) async
    {
       // NOOP
    }
 
    Future<void> insertChatOnPost3(
-      int postId,
+      String postId,
       ChatMetadata chat,
       String peer,
       ChatItem ci,
@@ -147,7 +147,7 @@ class Persistency {
    Future<void> updateAckStatus(
       int status,
       int rowid,
-      int postId,
+      String postId,
       String from,
    ) async {
    }

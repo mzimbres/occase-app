@@ -147,7 +147,7 @@ List<int> makeAckIds(
 }
 
 Map<String, dynamic> makeChatItemToMap(
-   int postId,
+   String postId,
    String userId,
    ChatItem ci,
 ) {
@@ -410,9 +410,6 @@ class Post {
    // The auto increment sqlite rowid.
    int rowid;
 
-   // Post id received from on publish ack from the server.
-   int id;
-
    // The publication date.
    int date;
 
@@ -424,6 +421,9 @@ class Post {
    //   1: Posts received
    //   2: Posts moved to favorites.
    int status;
+
+   // Post id received from on publish ack from the server.
+   String id;
 
    // Post publisher id.
    String from;
@@ -462,7 +462,7 @@ class Post {
 
    Post(
    { this.rowid = -1
-   , this.id = -1
+   , this.id = ''
    , this.from = ''
    , this.nick = ''
    , this.avatar = ''
@@ -757,7 +757,7 @@ bool IsInvalidPair(final IdxPair p)
    return p.i == -1 || p.j == -1;
 }
 
-IdxPair findChat(final List<Post> posts, String peer, int postId)
+IdxPair findChat(final List<Post> posts, String peer, String postId)
 {
    final int i = posts.indexWhere((e) { return e.id == postId;});
    if (i == -1)
@@ -773,7 +773,7 @@ IdxPair findChat(final List<Post> posts, String peer, int postId)
 bool markPresence(
    final List<Post> posts,
    final String peer,
-   final int postId,
+   final String postId,
 ) {
    // We have to traverse all posts and in each one search chat by
    // chat for the user with the given id.
@@ -874,7 +874,7 @@ class Config {
    }
 }
 
-List<dynamic> makeChatMetadataSql(ChatMetadata chat, int postId)
+List<dynamic> makeChatMetadataSql(ChatMetadata chat, String postId)
 {
    return <dynamic>
    [ postId

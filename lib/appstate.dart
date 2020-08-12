@@ -145,7 +145,7 @@ class AppState {
    }
 
    Future<void>
-   setChatAckStatus(String from, int postId, List<int> rowids, int status) async
+   setChatAckStatus(String from, String postId, List<int> rowids, int status) async
    {
       List<Post> list = favPosts;
       IdxPair p = findChat(list, from, postId);
@@ -180,7 +180,7 @@ class AppState {
    }
 
    Future<int>
-   setChatMessage(int postId, String peer, ChatItem ci, bool fav) async
+   setChatMessage(String postId, String peer, ChatItem ci, bool fav) async
    {
       List<Post> list = ownPosts;
       if (fav)
@@ -210,7 +210,7 @@ class AppState {
       return id;
    }
 
-   Future<void> setNUnreadMsgs(int id, String from) async
+   Future<void> setNUnreadMsgs(String id, String from) async
    {
       await persistency.updateNUnreadMsgs(id, from);
    }
@@ -227,12 +227,12 @@ class AppState {
       list.sort(compPosts);
    }
 
-   Future<int> deleteChatStElem(int id, String peer) async
+   Future<int> deleteChatStElem(String post_id, String peer) async
    {
-      return await persistency.deleteChatStElem(id, peer);
+      return await persistency.deleteChatStElem(post_id, peer);
    }
 
-   Future<void> addOwnPost(int id, int date) async
+   Future<void> addOwnPost(String id, int date) async
    {
       outPost.id = id;
       outPost.date = date;
@@ -273,7 +273,7 @@ class AppState {
    }
 
    Future<void> insertChatOnPost3(
-      int postId,
+      String postId,
       ChatMetadata chat,
       String peer,
       ChatItem ci,

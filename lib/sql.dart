@@ -45,7 +45,7 @@ final String insertConfig = 'INSERT INTO config (cfg) VALUES (?)';
 final String createChatStatus =
 '''
 CREATE TABLE chat_status
-( post_id INTEGER
+( post_id TEXT
 , user_id TEXT
 , date INTEGER
 , pin_date INTEGER
@@ -89,7 +89,7 @@ WHERE post_id = ? AND user_id == ?
 final String createChats =
 '''
 CREATE TABLE chats
-( post_id INTEGER
+( post_id TEXT
 , user_id TEXT
 , peer_rowid INTEGER
 , is_redirected INTEGER

@@ -82,7 +82,7 @@ class Persistency {
       });
    }
 
-   Future<List<ChatMetadata>> loadChatMetadata(int postId) async
+   Future<List<ChatMetadata>> loadChatMetadata(String postId) async
    {
      final List<Map<String, dynamic>> maps =
 	await _db.rawQuery(sql.selectChatStatusItem, [postId]);
@@ -125,7 +125,7 @@ class Persistency {
       await _db.execute(sql.delPostWithId, [post[i].id]);
    }
 
-   Future<void> updateNUnreadMsgs(int postId, String peer) async
+   Future<void> updateNUnreadMsgs(String postId, String peer) async
    {
       await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
@@ -138,12 +138,12 @@ class Persistency {
 			  conflictAlgorithm: ConflictAlgorithm.replace);
    }
 
-   Future<void> updatePostPinDate(int pinDate, int postId) async
+   Future<void> updatePostPinDate(int pinDate, String postId) async
    {
       await _db.execute(sql.updatePostPinDate, [pinDate, postId]);
    }
 
-   Future<List<ChatItem>> loadChatMsgs(int postId, String userId) async
+   Future<List<ChatItem>> loadChatMsgs(String postId, String userId) async
    {
       try {
 	 final List<Map<String, dynamic>> maps =
@@ -174,7 +174,7 @@ class Persistency {
       return await _db.rawInsert(sql.insertOutChatMsg, [isChat, payload]);
    }
 
-   Future<void> insertChatMsg(int postId, String peer, ChatItem ci) async
+   Future<void> insertChatMsg(String postId, String peer, ChatItem ci) async
    {
       await _db.insert(
 	 'chats',
@@ -183,7 +183,7 @@ class Persistency {
       );
    }
 
-   Future<void> insertChatOnPost(int postId, ChatMetadata cm) async
+   Future<void> insertChatOnPost(String postId, ChatMetadata cm) async
    {
       await _db.rawInsert(sql.insertOrReplaceChatOnPost, makeChatMetadataSql(cm, postId));
    }
@@ -214,7 +214,7 @@ class Persistency {
       );
    }
 
-   Future<int> deleteChatStElem(int postId, String peer) async
+   Future<int> deleteChatStElem(String postId, String peer) async
    {
       return await _db.rawDelete(sql.deleteChatStElem, [postId, peer]);
    }
@@ -225,13 +225,13 @@ class Persistency {
       await _db.execute(sql.updateConfig, [str, 1]);
    }
 
-   Future<void> insertChatOnPost2(int postId, ChatMetadata cm) async
+   Future<void> insertChatOnPost2(String postId, ChatMetadata cm) async
    {
       await _db.rawInsert(sql.insertChatStOnPost, makeChatMetadataSql(cm, postId));
    }
 
    Future<void> insertChatOnPost3(
-      int postId,
+      String postId,
       ChatMetadata chat,
       String peer,
       ChatItem ci,
@@ -261,7 +261,7 @@ class Persistency {
    Future<void> updateAckStatus(
       int status,
       int rowid,
-      int postId,
+      String postId,
       String from,
    ) async {
       Batch batch = _db.batch();

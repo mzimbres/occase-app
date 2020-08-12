@@ -42,7 +42,7 @@ typedef OnPressedFn1 = void Function(int);
 typedef OnPressedFn2 = void Function(BuildContext, int);
 typedef OnPressedFn3 = void Function(int, int);
 typedef OnPressedFn4 = void Function(BuildContext);
-typedef OnPressedFn5 = void Function(BuildContext, int, int);
+typedef OnPressedFn5 = void Function(BuildContext, String, int);
 typedef OnPressedFn6 = void Function(int i, double);
 typedef OnPressedFn7 = bool Function();
 typedef OnPressedFn8 = void Function(int, double);
@@ -53,6 +53,7 @@ typedef OnPressedFn12 = void Function(List<int>, int);
 typedef OnPressedFn13 = void Function(bool, int);
 typedef OnPressedFn14 = void Function(List<int>);
 typedef OnPressedFn15 = void Function(ConfigActions);
+typedef OnPressedFn16 = void Function(String, int);
 
 bool isWideScreenImpl(double w)
 {
@@ -199,16 +200,6 @@ Future<void> removeLpChat(Coord c, AppState appState) async
 Future<Null> main() async
 {
   runApp(MyApp());
-}
-
-String makePostPayload(final Post post)
-{
-   var pubMap = {
-      'cmd': 'publish',
-      'posts': <Post>[post]
-   };
-
-   return jsonEncode(pubMap);
 }
 
 enum ConfigActions
@@ -4676,7 +4667,7 @@ Widget makeChatsExp(
    List<ChatMetadata> ch,
    OnPressedFn1 onPressed,
    OnPressedFn1 onLongPressed,
-   OnPressedFn3 onLeadingPressed,
+   OnPressedFn16 onLeadingPressed,
    Function onPinPost,
 ) {
    List<Widget> list = List<Widget>(ch.length);
@@ -4854,7 +4845,7 @@ Widget makeChatTab({
             posts[i].chats,
             (int j) {onPressed(i, j);},
             (int j) {onLongPressed(i, j);},
-            (int a, int b) {onUserInfoPressed(ctx, a, b);},
+            (String a, int b) {onUserInfoPressed(ctx, a, b);},
             onPinPost,
          );
 
@@ -5708,20 +5699,26 @@ class OccaseState extends State<Occase>
       // We add it here in our own list of posts and keep in mind it may be
       // echoed back to us. It has to be filtered out from _appState.posts
       // since that list should not contain our own posts.
-      final String payload = makePostPayload(_appState.outPost);
+
+      var pubMap = {
+	 'cmd': 'publish',
+	 'post': _appState.outPost
+      };
+
+      final String payload = jsonEncode(pubMap);
       print(payload);
       websocket.sink.add(payload);
    }
 
-   Future<void> _handlePublishAck(final int id, final int date) async
+   Future<void> _handlePublishAck(final String postId, final int date) async
    {
       try {
-         if (id == -1) {
+         if (postId.isEmpty) {
             setState(() {_newPostErrorCode = 0;});
             return;
          }
 
-         await _appState.addOwnPost(id, date);
+         await _appState.addOwnPost(postId, date);
 
          setState(() {_newPostErrorCode = 1;});
       } catch (e) {
@@ -5974,7 +5971,7 @@ class OccaseState extends State<Occase>
          await _onChatPressedImpl(_appState.ownPosts, j, k, screen);
    }
 
-   void _onUserInfoPressed(BuildContext ctx, int postId, int j)
+   void _onUserInfoPressed(BuildContext ctx, String postId, int j)
    {
       List<Post> posts;
       if (_isOnFav()) {
@@ -6085,7 +6082,7 @@ class OccaseState extends State<Occase>
    }
 
    Future<void> _onSendChatImpl(
-      int postId,
+      String postId,
       String peer,
       ChatItem ci,
    ) async {
@@ -6151,7 +6148,7 @@ class OccaseState extends State<Occase>
    Future<void> _onChat(
       final Map<String, dynamic> ack,
       final String peer,
-      final int postId,
+      final String postId,
       int isRedirected,
    ) async {
       final String to = ack['to'];
@@ -6193,7 +6190,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onChatImpl(
       String to,
-      int postId,
+      String postId,
       String msg,
       String peer,
       String nick,
@@ -6292,7 +6289,7 @@ class OccaseState extends State<Occase>
    void _onPresence(Map<String, dynamic> ack)
    {
       final String peer = ack['from'];
-      final int postId = ack['post_id'];
+      final String postId = ack['post_id'];
 
       // We have to perform the following action
       //
@@ -6320,7 +6317,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onChatAck(
       String from,
-      int postId,
+      String postId,
       List<int> rowids,
       int status,
    ) async {
@@ -6331,7 +6328,7 @@ class OccaseState extends State<Occase>
    {
       final String from = ack['from'];
       final String type = ack['type'];
-      final int postId = ack['post_id'];
+      final String postId = ack['post_id'];
 
       if (type == 'chat') {
          await _onChat(ack, from, postId, ack['is_redirected']);
@@ -6429,7 +6426,7 @@ class OccaseState extends State<Occase>
       if (res == 'ok') {
          await _handlePublishAck(ack['id'], 1000 * ack['date']);
       } else {
-         await _handlePublishAck(-1, -1);
+         await _handlePublishAck('', -1);
       }
    }
 
