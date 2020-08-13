@@ -3775,7 +3775,7 @@ List<Widget> makeDetailsTextWdgs({
 	    color: backgroundColor,
 	    margin: EdgeInsets.all(0.0),
 	    child: Padding(
-	       padding: const EdgeInsets.only(left: 3.0),
+	       padding: const EdgeInsets.symmetric(horizontal: 3.0),
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: 11.0,
@@ -3954,7 +3954,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       Widget dateWdg = makeTextWdg(
 	 text: makeDateString2(widget.post.date),
-	 edgeInsets: const EdgeInsets.all(2.0),
+	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0),
 	 backgroundColor: null,
 	 textColor: Colors.grey,
 	 fontSize: 11.0,
@@ -4094,49 +4094,81 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 g.param.langIdx,
       );
 
-      Widget modelTitle = makeTextWdg(
-	 text: modelStr,
-	 fontWeight: FontWeight.w500,
-	 backgroundColor: null,
-	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
-	 textColor: Colors.grey[800],
-	 fontSize: stl.subtitleFontSize,
+      // TODO: Use rich text to put the model followed by the date in small font in grey.
+      //Widget modelTitle = makeTextWdg(
+      //   text: modelStr,
+      //   fontWeight: FontWeight.w500,
+      //   backgroundColor: null,
+      //   edgeInsets: const EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
+      //   textColor: Colors.grey[800],
+      //   fontSize: stl.subtitleFontSize,
+      //);
+
+      Padding modelTitle = Padding(
+	    child: RichText(
+	       text: TextSpan(
+		  text: '$modelStr ',
+		  style: TextStyle(
+		     color: Colors.grey[800],
+		     fontSize: 13.0,
+		     fontWeight: FontWeight.normal,
+		  ),
+		  children: <TextSpan>
+		  [ TextSpan(
+		       text: locationStr,
+		       style: TextStyle(
+			  color: Colors.grey,
+			  fontSize: 10.0,
+			  fontWeight: FontWeight.normal,
+		       ),
+		    ),
+		  ],
+	    ),
+	 ),
+	 padding: const EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
       );
 
       Widget location = makeTextWdg(
 	 text: locationStr,
       );
 
+      List<Widget> exWdgs = makeDetailsTextWdgs(
+	 fields: exDetailsNames,
+	 backgroundColor: Colors.blueGrey[100],
+	 textColor: Colors.black,
+      );
+
+      List<Widget> inWdgs = makeDetailsTextWdgs(
+	 fields: inDetailsNames,
+	 backgroundColor: Colors.brown[100],
+	 textColor: Colors.black,
+      );
+
       Widget s1 = Wrap(
-         children: makeDetailsTextWdgs(
-	    fields: exDetailsNames,
-	    backgroundColor: stl.colorScheme.secondary,
-	    textColor: stl.colorScheme.primary,
-	 ),
+         children: exWdgs,
 	 spacing: 5.0,
-	 runSpacing: 3.0,
+	 runSpacing: 2.0,
       );
 
       Widget s2 = Wrap(
-         children: makeDetailsTextWdgs(
-	    fields: inDetailsNames,
-	    backgroundColor: stl.colorScheme.primary,
-	    textColor: Colors.white,
-	 ),
+         children: inWdgs,
 	 spacing: 5.0,
-	 runSpacing: 3.0,
+	 runSpacing: 2.0,
       );
 
+      final double h1 = imgAvatarWidth * 1.0 / 6.0;
+      final double h2 = imgAvatarWidth * 2.0 / 6.0;
+      final double h3 = imgAvatarWidth * 1.0 / 6.0;
       final double widthCol2 = makePostTextWidth(ctx, widget.tab);
 
       Column infoWdg = Column(children: <Widget>
-      [ Flexible(child: SizedBox(width: widthCol2, height: 25.0, child: modelTitle))
+      [ SizedBox(width: widthCol2, height: h1, child: modelTitle)
       //, Flexible(child: SizedBox(width: widthCol2, height: 50.0, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0))))
-      , Expanded(child: SizedBox(width: widthCol2, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
-      , Expanded(child: SizedBox(width: widthCol2, child: Padding(child: s2, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
+      , Expanded(child: SizedBox(width: widthCol2, height: h2, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
+      , Expanded(child: SizedBox(width: widthCol2, height: h2, child: Padding(child: s2, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
       //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
       //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dateWdg)])))
-      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: buttonWdgs)))
+      , SizedBox(width: widthCol2, child: dateWdg)
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
