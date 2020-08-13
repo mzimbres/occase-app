@@ -3268,12 +3268,14 @@ Widget makeTextWdg({
    EdgeInsets edgeInsets = const EdgeInsets.all(3.0),
    FontWeight fontWeight = FontWeight.normal,
    Color backgroundColor = const Color(0xFFFFFFFF),
+   Color textColor = const Color(0xFF000000),
+   double fontSize = stl.subtitleFontSize,
 }) {
    Widget w = Padding(
       child: Text(text,
          style: TextStyle(
-            color: Colors.black,
-	    fontSize: stl.subtitleFontSize,
+            color: textColor,
+	    fontSize: fontSize,
 	    fontWeight: fontWeight,
             //backgroundColor: backgroundColor,
          ),
@@ -3320,8 +3322,13 @@ List<Widget> makePostButtons({
    OnPressedFn0 onSharePost,
    OnPressedFn0 onPinPost,
 }) {
+   BoxConstraints bc = const BoxConstraints(
+      maxWidth: 15.0,
+      maxHeight: 15.0,
+   );
    IconButton remove = IconButton(
       padding: EdgeInsets.all(0.0),
+      //constraints: bc,
       onPressed: onDelPost,
       icon: Icon(
          Icons.clear,
@@ -3333,6 +3340,7 @@ List<Widget> makePostButtons({
       padding: EdgeInsets.all(0.0),
       onPressed: onSharePost,
       color: stl.colorScheme.primary,
+      //constraints: bc,
       icon: Icon(Icons.share,
          color: stl.colorScheme.secondary,
       ),
@@ -3342,6 +3350,7 @@ List<Widget> makePostButtons({
 
    IconButton pin = IconButton(
       padding: EdgeInsets.all(0.0),
+      //constraints: bc,
       onPressed: onPinPost,
       icon: Icon(
          pinIcon,
@@ -3755,34 +3764,26 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 //---------------------------------------------------------------------
 
-List<Widget> makeWrap({
-   List<String> fields
+List<Widget> makeDetailsTextWdgs({
+   List<String> fields,
+   Color backgroundColor,
+   Color textColor,
 }) {
-   return List<Widget>.generate(
-      fields.length,
-      (int i) {
-	 Chip chip = Chip(
-	    label: Text(fields[i]),
-	    backgroundColor: Colors.blue[100],
-	    padding: EdgeInsets.all(0.0),
-	    labelPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 4.0),
-	    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-	    labelStyle: TextStyle(
-		  fontSize: 20.0,
-		  fontWeight: FontWeight.normal,
-		  color: Colors.black,
-	    ),
-	    shape: RoundedRectangleBorder(
-	       borderRadius: BorderRadius.all(
-		     Radius.circular(stl.cornerRadius)
+   return List<Widget>.generate(fields.length, (int i) {
+      return Card(
+	    elevation: 0.0,
+	    color: backgroundColor,
+	    margin: EdgeInsets.all(0.0),
+	    child: Padding(
+	       padding: const EdgeInsets.only(left: 3.0),
+               child: Text(fields[i],
+	          style: TextStyle(
+	             fontSize: 11.0,
+	             fontWeight: FontWeight.normal,
+	             color: textColor,
+	          ),
 	       ),
-	       //side: BorderSide(width: 1.0, color: Colors.grey),
 	    ),
-	 );
-
-	 return Transform(
-	    transform: Matrix4.identity()..scale(0.7),
-	    child: chip,
 	 );
       },
    );
@@ -3953,8 +3954,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       Widget dateWdg = makeTextWdg(
 	 text: makeDateString2(widget.post.date),
-	 edgeInsets: const EdgeInsets.all(3.0),
+	 edgeInsets: const EdgeInsets.all(2.0),
 	 backgroundColor: null,
+	 textColor: Colors.grey,
+	 fontSize: 11.0,
       );
 
       List<Widget> buttonWdgs = List<Widget>();
@@ -3976,8 +3979,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    buttonWdgs.add(Expanded(child: buttons[1]));
 	 buttonWdgs.add(Expanded(child: buttons[2]));
       }
-
-      Row buttonsRow = Row(children: buttonWdgs);
 
       final double imgAvatarWidth = makeImgAvatarWidth(ctx, widget.tab);
 
@@ -4097,31 +4098,45 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 text: modelStr,
 	 fontWeight: FontWeight.w500,
 	 backgroundColor: null,
+	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
+	 textColor: Colors.grey[800],
+	 fontSize: stl.subtitleFontSize,
       );
 
       Widget location = makeTextWdg(
 	 text: locationStr,
       );
 
-      Widget s1 = makeTextWdg(
-	 text: exDetailsNames.join(', '),
-	 edgeInsets: const EdgeInsets.all(0.0),
+      Widget s1 = Wrap(
+         children: makeDetailsTextWdgs(
+	    fields: exDetailsNames,
+	    backgroundColor: stl.colorScheme.secondary,
+	    textColor: stl.colorScheme.primary,
+	 ),
+	 spacing: 5.0,
+	 runSpacing: 3.0,
       );
 
-      Widget s2 = makeTextWdg(
-	 text: inDetailsNames.join(', '),
-	 edgeInsets: const EdgeInsets.all(0.0),
+      Widget s2 = Wrap(
+         children: makeDetailsTextWdgs(
+	    fields: inDetailsNames,
+	    backgroundColor: stl.colorScheme.primary,
+	    textColor: Colors.white,
+	 ),
+	 spacing: 5.0,
+	 runSpacing: 3.0,
       );
 
       final double widthCol2 = makePostTextWidth(ctx, widget.tab);
 
       Column infoWdg = Column(children: <Widget>
-      [ Flexible(child: SizedBox(width: widthCol2, child: Padding(child: modelTitle, padding: EdgeInsets.only(left: 5.0))))
-      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s1)])))
-      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: s2)])))
-      , Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
+      [ Flexible(child: SizedBox(width: widthCol2, height: 25.0, child: modelTitle))
+      //, Flexible(child: SizedBox(width: widthCol2, height: 50.0, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0))))
+      , Expanded(child: SizedBox(width: widthCol2, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
+      , Expanded(child: SizedBox(width: widthCol2, child: Padding(child: s2, padding: EdgeInsets.only(left: 5.0, bottom: 5.0))))
+      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
       //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dateWdg)])))
-      , Expanded(child: SizedBox(width: widthCol2, child: buttonsRow))
+      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: buttonWdgs)))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
