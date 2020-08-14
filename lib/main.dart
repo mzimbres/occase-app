@@ -4179,6 +4179,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 elevation: 0.0,
 	 child: Row(children: row1List),
 	 padding: const EdgeInsets.all(0.0),
+	 onLongPress: widget.onDelPost,
       );
    }
 }
