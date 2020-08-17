@@ -80,15 +80,25 @@ class Node {
       children.forEach((Node node) { node.setLangIdx(_langIdx); });
    }
 
-   String getChildrenNames(int langIdx)
+   String getChildrenNames(int langIdx, int sizeLimit)
    {
       setLangIdx(langIdx);
       setLangIdxOnChildren();
 
-      String res = children.join(', ');
-      if (children.isNotEmpty)
-         return res + '.';
+      if (children.isEmpty)
+	 return '';
 
+      String res = '';
+      if (children.length <= sizeLimit)
+	 return children.join(', ');
+
+      final int max =
+	 sizeLimit < children.length ? sizeLimit : children.length;
+
+      for (int i = 0; i < max - 1; ++i)
+	 res += children[i].toString() + ', ';
+
+      res += children[sizeLimit - 1].toString() + ', ...';
       return res;
    }
 

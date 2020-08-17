@@ -187,8 +187,7 @@ final Divider newPostDivider = Divider(
    thickness: 1.0,
 );
 
-const double newPostPadding = 10.0;
-
-const double alertDialogInsetPadding = 10.0;
+const double newPostPadding = 3.0;
+const double alertDialogInsetPadding = 3.0;
 const double minButtonWidth = 100.0;
 
