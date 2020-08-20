@@ -8,14 +8,7 @@ const double mainFontSize = 16.0;
 // the screen border or whatever widget it happens to be inside of.
 const double postMargin = 1.0;
 
-// Marging used to separate the post element cards from the
-// outermost cards.
-const double postInnerMargin = 8.0;
-
 const double listTileSubtitleFontSize = 14.0;
-
-// The padding used for the text inside the post element.
-const double postElemTextPadding = 7.0;
 
 // The padding of chat messages inside ist box.
 const double chatMsgPadding = 5.0;
@@ -130,8 +123,6 @@ const TextStyle textField = TextStyle(
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
 const double chatListTilePadding = 6.0;
-
-const double postCardBottomMargin = 4.0;
 
 const double cornerRadius = 8.0;
 

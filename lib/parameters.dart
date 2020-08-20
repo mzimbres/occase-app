@@ -15,7 +15,9 @@ List<List<T>> decodeList3<T>(List<dynamic> l)
 
 class Parameters {
    int _langIdx = 0;
-   String appName;
+   String appName = 'Occase';
+   String _adminId = 'admin-id';
+   String _adminNick = 'Louis';
    List<String> _delOwnChatTitleStr = <String>[''];
    List<String> _delFavChatTitleStr = <String>[''];
    List<String> _devChatOkStr = <String>[''];
@@ -74,6 +76,7 @@ class Parameters {
    List<String> _supportEmailSubject = <String>[''];
    List<String> _newPostMessage = <String>[''];
    List<String> _emptyFavMessage = <String>[''];
+   List<String> _adminChatMsg = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
@@ -97,8 +100,7 @@ class Parameters {
    List<List<int>> discreteRanges;
 
    Parameters(
-   { this.appName = 'Occase'
-   , this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
+   { this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
    , this.discreteRanges = const <List<int>>
    [ <int>[0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000]
@@ -119,6 +121,8 @@ class Parameters {
       _langIdx = 0;
    }
 
+   String get adminId                   => _adminId;
+   String get adminNick                 => _adminNick;
    String get delOwnChatTitleStr        => _delOwnChatTitleStr[_langIdx];
    String get delFavChatTitleStr        => _delFavChatTitleStr[_langIdx];
    String get devChatOkStr              => _devChatOkStr[_langIdx];
@@ -176,6 +180,7 @@ class Parameters {
    String get supportEmailSubject       => _supportEmailSubject[_langIdx];
    String get newPostMessage            => _newPostMessage[_langIdx];
    String get emptyFavMessage           => _emptyFavMessage[_langIdx];
+   String get adminChatMsg              => _adminChatMsg[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
@@ -200,6 +205,8 @@ class Parameters {
    Parameters.fromJson(Map<String, dynamic> map)
    {
       appName                      = map['appName'];
+      _adminId                     = map['adminId'];
+      _adminNick                   = map['adminNick'];
       _delOwnChatTitleStr          = decodeList2(map['delOwnChatTitleStr']);
       _delFavChatTitleStr          = decodeList2(map['delFavChatTitleStr']);
       _devChatOkStr                = decodeList2(map['devChatOkStr']);
@@ -257,6 +264,7 @@ class Parameters {
       _supportEmailSubject         = decodeList2(map['supportEmailSubject']);
       _newPostMessage              = decodeList2(map['newPostMessage']);
       _emptyFavMessage             = decodeList2(map['emptyFavMessage']);
+      _adminChatMsg                = decodeList2(map['adminChatMsg']);
       _payments0                   = decodeList2(map['payments0']);
 
       _tabNames                    = decodeList3(map['tabNames']);
@@ -286,6 +294,8 @@ class Parameters {
       return
       {
          'appName':                     appName,
+         'adminId':                     _adminId,
+         'adminNick':                   _adminNick,
          'delOwnChatTitleStr':          _delOwnChatTitleStr,
          'delFavChatTitleStr':          _delFavChatTitleStr,
          'devChatOkStr':                _devChatOkStr,
@@ -343,6 +353,7 @@ class Parameters {
          'supportEmailSubject':         _supportEmailSubject,
          'newPostMessage':              _newPostMessage,
          'emptyFavMessage':             _emptyFavMessage,
+         'adminChatMsg':                _adminChatMsg,
          'payments0':                   _payments0,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,

@@ -20,6 +20,7 @@ const int maxExDetailSize = 20;
 const int maxInDetailSize = 20;
 
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';
+const String occaseEmail = 'occase.app@gmail.com';
 
 // Use media query instead of this.
 const double onClickAvatarWidth = 200.0;
@@ -46,7 +47,7 @@ const String dbDeletePostUrl =   dbHttpUrl + '/posts/delete';
 const String dbPostUrl =         dbHttpUrl + '/posts/publish';
 
 const int maxImgsPerPost = 6;
-const int minImgsPerPost = 1;
+const int minImgsPerPost = 0;
 
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;
@@ -69,3 +70,4 @@ const double postWidth = 0.58;
 const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
 
 const double imgWidgth = tabDefaultWidth;
+

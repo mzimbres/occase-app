@@ -38,23 +38,23 @@ import 'package:occase/globals.dart' as g;
 import 'package:occase/stl.dart' as stl;
 import 'package:occase/appstate.dart';
 
-typedef OnPressedFn0 = void Function();
-typedef OnPressedFn1 = void Function(int);
-typedef OnPressedFn2 = void Function(BuildContext, int);
-typedef OnPressedFn3 = void Function(int, int);
-typedef OnPressedFn4 = void Function(BuildContext);
-typedef OnPressedFn5 = void Function(BuildContext, String, int);
-typedef OnPressedFn6 = void Function(int i, double);
-typedef OnPressedFn7 = bool Function();
-typedef OnPressedFn8 = void Function(int, double);
-typedef OnPressedFn9 = void Function(String);
-typedef OnPressedFn10 = void Function(int, bool);
-typedef OnPressedFn11 = void Function(BuildContext, int, DragStartDetails);
-typedef OnPressedFn12 = void Function(List<int>, int);
-typedef OnPressedFn13 = void Function(bool, int);
-typedef OnPressedFn14 = void Function(List<int>);
-typedef OnPressedFn15 = void Function(ConfigActions);
-typedef OnPressedFn16 = void Function(String, int);
+typedef OnPressedF00 = void Function();
+typedef OnPressedF01 = void Function(int);
+typedef OnPressedF02 = void Function(BuildContext, int);
+typedef OnPressedF03 = void Function(int, int);
+typedef OnPressedF04 = void Function(BuildContext);
+typedef OnPressedF05 = void Function(BuildContext, String, int);
+typedef OnPressedF06 = void Function(int i, double);
+typedef OnPressedF07 = bool Function();
+typedef OnPressedF08 = void Function(int, double);
+typedef OnPressedF09 = void Function(String);
+typedef OnPressedF10 = void Function(int, bool);
+typedef OnPressedF11 = void Function(BuildContext, int, DragStartDetails);
+typedef OnPressedF12 = void Function(List<int>, int);
+typedef OnPressedF13 = void Function(bool, int);
+typedef OnPressedF14 = void Function(List<int>);
+typedef OnPressedF15 = void Function(ConfigActions);
+typedef OnPressedF16 = void Function(String, int);
 
 bool isWideScreenImpl(double w)
 {
@@ -215,7 +215,7 @@ enum ConfigActions
 , Information
 }
 
-Widget makeAppBarVertAction(OnPressedFn15 onSelected)
+Widget makeAppBarVertAction(OnPressedF15 onSelected)
 {
    return PopupMenuButton<ConfigActions>(
      icon: Icon(Icons.more_vert, color: Colors.white),
@@ -241,8 +241,8 @@ Widget makeAppBarVertAction(OnPressedFn15 onSelected)
 }
 
 List<Widget> makeOnLongPressedActions(
-   OnPressedFn0 deleteChatEntryDialog,
-   OnPressedFn0 pinChat,
+   OnPressedF00 deleteChatEntryDialog,
+   OnPressedF00 pinChat,
 ) {
    List<Widget> actions = List<Widget>();
 
@@ -479,7 +479,7 @@ Scaffold makeNtfScreen(
    );
 }
 
-Widget makeHiddenButton(OnPressedFn0 onHiddenButtonLP, Color color)
+Widget makeHiddenButton(OnPressedF00 onHiddenButtonLP, Color color)
 {
    return FlatButton(
       onPressed: onHiddenButtonLP,
@@ -497,9 +497,9 @@ Widget makeHiddenButton(OnPressedFn0 onHiddenButtonLP, Color color)
 
 Widget makeInfoScreen(
    BuildContext ctx,
-   OnPressedFn7 onWillPopScope,
-   OnPressedFn0 onSendEmail,
-   OnPressedFn0 onHiddenButtonLP,
+   OnPressedF07 onWillPopScope,
+   OnPressedF00 onSendEmail,
+   OnPressedF00 onHiddenButtonLP,
 ) {
    final double width = makeTabWidth(ctx, cts.ownIdx);
 
@@ -653,22 +653,24 @@ Image getImage({
 }
 
 // Generates the image list view of a post.
-Widget makeImgListView2({
+Widget makeImgListView({
    BuildContext ctx,
    final double width,
    Post post,
    BoxFit boxFit,
    List<PickedFile> imgFiles,
-   OnPressedFn1 onExpandImg,
-   OnPressedFn2 addImg,
+   OnPressedF01 onExpandImg,
+   OnPressedF02 addImg,
 }) {
    final int l1 = post.images.length;
    final int l2 = imgFiles.length;
 
-   if (l1 == 0 && l2 == 0) {
-      Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
-      return makeImgPlaceholder(width, width, w);
-   }
+   if (l1 == 0 && l2 == 0)
+      return makeImgPlaceholder(
+	 width,
+	 width,
+	 makeImgTextPlaceholder(g.param.addImgMsg),
+      );
 
    final int l = l1 == 0 ? l2 : l1;
 
@@ -731,45 +733,6 @@ Widget makeImgListView2({
    );
 
    return constrainBox(width, width, lv);
-}
-
-Widget makeImgListView(
-   double width,
-   double height,
-   Function onAddPhoto,
-   List<PickedFile> imgFiles,
-   Post post)
-{
-   int l = 1;
-   if (imgFiles.isNotEmpty)
-      l = imgFiles.length;
-
-   ListView lv = ListView.builder(
-      scrollDirection: Axis.horizontal,
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
-      itemCount: l,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-         Widget img = getImage(
-	    path: imgFiles[i].path,
-            width: width,
-            height: height,
-            fit: BoxFit.cover,
-            filterQuality: FilterQuality.high,
-         );
-
-         Widget delPhotoWidget = makeAddOrRemoveWidget(
-            onPressed: () {onAddPhoto(ctx, i);},
-            icon: Icons.clear,
-            color: stl.colorScheme.secondaryVariant,
-         );
-
-         return Stack(children: <Widget>[img, delPhotoWidget]);
-      },
-   );
-
-   return constrainBox(width, height, lv);
 }
 
 int searchBitOn(int o, int n)
@@ -884,9 +847,9 @@ List<Widget> makeSliderList({
 }
 
 List<Widget> makeCheckBoxes(
-      final int state,
-      final List<String> items,
-      final OnPressedFn13 onChanged,
+   final int state,
+   final List<String> items,
+   final OnPressedF13 onChanged,
 ) {
    List<Widget> ret = List<Widget>();
 
@@ -915,9 +878,9 @@ Widget makeNewPostFinalScreen({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   final OnPressedFn2 onAddPhoto,
-   final OnPressedFn4 onPublishPost,
-   final OnPressedFn4 onRemovePost,
+   final OnPressedF02 onAddPhoto,
+   final OnPressedF04 onPublishPost,
+   final OnPressedF04 onRemovePost,
 }) {
 
    // NOTE: This ListView is used to provide a new context, so that
@@ -971,9 +934,9 @@ List<Widget> makeTabActions({
    bool newPostPressed,
    bool hasLPChats,
    bool hasLPChatMsgs,
-   OnPressedFn0 deleteChatDialog,
-   OnPressedFn0 pinChats,
-   OnPressedFn0 onClearPostsDialog,
+   OnPressedF00 deleteChatDialog,
+   OnPressedF00 pinChats,
+   OnPressedF00 onClearPostsDialog,
 }) {
    final bool fav = tab == cts.favIdx;
    final bool own = tab == cts.ownIdx;
@@ -1015,9 +978,9 @@ List<Widget> makeTabActions({
 }
 
 List<Widget> makeGlobalActionsWeb({
-   OnPressedFn0 onSearchPressed,
-   OnPressedFn0 onNewPost,
-   OnPressedFn15 onAppBarVertPressed,
+   OnPressedF00 onSearchPressed,
+   OnPressedF00 onNewPost,
+   OnPressedF15 onAppBarVertPressed,
 }) {
    List<Widget> ret = List<Widget>();
 
@@ -1048,9 +1011,9 @@ List<Widget> makeGlobalActionsWeb({
 List<Widget> makeGlobalActionsApp({
    bool hasLPChats,
    bool hasLPChatMsgs,
-   OnPressedFn0 onSearchPressed,
-   OnPressedFn0 onNewPost,
-   OnPressedFn15 onAppBarVertPressed,
+   OnPressedF00 onSearchPressed,
+   OnPressedF00 onNewPost,
+   OnPressedF15 onAppBarVertPressed,
 }) {
    // We only add the global action buttons if
    // 1. There is no chat selected for selection.
@@ -1073,9 +1036,9 @@ Widget makeAppBarLeading({
    final bool isWide,
    final bool hasNoFavPosts,
    final int tab,
-   final OnPressedFn0 onWillLeaveSearch,
-   final OnPressedFn0 onWillLeaveNewPost,
-   final OnPressedFn0 onBackFromChatMsgRedirect,
+   final OnPressedF00 onWillLeaveSearch,
+   final OnPressedF00 onWillLeaveNewPost,
+   final OnPressedF00 onBackFromChatMsgRedirect,
 }) {
    final bool own = tab == cts.ownIdx;
    final bool search = tab == cts.searchIdx;
@@ -1140,7 +1103,7 @@ Widget makeNewPostLT({
    final String title,
    final String subTitle,
    final IconData icon,
-   OnPressedFn0 onTap,
+   OnPressedF00 onTap,
 }) {
    Widget leading;
    if (icon != null)
@@ -1190,7 +1153,7 @@ Widget makeChooseTreeNodeDialog({
    final List<int> defaultCode,
    final Node root,
    final IconData iconData,
-   final OnPressedFn14 onSetTreeCode,
+   final OnPressedF14 onSetTreeCode,
 }) {
    String subtitle = root.name(g.param.langIdx);
    if (defaultCode.isNotEmpty) {
@@ -1228,7 +1191,7 @@ Widget makeNewPostInDetailLT({
    final String title,
    final String subtitle,
    final List<String> details,
-   final OnPressedFn1 onSetInDetail,
+   final OnPressedF01 onSetInDetail,
 }) {
    return makeNewPostLT(
       title: title,
@@ -1262,10 +1225,10 @@ List<Widget> makeNewPostWdgs({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
-   final OnPressedFn12 onSetTreeCode,
-   final OnPressedFn3 onSetExDetail,
-   final OnPressedFn3 onSetInDetail,
-   final OnPressedFn6 onNewPostValueChanged,
+   final OnPressedF12 onSetTreeCode,
+   final OnPressedF03 onSetExDetail,
+   final OnPressedF03 onSetInDetail,
+   final OnPressedF06 onNewPostValueChanged,
 }) {
    List<Widget> list = List<Widget>();
 
@@ -1410,15 +1373,15 @@ Widget makeNewPostScreenWdgs2({
    final Node inDetailsRootNode,
    final Post post,
    final List<PickedFile> imgFiles,
-   final OnPressedFn12 onSetTreeCode,
-   final OnPressedFn3 onSetExDetail,
-   final OnPressedFn3 onSetInDetail,
-   final OnPressedFn2 onAddPhoto,
-   final OnPressedFn4 onPublishPost,
-   final OnPressedFn4 onRemovePost,
-   final OnPressedFn8 onRangeValueChanged,
-   final OnPressedFn6 onNewPostValueChanged,
-   final OnPressedFn9 onSetPostDescription,
+   final OnPressedF12 onSetTreeCode,
+   final OnPressedF03 onSetExDetail,
+   final OnPressedF03 onSetInDetail,
+   final OnPressedF02 onAddPhoto,
+   final OnPressedF04 onPublishPost,
+   final OnPressedF04 onRemovePost,
+   final OnPressedF08 onRangeValueChanged,
+   final OnPressedF06 onNewPostValueChanged,
+   final OnPressedF09 onSetPostDescription,
 }) {
    List<Widget> list = makeNewPostWdgs(
       ctx: ctx,
@@ -1547,7 +1510,7 @@ List<Widget> makeValueSliders({
    final Post post,
    final List<int> ranges,
    final List<int> divisions,
-   final OnPressedFn6 onValueChanged,
+   final OnPressedF06 onValueChanged,
 }) {
    List<Widget> sliders = List<Widget>();
 
@@ -1585,11 +1548,11 @@ Widget makeSearchScreenWdg2({
    final Post post,
    final List<int> ranges,
    final List<int> divisions,
-   final OnPressedFn1 onSearchPressed,
-   final OnPressedFn1 onSearchDetail,
-   final OnPressedFn6 onValueChanged,
-   final OnPressedFn14 onSetLocationCode,
-   final OnPressedFn14 onSetProductCode,
+   final OnPressedF01 onSearchPressed,
+   final OnPressedF01 onSearchDetail,
+   final OnPressedF06 onValueChanged,
+   final OnPressedF14 onSetLocationCode,
+   final OnPressedF14 onSetProductCode,
 }) {
    List<Widget> foo = List<Widget>();
 
@@ -1740,7 +1703,7 @@ class MyApp extends StatelessWidget {
 }
 
 Widget makeAppScaffoldWdg({
-   OnPressedFn7 onWillPops,
+   OnPressedF07 onWillPops,
    ScrollController scrollCtrl,
    Widget appBarTitle,
    Widget appBarLeading,
@@ -1779,7 +1742,7 @@ Widget makeAppScaffoldWdg({
 Widget makeWebScaffoldWdg({
    Widget body,
    Widget appBar,
-   OnPressedFn7 onWillPopScope,
+   OnPressedF07 onWillPopScope,
 }) {
    return WillPopScope(
          onWillPop: () async { return onWillPopScope();},
@@ -1841,8 +1804,8 @@ TabBar makeTabBar(
 
 Widget makeFaButton(
    int nOwnPosts,
-   OnPressedFn0 onNewPost,
-   OnPressedFn0 onFwdChatMsg,
+   OnPressedF00 onNewPost,
+   OnPressedF00 onFwdChatMsg,
    int lpChats,
    int lpChatMsgs,
 ) {
@@ -1888,9 +1851,9 @@ List<Widget> makeFaButtons({
    final bool newSearchPressed,
    final List<List<Coord>> lpChats,
    final List<List<Coord>> lpChatMsgs,
-   final OnPressedFn0 onNewPost,
-   final OnPressedFn1 onFwdSendButton,
-   final OnPressedFn0 onSearch,
+   final OnPressedF00 onNewPost,
+   final OnPressedF01 onFwdSendButton,
+   final OnPressedF00 onSearch,
 }) {
    List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
@@ -1924,7 +1887,7 @@ Widget makeFAButtonMiddleScreen({
    final bool onSearchScreen,
    final bool isWide,
    final bool hasFavPosts,
-   final OnPressedFn0 onSearch,
+   final OnPressedF00 onSearch,
 }) {
    //log('$onSearchScreen $isWide $hasFavPosts');
    if (onSearchScreen || (isWide && !hasFavPosts))
@@ -1971,7 +1934,7 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
 Card makeChatMsgWidget(
    BuildContext ctx,
    int tab,
-   ChatMetadata ch,
+   ChatMetadata chatMetadata,
    int i,
    Function onChatMsgLongPressed,
    Function onDragChatMsg,
@@ -1981,14 +1944,14 @@ Card makeChatMsgWidget(
    Color txtColor = Colors.black;
    Color color = Color(0xFFFFFFFF);
    Color onSelectedMsgColor = Colors.grey[300];
-   if (ch.msgs[i].isFromThisApp()) {
+   if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
       txtColor = stl.colorScheme.onPrimary;
       color = Color(0xFF0080CF);
    }
 
-   if (ch.msgs[i].isLongPressed) {
+   if (chatMetadata.msgs[i].isLongPressed) {
       onSelectedMsgColor = Colors.blue[200];
       color = Colors.blue[100];
       txtColor = Colors.black;
@@ -1996,11 +1959,11 @@ Card makeChatMsgWidget(
 
    RichText msgAndDate = RichText(
       text: TextSpan(
-         text: ch.msgs[i].msg,
+         text: chatMetadata.msgs[i].msg,
          style: stl.textField.copyWith(color: txtColor),
          children: <TextSpan>
          [ TextSpan(
-              text: '  ${makeDateString(ch.msgs[i].date)}',
+              text: '  ${makeDateString(chatMetadata.msgs[i].date)}',
               style: Theme.of(ctx).textTheme.caption.copyWith(
                  color: Colors.grey[700],
               ),
@@ -2014,7 +1977,7 @@ Card makeChatMsgWidget(
    // of simply appending it to the richtext as I do for the
    // date. Hopefully this will be fixed this later.
    Widget msgAndStatus;
-   if (ch.msgs[i].isFromThisApp()) {
+   if (chatMetadata.msgs[i].isFromThisApp()) {
       msgAndStatus = Row(
          mainAxisSize: MainAxisSize.min,
          mainAxisAlignment: MainAxisAlignment.end,
@@ -2024,7 +1987,7 @@ Card makeChatMsgWidget(
             child: msgAndDate))
       , Padding(
             padding: EdgeInsets.all(2.0),
-            child: chooseMsgStatusIcon(ch.msgs[i].status))
+            child: chooseMsgStatusIcon(chatMetadata.msgs[i].status))
       ]);
    } else {
       msgAndStatus = Padding(
@@ -2033,7 +1996,7 @@ Card makeChatMsgWidget(
    }
 
    Widget ww = msgAndStatus;
-   if (ch.msgs[i].redirected()) {
+   if (chatMetadata.msgs[i].redirected()) {
       final Color redirTitleColor =
          isNewMsg ? stl.colorScheme.secondary : Colors.blueGrey;
 
@@ -2058,17 +2021,14 @@ Card makeChatMsgWidget(
               child: redirWidget)
          , msgAndStatus
          ]);
-   } else if (ch.msgs[i].refersToOther()) {
-      final int refersTo = ch.msgs[i].refersTo;
-      final Color c1 = selectColor(int.parse(ch.peer));
-
+   } else if (chatMetadata.msgs[i].refersToOther()) {
       Widget refWidget = makeRefChatMsgWidget(
-         ctx,
-         ch,
-         refersTo,
-         c1,
-         isNewMsg,
-         ownNick,
+         ctx: ctx,
+         chatMetadata: chatMetadata,
+         dragedIdx: chatMetadata.msgs[i].refersTo,
+	 titleColor: selectColor(chatMetadata.peer),
+         isNewMsg: isNewMsg,
+         ownNick: ownNick,
       );
 
       Row refMsg = Row(
@@ -2082,15 +2042,13 @@ Card makeChatMsgWidget(
       ww = Column(
          mainAxisSize: MainAxisSize.min,
          crossAxisAlignment: CrossAxisAlignment.start,
-         children: <Widget>
-         [ refMsg
-         , msgAndStatus
-         ]);
+         children: <Widget>[refMsg, msgAndStatus],
+      );
    }
 
    double marginLeft = 10.0;
    double marginRight = 0.0;
-   if (ch.msgs[i].isFromThisApp()) {
+   if (chatMetadata.msgs[i].isFromThisApp()) {
       double tmp = marginLeft;
       marginLeft = marginRight;
       marginRight = tmp;
@@ -2115,7 +2073,7 @@ Card makeChatMsgWidget(
             child: ww)));
 
    Row r;
-   if (ch.msgs[i].isFromThisApp()) {
+   if (chatMetadata.msgs[i].isFromThisApp()) {
       r = Row(children: <Widget>
       [ Spacer()
       , w1
@@ -2141,13 +2099,13 @@ Card makeChatMsgWidget(
 ListView makeChatMsgListView(
    int tab,
    ScrollController scrollCtrl,
-   ChatMetadata ch,
+   ChatMetadata chatMetadata,
    Function onChatMsgLongPressed,
    Function onDragChatMsg,
    String ownNick,
 ) {
-   final int nMsgs = ch.msgs.length;
-   final int shift = ch.divisorUnreadMsgs == 0 ? 0 : 1;
+   final int nMsgs = chatMetadata.msgs.length;
+   final int shift = chatMetadata.divisorUnreadMsgs == 0 ? 0 : 1;
 
    return ListView.builder(
       controller: scrollCtrl,
@@ -2157,7 +2115,7 @@ ListView makeChatMsgListView(
       itemBuilder: (BuildContext ctx, int i)
       {
          if (shift == 1) {
-            if (i == ch.divisorUnreadMsgsIdx) {
+            if (i == chatMetadata.divisorUnreadMsgsIdx) {
                return Card(
                   color: Colors.white,
                   margin: const EdgeInsets.symmetric(vertical: 10.0),
@@ -2168,7 +2126,7 @@ ListView makeChatMsgListView(
                       child: Padding(
                          padding: EdgeInsets.all(3.0),
                          child: Text(
-                            '${ch.divisorUnreadMsgs}',
+                            '${chatMetadata.divisorUnreadMsgs}',
                             style: TextStyle(
                                fontSize: 17.0,
                                fontWeight: FontWeight.normal,
@@ -2181,21 +2139,21 @@ ListView makeChatMsgListView(
                );
             }
 
-            if (i > ch.divisorUnreadMsgsIdx) {
-	       log('$i ${ch.divisorUnreadMsgsIdx}');
+            if (i > chatMetadata.divisorUnreadMsgsIdx) {
+	       log('$i ${chatMetadata.divisorUnreadMsgsIdx}');
                i -= 1; // For the shift
 	    }
          }
 
          final bool isNewMsg =
             shift == 1 &&
-            i >= ch.divisorUnreadMsgsIdx &&
-            i < ch.divisorUnreadMsgsIdx + ch.divisorUnreadMsgs;
+            i >= chatMetadata.divisorUnreadMsgsIdx &&
+            i < chatMetadata.divisorUnreadMsgsIdx + chatMetadata.divisorUnreadMsgs;
                                
          Card chatMsgWidget = makeChatMsgWidget(
             ctx,
 	    tab,
-            ch,
+            chatMetadata,
             i,
             onChatMsgLongPressed,
             onDragChatMsg,
@@ -2263,32 +2221,27 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
             child: rr)));
 }
 
-Widget makeRefChatMsgWidget(
+Widget makeRefChatMsgWidget({
    BuildContext ctx,
-   ChatMetadata ch,
-   int i,
-   Color cc,
    bool isNewMsg,
+   int dragedIdx,
    String ownNick,
-) {
-   Color titleColor = cc;
-   Color bodyTxtColor = Colors.black;
-   
-   if (isNewMsg) {
+   ChatMetadata chatMetadata,
+   Color titleColor,
+}) {
+   if (isNewMsg)
       titleColor = stl.colorScheme.secondary;
-      //bodyTxtColor = Colors.grey[300];
-   }
 
-   Text body = Text(ch.msgs[i].msg,
+   Text body = Text(chatMetadata.msgs[dragedIdx].msg,
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
       style: Theme.of(ctx).textTheme.caption.copyWith(
-         color: bodyTxtColor,
+         color: Colors.black,
       ),
    );
 
-   String nick = ch.nick;
-   if (ch.msgs[i].isFromThisApp())
+   String nick = chatMetadata.nick;
+   if (chatMetadata.msgs[dragedIdx].isFromThisApp())
       nick = ownNick;
 
    Text title = Text(nick,
@@ -2309,9 +2262,10 @@ Widget makeRefChatMsgWidget(
       [ Padding(
            child: title,
            padding: const EdgeInsets.symmetric(vertical: 3.0)
-        )
-      , body
-      ]);
+        ),
+        body
+      ],
+   );
 
    return col;
 }
@@ -2344,39 +2298,39 @@ Widget makeChatSecondLayer(
    );
 }
 
-Widget makeChatScreen(
+Widget makeChatScreen({
    BuildContext ctx,
-   int tab,
-   ChatMetadata ch,
-   TextEditingController ctrl,
-   ScrollController scrollCtrl,
-   int nLongPressed,
-   FocusNode chatFocusNode,
-   String postSummary,
-   int dragedIdx,
    bool showChatJumpDownButton,
+   int tab,
+   int nLongPressed,
+   int dragedIdx,
+   String postSummary,
    String avatar,
    String ownNick,
-   OnPressedFn7 onWillPopScope,
-   OnPressedFn0 onSendChatMsg,
-   OnPressedFn10 onChatMsgLongPressed,
-   OnPressedFn0 onFwdChatMsg,
-   OnPressedFn11 onDragChatMsg,
-   OnPressedFn4 onChatMsgReply,
-   OnPressedFn0 onAttachment,
-   OnPressedFn0 onCancelFwdLPChatMsg,
-   OnPressedFn0 onChatJumpDown,
-   OnPressedFn9 onWritingChat,
-) {
+   ChatMetadata chatMetadata,
+   TextEditingController editCtrl,
+   ScrollController scrollCtrl,
+   FocusNode chatFocusNode,
+   OnPressedF07 onWillPopScope,
+   OnPressedF00 onSendChatMsg,
+   OnPressedF10 onChatMsgLongPressed,
+   OnPressedF00 onFwdChatMsg,
+   OnPressedF11 onDragChatMsg,
+   OnPressedF04 onChatMsgReply,
+   OnPressedF00 onAttachment,
+   OnPressedF00 onCancelFwdLPChatMsg,
+   OnPressedF00 onChatJumpDown,
+   OnPressedF09 onWritingChat,
+}) {
    Column secondLayer = makeChatSecondLayer(
       ctx,
-      ctrl.text.isEmpty ? null : onSendChatMsg,
+      editCtrl.text.isEmpty ? null : onSendChatMsg,
       onAttachment,
    );
 
    TextField tf = TextField(
        style: stl.textField,
-       controller: ctrl,
+       controller: editCtrl,
        keyboardType: TextInputType.multiline,
        maxLines: null,
        maxLength: null,
@@ -2397,7 +2351,7 @@ Widget makeChatScreen(
    ListView list = makeChatMsgListView(
       tab,
       scrollCtrl,
-      ch,
+      chatMetadata,
       onChatMsgLongPressed,
       onDragChatMsg,
       ownNick,
@@ -2424,13 +2378,13 @@ Widget makeChatScreen(
 
       foo.add(jumDownButton);
 
-      if (ch.nUnreadMsgs > 0) {
+      if (chatMetadata.nUnreadMsgs > 0) {
          Widget jumDownButton = Positioned(
             bottom: 53.0,
             right: 23.0,
             child: makeUnreadMsgsCircle(
                ctx,
-               ch.nUnreadMsgs,
+               chatMetadata.nUnreadMsgs,
                stl.colorScheme.secondaryVariant,
                stl.colorScheme.onSecondary,
             ),
@@ -2445,7 +2399,7 @@ Widget makeChatScreen(
    cols.add(Expanded(child: chatMsgStack));
 
    if (dragedIdx != -1) {
-      Color co1 = selectColor(int.parse(ch.peer));
+      Color co1 = selectColor(chatMetadata.peer);
       Icon w1 = Icon(Icons.forward, color: Colors.grey);
 
       // It looks like there is not maxlines option on TextSpan, so
@@ -2453,12 +2407,12 @@ Widget makeChatScreen(
       Widget w2 = Padding(
          padding: const EdgeInsets.symmetric(horizontal: 5.0),
          child: makeRefChatMsgWidget(
-            ctx,
-            ch,
-            dragedIdx,
-            co1,
-            false,
-            ownNick,
+            ctx: ctx,
+            chatMetadata: chatMetadata,
+            dragedIdx: dragedIdx,
+            titleColor: co1,
+            isNewMsg: false,
+            ownNick: ownNick,
          ),
       );
 
@@ -2470,7 +2424,7 @@ Widget makeChatScreen(
       // NOTE: At the moment I do not know how to add the division bar
       // without fixing the height. That means on some rather short
       // text msgs there will be too much empty vertical space, that
-      // do not look good. I will leave this out untill I find a
+      // doesn't look good. I will leave this out untill I find a
       // solution.
       //SizedBox sb = SizedBox(
       //   width: 4.0,
@@ -2525,7 +2479,7 @@ Widget makeChatScreen(
       }
 
       ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
-         ch,
+         chatMetadata,
          postSummary,
          stl.onPrimarySubtitleColor,
       );
@@ -2535,9 +2489,9 @@ Widget makeChatScreen(
           leading: CircleAvatar(
               child: child,
               backgroundImage: backgroundImage,
-              backgroundColor: selectColor(int.parse(ch.peer)),
+              backgroundColor: selectColor(chatMetadata.peer),
           ),
-          title: Text(ch.getChatDisplayName(),
+          title: Text(chatMetadata.getChatDisplayName(),
              maxLines: 1,
              overflow: TextOverflow.ellipsis,
              style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.onSecondary),
@@ -2784,7 +2738,7 @@ Widget makePaymentChoiceWidget(
 }
 
 Widget createRaisedButton(
-   OnPressedFn0 onPressed,
+   OnPressedF00 onPressed,
    final String txt,
    Color color,
    Color textColor,
@@ -2894,7 +2848,7 @@ List<Widget> makePostInRows(
       );
 
       Row row = Row(children: <Widget>
-      [ Icon(Icons.check, color: stl.colorScheme.primaryVariant)
+      [ Icon(Icons.check, color: Colors.green[600])
       , text
       ]); 
 
@@ -2911,10 +2865,7 @@ Widget makePostSectionTitle(String str)
       child: Padding(
          padding: EdgeInsets.all(stl.postSectionPadding),
          child: Text(str,
-            style: TextStyle(
-               fontSize: stl.subtitleFontSize,
-               color: Colors.grey[500],
-            ),
+            style: stl.ltTitle.copyWith(color: stl.infoValueColor),
          ),
       ),
    );
@@ -2961,9 +2912,7 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
    list.add(makePostSectionTitle(g.param.rangesTitle));
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
-   {
-      return makePostRowElem(ctx, g.param.rangePrefixes[i], makeRangeStr(post, i));
-   });
+      { return makePostRowElem(ctx, g.param.rangePrefixes[i], makeRangeStr(post, i)); });
 
    list.addAll(items); // The menu info.
 
@@ -3099,6 +3048,7 @@ List<Widget> assemblePostRows({
    final Node inDetailsRootNode,
 }) {
    List<Widget> all = List<Widget>();
+
    all.addAll(makePostValues(ctx, post));
 
    all.addAll(makeTreeInfo(ctx, locRootNode, post.location, g.param.newPostTabNames[0], g.param.menuDepthNames0));
@@ -3106,6 +3056,7 @@ List<Widget> assemblePostRows({
 
    all.addAll(makePostExDetails(ctx, post, exDetailsRootNode));
    all.addAll(makePostInDetails(post, inDetailsRootNode));
+
    if (post.description.isNotEmpty) {
       all.add(makePostSectionTitle(g.param.postDescTitle));
       all.add(makePostDescription(ctx, tab, post.description));
@@ -3180,7 +3131,7 @@ Widget makeTextWdg({
 }
 
 Widget makeAddOrRemoveWidget({
-   OnPressedFn0 onPressed,
+   OnPressedF00 onPressed,
    IconData icon,
    Color color,
 }) {
@@ -3210,9 +3161,9 @@ Widget makeImgTextPlaceholder(final String str)
 
 List<Widget> makePostButtons({
    int pinDate,
-   OnPressedFn0 onDelPost,
-   OnPressedFn0 onSharePost,
-   OnPressedFn0 onPinPost,
+   OnPressedF00 onDelPost,
+   OnPressedF00 onSharePost,
+   OnPressedF00 onPinPost,
 }) {
    BoxConstraints bc = const BoxConstraints(
       maxWidth: 15.0,
@@ -3703,13 +3654,13 @@ class PostWidget extends StatefulWidget {
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    List<PickedFile> imgFiles;
-   OnPressedFn2 onAddPhoto;
-   OnPressedFn1 onExpandImg;
-   OnPressedFn0 onAddPostToFavorite;
-   OnPressedFn0 onDelPost;
-   OnPressedFn0 onSharePost;
-   OnPressedFn0 onReportPost;
-   OnPressedFn0 onPinPost;
+   OnPressedF02 onAddPhoto;
+   OnPressedF01 onExpandImg;
+   OnPressedF00 onAddPostToFavorite;
+   OnPressedF00 onDelPost;
+   OnPressedF00 onSharePost;
+   OnPressedF00 onReportPost;
+   OnPressedF00 onPinPost;
 
    @override
    PostWidgetState createState() => PostWidgetState();
@@ -3805,13 +3756,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       actions.add(SizedBox(width: width, child: tmp));
 	    }
 
+	    const double margin = 0.0;
 	    const double insetPadding = 10.0;
 	    final double height = makeMaxHeight(ctx);
 	    Widget ret = makeNewPostDialogWdg(
 	       width: width,
 	       height: height,
                title: null,
-	       indent: stl.newPostPadding,
+	       indent: margin,
 	       list: <Widget>[detailsWdg],
                actions: actions,
 	       insetPadding: const EdgeInsets.only(
@@ -3831,7 +3783,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		      elevation: 0.0,
 		      color: Colors.white.withOpacity(0.3),
 		      margin: EdgeInsets.only(
-		         top: stl.newPostPadding + insetPadding,
+		         top: margin + insetPadding,
 		         right: insetPadding,
 		      ),
 		      child: IconButton(
@@ -4002,27 +3954,27 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
 
       Padding modelTitle = Padding(
-	    child: RichText(
-	       text: TextSpan(
-		  text: '$modelStr ',
-		  style: TextStyle(
-		     color: Colors.black,
-		     fontSize: postFontSize,
-		     fontWeight: FontWeight.normal,
-		  ),
-		  children: <TextSpan>
-		  [ TextSpan(
-		       text: locationStr,
-		       style: TextStyle(
-			  color: Colors.grey,
-			  fontSize: 12.0,
-			  fontWeight: FontWeight.normal,
-		       ),
+	 padding: const EdgeInsets.only(left: 5.0),
+	 child: RichText(
+	    text: TextSpan(
+	       text: '$modelStr ',
+	       style: TextStyle(
+		  color: Colors.black,
+		  fontSize: postFontSize,
+		  fontWeight: FontWeight.normal,
+	       ),
+	       children: <TextSpan>
+	       [ TextSpan(
+		    text: locationStr,
+		    style: TextStyle(
+		       color: Colors.grey,
+		       fontSize: 12.0,
+		       fontWeight: FontWeight.normal,
 		    ),
-		  ],
+		 ),
+	       ],
 	    ),
 	 ),
-	 padding: const EdgeInsets.only(left: 5.0, top: 5.0, bottom: 5.0),
       );
 
       Widget location = makeTextWdg(
@@ -4064,19 +4016,18 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 ),
       );
 
-      final double h1 = imgAvatarWidth * 3.0 / 12.0;
-      final double h2 = imgAvatarWidth * 4.0 / 12.0;
-      final double h3 = imgAvatarWidth * 1.0 / 12.0;
+      final double h1 = imgAvatarWidth * 2.0 / 12.0;
+      double h2 = imgAvatarWidth * 4.0 / 12.0;
+      if (h2 > 43)
+	 h2 = 43;
+      final double h3 = imgAvatarWidth * 2.0 / 12.0;
       final double widthCol2 = makePostTextWidth(ctx, widget.tab);
 
       Column infoWdg = Column(children: <Widget>
       [ SizedBox(width: widthCol2, height: h1, child: modelTitle)
-      //, Flexible(child: SizedBox(width: widthCol2, height: 50.0, child: Padding(child: s1, padding: EdgeInsets.only(left: 5.0))))
-      , Expanded(child: SizedBox(width: widthCol2, height: h2, child: s1))
-      , Expanded(child: SizedBox(width: widthCol2, height: h2, child: s2))
-      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: location)])))
-      //, Flexible(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Icon(Icons.arrow_right, color: stl.infoKeyArrowColor), Expanded(child: dateWdg)])))
-      , SizedBox(width: widthCol2, child: Center(child: dateWdg))
+      , SizedBox(width: widthCol2, height: h2, child: s1)
+      , SizedBox(width: widthCol2, height: h2, child: s2)
+      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Spacer(), dateWdg])))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
@@ -4101,19 +4052,19 @@ Widget makePostDetailsWdg({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   OnPressedFn2 onAddPhoto,
-   OnPressedFn1 onExpandImg,
-   OnPressedFn0 onReportPost,
+   OnPressedF02 onAddPhoto,
+   OnPressedF01 onExpandImg,
+   OnPressedF00 onReportPost,
 }) {
    List<Widget> rows = List<Widget>();
 
-   Widget lv = makeImgListView2(
+   Widget lv = makeImgListView(
       ctx: ctx,
       width: makeTabWidth(ctx, tab),
       post: post,
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
-      onExpandImg: (int j){onExpandImg(j);},
+      onExpandImg: (int j){ onExpandImg(j); },
       addImg: onAddPhoto,
    );
 
@@ -4159,7 +4110,7 @@ Widget makeEmptyTabText(String msg)
 }
 
 Widget makeOwnEmptyScreenWidget({
-   final OnPressedFn0 onPressed,
+   final OnPressedF00 onPressed,
 }) {
    Widget text = makeEmptyTabText(g.param.newPostMessage);
 
@@ -4192,11 +4143,11 @@ Widget makeNewPostLv({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
-   final OnPressedFn3 onExpandImg,
-   final OnPressedFn2 onAddPostToFavorite,
-   final OnPressedFn2 onDelPost,
-   final OnPressedFn2 onSharePost,
-   final OnPressedFn2 onReportPost,
+   final OnPressedF03 onExpandImg,
+   final OnPressedF02 onAddPostToFavorite,
+   final OnPressedF02 onDelPost,
+   final OnPressedF02 onSharePost,
+   final OnPressedF02 onReportPost,
 }) {
    // No controller should be assigned to this listview. This will break the
    // automatic hiding of the tabbar
@@ -4233,8 +4184,8 @@ Widget makeNewPostLv({
 
 ListTile makeNewPostTreeWdg({
    Node child,
-   OnPressedFn0 onLeafPressed,
-   OnPressedFn0 onNodePressed,
+   OnPressedF00 onLeafPressed,
+   OnPressedF00 onNodePressed,
 }) {
    if (child.isLeaf()) {
       return ListTile(
@@ -4281,8 +4232,8 @@ List<Widget> makeNewPostTreeWdgs({
    BuildContext ctx,
    int tab,
    Node node,
-   OnPressedFn1 onLeafPressed,
-   OnPressedFn1 onNodePressed,
+   OnPressedF01 onLeafPressed,
+   OnPressedF01 onNodePressed,
 }) {
    List<Widget> list = List<Widget>();
 
@@ -4469,9 +4420,9 @@ Widget makeChatListTileTrailingWidget(
    return dateText;
 }
 
-Color selectColor(int n)
+Color selectColor(String peer)
 {
-   final int v = n % 14;
+   final int v = peer.length % 14;
    switch (v) {
       case 0: return Colors.yellow[500];
       case 1: return Colors.pink;
@@ -4500,9 +4451,9 @@ Widget makeChatListTile({
    String avatar,
    double padding,
    double elevation,
-   OnPressedFn0 onChatLeadingPressed,
-   OnPressedFn0 onChatLongPressed,
-   OnPressedFn0 onStartChatPressed,
+   OnPressedF00 onChatLeadingPressed,
+   OnPressedF00 onChatLongPressed,
+   OnPressedF00 onStartChatPressed,
 }) {
    Color bgColor;
    if (chat.isLongPressed) {
@@ -4530,7 +4481,7 @@ Widget makeChatListTile({
       leading: makeChatListTileLeading(
          chat.isLongPressed,
          avatar,
-         selectColor(chat.peer.length),
+         selectColor(chat.peer),
          onChatLeadingPressed,
       ),
       title: Text(
@@ -4565,9 +4516,9 @@ Widget makeChatsExp(
    int now,
    Post post,
    List<ChatMetadata> ch,
-   OnPressedFn1 onPressed,
-   OnPressedFn1 onLongPressed,
-   OnPressedFn16 onLeadingPressed,
+   OnPressedF01 onPressed,
+   OnPressedF01 onLongPressed,
+   OnPressedF16 onLeadingPressed,
    Function onPinPost,
 ) {
    List<Widget> list = List<Widget>(ch.length);
@@ -4667,14 +4618,14 @@ Widget makeChatTab({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
-   final OnPressedFn3 onPressed,
-   final OnPressedFn3 onLongPressed,
-   final OnPressedFn1 onDelPost1,
-   final OnPressedFn1 onPinPost1,
-         OnPressedFn5 onUserInfoPressed,
-   final OnPressedFn3 onExpandImg1,
-   final OnPressedFn1 onSharePost,
-   final OnPressedFn0 onPost,
+   final OnPressedF03 onPressed,
+   final OnPressedF03 onLongPressed,
+   final OnPressedF01 onDelPost1,
+   final OnPressedF01 onPinPost1,
+         OnPressedF05 onUserInfoPressed,
+   final OnPressedF03 onExpandImg1,
+   final OnPressedF01 onSharePost,
+   final OnPressedF00 onPost,
 }) {
    if (posts.length == 0) {
       if (tab == cts.ownIdx)
@@ -4697,9 +4648,9 @@ Widget makeChatTab({
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-         OnPressedFn0 onPinPost = () {onPinPost1(i);};
-         OnPressedFn0 onDelPost = () {onDelPost1(i);};
-         OnPressedFn1 onExpandImg = (int j) {onExpandImg1(i, j);};
+         OnPressedF00 onPinPost = () {onPinPost1(i);};
+         OnPressedF00 onDelPost = () {onDelPost1(i);};
+         OnPressedF01 onExpandImg = (int j) {onExpandImg1(i, j);};
 
          if (isFwdChatMsgs) {
             onUserInfoPressed = (var a, var b, var c){};
@@ -5604,6 +5555,20 @@ class OccaseState extends State<Occase>
 
          await _appState.addOwnPost(postId, date);
 
+	 await _onChatImpl(
+	    to: _appState.cfg.appId,
+	    postId: postId,
+	    message: g.param.adminChatMsg,
+	    peer: g.param.adminId,
+	    nick: g.param.adminNick,
+	    avatar: emailToGravatarHash(cts.occaseEmail),
+	    posts: _appState.ownPosts,
+	    isRedirected: 0,
+	    refersTo: -1,
+	    peerMsgId: 0,
+	    isFav: false,
+	 );
+
          setState(() {_newPostErrorCode = 1;});
       } catch (e) {
          log(e);
@@ -5612,11 +5577,11 @@ class OccaseState extends State<Occase>
 
    Future<void> deletePostFromServer(Post post) async
    {
-      var map = {
-	 'from': post.from,
-	 'post_id': post.id,
-	 'delete_key': post.delete_key,
-	 'master_delete_key': _deletePostPwd,
+      var map =
+      { 'from': post.from
+      , 'post_id': post.id
+      , 'delete_key': post.delete_key
+      , 'master_delete_key': _deletePostPwd
       };
 
       var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
@@ -5719,7 +5684,8 @@ class OccaseState extends State<Occase>
 	    await _sendPost();
 
       } catch (e) {
-         log(e);
+         //print(e);
+         print('Error: _requestFilenames');
       }
 
       setState(() {
@@ -6035,33 +6001,33 @@ class OccaseState extends State<Occase>
          posts = _appState.ownPosts;
 
       await _onChatImpl(
-         to,
-         postId,
-         msg,
-         peer,
-         nick,
-         avatar,
-         posts,
-         isRedirected,
-         refersTo,
-         peerMsgId,
-	 favIdx != -1,
+         to: to,
+         postId: postId,
+         message: msg,
+         peer: peer,
+         nick: nick,
+         avatar: avatar,
+         posts: posts,
+         isRedirected: isRedirected,
+         refersTo: refersTo,
+         peerMsgId: peerMsgId,
+	 isFav: favIdx != -1,
       );
    }
 
-   Future<void> _onChatImpl(
+   Future<void> _onChatImpl({
+      bool isFav,
+      int isRedirected,
+      int refersTo,
+      int peerMsgId,
       String to,
       String postId,
-      String msg,
+      String message,
       String peer,
       String nick,
       String avatar,
       List<Post> posts,
-      int isRedirected,
-      int refersTo,
-      int peerMsgId,
-      bool isFav,
-   ) async {
+   }) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
          log('Ignoring message to postId $postId.');
@@ -6073,7 +6039,7 @@ class OccaseState extends State<Occase>
 
       final ChatItem ci = ChatItem(
          isRedirected: isRedirected,
-         msg: msg,
+         msg: message,
          date: now,
          refersTo: refersTo,
          peerId: peerMsgId,
@@ -6796,35 +6762,31 @@ class OccaseState extends State<Occase>
       setState(() { _posts[cts.ownIdx].inDetails[detailIdx] = state; });
    }
 
-   // Widget factories.
-   //
-   // tab: screen index.
-   //
    Widget _makeChatScreen(BuildContext ctx, int tab)
    {
       return makeChatScreen(
-	 ctx,
-	 tab,
-	 _chats[tab],
-	 _txtCtrl,
-	 _chatScrollCtrl[tab],
-	 _lpChatMsgs[tab].length,
-	 _chatFocusNodes[tab],
-	 makeTreeItemStr(_locRootNode, _posts[tab].product),
-	 _dragedIdxs[tab],
-	 _showChatJumpDownButtons[tab],
-	 _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
-	 _appState.cfg.nick,
-	 () { _onPopChat(tab);},
-	 () {_onSendChat(tab);},
-	 (int a, bool b) {_toggleLPChatMsgs(a, b, tab);},
-	 () {_onFwdChatMsg(tab);},
-	 (var a, var b, var d) {_onDragChatMsg(a, b, d, tab);},
-	 (var a) {_onChatMsgReply(a, tab);},
-	 _onChatAttachment,
-	 () {_onCancelFwdLpChat(tab);},
-	 () {_onChatJumpDown(tab);},
-	 (var s) {_onWritingChat(s, tab);},
+	 ctx: ctx,
+	 tab: tab,
+	 chatMetadata: _chats[tab],
+	 editCtrl: _txtCtrl,
+	 scrollCtrl: _chatScrollCtrl[tab],
+	 nLongPressed: _lpChatMsgs[tab].length,
+	 chatFocusNode: _chatFocusNodes[tab],
+	 postSummary: makeTreeItemStr(_locRootNode, _posts[tab].product),
+	 dragedIdx: _dragedIdxs[tab],
+	 showChatJumpDownButton: _showChatJumpDownButtons[tab],
+	 avatar: _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
+	 ownNick: _appState.cfg.nick,
+	 onWillPopScope: () { _onPopChat(tab);},
+	 onSendChatMsg: () {_onSendChat(tab);},
+	 onChatMsgLongPressed: (int a, bool b) {_toggleLPChatMsgs(a, b, tab);},
+	 onFwdChatMsg: () {_onFwdChatMsg(tab);},
+	 onDragChatMsg: (var a, var b, var d) {_onDragChatMsg(a, b, d, tab);},
+	 onChatMsgReply: (var a) {_onChatMsgReply(a, tab);},
+	 onAttachment: _onChatAttachment,
+	 onCancelFwdLPChatMsg: () {_onCancelFwdLpChat(tab);},
+	 onChatJumpDown: () {_onChatJumpDown(tab);},
+	 onWritingChat: (var s) {_onWritingChat(s, tab);},
       );
    }
 
