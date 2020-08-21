@@ -72,18 +72,21 @@ class ChatItem {
    // message.
    int refersTo;
 
-   // When the message is from this app, we have to show the icond
+   // When the message is from this app, we show the icon informing
    //
-   // 0: Message unsent
-   // 1: The server has received the message.
-   // 2: The peer has received the message.
-   // 3: The peer has read the message.
+   // 0: Message didn't reach the server yet.
+   // 1: Server has received the message.
+   // 2: Peer has received the message.
+   // 3: Peer has read the message.
    //
    // This field is only meaningful when the message belongs to this app.
    int status;
 
-   String msg;
-   int date;
+   // The chat message.
+   String message = '';
+
+   // The date where the message was sent or received.
+   int date = 0;
 
    bool isLongPressed;
 
@@ -93,7 +96,7 @@ class ChatItem {
    , this.refersTo = -1
    , this.status = 0
    , this.isLongPressed = false
-   , this.msg = ''
+   , this.message = ''
    , this.date = 0
    });
 
@@ -120,7 +123,7 @@ class ChatItem {
       refersTo = map['refers_to'] ?? -1;
       status = map['status'] ?? 3;
       isRedirected = map['is_redirected'] ?? 0;
-      msg = map['msg'] ?? '';
+      message = map['message'] ?? '';
       date = map['date'] ?? 0;
       isLongPressed = false;
    }
@@ -132,7 +135,7 @@ class ChatItem {
       , 'refers_to': refersTo
       , 'status': status
       , 'is_redirected': isRedirected
-      , 'msg': msg
+      , 'message': message
       , 'date': date
       };
    }
@@ -175,7 +178,7 @@ Map<String, dynamic> makeChatItemToMap(
     , 'refers_to': ci.refersTo
     , 'status': ci.refersTo
     , 'date': ci.date
-    , 'msg': ci.msg
+    , 'message': ci.message
     };
 }
 
@@ -228,7 +231,7 @@ class ChatMetadata {
       if (msgs.isEmpty)
 	 return '';
 
-      return msgs.last.msg;
+      return msgs.last.message;
    }
 
    bool isLastChatMsgFromThisApp()
@@ -365,14 +368,14 @@ int compChatByMsg(final ChatMetadata lhs, final ChatMetadata rhs)
    if (rhs.msgs.isEmpty)
       return -1;
 
-   if (lhs.msgs.last.msg.isEmpty && rhs.msgs.last.msg.isEmpty)
+   if (lhs.msgs.last.message.isEmpty && rhs.msgs.last.message.isEmpty)
       return lhs.date > rhs.date ? -1
            : lhs.date < rhs.date ? 1 : 0;
 
-   if (lhs.msgs.last.msg.isEmpty)
+   if (lhs.msgs.last.message.isEmpty)
       return 1;
 
-   if (rhs.msgs.last.msg.isEmpty)
+   if (rhs.msgs.last.message.isEmpty)
       return -1;
 
    return lhs.msgs.last.date > rhs.msgs.last.date ? -1
@@ -444,6 +447,18 @@ class Post {
    //   2: Posts moved to favorites.
    int status;
 
+   // The post priority. Paid posts get higher priority.
+   int priority = 0;
+
+   // The number of times this post appeared on searches.
+   int on_search = 0;
+
+   // The number of visualizations this post had so far.
+   int views = 0;
+
+   // The number of detailed views this post had.
+   int detailed_views = 0;
+
    // Post id received from on publish ack from the server.
    String id;
 
@@ -476,7 +491,7 @@ class Post {
 
    List<int> rangeValues;
 
-   // URLs of the images in the post.
+   // Post image url's.
    List<String> images;
 
    // The chats that belongs to this post.
@@ -546,6 +561,10 @@ class Post {
       ret.pinDate = this.pinDate;
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
+      ret.priority = this.priority;
+      ret.on_search = this.on_search;
+      ret.views = this.views;
+      ret.detailed_views = this.detailed_views;
       ret.description = this.description;
       ret.delete_key = this.delete_key;
       ret.images = List<String>.from(this.images);
@@ -627,6 +646,10 @@ class Post {
 	 pinDate = map['pin_date'] ?? 0;
 	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
 	 status = map['status'] ?? -1;
+	 priority = map['priority'] ?? 0;
+	 on_search = map['on_search'] ?? 0;
+	 views = map['views'] ?? 0;
+	 detailed_views = map['detailed_views'] ?? 0;
 	 description = map['description'] ?? '';
 	 delete_key = map['delete_key'] ?? '';
 	 images = decodeList(0, '', map['images']);
@@ -672,29 +695,35 @@ class Post {
       , 'status': status
       , 'images': images
       , 'chats': chats
+      , 'priority': priority
+      , 'on_search': on_search
+      , 'views': views
+      , 'detailed_views': detailed_views
       };
    }
 }
 
 // This serialization is more complete than the toJson member function
 // and is used to persist json objects on the database.
+//
+// NOTE: I believe this will not be needed anymore soon.  
 Map<String, dynamic> postToMap(Post post)
 {
    // Changing theses fields does not require changes the schema in
    // sqlite.
 
-   var subCmd = {
-     'from': post.from,
-     'nick': post.nick,
-     'avatar': post.avatar,
-     'location': post.location,
-     'product': post.product,
-     'ex_details': jsonEncode(post.exDetails),
-     'in_details': jsonEncode(post.inDetails),
-     'range_values': jsonEncode(post.rangeValues),
-     'description': post.description,
-     'delete_key': post.delete_key,
-     'images': post.images,
+   var subCmd =
+   { 'from': post.from
+   , 'nick': post.nick
+   , 'avatar': post.avatar
+   , 'location': post.location
+   , 'product': post.product
+   , 'ex_details': jsonEncode(post.exDetails)
+   , 'in_details': jsonEncode(post.inDetails)
+   , 'range_values': jsonEncode(post.rangeValues)
+   , 'description': post.description
+   , 'delete_key': post.delete_key
+   , 'images': post.images
    };
 
    final String body = jsonEncode(subCmd);

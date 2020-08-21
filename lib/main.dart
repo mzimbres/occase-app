@@ -150,9 +150,10 @@ class Coord {
    ChatMetadata chat;
    int msgIdx;
 
-   Coord({this.post,
-          this.chat,
-          this.msgIdx = -1,
+   Coord(
+   { this.post
+   , this.chat
+   , this.msgIdx = -1
    });
 }
 
@@ -218,25 +219,25 @@ enum ConfigActions
 Widget makeAppBarVertAction(OnPressedF15 onSelected)
 {
    return PopupMenuButton<ConfigActions>(
-     icon: Icon(Icons.more_vert, color: Colors.white),
-     onSelected: onSelected,
-     itemBuilder: (BuildContext ctx)
-     {
-        return <PopupMenuEntry<ConfigActions>>
-        [ PopupMenuItem<ConfigActions>(
-             value: ConfigActions.ChangeNick,
-             child: Text(g.param.changeNickHint),
-          ),
-          PopupMenuItem<ConfigActions>(
-             value: ConfigActions.Notifications,
-             child: Text(g.param.changeNotifications),
-          ),
-          PopupMenuItem<ConfigActions>(
-             value: ConfigActions.Information,
-             child: Text(g.param.information),
-          ),
-        ];
-     }
+      icon: Icon(Icons.more_vert, color: Colors.white),
+      onSelected: onSelected,
+      itemBuilder: (BuildContext ctx)
+      {
+         return <PopupMenuEntry<ConfigActions>>
+         [ PopupMenuItem<ConfigActions>(
+              value: ConfigActions.ChangeNick,
+              child: Text(g.param.changeNickHint),
+           ),
+           PopupMenuItem<ConfigActions>(
+              value: ConfigActions.Notifications,
+              child: Text(g.param.changeNotifications),
+           ),
+           PopupMenuItem<ConfigActions>(
+              value: ConfigActions.Information,
+              child: Text(g.param.information),
+           ),
+         ];
+      }
    );
 }
 
@@ -268,7 +269,11 @@ List<Widget> makeOnLongPressedActions(
 Scaffold makeWaitMenuScreen()
 {
    return Scaffold(
-      appBar: AppBar(title: Text(g.param.appName)),
+      appBar: AppBar(
+         title: Text(g.param.shareSubject,
+            style: TextStyle(color: stl.colorScheme.secondary),
+         ),
+      ),
       body: Center(child: CircularProgressIndicator()),
       backgroundColor: stl.colorScheme.background,
    );
@@ -416,7 +421,10 @@ Scaffold makeRegisterScreen(
       body = SizedBox(width: maxWidth, child: col);
 
    return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle)),
+      appBar: AppBar(title: Text(appBarTitle,
+	    style: TextStyle(color: stl.colorScheme.secondary),
+	 ),
+      ),
       body: Center(
          child: Padding(
             child: body,
@@ -471,7 +479,10 @@ Scaffold makeNtfScreen(
    );
 
    return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle)),
+      appBar: AppBar(title: Text(appBarTitle,
+	    style: TextStyle(color: stl.colorScheme.secondary),
+	 ),
+      ),
       body: Padding(
          child: Center(child: tmp),
          padding: EdgeInsets.symmetric(vertical: 20.0),
@@ -526,7 +537,9 @@ Widget makeInfoScreen(
       child: Scaffold(
 	 backgroundColor: Colors.white,
 	 appBar: AppBar(
-	    title: Text(g.param.appName),
+	    title: Text(g.param.shareSubject,
+	       style: TextStyle(color: stl.colorScheme.secondary),
+	    ),
 	    leading: IconButton(
 	       padding: EdgeInsets.all(0.0),
 	       icon: Icon(Icons.arrow_back, color: stl.colorScheme.onPrimary),
@@ -1947,8 +1960,8 @@ Card makeChatMsgWidget(
    if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
-      txtColor = stl.colorScheme.onPrimary;
-      color = Color(0xFF0080CF);
+      //txtColor = stl.colorScheme.onPrimary;
+      //color = Color(0xFF0080CF);
    }
 
    if (chatMetadata.msgs[i].isLongPressed) {
@@ -1959,7 +1972,7 @@ Card makeChatMsgWidget(
 
    RichText msgAndDate = RichText(
       text: TextSpan(
-         text: chatMetadata.msgs[i].msg,
+         text: chatMetadata.msgs[i].message,
          style: stl.textField.copyWith(color: txtColor),
          children: <TextSpan>
          [ TextSpan(
@@ -1973,7 +1986,7 @@ Card makeChatMsgWidget(
    );
 
    // Unfortunately TextSpan still does not support general
-   // widgets so I have to put the msg status in a row instead
+   // widgets so I have to put the message status in a row instead
    // of simply appending it to the richtext as I do for the
    // date. Hopefully this will be fixed this later.
    Widget msgAndStatus;
@@ -2232,7 +2245,7 @@ Widget makeRefChatMsgWidget({
    if (isNewMsg)
       titleColor = stl.colorScheme.secondary;
 
-   Text body = Text(chatMetadata.msgs[dragedIdx].msg,
+   Text body = Text(chatMetadata.msgs[dragedIdx].message,
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
       style: Theme.of(ctx).textTheme.caption.copyWith(
@@ -4290,7 +4303,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
    if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
          subtitle: g.param.typing,
-         color: stl.colorScheme.secondary,
+         color: stl.colorScheme.onSecondary,
       );
    }
 
@@ -4328,8 +4341,9 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
       return Text(
          cps.subtitle,
          style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: cps.color,
-         ),
+	    fontWeight: FontWeight.normal,
+	    color: cps.color,
+	 ),
          maxLines: 1,
          overflow: TextOverflow.ellipsis
       );
@@ -4341,6 +4355,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
            maxLines: 1,
            overflow: TextOverflow.ellipsis,
            style: Theme.of(ctx).textTheme.subtitle.copyWith(
+              fontWeight: FontWeight.normal,
               color: cps.color,
            ),
         ),
@@ -4658,8 +4673,7 @@ Widget makeChatTab({
             onDelPost = (){};
          }
 
-         Widget title = Text(
-            makeTreeItemStr(locRootNode, posts[i].location),
+         Widget title = Text(makeTreeItemStr(locRootNode, posts[i].location),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
          );
@@ -5251,7 +5265,6 @@ class OccaseState extends State<Occase>
    void _onClickOnPost(int i, int j)
    {
       if (j == 1) {
-	 log('Sharing post $i');
          Share.share(g.param.share, subject: g.param.shareSubject);
          return;
       }
@@ -5343,7 +5356,7 @@ class OccaseState extends State<Occase>
          for (Coord c2 in _lpChatMsgs[i]) {
             ChatItem ci = ChatItem(
                isRedirected: 1,
-               msg: c2.chat.msgs[c2.msgIdx].msg,
+               message: c2.chat.msgs[c2.msgIdx].message,
                date: now,
             );
 
@@ -5402,7 +5415,7 @@ class OccaseState extends State<Occase>
          _chats[i].peer,
          ChatItem(
             isRedirected: 0,
-            msg: _txtCtrl.text,
+            message: _txtCtrl.text,
             date: DateTime.now().millisecondsSinceEpoch,
             refersTo: _dragedIdxs[i],
             status: 0,
@@ -5543,36 +5556,6 @@ class OccaseState extends State<Occase>
       final String payload = jsonEncode(pubMap);
       log(payload);
       websocket.sink.add(payload);
-   }
-
-   Future<void> _handlePublishAck(final String postId, final int date) async
-   {
-      try {
-         if (postId.isEmpty) {
-            setState(() {_newPostErrorCode = 0;});
-            return;
-         }
-
-         await _appState.addOwnPost(postId, date);
-
-	 await _onChatImpl(
-	    to: _appState.cfg.appId,
-	    postId: postId,
-	    message: g.param.adminChatMsg,
-	    peer: g.param.adminId,
-	    nick: g.param.adminNick,
-	    avatar: emailToGravatarHash(cts.occaseEmail),
-	    posts: _appState.ownPosts,
-	    isRedirected: 0,
-	    refersTo: -1,
-	    peerMsgId: 0,
-	    isFav: false,
-	 );
-
-         setState(() {_newPostErrorCode = 1;});
-      } catch (e) {
-         log(e);
-      }
    }
 
    Future<void> deletePostFromServer(Post post) async
@@ -5836,7 +5819,7 @@ class OccaseState extends State<Occase>
 
       final String peer = posts[i].chats[j].peer;
       final String nick = posts[i].chats[j].nick;
-      final String title = '$nick: $peer';
+      final String title = nick;
 
       final String avatar =
          _isOnFav() ? posts[i].avatar : posts[i].chats[j].avatar;
@@ -5922,7 +5905,7 @@ class OccaseState extends State<Occase>
       ChatItem ci,
    ) async {
       try {
-	 if (ci.msg.isEmpty)
+	 if (ci.message.isEmpty)
 	    return;
 
 	 final int id = await _appState.setChatMessage(postId, peer, ci, _isOnFav());
@@ -5935,7 +5918,7 @@ class OccaseState extends State<Occase>
          , 'type': 'chat'
          , 'is_redirected': ci.isRedirected
          , 'to': peer
-         , 'msg': ci.msg
+         , 'message': ci.message
          , 'refers_to': ci.refersTo
          , 'post_id': postId
          , 'nick': _appState.cfg.nick
@@ -5951,44 +5934,21 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onServerAck(Map<String, dynamic> ack) async
-   {
-      try {
-         assert(_appState.appMsgQueue.isNotEmpty);
-
-         final String res = ack['result'];
-
-         final bool isChat = await _appState.deleteOutChatMsg();
-
-         if (res == 'ok' && isChat) {
-            await _onChatAck(ack['from'], ack['post_id'], <int>[ack['ack_id']], 1);
-            setState(() { });
-         }
-
-         if (_appState.appMsgQueue.isNotEmpty)
-            websocket.sink.add(_appState.appMsgQueue.first.payload);
-      } catch (e) {
-         log(e);
-      }
-   }
-
-   Future<void> _onChat(
-      final Map<String, dynamic> ack,
+   Future<void> _onChat({
+      final String to,
       final String peer,
       final String postId,
+      final String message,
+      final String nick,
+      final String avatar,
+      final int refersTo,
+      final int peerMsgId,
       final int isRedirected,
-   ) async {
-      final String to = ack['to'] ?? '';
+   }) async {
       if (to != _appState.cfg.appId) {
          log("Server bug caught. Please report.");
          return;
       }
-
-      final String msg = ack['msg'] ?? '';
-      final String nick = ack['nick'];
-      final String avatar = ack['avatar'] ?? '';
-      final int refersTo = ack['refers_to'];
-      final int peerMsgId = ack['id'];
 
       final int favIdx = _appState.favPosts.indexWhere((e) {
          return e.id == postId;
@@ -6003,7 +5963,7 @@ class OccaseState extends State<Occase>
       await _onChatImpl(
          to: to,
          postId: postId,
-         message: msg,
+         message: message,
          peer: peer,
          nick: nick,
          avatar: avatar,
@@ -6039,7 +5999,7 @@ class OccaseState extends State<Occase>
 
       final ChatItem ci = ChatItem(
          isRedirected: isRedirected,
-         msg: message,
+         message: message,
          date: now,
          refersTo: refersTo,
          peerId: peerMsgId,
@@ -6113,10 +6073,12 @@ class OccaseState extends State<Occase>
       await _sendAppMsg(payload, 0);
    }
 
-   void _onPresence(Map<String, dynamic> ack)
-   {
-      final String peer = ack['from'];
-      final String postId = ack['post_id'];
+   void _onPresence({
+      final String peer,
+      final String postId,
+   }) {
+      if (peer.isEmpty || postId.isEmpty)
+	 return;
 
       // We have to perform the following action
       //
@@ -6132,81 +6094,38 @@ class OccaseState extends State<Occase>
          markPresence(_appState.ownPosts, peer, postId);
 
       // A timer that is launched after presence arrives. It is used
-      // to call setState so that presence e.g. typing messages are
-      // not shown after some time
-      Timer(
-         Duration(milliseconds: cts.presenceInterval),
-         () { setState((){}); },
-      );
-
+      // to call setState so that we can stop showing the *is writing*
+      // message after some time.
+      Timer(Duration(milliseconds: cts.presenceInterval), () { setState((){}); });
       setState((){});
    }
 
-   Future<void> _onChatAck(
-      String from,
-      String postId,
-      List<int> rowids,
-      int status,
-   ) async {
-      _appState.setChatAckStatus(from, postId, rowids, status);
-   }
-
-   Future<void> _onMessage(Map<String, dynamic> ack) async
-   {
-      final String from = ack['from'] ?? '';
-      final String type = ack['type'] ?? '';
-      final String postId = ack['post_id'] ?? '';
-
-      if (type == 'chat') {
-         await _onChat(
-            ack,
-	    from,
-	    postId,
-	    ack['is_redirected']
-	 );
-      } else if (type == 'server_ack') {
-         await _onServerAck(ack);
-      } else if (type == 'chat_ack_received') {
-         final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
-         await _onChatAck(from, postId, rowids, 2);
-      } else if (type == 'chat_ack_read') {
-         final List<int> rowids = decodeList(0, 0, ack['ack_ids']);
-         await _onChatAck(from, postId, rowids, 3);
-      }
-
-      setState((){});
-   }
-
-   Future<void> _onRegisterAck(
-      Map<String, dynamic> ack,
-      final String msg,
-   ) async {
-      final String res = ack["result"];
-      if (res == 'fail') {
+   Future<void> _onRegisterAck({
+      final String result,
+      final String id,
+      final String password,
+   }) async {
+      if (result == 'fail') {
          log("register_ack: fail.");
          return;
       }
 
-      String id = ack["id"];
-      String pwd = ack["password"];
-
-      if (id == null || pwd == null)
+      if (id.isEmpty || password.isEmpty)
          return;
 
-      await _appState.setCredentials(id, pwd);
+      await _appState.setCredentials(id, password);
 
       // Retrieves some posts for the newly registered user.
       _subscribeToPosts();
    }
 
-   void _onLoginAck(Map<String, dynamic> ack, final String msg)
-   {
-      final String res = ack["result"];
-
+   void _onLoginAck({
+      final String result,
+   }) {
       // I still do not know how a failed login should be handled.
       // Perhaps send a new register command? It can only happen if
       // the server is blocking this user.
-      if (res == 'fail') {
+      if (result == 'fail') {
          log("login_ack: fail.");
          return;
       }
@@ -6222,11 +6141,11 @@ class OccaseState extends State<Occase>
       _sendOfflineChatMsgs();
    }
 
-   void _onSubscribeAck(Map<String, dynamic> ack)
-   {
-      final String res = ack["result"];
-      if (res == 'fail') {
-         log("subscribe_ack: $res");
+   void _onSubscribeAck({
+      final String result,
+   }) {
+      if (result == 'fail') {
+         log("subscribe_ack: $result");
          return;
       }
    }
@@ -6254,48 +6173,117 @@ class OccaseState extends State<Occase>
       });
    }
 
-   Future<void> _onPublishAck(Map<String, dynamic> ack) async
-   {
-      final String res = ack['result'];
-      if (res == 'ok') {
-         await _handlePublishAck(ack['id'], 1000 * ack['date']);
-      } else {
-         await _handlePublishAck('', -1);
+   Future<void> _onPublishAck({
+      final String result,
+      final String postId,
+      final int date,
+   }) async {
+      int errorCode = 0;
+      if (result == 'ok' && postId.isNotEmpty && date != -1) {
+         await _appState.addOwnPost(postId, date);
+	 await _onChatImpl(
+	    to: _appState.cfg.appId,
+	    postId: postId,
+	    message: g.param.adminChatMsg,
+	    peer: g.param.adminId,
+	    nick: g.param.adminNick,
+	    avatar: emailToGravatarHash(cts.occaseEmail),
+	    posts: _appState.ownPosts,
+	    isRedirected: 0,
+	    refersTo: -1,
+	    peerMsgId: 0,
+	    isFav: false,
+	 );
+
+	 errorCode = 1;
       }
+
+      setState(() {_newPostErrorCode = errorCode;});
    }
 
    Future<void> _onWSDataImpl() async
    {
       while (_wsMsgQueue.isNotEmpty) {
-         var msg = _wsMsgQueue.removeFirst();
+	 try {
+	    var payload = _wsMsgQueue.removeFirst();
+	    Map<String, dynamic> map = jsonDecode(payload);
+	    final String cmd = map["cmd"] ?? '';
+	    if (cmd == "presence") {
+	       _onPresence(
+		  peer: map['from'] ?? '',
+		  postId: map['post_id'] ?? '',
+	       );
+	    } else if (cmd == "message") {
+	       final String from = map['from'] ?? '';
+	       final String type = map['type'] ?? '';
+	       final String postId = map['post_id'] ?? '';
 
-         Map<String, dynamic> ack = jsonDecode(msg);
-         final String cmd = ack["cmd"];
-         if (cmd == "presence") {
-            _onPresence(ack);
-         } else if (cmd == "message") {
-            await _onMessage(ack);
-         } else if (cmd == "login_ack") {
-            _onLoginAck(ack, msg);
-         } else if (cmd == "subscribe_ack") {
-            _onSubscribeAck(ack);
-         } else if (cmd == "post") {
-            _onPost(ack);
-         } else if (cmd == "publish_ack") {
-            await _onPublishAck(ack);
-         } else if (cmd == "register_ack") {
-            await _onRegisterAck(ack, msg);
-         } else {
-            log('Unhandled message received from the server:\n$msg.');
-         }
+	       if (type == 'chat') {
+		  await _onChat(
+		     to: map['to'] ?? '',
+		     message: map['message'] ?? '',
+		     nick: map['nick'] ?? '',
+		     peer: from,
+		     postId: postId,
+		     isRedirected: map['is_redirected'] ?? 0,
+		     avatar: map['avatar'] ?? '',
+		     refersTo: map['refers_to'] ?? -1,
+		     peerMsgId: map['id'] ?? 0,
+		  );
+	       } else if (type == 'server_ack') {
+		  assert(_appState.appMsgQueue.isNotEmpty);
+		  final String result = map['result'] ?? 'fail';
+		  final bool isChat = await _appState.deleteOutChatMsg();
+		  final int ack_id = map['ack_id'] ?? -1;
+		  if (result == 'ok' && isChat && ack_id != -1)
+		     await _appState.setChatAckStatus(from, postId, <int>[ack_id], 1);
+		  if (_appState.appMsgQueue.isNotEmpty)
+		     websocket.sink.add(_appState.appMsgQueue.first.payload);
+	       } else if (type == 'chat_ack_received') {
+		  final List<int> rowids = decodeList(0, 0, map['ack_ids']);
+		  await _appState.setChatAckStatus(from, postId, rowids, 2);
+	       } else if (type == 'chat_ack_read') {
+		  final List<int> rowids = decodeList(0, 0, map['ack_ids']);
+		  await _appState.setChatAckStatus(from, postId, rowids, 3);
+	       }
+
+	       setState((){});
+
+	    } else if (cmd == "login_ack") {
+	       _onLoginAck(
+		  result: map["result"] ?? 'fail',
+	       );
+	    } else if (cmd == "subscribe_ack") {
+	       _onSubscribeAck(
+		  result: map["result"] ?? 'fail',
+	       );
+	    } else if (cmd == "post") {
+	       _onPost(map);
+	    } else if (cmd == "publish_ack") {
+	       await _onPublishAck(
+		  result: map['result'] ?? 'fail',
+		  postId: map['id'] ?? '',
+		  date: map['date'] ?? -1,
+	       );
+	    } else if (cmd == "register_ack") {
+	       await _onRegisterAck(
+		  result: map["result"] ?? 'fail',
+		  id: map["id"] ?? '',
+		  password: map["password"] ?? '',
+	       );
+	    } else {
+	       log('Unhandled message received from the server:\n$payload.');
+	    }
+	 } catch (e) {
+	    print('Exception on _onWSDataImpl');
+	 }
       }
    }
 
-   Future<void> _onWSData(msg) async
+   Future<void> _onWSData(payload) async
    {
-      log(msg);
-      final bool isEmpty = _wsMsgQueue.isEmpty;
-      _wsMsgQueue.add(msg);
+      bool isEmpty = _wsMsgQueue.isEmpty;
+      _wsMsgQueue.add(payload);
       if (isEmpty)
          await _onWSDataImpl();
    }
@@ -7183,7 +7171,9 @@ class OccaseState extends State<Occase>
 	 return makeWebScaffoldWdg(
 	    body: body,
 	    appBar: AppBar(
-               title: Text(g.param.appName),
+               title: Text(g.param.shareSubject,
+		  style: TextStyle(color: stl.colorScheme.secondary),
+	       ),
 	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
 	    ),
@@ -7201,7 +7191,13 @@ class OccaseState extends State<Occase>
       return makeAppScaffoldWdg(
 	 onWillPops: () {return _makeOnWillPop(_tabCtrl.index);},
 	 scrollCtrl: _scrollCtrl[_tabIndex()],
-	 appBarTitle: _makeAppBarTitleWdg(isWide, screenIdx, Text(g.param.appName)),
+	 appBarTitle: _makeAppBarTitleWdg(
+            isWide,
+	    screenIdx,
+	    Text(g.param.shareSubject,
+	       style: TextStyle(color: stl.colorScheme.secondary),
+	    ),
+	 ),
 	 appBarLeading: _makeAppBarLeading(isWide, screenIdx),
 	 floatBut: fltButtons[_tabCtrl.index],
 	 body: TabBarView(controller: _tabCtrl, children: bodies),

@@ -89,7 +89,7 @@ final TextStyle ltSubtitle = TextStyle(
    fontWeight: FontWeight.w300,
 );
 
-final Color onPrimarySubtitleColor = Colors.grey[300];
+final Color onPrimarySubtitleColor = Colors.white;
 
 final TextStyle ltSubtitleOnPrimary = TextStyle(
    fontSize: ltSubtitleFontSize,
