@@ -901,7 +901,6 @@ Widget makeNewPostFinalScreen({
    // the new context.
 
    Widget w0 = PostWidget(
-      showDelAdminButton: false,
       tab: cts.ownIdx,
       post: post,
       exDetailsRootNode: exDetailsRootNode,
@@ -1289,6 +1288,7 @@ List<Widget> makeNewPostWdgs({
          post: post,
 	 ranges: g.param.rangesMinMax,
 	 divisions: g.param.rangeDivs,
+	 names: g.param.postValueTitles,
 	 onValueChanged: onNewPostValueChanged,
       );
 
@@ -1523,6 +1523,7 @@ List<Widget> makeValueSliders({
    final Post post,
    final List<int> ranges,
    final List<int> divisions,
+   final List<String> names,
    final OnPressedF06 onValueChanged,
 }) {
    List<Widget> sliders = List<Widget>();
@@ -1538,7 +1539,7 @@ List<Widget> makeValueSliders({
       );
 
       final RichText rt = makeSearchTitle(
-	 name: g.param.rangePrefixes[i],
+	 name: names[i],
 	 value: '$value',
 	 separator: ': ',
       );
@@ -1636,6 +1637,7 @@ Widget makeSearchScreenWdg2({
          post: post,
 	 ranges: ranges,
 	 divisions: divisions,
+	 names: g.param.postSearchValueTitles,
 	 onValueChanged: onValueChanged,
       );
 
@@ -2920,14 +2922,29 @@ String makeRangeStr(Post post, int i)
 
 List<Widget> makePostValues(BuildContext ctx, Post post)
 {
-   List<Widget> list = List<Widget>();
+   List<Widget> list = <Widget>[];
 
    list.add(makePostSectionTitle(g.param.rangesTitle));
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
-      { return makePostRowElem(ctx, g.param.rangePrefixes[i], makeRangeStr(post, i)); });
+      { return makePostRowElem(ctx, g.param.postValueTitles[i], makeRangeStr(post, i)); });
 
    list.addAll(items); // The menu info.
+
+   return list;
+}
+
+List<Widget> makePostViews({
+   BuildContext ctx,
+   Post post,
+   final List<String> titleAndFields,
+}) {
+   List<Widget> list = <Widget>[];
+
+   list.add(makePostSectionTitle(titleAndFields[0]));
+   list.add(makePostRowElem(ctx, titleAndFields[1], '${post.onSearch}'));
+   list.add(makePostRowElem(ctx, titleAndFields[2], '${post.views}'));
+   list.add(makePostRowElem(ctx, titleAndFields[3], '${post.clicks}'));
 
    return list;
 }
@@ -3061,6 +3078,13 @@ List<Widget> assemblePostRows({
    final Node inDetailsRootNode,
 }) {
    List<Widget> all = List<Widget>();
+
+   all.addAll(makePostViews(
+	 ctx: ctx,
+	 post: post,
+	 titleAndFields: g.param.statsTitleAndFields,
+      ),
+   );
 
    all.addAll(makePostValues(ctx, post));
 
@@ -3659,7 +3683,6 @@ List<Widget> makeDetailsTextWdgs({
 }
 
 class PostWidget extends StatefulWidget {
-   bool showDelAdminButton;
    int tab;
    Post post;
    Node locRootNode;
@@ -3679,8 +3702,7 @@ class PostWidget extends StatefulWidget {
    PostWidgetState createState() => PostWidgetState();
 
    PostWidget(
-   { @required this.showDelAdminButton
-   , @required this.tab
+   { @required this.tab
    , @required this.post
    , @required this.locRootNode
    , @required this.prodRootNode
@@ -3825,33 +3847,29 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 onPinPost: widget.onPinPost,
       );
 
+      // TODO: Change this to a shorter form.
+      final String dateStr = makeDateString2(widget.post.date);
+      final double dateFontSize = 12.0;
+
       Widget dateWdg = makeTextWdg(
-	 text: makeDateString2(widget.post.date),
+	 text: '${dateStr}',
 	 edgeInsets: const EdgeInsets.only(left: 0.0, top: 0.0, bottom: 0.0),
 	 backgroundColor: null,
 	 textColor: Colors.grey,
-	 fontSize: 12.0,
+	 fontSize: dateFontSize,
       );
 
-      List<Widget> buttonWdgs = List<Widget>();
-      //buttonWdgs.add(Expanded(child: Padding(child: owner, padding: const EdgeInsets.only(left: 10.0))));
-      buttonWdgs.add(Expanded(child: Padding(child: dateWdg, padding: const EdgeInsets.only(left: 10.0))));
+      final int onSearch = widget.post.onSearch;
+      final int views = widget.post.views;
+      final int clicks = widget.post.clicks;
 
-      if (widget.tab == cts.searchIdx) {
-	 if (widget.showDelAdminButton)
-	    buttonWdgs.add(Expanded(child: buttons[0]));
-	 if (!kIsWeb)
-	    buttonWdgs.add(buttons[1]);
-      } else if (widget.tab == cts.ownIdx) {
-	 buttonWdgs.add(Expanded(child: buttons[0]));
-	 if (!kIsWeb)
-	    buttonWdgs.add(Expanded(child: buttons[1]));
-	 buttonWdgs.add(Expanded(child: buttons[2]));
-      } else {
-	 if (!kIsWeb)
-	    buttonWdgs.add(Expanded(child: buttons[1]));
-	 buttonWdgs.add(Expanded(child: buttons[2]));
-      }
+      Widget viewsWdg = makeTextWdg(
+	 text: '${onSearch}/${views}/${clicks}',
+	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 0.0, bottom: 0.0),
+	 backgroundColor: null,
+	 textColor: Colors.grey,
+	 fontSize: dateFontSize,
+      );
 
       final double imgAvatarWidth = makeImgAvatarWidth(ctx, widget.tab);
 
@@ -4041,7 +4059,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       [ SizedBox(width: widthCol2, height: h1, child: modelTitle)
       , SizedBox(width: widthCol2, height: h2, child: s1)
       , SizedBox(width: widthCol2, height: h2, child: s2)
-      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[Spacer(), dateWdg])))
+      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[viewsWdg, Spacer(), dateWdg])))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
@@ -4083,17 +4101,6 @@ Widget makePostDetailsWdg({
    );
 
    rows.add(lv);
-
-   //IconButton inapropriate = IconButton(
-   //   padding: EdgeInsets.all(0.0),
-   //   onPressed: onReportPost,
-   //   icon: Icon(
-   //      Icons.report,
-   //      color: stl.colorScheme.primary,
-   //   ),
-   //);
-
-   //rows.add(inapropriate);
 
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
@@ -4150,7 +4157,6 @@ Widget makeFavEmptyScreenWidget()
 }
 
 Widget makeNewPostLv({
-   final bool showDelAdminButton,
    final int nNewPosts,
    final Node locRootNode,
    final Node prodRootNode,
@@ -4176,7 +4182,6 @@ Widget makeNewPostLv({
       itemBuilder: (BuildContext ctx, int i)
       {
          return PostWidget(
-	    showDelAdminButton: showDelAdminButton,
 	    tab: cts.searchIdx,
             post: posts[i],
             exDetailsRootNode: exDetailsRootNode,
@@ -4685,7 +4690,6 @@ Widget makeChatTab({
             onExpandImg = (int j){log('Error: post.images is empty.');};
 
 	 Widget bbb = PostWidget(
-	    showDelAdminButton: false,
 	    tab: tab,
             post: posts[i],
 	    locRootNode: locRootNode,
@@ -6824,7 +6828,6 @@ class OccaseState extends State<Occase>
    Widget _makeSearchResultTab()
    {
       Widget w = makeNewPostLv(
-	showDelAdminButton: _deletePostPwd.isNotEmpty,
 	nNewPosts: _nNewPosts,
 	locRootNode: _locRootNode,
 	prodRootNode: _prodRootNode,

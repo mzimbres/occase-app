@@ -84,7 +84,8 @@ class Parameters {
    List<List<String>> _descList =  <List<String>>[<String>['', '', '', '', '']];
    List<List<String>> _dialogTitles =  <List<String>>[<String>['' ,'' ,'' ,'' , '']];
    List<List<String>> _dialogBodies =  <List<String>>[<String>['', '', '', '', '']];
-   List<List<String>> _rangePrefixes =  <List<String>>[<String>['','' ,'' ]];
+   List<List<String>> _postValueTitles =  <List<String>>[<String>['','' ,'' ]];
+   List<List<String>> _postSearchValueTitles =  <List<String>>[<String>['','' ,'' ]];
    List<List<String>> _rangeUnits =  <List<String>>[<String>['', '', '', '', '', '']];
    List<List<String>> _newPostErrorTitles = <List<String>>[<String>[ '', '']];
    List<List<String>> _newPostErrorBodies = <List<String>> [<String>['' , '']];
@@ -94,6 +95,7 @@ class Parameters {
    List<List<String>> _menuDepthNames1 = <List<String>>[<String>['', '', '', '', '', '', '']];
    List<List<String>> _payments1 = <List<String>>[<String>['']];
    List<List<String>> _payments2 = <List<String>>[<String>['']];
+   List<List<String>> _statsTitleAndFields = <List<String>>[<String>['']];
 
    List<int> rangesMinMax;
    List<int> rangeDivs;
@@ -188,7 +190,8 @@ class Parameters {
    List<String> get descList                     => _descList[_langIdx];
    List<String> get dialogTitles                 => _dialogTitles[_langIdx];
    List<String> get dialogBodies                 => _dialogBodies[_langIdx];
-   List<String> get rangePrefixes                => _rangePrefixes[_langIdx];
+   List<String> get postValueTitles              => _postValueTitles[_langIdx];
+   List<String> get postSearchValueTitles        => _postSearchValueTitles[_langIdx];
    List<String> get rangeUnits                   => _rangeUnits[_langIdx];
    List<String> get newPostErrorTitles           => _newPostErrorTitles[_langIdx];
    List<String> get newPostErrorBodies           => _newPostErrorBodies[_langIdx];
@@ -199,6 +202,7 @@ class Parameters {
    List<String> get payments0                    => _payments0;
    List<String> get payments1                    => _payments1[_langIdx];
    List<String> get payments2                    => _payments2[_langIdx];
+   List<String> get statsTitleAndFields          => _statsTitleAndFields[_langIdx];
 
    int get langIdx => _langIdx;
 
@@ -273,7 +277,8 @@ class Parameters {
       _descList                    = decodeList3(map['descList']);
       _dialogTitles                = decodeList3(map['dialogTitles']);
       _dialogBodies                = decodeList3(map['dialogBodies']);
-      _rangePrefixes               = decodeList3(map['rangePrefixes']);
+      _postValueTitles             = decodeList3(map['postValueTitles']);
+      _postSearchValueTitles       = decodeList3(map['postSearchValueTitles']);
       _rangeUnits                  = decodeList3(map['rangeUnits']);
       _newPostErrorTitles          = decodeList3(map['newPostErrorTitles']);
       _newPostErrorBodies          = decodeList3(map['newPostErrorBodies']);
@@ -283,6 +288,7 @@ class Parameters {
       _menuDepthNames1             = decodeList3(map['menuDepthNames1']);
       _payments1                   = decodeList3(map['payments1']);
       _payments2                   = decodeList3(map['payments2']);
+      _statsTitleAndFields         = decodeList3(map['statsTitleAndFields']);
 
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -361,7 +367,8 @@ class Parameters {
          'descList':                    _descList,
          'dialogTitles':                _dialogTitles,
          'dialogBodies':                _dialogBodies,
-         'rangePrefixes':               _rangePrefixes,
+         'postValueTitles':             _postValueTitles,
+         'postSearchValueTitles':       _postSearchValueTitles,
          'rangeUnits':                  _rangeUnits,
          'newPostErrorTitles':          _newPostErrorTitles,
          'newPostErrorBodies':          _newPostErrorBodies,
@@ -371,6 +378,7 @@ class Parameters {
          'menuDepthNames1':             _menuDepthNames1,
          'payments1':                   _payments1,
          'payments2':                   _payments2,
+         'statsTitleAndFields':         _statsTitleAndFields,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
          'discreteRanges':              discreteRanges,

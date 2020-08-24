@@ -451,13 +451,13 @@ class Post {
    int priority = 0;
 
    // The number of times this post appeared on searches.
-   int on_search = 0;
+   int onSearch = 0;
 
    // The number of visualizations this post had so far.
    int views = 0;
 
    // The number of detailed views this post had.
-   int detailed_views = 0;
+   int clicks = 0;
 
    // Post id received from on publish ack from the server.
    String id;
@@ -562,9 +562,9 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.priority = this.priority;
-      ret.on_search = this.on_search;
+      ret.onSearch = this.onSearch;
       ret.views = this.views;
-      ret.detailed_views = this.detailed_views;
+      ret.clicks = this.clicks;
       ret.description = this.description;
       ret.delete_key = this.delete_key;
       ret.images = List<String>.from(this.images);
@@ -647,9 +647,9 @@ class Post {
 	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
 	 status = map['status'] ?? -1;
 	 priority = map['priority'] ?? 0;
-	 on_search = map['on_search'] ?? 0;
+	 onSearch = map['on_search'] ?? 0;
 	 views = map['views'] ?? 0;
-	 detailed_views = map['detailed_views'] ?? 0;
+	 clicks = map['clicks'] ?? 0;
 	 description = map['description'] ?? '';
 	 delete_key = map['delete_key'] ?? '';
 	 images = decodeList(0, '', map['images']);
@@ -696,9 +696,9 @@ class Post {
       , 'images': images
       , 'chats': chats
       , 'priority': priority
-      , 'on_search': on_search
+      , 'on_search': onSearch
       , 'views': views
-      , 'detailed_views': detailed_views
+      , 'clicks': clicks
       };
    }
 }
