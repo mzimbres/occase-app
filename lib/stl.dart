@@ -67,13 +67,13 @@ const TextStyle ltTitle = TextStyle(
 
 final TextStyle newPostTitleLT = TextStyle(
    fontSize: ltTitleFontSize,
-   color: colorScheme.primary,
+   color: Colors.black,
    fontWeight: FontWeight.normal,
 );
 
 final TextStyle newPostSubtitleLT = TextStyle(
    fontSize: ltSubtitleFontSize,
-   color: colorScheme.secondary,
+   color: Colors.grey,
    fontWeight: FontWeight.normal,
 );
 
@@ -178,7 +178,7 @@ final Divider newPostDivider = Divider(
    thickness: 1.0,
 );
 
-const double newPostPadding = 3.0;
+const double newPostPadding = 5.0;
 const double alertDialogInsetPadding = 3.0;
 const double minButtonWidth = 100.0;
 

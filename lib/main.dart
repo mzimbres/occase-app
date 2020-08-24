@@ -271,7 +271,7 @@ Scaffold makeWaitMenuScreen()
    return Scaffold(
       appBar: AppBar(
          title: Text(g.param.shareSubject,
-            style: TextStyle(color: stl.colorScheme.secondary),
+            style: TextStyle(color: stl.colorScheme.onPrimary),
          ),
       ),
       body: Center(child: CircularProgressIndicator()),
@@ -422,7 +422,7 @@ Scaffold makeRegisterScreen(
 
    return Scaffold(
       appBar: AppBar(title: Text(appBarTitle,
-	    style: TextStyle(color: stl.colorScheme.secondary),
+	    style: TextStyle(color: stl.colorScheme.onPrimary),
 	 ),
       ),
       body: Center(
@@ -480,7 +480,7 @@ Scaffold makeNtfScreen(
 
    return Scaffold(
       appBar: AppBar(title: Text(appBarTitle,
-	    style: TextStyle(color: stl.colorScheme.secondary),
+	    style: TextStyle(color: stl.colorScheme.onPrimary),
 	 ),
       ),
       body: Padding(
@@ -538,7 +538,7 @@ Widget makeInfoScreen(
 	 backgroundColor: Colors.white,
 	 appBar: AppBar(
 	    title: Text(g.param.shareSubject,
-	       style: TextStyle(color: stl.colorScheme.secondary),
+	       style: TextStyle(color: stl.colorScheme.onPrimary),
 	    ),
 	    leading: IconButton(
 	       padding: EdgeInsets.all(0.0),
@@ -3268,7 +3268,7 @@ Widget makeNewPostDialogWdg({
       content: content,
       shape: RoundedRectangleBorder(
 	 borderRadius: BorderRadius.all(
-	    Radius.circular(stl.cornerRadius)
+	    Radius.circular(0.0),
 	 ),
 	 //side: BorderSide(width: 1.0, color: Colors.grey),
       ),
@@ -3404,7 +3404,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
-	 title: Text(widget.title, style: stl.newPostSubtitleLT),
+	 title: Text(widget.title, style: stl.newPostTitleLT),
 	 indent: stl.newPostPadding,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
@@ -3770,8 +3770,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    }
 
 	    const double margin = 0.0;
-	    const double insetPadding = 10.0;
+	    const double insetPadding = 0.0;
 	    final double height = makeMaxHeight(ctx);
+
 	    Widget ret = makeNewPostDialogWdg(
 	       width: width,
 	       height: height,
@@ -4009,7 +4010,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
 
       const double spacing = 10.0;
-      const double runSpacing = 5.0;
+      const double runSpacing = 3.0;
 
       Widget s1 = Padding(
 	 padding: EdgeInsets.all(3.0),
@@ -4083,16 +4084,16 @@ Widget makePostDetailsWdg({
 
    rows.add(lv);
 
-   IconButton inapropriate = IconButton(
-      padding: EdgeInsets.all(0.0),
-      onPressed: onReportPost,
-      icon: Icon(
-         Icons.report,
-         color: stl.colorScheme.primary,
-      ),
-   );
+   //IconButton inapropriate = IconButton(
+   //   padding: EdgeInsets.all(0.0),
+   //   onPressed: onReportPost,
+   //   icon: Icon(
+   //      Icons.report,
+   //      color: stl.colorScheme.primary,
+   //   ),
+   //);
 
-   rows.add(inapropriate);
+   //rows.add(inapropriate);
 
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
@@ -7172,7 +7173,7 @@ class OccaseState extends State<Occase>
 	    body: body,
 	    appBar: AppBar(
                title: Text(g.param.shareSubject,
-		  style: TextStyle(color: stl.colorScheme.secondary),
+		  style: TextStyle(color: stl.colorScheme.onPrimary),
 	       ),
 	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
@@ -7195,7 +7196,7 @@ class OccaseState extends State<Occase>
             isWide,
 	    screenIdx,
 	    Text(g.param.shareSubject,
-	       style: TextStyle(color: stl.colorScheme.secondary),
+	       style: TextStyle(color: stl.colorScheme.onPrimary),
 	    ),
 	 ),
 	 appBarLeading: _makeAppBarLeading(isWide, screenIdx),
