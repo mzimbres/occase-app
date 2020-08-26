@@ -36,27 +36,23 @@ class AppMsgQueueElem {
    }
 }
 
-String makeConnCmd(
-   final String appId,
-   final String appPwd,
+String makeConnCmd({
+   final String user,
+   final String key,
    final String fcmToken,
-   final int notify,
-) {
-   if (appId.isEmpty)
+}) {
+   if (user.isEmpty)
       return jsonEncode(
       { 'cmd': 'register'
       , 'token': fcmToken
       });
 
-   var loginCmd =
+   return jsonEncode(
    { 'cmd': 'login'
-   , 'user': appId
-   , 'password': appPwd
+   , 'user': user
+   , 'key': key
    , 'token': fcmToken
-   , 'notify': notify
-   };
-
-   return jsonEncode(loginCmd);
+   });
 }
 
 class ChatItem {
@@ -879,16 +875,18 @@ class NtfConfig {
 }
 
 class Config {
-   String appId;
-   String appPwd;
+   String user;
+   String key;
+   String userId;
    String email;
    String nick;
    List<bool> dialogPreferences = List<bool>.filled(20, true);
    NtfConfig notifications;
 
    Config({
-      this.appId = '',
-      this.appPwd = '',
+      this.user = '',
+      this.key = '',
+      this.userId = '',
       this.email = '',
       this.nick = '',
    })
@@ -900,8 +898,9 @@ class Config {
    Config.fromJson(Map<String, dynamic> map)
    {
       try {
-	 appId = map['app_id'] ?? '';
-	 appPwd = map['app_pwd'] ?? '';
+	 user = map['user'] ?? '';
+	 key = map['key'] ?? '';
+	 userId = map['user_id'] ?? '';
 	 email = map['email'] ?? '';
 	 nick = map['nick'] ?? '';
 	 dialogPreferences = decodeList(20, true, map['dialogPreferences']);
@@ -915,8 +914,9 @@ class Config {
    Map<String, dynamic> toJson()
    {
       return
-      { 'app_id': appId
-      , 'app_pwd': appPwd
+      { 'user': user
+      , 'key': key
+      , 'user_id': userId
       , 'email': email
       , 'nick': nick
       , 'dialogPreferences': dialogPreferences

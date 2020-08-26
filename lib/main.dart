@@ -63,9 +63,8 @@ bool isWideScreenImpl(double w)
 
 double makeTabWidthImpl(double w, int tab)
 {
-   if (isWideScreenImpl(w)) {
+   if (isWideScreenImpl(w))
       return cts.tabWidthRates[tab] * w;
-   }
 
    return w;
 }
@@ -74,6 +73,11 @@ double makeTabWidth(BuildContext ctx, int tab)
 {
    final double w = MediaQuery.of(ctx).size.width;
    return makeTabWidthImpl(w, tab);
+}
+
+double makeImgHeight(BuildContext ctx, int tab)
+{
+   return makeTabWidth(ctx, tab) / 1.618033;
 }
 
 bool isWideScreen(BuildContext ctx)
@@ -554,21 +558,20 @@ Widget makeInfoScreen(
    );
 }
 
-Widget makeNetImgBox(
+Widget makeNetImgBox({
    double width,
    double height,
    String url,
-   BoxFit bf)
-{
+   BoxFit boxFit,
+}) {
    return CachedNetworkImage(
       imageUrl: url,
       width: width,
       height: height,
-      fit: bf,
+      fit: boxFit,
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
          log('====> $error $url $error');
-         //Icon ic = Icon(Icons.error, color: stl.colorScheme.primary);
          Widget w = Text(g.param.unreachableImgError,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -585,8 +588,8 @@ Widget makeNetImgBox(
 Widget makeImgPlaceholder(
    double width,
    double height,
-   Widget w)
-{
+   Widget w,
+) {
    return SizedBox(
       width: width,
       height: height,
@@ -669,6 +672,7 @@ Image getImage({
 Widget makeImgListView({
    BuildContext ctx,
    final double width,
+   final double height,
    Post post,
    BoxFit boxFit,
    List<PickedFile> imgFiles,
@@ -681,7 +685,7 @@ Widget makeImgListView({
    if (l1 == 0 && l2 == 0)
       return makeImgPlaceholder(
 	 width,
-	 width,
+	 height,
 	 makeImgTextPlaceholder(g.param.addImgMsg),
       );
 
@@ -697,8 +701,8 @@ Widget makeImgListView({
          //FlatButton b = FlatButton(
          //   onPressed: (){onExpandImg(l -i -1);},
          //   child: Container(
-         //      width: width * 0.9,
-         //      height: width * 0.9,
+         //      width: width,
+         //      height: height,
          //   ),
          //);
 
@@ -707,14 +711,19 @@ Widget makeImgListView({
 	 List<Widget> wdgs = List<Widget>();
 
 	 if (post.images.isNotEmpty) {
-	    Widget tmp = makeNetImgBox(width, width, post.images[l -i -1], boxFit);
+	    Widget tmp = makeNetImgBox(
+	       width: width,
+	       height: height,
+	       url: post.images[l - i - 1],
+	       boxFit: boxFit,
+	    );
 	    wdgs.add(tmp);
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles.isNotEmpty) {
 	    Widget tmp = getImage(
 	       path: imgFiles[i].path,
 	       width: width,
-	       height: width,
+	       height: height,
 	       fit: BoxFit.cover,
 	       filterQuality: FilterQuality.high,
 	    );
@@ -745,7 +754,7 @@ Widget makeImgListView({
       },
    );
 
-   return constrainBox(width, width, lv);
+   return constrainBox(width, height, lv);
 }
 
 int searchBitOn(int o, int n)
@@ -915,6 +924,8 @@ Widget makeNewPostFinalScreen({
       onSharePost: () { log('Noop03');},
       onReportPost: () { log('Noop05');},
       onPinPost: () { log('Noop06');},
+      onVisualization: (var s) {log('Noop07');},
+      onClick: (var s) {log('Noop08');},
    );
 
    Widget w1 = createRaisedButton(
@@ -3697,6 +3708,8 @@ class PostWidget extends StatefulWidget {
    OnPressedF00 onSharePost;
    OnPressedF00 onReportPost;
    OnPressedF00 onPinPost;
+   OnPressedF09 onVisualization;
+   OnPressedF09 onClick;
 
    @override
    PostWidgetState createState() => PostWidgetState();
@@ -3716,6 +3729,8 @@ class PostWidget extends StatefulWidget {
    , @required this.onSharePost
    , @required this.onReportPost
    , @required this.onPinPost
+   , @required this.onVisualization
+   , @required this.onClick
    });
 }
 
@@ -3735,6 +3750,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
    Future<void> _onShowDetails(BuildContext ctx) async
    {
+      widget.onClick(widget.post.id);
+
       final int code = await showDialog<int>(
 	 context: ctx,
 	 builder: (BuildContext ctx2)
@@ -3755,6 +3772,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       {
 		  Navigator.of(ctx).pop();
 		  widget.onReportPost();
+	       },
+	       onSharePost: () 
+	       {
+		  Navigator.of(ctx).pop();
+		  widget.onSharePost();
 	       },
 	    );
 
@@ -3838,6 +3860,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
    @override
    Widget build(BuildContext ctx)
    {
+      widget.onVisualization(widget.post.id);
       const double postFontSize = 14.0;
 
       final List<Widget> buttons = makePostButtons(
@@ -3879,10 +3902,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    //margin: const EdgeInsets.only(top: 10.0),
 	    margin: const EdgeInsets.all(0.0),
 	    child: makeNetImgBox(
-	       imgAvatarWidth,
-	       imgAvatarWidth,
-	       widget.post.images.first,
-	       BoxFit.cover,
+	       width: imgAvatarWidth,
+	       height: imgAvatarWidth,
+	       url: widget.post.images.first,
+	       boxFit: BoxFit.cover,
 	    ),
 	 );
 
@@ -4077,7 +4100,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 Widget makePostDetailsWdg({
    BuildContext ctx,
-   int tab,
+   final int tab,
    final Post post,
    final Node locRootNode,
    final Node prodRootNode,
@@ -4087,12 +4110,14 @@ Widget makePostDetailsWdg({
    OnPressedF02 onAddPhoto,
    OnPressedF01 onExpandImg,
    OnPressedF00 onReportPost,
+   OnPressedF00 onSharePost,
 }) {
    List<Widget> rows = List<Widget>();
 
    Widget lv = makeImgListView(
       ctx: ctx,
       width: makeTabWidth(ctx, tab),
+      height: makeImgHeight(ctx, tab),
       post: post,
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
@@ -4101,6 +4126,16 @@ Widget makePostDetailsWdg({
    );
 
    rows.add(lv);
+
+   IconButton share = IconButton(
+      icon: Icon(
+	 Icons.share,
+	 color: stl.colorScheme.primary,
+      ),
+      onPressed: onSharePost,
+   );
+
+   rows.add(share);
 
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
@@ -4168,6 +4203,8 @@ Widget makeNewPostLv({
    final OnPressedF02 onDelPost,
    final OnPressedF02 onSharePost,
    final OnPressedF02 onReportPost,
+   final OnPressedF09 onPostVisualization,
+   final OnPressedF09 onPostClick,
 }) {
    // No controller should be assigned to this listview. This will break the
    // automatic hiding of the tabbar
@@ -4196,6 +4233,8 @@ Widget makeNewPostLv({
 	    onSharePost: () {onSharePost(ctx, i);},
 	    onReportPost: () {onReportPost(ctx, i);},
 	    onPinPost: (){log('Noop20');},
+	    onVisualization: onPostVisualization,
+	    onClick: onPostClick,
          );
       },
    );
@@ -4704,6 +4743,8 @@ Widget makeChatTab({
 	    onSharePost: () {onSharePost(i);},
 	    onReportPost:() {log('Noop18');},
 	    onPinPost: onPinPost,
+	    onVisualization: (String) {log('Noop19');},
+	    onClick: (String) {log('Noop20');},
 	 );
 
          Widget chatExpansion = makeChatsExp(
@@ -5138,10 +5179,10 @@ class OccaseState extends State<Occase>
 	 );
 
 	 final String cmd = makeConnCmd(
-	    _appState.cfg.appId,
-	    _appState.cfg.appPwd,
-	    fcmToken,
-	    _appState.cfg.notifications.getFlag(),
+	    user: _appState.cfg.user,
+	    key: _appState.cfg.key,
+	    fcmToken: fcmToken,
+	    //_appState.cfg.notifications.getFlag(),
 	 );
 
 	 log(cmd);
@@ -5210,8 +5251,8 @@ class OccaseState extends State<Occase>
          if (i == -1) {
             PickedFile img = await _picker.getImage(
                source: ImageSource.gallery,
-               maxWidth: cts.imgWidgth,
-               maxHeight: cts.imgWidgth,
+               maxWidth: cts.imgWidth,
+               maxHeight: cts.imgHeight,
                imageQuality: cts.imgQuality,
             );
 
@@ -5543,7 +5584,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendPost() async
    {
-      _posts[cts.ownIdx].from = _appState.cfg.appId;
+      _posts[cts.ownIdx].from = _appState.cfg.userId;
       _posts[cts.ownIdx].nick = _appState.cfg.nick;
       _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[cts.ownIdx].status = 3;
@@ -5836,10 +5877,10 @@ class OccaseState extends State<Occase>
          (){},
          title,
          makeNetImgBox(
-            cts.onClickAvatarWidth,
-            cts.onClickAvatarWidth,
-            url,
-            BoxFit.contain,
+            width: cts.onClickAvatarWidth,
+            height: cts.onClickAvatarWidth,
+            url: url,
+            boxFit: BoxFit.contain,
          ),
       );
    }
@@ -5939,6 +5980,38 @@ class OccaseState extends State<Occase>
       }
    }
 
+   Future<void> _onPostVisualization(String postId) async
+   {
+      try {
+         var map =
+         { 'cmd': 'statistics'
+         , 'type': 'visualization'
+         , 'post_id': <String>[postId],
+         };
+
+         await _sendAppMsg(jsonEncode(map), 0);
+
+      } catch(e) {
+         log(e);
+      }
+   }
+
+   Future<void> _onPostClick(String postId) async
+   {
+      try {
+         var map =
+         { 'cmd': 'statistics'
+         , 'type': 'click'
+         , 'post_ids': <String>[postId],
+         };
+
+         await _sendAppMsg(jsonEncode(map), 0);
+
+      } catch(e) {
+         log(e);
+      }
+   }
+
    Future<void> _onChat({
       final String to,
       final String peer,
@@ -5950,7 +6023,7 @@ class OccaseState extends State<Occase>
       final int peerMsgId,
       final int isRedirected,
    }) async {
-      if (to != _appState.cfg.appId) {
+      if (to != _appState.cfg.userId) {
          log("Server bug caught. Please report.");
          return;
       }
@@ -6107,18 +6180,16 @@ class OccaseState extends State<Occase>
 
    Future<void> _onRegisterAck({
       final String result,
-      final String id,
-      final String password,
+      final String user,
+      final String key,
+      final String userId,
    }) async {
       if (result == 'fail') {
          log("register_ack: fail.");
          return;
       }
 
-      if (id.isEmpty || password.isEmpty)
-         return;
-
-      await _appState.setCredentials(id, password);
+      await _appState.setCredentials(user, key, userId);
 
       // Retrieves some posts for the newly registered user.
       _subscribeToPosts();
@@ -6162,8 +6233,8 @@ class OccaseState extends State<Occase>
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
 
-            if (post.from == _appState.cfg.appId)
-               continue;
+            //if (post.from == _appState.cfg.userId)
+            //   continue;
 
             _appState.posts.add(post);
          } catch (e) {
@@ -6187,7 +6258,7 @@ class OccaseState extends State<Occase>
       if (result == 'ok' && postId.isNotEmpty && date != -1) {
          await _appState.addOwnPost(postId, date);
 	 await _onChatImpl(
-	    to: _appState.cfg.appId,
+	    to: _appState.cfg.userId,
 	    postId: postId,
 	    message: g.param.adminChatMsg,
 	    peer: g.param.adminId,
@@ -6273,8 +6344,9 @@ class OccaseState extends State<Occase>
 	    } else if (cmd == "register_ack") {
 	       await _onRegisterAck(
 		  result: map["result"] ?? 'fail',
-		  id: map["id"] ?? '',
-		  password: map["password"] ?? '',
+		  user: map["user"] ?? '',
+		  key: map["key"] ?? '',
+		  userId: map["user_id"] ?? '',
 	       );
 	    } else {
 	       log('Unhandled message received from the server:\n$payload.');
@@ -6828,17 +6900,19 @@ class OccaseState extends State<Occase>
    Widget _makeSearchResultTab()
    {
       Widget w = makeNewPostLv(
-	nNewPosts: _nNewPosts,
-	locRootNode: _locRootNode,
-	prodRootNode: _prodRootNode,
-	exDetailsRootNode: _exDetailsRoot,
-	inDetailsRootNode: _inDetailsRoot,
-	posts: _appState.posts,
-	onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
-	onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
-	onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	 nNewPosts: _nNewPosts,
+	 locRootNode: _locRootNode,
+	 prodRootNode: _prodRootNode,
+	 exDetailsRootNode: _exDetailsRoot,
+	 inDetailsRootNode: _inDetailsRoot,
+	 posts: _appState.posts,
+	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
+	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	 onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
+	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
+         onPostVisualization: _onPostVisualization,
+         onPostClick: _onPostClick,
       );
 
       if (_searchBeginDate == 0)

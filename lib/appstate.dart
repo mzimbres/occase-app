@@ -100,7 +100,7 @@ class AppState {
 
       List<AppMsgQueueElem> tmp = await _persistency.loadOutChatMsg();
       appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
-      log('Login: ${cfg.appId}:${cfg.appPwd}');
+      log('Login: ${cfg.user} ${cfg.key} ${cfg.userId}');
    }
 
    Future<void> clearPosts() async
@@ -175,10 +175,12 @@ class AppState {
    }
 
    Future<void>
-   setCredentials(String id, String password) async
+   setCredentials(String user, String key, String userId) async
    {
-      cfg.appId = id;
-      cfg.appPwd = password;
+      cfg.user = user;
+      cfg.key = key;
+      cfg.userId = userId;
+
       await _persistency.persistConfig(cfg);
    }
 

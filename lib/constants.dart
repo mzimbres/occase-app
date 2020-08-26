@@ -1,7 +1,15 @@
 
+const double tabDefaultWidth = 350.0;
+
 // Quality of the image, see
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
 const int imgQuality = 75;
+const int maxImgsPerPost = 6;
+const int minImgsPerPost = 0;
+const double postImgAvatarTabWidthRate = 0.381966;
+const double imgWidth = tabDefaultWidth;
+const double imgHeight = imgWidth / 1.618033;
+
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
 const int emailMaxLength = 50;
@@ -46,9 +54,6 @@ const String dbUploadCreditUrl = dbHttpUrl + '/posts/upload-credit';
 const String dbDeletePostUrl =   dbHttpUrl + '/posts/delete';
 const String dbPostUrl =         dbHttpUrl + '/posts/publish';
 
-const int maxImgsPerPost = 6;
-const int minImgsPerPost = 0;
-
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;
 const int pongTimeoutMilliseconds = pongTimeoutSeconds * 1000;
@@ -61,13 +66,8 @@ const int ownIdx = 0;
 const int searchIdx = 1;
 const int favIdx = 2;
 
-const double tabDefaultWidth = 350.0;
 const List<double> tabWidthRates = const <double>[0.291, 0.42, 0.291];
 const List<int> tabFlexValues = const <int>[29, 42, 29];
-const double postImgAvatarTabWidthRate = 0.40;
-const double postWidth = 0.58;
 
 const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
-
-const double imgWidgth = tabDefaultWidth;
 
