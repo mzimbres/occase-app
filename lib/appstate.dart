@@ -147,9 +147,12 @@ class AppState {
       return j;
    }
 
-   Future<void>
-   setChatAckStatus(String from, String postId, List<int> rowids, int status) async
-   {
+   Future<void> setChatAckStatus({
+      String from,
+      String postId,
+      List<int> ackIds,
+      int status,
+   }) async {
       List<Post> list = favPosts;
       IdxPair p = findChat(list, from, postId);
       if (IsInvalidPair(p)) {
@@ -162,11 +165,10 @@ class AppState {
 	 return;
       }
 
-      for (int rowid in rowids) {
-	 final ChatMetadata cm = list[p.i].chats[p.j];
-	 cm.setAckStatus(rowid, status);
+      for (int rowid in ackIds) {
+	 list[p.i].chats[p.j].setAckStatus(rowid, status);
 
-	 // Typically there won't be many rowids in this loop so it is fine to
+	 // Typically there won't be many ackIds in this loop so it is fine to
 	 // use await here. The ideal case however is to offer a List<ChatItem>
 	 // interface in Persistency and use batch there.
 
@@ -174,8 +176,7 @@ class AppState {
       }
    }
 
-   Future<void>
-   setCredentials(String user, String key, String userId) async
+   Future<void> setCredentials(String user, String key, String userId) async
    {
       cfg.user = user;
       cfg.key = key;

@@ -5406,7 +5406,11 @@ class OccaseState extends State<Occase>
                date: now,
             );
 
-	    await _onSendChatImpl(c1.post.id, c1.chat.peer, ci);
+	    await _onSendChatImpl(
+	       postId: c1.post.id,
+	       to: c1.chat.peer,
+	       chatItem: ci,
+	    );
          }
       }
 
@@ -5455,11 +5459,11 @@ class OccaseState extends State<Occase>
    Future<void> _onSendChat(int i) async
    {
       _chats[i].nUnreadMsgs = 0;
-      log('${_txtCtrl.text}');
+
       await _onSendChatImpl(
-         _posts[i].id,
-         _chats[i].peer,
-         ChatItem(
+         postId: _posts[i].id,
+         to: _chats[i].peer,
+         chatItem: ChatItem(
             isRedirected: 0,
             message: _txtCtrl.text,
             date: DateTime.now().millisecondsSinceEpoch,
@@ -5945,27 +5949,29 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   Future<void> _onSendChatImpl(
+   Future<void> _onSendChatImpl({
       String postId,
-      String peer,
-      ChatItem ci,
-   ) async {
+      String to,
+      ChatItem chatItem,
+   }) async {
       try {
-	 if (ci.message.isEmpty)
+	 if (chatItem.message.isEmpty)
 	    return;
 
-	 final int id = await _appState.setChatMessage(postId, peer, ci, _isOnFav());
+	 final int id = await _appState.setChatMessage(
+	    postId,
+	    to,
+	    chatItem,
+	    _isOnFav(),
+	 );
 
-         // At a certain point in the future, I want to stop sending
-         // the user avatar on every message and deduced it from the
-         // user id instead.
          var msgMap =
          { 'cmd': 'message'
          , 'type': 'chat'
-         , 'is_redirected': ci.isRedirected
-         , 'to': peer
-         , 'message': ci.message
-         , 'refers_to': ci.refersTo
+         , 'is_redirected': chatItem.isRedirected
+         , 'to': to
+         , 'message': chatItem.message
+         , 'refers_to': chatItem.refersTo
          , 'post_id': postId
          , 'nick': _appState.cfg.nick
          , 'id': id
@@ -5986,7 +5992,7 @@ class OccaseState extends State<Occase>
          var map =
          { 'cmd': 'statistics'
          , 'type': 'visualization'
-         , 'post_id': <String>[postId],
+         , 'post_ids': <String>[postId],
          };
 
          await _sendAppMsg(jsonEncode(map), 0);
@@ -6002,7 +6008,7 @@ class OccaseState extends State<Occase>
          var map =
          { 'cmd': 'statistics'
          , 'type': 'click'
-         , 'post_ids': <String>[postId],
+         , 'post_id': postId,
          };
 
          await _sendAppMsg(jsonEncode(map), 0);
@@ -6233,8 +6239,8 @@ class OccaseState extends State<Occase>
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
 
-            //if (post.from == _appState.cfg.userId)
-            //   continue;
+            if (post.from == _appState.cfg.userId)
+               continue;
 
             _appState.posts.add(post);
          } catch (e) {
@@ -6308,19 +6314,37 @@ class OccaseState extends State<Occase>
 		  );
 	       } else if (type == 'server_ack') {
 		  assert(_appState.appMsgQueue.isNotEmpty);
+
 		  final String result = map['result'] ?? 'fail';
 		  final bool isChat = await _appState.deleteOutChatMsg();
 		  final int ack_id = map['ack_id'] ?? -1;
+
 		  if (result == 'ok' && isChat && ack_id != -1)
-		     await _appState.setChatAckStatus(from, postId, <int>[ack_id], 1);
+		     await _appState.setChatAckStatus(
+			from: from,
+			postId: postId,
+			ackIds: <int>[ack_id],
+			status: 1,
+		     );
+
 		  if (_appState.appMsgQueue.isNotEmpty)
 		     websocket.sink.add(_appState.appMsgQueue.first.payload);
+
 	       } else if (type == 'chat_ack_received') {
-		  final List<int> rowids = decodeList(0, 0, map['ack_ids']);
-		  await _appState.setChatAckStatus(from, postId, rowids, 2);
+		  await _appState.setChatAckStatus(
+		     from: from,
+		     postId: postId,
+		     ackIds: decodeList(0, 0, map['ack_ids']),
+		     status: 2,
+		  );
 	       } else if (type == 'chat_ack_read') {
-		  final List<int> rowids = decodeList(0, 0, map['ack_ids']);
-		  await _appState.setChatAckStatus(from, postId, rowids, 3);
+		  final List<int> ackIds = decodeList(0, 0, map['ack_ids']);
+		  await _appState.setChatAckStatus(
+                     from: from,
+		     postId: postId,
+		     ackIds: ackIds,
+		     status: 3,
+		  );
 	       }
 
 	       setState((){});
@@ -6359,6 +6383,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _onWSData(payload) async
    {
+      print(payload);
       bool isEmpty = _wsMsgQueue.isEmpty;
       _wsMsgQueue.add(payload);
       if (isEmpty)
@@ -6367,13 +6392,13 @@ class OccaseState extends State<Occase>
 
    void _onWSError(error)
    {
-      log("Error: _onWSError $error");
+      print("Error: _onWSError $error");
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
    void _onWSDone()
    {
-      log("Communication closed by peer.");
+      print("Communication closed by peer.");
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
