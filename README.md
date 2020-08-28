@@ -61,3 +61,4 @@ Notifications
 -------------------------------------------------------------
 
 DATA='{"notification": {"body": "this is a body","title": "this is a title"}, "priority": "high", "data": {"click_action": "FLUTTER_NOTIFICATION_CLICK", "id": "1", "status": "done"}, "to": "<FCM TOKEN>"}' 
+

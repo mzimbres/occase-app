@@ -366,15 +366,16 @@ TextField makeNickTxtField(
    );
 }
 
-Scaffold makeRegisterScreen(
+Widget makeRegisterScreen({
    TextEditingController emailCtrl,
    TextEditingController nickCtrl,
    Function onContinue,
-   String appBarTitle,
+   String title,
    String previousEmail,
    String previousNick,
    double maxWidth,
-) {
+   OnPressedF07 onWillPopScope,
+}) {
    if (previousEmail.isNotEmpty)
       emailCtrl.text = previousEmail;
 
@@ -424,11 +425,9 @@ Scaffold makeRegisterScreen(
    if (!isWideScreenImpl(maxWidth))
       body = SizedBox(width: maxWidth, child: col);
 
-   return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle,
-	    style: TextStyle(color: stl.colorScheme.onPrimary),
-	 ),
-      ),
+   return makeConfigScaffold(
+      title: title,
+      onWillPopScope: onWillPopScope,
       body: Center(
          child: Padding(
             child: body,
@@ -438,20 +437,21 @@ Scaffold makeRegisterScreen(
    );
 }
 
-Scaffold makeNtfScreen(
+Widget makeNtfScreen({
    BuildContext ctx,
    Function onChange,
-   final String appBarTitle,
-   final NtfConfig conf,
-   final List<String> titleDesc,
-) {
-   assert(titleDesc.length >= 2);
+   final String title,
+   final NtfConfig ntfConfig,
+   final List<String> titleDescription,
+   OnPressedF07 onWillPopScope,
+}) {
+   assert(titleDescription.length >= 2);
 
    CheckboxListTile chat = CheckboxListTile(
       dense: true,
-      title: Text(titleDesc[0], style: stl.ltTitle),
-      subtitle: Text(titleDesc[1], style: stl.ltSubtitle),
-      value: conf.chat,
+      title: Text(titleDescription[0], style: stl.ltTitle),
+      subtitle: Text(titleDescription[1], style: stl.ltSubtitle),
+      value: ntfConfig.chat,
       onChanged: (bool v) { onChange(0, v); },
       activeColor: stl.colorScheme.primary,
       isThreeLine: true,
@@ -482,11 +482,9 @@ Scaffold makeNtfScreen(
       child: col,
    );
 
-   return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle,
-	    style: TextStyle(color: stl.colorScheme.onPrimary),
-	 ),
-      ),
+   return makeConfigScaffold(
+      title: title,
+      onWillPopScope: onWillPopScope,
       body: Padding(
          child: Center(child: tmp),
          padding: EdgeInsets.symmetric(vertical: 20.0),
@@ -507,6 +505,30 @@ Widget makeHiddenButton(OnPressedF00 onHiddenButtonLP, Color color)
       hoverColor: color,
       highlightColor: color,
       splashColor: color,
+   );
+}
+
+Widget makeConfigScaffold({
+   String title,
+   OnPressedF07 onWillPopScope,
+   Widget body,
+}) {
+   return WillPopScope(
+      onWillPop: () async { return onWillPopScope();},
+      child: Scaffold(
+	 backgroundColor: Colors.white,
+	 appBar: AppBar(
+	    title: Text(title,
+	       style: TextStyle(color: stl.colorScheme.onPrimary),
+	    ),
+	    leading: IconButton(
+	       padding: EdgeInsets.all(0.0),
+	       icon: Icon(Icons.arrow_back, color: stl.colorScheme.onPrimary),
+	       onPressed: onWillPopScope,
+	    ),
+	 ),
+	 body: body,
+      ),
    );
 }
 
@@ -536,24 +558,12 @@ Widget makeInfoScreen(
       ],
    );
 
-   return WillPopScope(
-      onWillPop: () async { return onWillPopScope();},
-      child: Scaffold(
-	 backgroundColor: Colors.white,
-	 appBar: AppBar(
-	    title: Text(g.param.shareSubject,
-	       style: TextStyle(color: stl.colorScheme.onPrimary),
-	    ),
-	    leading: IconButton(
-	       padding: EdgeInsets.all(0.0),
-	       icon: Icon(Icons.arrow_back, color: stl.colorScheme.onPrimary),
-	       onPressed: onWillPopScope,
-	    ),
-	 ),
-	 body: Padding(
-	    child: Center(child: col),
-	    padding: EdgeInsets.symmetric(vertical: 20.0),
-	 ),
+   return makeConfigScaffold(
+      title: g.param.shareSubject,
+      onWillPopScope: onWillPopScope,
+      body: Padding(
+	 child: Center(child: col),
+	 padding: EdgeInsets.symmetric(vertical: 20.0),
       ),
    );
 }
@@ -805,7 +815,10 @@ RichText makeSearchTitle({
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.newPostSubtitleLT.copyWith(fontSize: stl.ltTitleFontSize),
+              style: stl.newPostSubtitleLT.copyWith(
+		 color: stl.colorScheme.primary,
+		 fontSize: stl.ltTitleFontSize,
+	      ),
            ),
          ],
       ),
@@ -1150,7 +1163,10 @@ Widget makeNewPostLT({
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.ellipsis,
-	     style: stl.newPostSubtitleLT.copyWith(fontSize: stl.ltTitleFontSize),
+	     style: stl.newPostSubtitleLT.copyWith(
+		color: stl.colorScheme.primary,
+		fontSize: stl.ltTitleFontSize,
+	     ),
 	  ),
        onTap: onTap,
        enabled: true,
@@ -1179,13 +1195,8 @@ Widget makeChooseTreeNodeDialog({
    final OnPressedF14 onSetTreeCode,
 }) {
    String subtitle = root.name(g.param.langIdx);
-   if (defaultCode.isNotEmpty) {
-      subtitle = loadNames(
-         root,
-	 defaultCode,
-	 g.param.langIdx,
-      ).join(', ');
-   }
+   if (defaultCode.isNotEmpty)
+      subtitle = loadNames(root, defaultCode, g.param.langIdx).join(', ');
 
    return makeNewPostLT(
       title: title,
@@ -1262,11 +1273,11 @@ List<Widget> makeNewPostWdgs({
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
-	 iconData: Icons.edit_location,
+	 //iconData: Icons.edit_location,
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
       );
 
-      list.add(location);
+      list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: location));
       list.add(stl.newPostDivider);
    }
 
@@ -1277,11 +1288,11 @@ List<Widget> makeNewPostWdgs({
 	 title: g.param.newPostTabNames[1],
 	 defaultCode: post.product,
 	 root: prodRootNode,
-	 iconData: Icons.directions_car,
+	 //iconData: Icons.directions_car,
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
       );
 
-      list.add(product);
+      list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: product));
       list.add(stl.newPostDivider);
    }
 
@@ -1388,7 +1399,7 @@ List<Widget> makeNewPostWdgs({
    return list;
 }
 
-Widget makeNewPostScreenWdgs2({
+Widget makeNewPostScreenWdgs({
    BuildContext ctx,
    final bool sendingPost,
    final Node locRootNode,
@@ -1563,7 +1574,7 @@ List<Widget> makeValueSliders({
    return sliders;
 }
 
-Widget makeSearchScreenWdg2({
+Widget makeSearchScreenWdg({
    BuildContext ctx,
    final int state,
    String numberOfMatchingPosts,
@@ -1588,11 +1599,11 @@ Widget makeSearchScreenWdg2({
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
-	 iconData: Icons.edit_location,
+	 //iconData: Icons.edit_location,
 	 onSetTreeCode: onSetLocationCode,
       );
 
-      foo.add(location);
+      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: location));
       foo.add(stl.newPostDivider);
    }
 
@@ -1603,11 +1614,11 @@ Widget makeSearchScreenWdg2({
 	 defaultCode: post.product,
 	 title: g.param.newPostTabNames[1],
 	 root: prodRootNode,
-	 iconData: Icons.directions_car,
+	 //iconData: Icons.directions_car,
 	 onSetTreeCode: onSetProductCode,
       );
 
-      foo.add(product);
+      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: product));
       foo.add(stl.newPostDivider);
    }
 
@@ -1663,7 +1674,9 @@ Widget makeSearchScreenWdg2({
       //   Colors.black,
       //);
 
-      final String buttonTitle = '${g.param.filterAppBarTitle}: $numberOfMatchingPosts';
+      String buttonTitle = '${g.param.filterAppBarTitle}';
+      if (numberOfMatchingPosts.isNotEmpty)
+	 buttonTitle += ': $numberOfMatchingPosts';
 
       Widget w2 = createRaisedButton(
          () {onSearchPressed(2);},
@@ -2638,14 +2651,14 @@ String makeStrAbbrev(final String str)
    return str.substring(0, 2);
 }
 
-Widget makePayPriceListTile(
+Widget makePayPriceListTile({
    BuildContext ctx,
    String price,
    String title,
    String subtitle,
-   Function onTap,
-   Color color)
-{
+   Color priceColor,
+   OnPressedF00 onTap,
+}) {
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
@@ -2660,28 +2673,28 @@ Widget makePayPriceListTile(
 
    Widget leading = Card(
       margin: const EdgeInsets.all(0.0),
-      color: color,
+      color: priceColor,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Padding(
          padding: EdgeInsets.all(10.0),
-         child: Text(price, style: TextStyle(color: Colors.white),),
+         child: Text(price, style: TextStyle(color: Colors.white)),
       ),
    );
 
    return ListTile(
        leading: leading,
        title: titleW,
-       dense: true,
+       dense: false,
        subtitle: subtitleW,
        trailing: Icon(Icons.keyboard_arrow_right),
-       contentPadding: EdgeInsets.symmetric(horizontal: 10.0),
+       contentPadding: EdgeInsets.symmetric(horizontal: 2),
        onTap: onTap,
        enabled: true,
        selected: false,
-       isThreeLine: false,
+       isThreeLine: true,
     );
 }
 
@@ -2728,17 +2741,17 @@ Widget makePaymentChoiceWidget(
    // isThreeLine: false,
    List<Function> payments = <Function>
    [ () { freePayment(ctx);   }
-   , () { log('===> pay1'); }
-   , () { log('===> pay2'); }
+   , () { print('===> pay1'); }
+   , () { print('===> pay2'); }
    ];
    for (int i = 0; i < g.param.payments0.length; ++i) {
       Widget p = makePayPriceListTile(
-         ctx,
-         g.param.payments0[i],
-         g.param.payments1[i],
-         g.param.payments2[i],
-         payments[i],
-         stl.priceColors[i],
+         ctx: ctx,
+         price: g.param.payments0[i],
+         title: g.param.payments1[i],
+         subtitle: g.param.payments2[i],
+         priceColor: stl.priceColors[i],
+         onTap: payments[i],
       );
 
       widgets.add(p);
@@ -4009,8 +4022,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
 
       Padding modelTitle = Padding(
-	 padding: const EdgeInsets.only(left: 5.0),
+	 padding: const EdgeInsets.only(left: 5.0, top: 3.0),
 	 child: RichText(
+	    overflow: TextOverflow.ellipsis,
 	    text: TextSpan(
 	       text: '$modelStr ',
 	       style: TextStyle(
@@ -4076,13 +4090,13 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       if (h2 > 43)
 	 h2 = 43;
       final double h3 = imgAvatarWidth * 2.0 / 12.0;
-      final double widthCol2 = makePostTextWidth(ctx, widget.tab);
+      final double postTxtWidth = makePostTextWidth(ctx, widget.tab);
 
       Column infoWdg = Column(children: <Widget>
-      [ SizedBox(width: widthCol2, height: h1, child: modelTitle)
-      , SizedBox(width: widthCol2, height: h2, child: s1)
-      , SizedBox(width: widthCol2, height: h2, child: s2)
-      , Expanded(child: SizedBox(width: widthCol2, child: Row(children: <Widget>[viewsWdg, Spacer(), dateWdg])))
+      [ SizedBox(width: postTxtWidth, height: h1, child: modelTitle)
+      , SizedBox(width: postTxtWidth, height: h2, child: s1)
+      , SizedBox(width: postTxtWidth, height: h2, child: s2)
+      , Expanded(child: SizedBox(width: postTxtWidth, child: Row(children: <Widget>[viewsWdg, Spacer(), dateWdg])))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
@@ -5988,33 +6002,33 @@ class OccaseState extends State<Occase>
 
    Future<void> _onPostVisualization(String postId) async
    {
+      // Visualizations that occurr while the user is offline will be
+      // lost. This can be fixes later.
       try {
-         var map =
-         { 'cmd': 'statistics'
-         , 'type': 'visualization'
-         , 'post_ids': <String>[postId],
-         };
+	 var response = await http.put(cts.dbVisualizationUrl,
+	    body: jsonEncode({'post_ids': <String>[postId]}),
+	 );
 
-         await _sendAppMsg(jsonEncode(map), 0);
+	 if (response.statusCode != 200)
+	    print('Error: Unable to put visualization.');
 
-      } catch(e) {
-         log(e);
+      } catch (e) {
+	 print(e);
       }
    }
 
    Future<void> _onPostClick(String postId) async
    {
       try {
-         var map =
-         { 'cmd': 'statistics'
-         , 'type': 'click'
-         , 'post_id': postId,
-         };
+	 var response = await http.put(cts.dbClickUrl,
+	    body: jsonEncode({'post_id': postId}),
+	 );
 
-         await _sendAppMsg(jsonEncode(map), 0);
+	 if (response.statusCode != 200)
+	    print('Error: Unable to put click.');
 
-      } catch(e) {
-         log(e);
+      } catch (e) {
+	 print(e);
       }
    }
 
@@ -6880,9 +6894,9 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeNewPostScreenWdgs2(BuildContext ctx)
+   Widget _makeNewPostScreenWdgs(BuildContext ctx)
    {
-      return makeNewPostScreenWdgs2(
+      return makeNewPostScreenWdgs(
 	 ctx: ctx,
 	 sendingPost: _sendingPost,
 	 locRootNode: _locRootNode,
@@ -6902,9 +6916,9 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeSearchScreenWdg2(BuildContext ctx)
+   Widget _makeSearchScreenWdg(BuildContext ctx)
    {
-      return makeSearchScreenWdg2(
+      return makeSearchScreenWdg(
 	 ctx: ctx,
 	 state: _posts[cts.searchIdx].exDetails[0],
 	 numberOfMatchingPosts: _numberOfMatchingPosts,
@@ -7082,19 +7096,19 @@ class OccaseState extends State<Occase>
       List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
       if (_newPostPressed) {
-	 ret[cts.ownIdx] = _makeNewPostScreenWdgs2(ctx);
+	 ret[cts.ownIdx] = _makeNewPostScreenWdgs(ctx);
       } else {
 	 ret[cts.ownIdx] = _makeChatTab(ctx, cts.ownIdx);
       }
 
       if (_newSearchPressed && !isWide) {
-	 ret[cts.searchIdx] = _makeSearchScreenWdg2(ctx);
+	 ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
       } else {
 	 ret[cts.searchIdx] = _makeSearchResultTab();
       }
 
       if ((_newSearchPressed || _appState.favPosts.isEmpty) && isWide) {
-	 ret[cts.favIdx] = _makeSearchScreenWdg2(ctx);
+	 ret[cts.favIdx] = _makeSearchScreenWdg(ctx);
       } else {
 	 ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
       }
@@ -7141,23 +7155,25 @@ class OccaseState extends State<Occase>
 
       if (_goToRegScreen) {
          return makeRegisterScreen(
-            _txtCtrl2,
-            _txtCtrl,
-            (){_onRegisterContinue(ctx);},
-            g.param.changeNickAppBarTitle,
-            _appState.cfg.email,
-            _appState.cfg.nick,
-	    makeMaxWidth(ctx, cts.ownIdx),
+            emailCtrl: _txtCtrl2,
+            nickCtrl: _txtCtrl,
+            onContinue: (){_onRegisterContinue(ctx);},
+            title: g.param.changeNickAppBarTitle,
+            previousEmail: _appState.cfg.email,
+            previousNick: _appState.cfg.nick,
+	    maxWidth: makeMaxWidth(ctx, cts.ownIdx),
+	    onWillPopScope: () {setState(() {_goToRegScreen = false;});},
          );
       }
 
       if (_goToNtfScreen) {
          return makeNtfScreen(
-	    ctx,
-            _onChangeNtf,
-            g.param.changeNtfAppBarTitle,
-            _appState.cfg.notifications,
-            g.param.ntfTitleDesc,
+	    ctx: ctx,
+            onChange: _onChangeNtf,
+            title: g.param.changeNtfAppBarTitle,
+            ntfConfig: _appState.cfg.notifications,
+            titleDescription: g.param.ntfTitleDesc,
+	    onWillPopScope: () {setState(() {_goToNtfScreen = false;});},
          );
       }
 

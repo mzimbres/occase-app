@@ -48,11 +48,13 @@ const String dbWebsocketUrl = 'wss://' + dbHost;
 
 const String dbHttpUrl = 'https://' + dbHost;
 
-const String dbCountPostsUrl =   dbHttpUrl + '/posts/count';
-const String dbSearchPostsUrl =  dbHttpUrl + '/posts/search';
-const String dbUploadCreditUrl = dbHttpUrl + '/posts/upload-credit';
-const String dbDeletePostUrl =   dbHttpUrl + '/posts/delete';
-const String dbPostUrl =         dbHttpUrl + '/posts/publish';
+const String dbCountPostsUrl =    dbHttpUrl + '/posts/count';
+const String dbSearchPostsUrl =   dbHttpUrl + '/posts/search';
+const String dbUploadCreditUrl =  dbHttpUrl + '/posts/upload-credit';
+const String dbDeletePostUrl =    dbHttpUrl + '/posts/delete';
+const String dbPostUrl =          dbHttpUrl + '/posts/publish';
+const String dbVisualizationUrl = dbHttpUrl + '/posts/visualization';
+const String dbClickUrl =         dbHttpUrl + '/post/click';
 
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;
