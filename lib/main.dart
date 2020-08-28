@@ -1998,7 +1998,7 @@ Card makeChatMsgWidget(
 
    RichText msgAndDate = RichText(
       text: TextSpan(
-         text: chatMetadata.msgs[i].message,
+         text: chatMetadata.msgs[i].body,
          style: stl.textField.copyWith(color: txtColor),
          children: <TextSpan>
          [ TextSpan(
@@ -2271,7 +2271,7 @@ Widget makeRefChatMsgWidget({
    if (isNewMsg)
       titleColor = stl.colorScheme.secondary;
 
-   Text body = Text(chatMetadata.msgs[dragedIdx].message,
+   Text body = Text(chatMetadata.msgs[dragedIdx].body,
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
       style: Theme.of(ctx).textTheme.caption.copyWith(
@@ -2835,13 +2835,18 @@ Container makeUnreadMsgsCircle(
    );
 }
 
-Row makePostRowElem(BuildContext ctx, String key, String value)
-{
+Row makePostRowElem({
+   BuildContext ctx,
+   String key,
+   String value,
+   Color keyTextColor = stl.infoKeyColor,
+   Color valueTextColor = stl.infoValueColor,
+}) {
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
          style: stl.ltTitle.copyWith(
-            color: stl.infoKeyColor,
+            color: keyTextColor,
             fontWeight: FontWeight.normal,
          ),
          children: <TextSpan>
@@ -2859,13 +2864,14 @@ Row makePostRowElem(BuildContext ctx, String key, String value)
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-      [ Icon(Icons.arrow_right, color: stl.infoKeyArrowColor)
+      [ Icon(Icons.arrow_right, color: valueTextColor)
       , ConstrainedBox(
-         constraints: BoxConstraints(
-            maxWidth: 0.80 * width,
-            minWidth: 0.80 * width,
-         ),
-         child: left)
+           child: left,
+           constraints: BoxConstraints(
+              maxWidth: 0.90 * width,
+              minWidth: 0.90 * width,
+           ),
+	),
       ]
    );
 }
@@ -2924,7 +2930,11 @@ List<Widget> makeTreeInfo(
 
    List<Widget> tmp = List<Widget>.generate(names.length, (int j)
    {
-      return makePostRowElem(ctx, menuDepthNames[j], names[j]);
+      return makePostRowElem(
+	 ctx: ctx,
+	 key: menuDepthNames[j],
+	 value: names[j],
+      );
    });
 
    ret.addAll(tmp);
@@ -2951,24 +2961,54 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
    list.add(makePostSectionTitle(g.param.rangesTitle));
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
-      { return makePostRowElem(ctx, g.param.postValueTitles[i], makeRangeStr(post, i)); });
+   {
+      return makePostRowElem(
+	 ctx: ctx,
+	 key: g.param.postValueTitles[i],
+	 value: makeRangeStr(post, i),
+      );
+   });
 
    list.addAll(items); // The menu info.
 
    return list;
 }
 
-List<Widget> makePostViews({
+List<Widget> makePostStats({
    BuildContext ctx,
-   Post post,
+   final Post post,
    final List<String> titleAndFields,
 }) {
    List<Widget> list = <Widget>[];
 
    list.add(makePostSectionTitle(titleAndFields[0]));
-   list.add(makePostRowElem(ctx, titleAndFields[1], '${post.onSearch}'));
-   list.add(makePostRowElem(ctx, titleAndFields[2], '${post.views}'));
-   list.add(makePostRowElem(ctx, titleAndFields[3], '${post.clicks}'));
+
+   list.add(makePostRowElem(
+	 ctx: ctx,
+	 key: titleAndFields[1],
+	 value: '${post.onSearch}',
+	 keyTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.onSecondary,
+      ),
+   );
+
+   list.add(makePostRowElem(
+	 ctx: ctx,
+	 key: titleAndFields[2],
+	 value: '${post.views}',
+	 keyTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.onSecondary,
+      ),
+   );
+
+   list.add(makePostRowElem(
+	 ctx: ctx,
+	 key: titleAndFields[3],
+	 value: '${post.clicks}',
+	 keyTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.onSecondary,
+      ),
+   );
 
    return list;
 }
@@ -2992,9 +3032,10 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
 	 continue;
       
       list.add(
-         makePostRowElem(ctx,
-            exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
-            exDetailsRootNode.children[idx].children[i].children[k].name(g.param.langIdx),
+         makePostRowElem(
+	    ctx: ctx,
+            key: exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
+            value: exDetailsRootNode.children[idx].children[i].children[k].name(g.param.langIdx),
          ),
       );
    }
@@ -3018,7 +3059,12 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
    values.add(makeDateString2(date));
 
    for (int i = 0; i < values.length; ++i)
-      list.add(makePostRowElem(ctx, g.param.descList[i], values[i]));
+      list.add(makePostRowElem(
+            ctx: ctx,
+	    key: g.param.descList[i],
+	    value: values[i],
+	 ),
+      );
 
    return list;
 }
@@ -3050,8 +3096,11 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
    return all;
 }
 
-Card putPostElemOnCard(List<Widget> list, double padding)
-{
+Card putPostElemOnCard({
+   List<Widget> list,
+   double padding,
+   Color backgroundColor = Colors.white, 
+}) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -3061,7 +3110,7 @@ Card putPostElemOnCard(List<Widget> list, double padding)
    return Card(
       elevation: 0.0,
       //color: stl.colorScheme.background,
-      color: Colors.white,
+      color: backgroundColor,
       margin: EdgeInsets.all(0.0),
       child: Padding(
          child: col,
@@ -3101,20 +3150,11 @@ List<Widget> assemblePostRows({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
 }) {
-   List<Widget> all = List<Widget>();
-
-   all.addAll(makePostViews(
-	 ctx: ctx,
-	 post: post,
-	 titleAndFields: g.param.statsTitleAndFields,
-      ),
-   );
+   List<Widget> all = <Widget>[];
 
    all.addAll(makePostValues(ctx, post));
-
    all.addAll(makeTreeInfo(ctx, locRootNode, post.location, g.param.newPostTabNames[0], g.param.menuDepthNames0));
    all.addAll(makeTreeInfo(ctx, prodRootNode, post.product, g.param.newPostTabNames[1], g.param.menuDepthNames1));
-
    all.addAll(makePostExDetails(ctx, post, exDetailsRootNode));
    all.addAll(makePostInDetails(post, inDetailsRootNode));
 
@@ -3272,6 +3312,7 @@ Widget makeNewPostDialogWdg({
    final double indent,
    final List<Widget> list,
    final List<Widget> actions,
+   final double diagBorderRadius = stl.cornerRadius,
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: stl.alertDialogInsetPadding, vertical: stl.alertDialogInsetPadding),
 }) {
    Column col = Column(
@@ -3315,9 +3356,7 @@ Widget makeNewPostDialogWdg({
       backgroundColor: Colors.grey[200],
       content: content,
       shape: RoundedRectangleBorder(
-	 borderRadius: BorderRadius.all(
-	    Radius.circular(0.0),
-	 ),
+	 borderRadius: BorderRadius.all(Radius.circular(diagBorderRadius)),
 	 //side: BorderSide(width: 1.0, color: Colors.grey),
       ),
    );
@@ -3835,6 +3874,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       height: height,
                title: null,
 	       indent: margin,
+	       diagBorderRadius: 0.0,
 	       list: <Widget>[detailsWdg],
                actions: actions,
 	       insetPadding: const EdgeInsets.only(
@@ -4121,14 +4161,14 @@ Widget makePostDetailsWdg({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   OnPressedF02 onAddPhoto,
-   OnPressedF01 onExpandImg,
-   OnPressedF00 onReportPost,
-   OnPressedF00 onSharePost,
+   final OnPressedF02 onAddPhoto,
+   final OnPressedF01 onExpandImg,
+   final OnPressedF00 onReportPost,
+   final OnPressedF00 onSharePost,
 }) {
-   List<Widget> rows = List<Widget>();
+   List<Widget> rows = <Widget>[];
 
-   Widget lv = makeImgListView(
+   Widget listView = makeImgListView(
       ctx: ctx,
       width: makeTabWidth(ctx, tab),
       height: makeImgHeight(ctx, tab),
@@ -4139,7 +4179,24 @@ Widget makePostDetailsWdg({
       addImg: onAddPhoto,
    );
 
-   rows.add(lv);
+   rows.add(listView);
+
+   //--------------------------------------------------------------------------
+
+   List<Widget> stats = makePostStats(
+      ctx: ctx,
+      post: post,
+      titleAndFields: g.param.statsTitleAndFields,
+   );
+
+   rows.add(putPostElemOnCard(
+	 list: stats,
+	 padding: 4.0,
+	 backgroundColor: stl.colorScheme.secondary,
+   ));
+
+   //--------------------------------------------------------------------------
+
 
    IconButton share = IconButton(
       icon: Icon(
@@ -4151,6 +4208,8 @@ Widget makePostDetailsWdg({
 
    rows.add(share);
 
+   //--------------------------------------------------------------------------
+
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
       tab: tab,
@@ -4161,9 +4220,11 @@ Widget makePostDetailsWdg({
       inDetailsRootNode: inDetailsRootNode,
    );
 
-   rows.add(putPostElemOnCard(tmp, 4.0));
+   rows.add(putPostElemOnCard(list: tmp, padding: 4.0));
 
-   return putPostElemOnCard(rows, 0.0);
+   //--------------------------------------------------------------------------
+
+   return putPostElemOnCard(list: rows, padding: 0.0);
 }
 
 Widget makeEmptyTabText(String msg)
@@ -5416,7 +5477,7 @@ class OccaseState extends State<Occase>
          for (Coord c2 in _lpChatMsgs[i]) {
             ChatItem ci = ChatItem(
                isRedirected: 1,
-               message: c2.chat.msgs[c2.msgIdx].message,
+               body: c2.chat.msgs[c2.msgIdx].body,
                date: now,
             );
 
@@ -5479,7 +5540,7 @@ class OccaseState extends State<Occase>
          to: _chats[i].peer,
          chatItem: ChatItem(
             isRedirected: 0,
-            message: _txtCtrl.text,
+            body: _txtCtrl.text,
             date: DateTime.now().millisecondsSinceEpoch,
             refersTo: _dragedIdxs[i],
             status: 0,
@@ -5969,7 +6030,7 @@ class OccaseState extends State<Occase>
       ChatItem chatItem,
    }) async {
       try {
-	 if (chatItem.message.isEmpty)
+	 if (chatItem.body.isEmpty)
 	    return;
 
 	 final int id = await _appState.setChatMessage(
@@ -5984,7 +6045,7 @@ class OccaseState extends State<Occase>
          , 'type': 'chat'
          , 'is_redirected': chatItem.isRedirected
          , 'to': to
-         , 'message': chatItem.message
+         , 'body': chatItem.body
          , 'refers_to': chatItem.refersTo
          , 'post_id': postId
          , 'nick': _appState.cfg.nick
@@ -6020,8 +6081,9 @@ class OccaseState extends State<Occase>
    Future<void> _onPostClick(String postId) async
    {
       try {
+	 final String body = jsonEncode({'post_id': postId});
 	 var response = await http.put(cts.dbClickUrl,
-	    body: jsonEncode({'post_id': postId}),
+	    body: body,
 	 );
 
 	 if (response.statusCode != 200)
@@ -6036,7 +6098,7 @@ class OccaseState extends State<Occase>
       final String to,
       final String peer,
       final String postId,
-      final String message,
+      final String body,
       final String nick,
       final String avatar,
       final int refersTo,
@@ -6061,7 +6123,7 @@ class OccaseState extends State<Occase>
       await _onChatImpl(
          to: to,
          postId: postId,
-         message: message,
+         body: body,
          peer: peer,
          nick: nick,
          avatar: avatar,
@@ -6080,7 +6142,7 @@ class OccaseState extends State<Occase>
       int peerMsgId,
       String to,
       String postId,
-      String message,
+      String body,
       String peer,
       String nick,
       String avatar,
@@ -6097,7 +6159,7 @@ class OccaseState extends State<Occase>
 
       final ChatItem ci = ChatItem(
          isRedirected: isRedirected,
-         message: message,
+         body: body,
          date: now,
          refersTo: refersTo,
          peerId: peerMsgId,
@@ -6280,7 +6342,7 @@ class OccaseState extends State<Occase>
 	 await _onChatImpl(
 	    to: _appState.cfg.userId,
 	    postId: postId,
-	    message: g.param.adminChatMsg,
+	    body: g.param.adminChatMsg,
 	    peer: g.param.adminId,
 	    nick: g.param.adminNick,
 	    avatar: emailToGravatarHash(cts.occaseEmail),
@@ -6317,7 +6379,7 @@ class OccaseState extends State<Occase>
 	       if (type == 'chat') {
 		  await _onChat(
 		     to: map['to'] ?? '',
-		     message: map['message'] ?? '',
+		     body: map['body'] ?? '',
 		     nick: map['nick'] ?? '',
 		     peer: from,
 		     postId: postId,
@@ -7291,7 +7353,7 @@ class OccaseState extends State<Occase>
 	    body: body,
 	    appBar: AppBar(
                title: Text(g.param.shareSubject,
-		  style: TextStyle(color: stl.colorScheme.onPrimary),
+		  //style: TextStyle(color: stl.colorScheme.onPrimary),
 	       ),
 	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
@@ -7314,7 +7376,7 @@ class OccaseState extends State<Occase>
             isWide,
 	    screenIdx,
 	    Text(g.param.shareSubject,
-	       style: TextStyle(color: stl.colorScheme.onPrimary),
+	       //style: TextStyle(color: stl.colorScheme.onPrimary),
 	    ),
 	 ),
 	 appBarLeading: _makeAppBarLeading(isWide, screenIdx),

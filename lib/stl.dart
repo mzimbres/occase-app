@@ -26,9 +26,9 @@ const ColorScheme colorScheme = const ColorScheme.light(
       onPrimary: onPrimaryColor,
 );
 
-final Color infoKeyColor = Colors.grey[700];
-final Color infoKeyArrowColor = infoKeyColor;
-final Color infoValueColor = primaryColor;
+const Color infoKeyColor = Colors.black;
+const Color infoKeyArrowColor = infoKeyColor;
+const Color infoValueColor = primaryColor;
 
 const double titleFontSize = 20.0;
 const double subheadFontSize = 16.0;

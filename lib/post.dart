@@ -79,7 +79,7 @@ class ChatItem {
    int status;
 
    // The chat message.
-   String message = '';
+   String body = '';
 
    // The date where the message was sent or received.
    int date = 0;
@@ -92,7 +92,7 @@ class ChatItem {
    , this.refersTo = -1
    , this.status = 0
    , this.isLongPressed = false
-   , this.message = ''
+   , this.body = ''
    , this.date = 0
    });
 
@@ -119,7 +119,7 @@ class ChatItem {
       refersTo = map['refers_to'] ?? -1;
       status = map['status'] ?? 3;
       isRedirected = map['is_redirected'] ?? 0;
-      message = map['message'] ?? '';
+      body = map['body'] ?? '';
       date = map['date'] ?? 0;
       isLongPressed = false;
    }
@@ -131,7 +131,7 @@ class ChatItem {
       , 'refers_to': refersTo
       , 'status': status
       , 'is_redirected': isRedirected
-      , 'message': message
+      , 'body': body
       , 'date': date
       };
    }
@@ -174,7 +174,7 @@ Map<String, dynamic> makeChatItemToMap(
     , 'refers_to': ci.refersTo
     , 'status': ci.refersTo
     , 'date': ci.date
-    , 'message': ci.message
+    , 'body': ci.body
     };
 }
 
@@ -227,7 +227,7 @@ class ChatMetadata {
       if (msgs.isEmpty)
 	 return '';
 
-      return msgs.last.message;
+      return msgs.last.body;
    }
 
    bool isLastChatMsgFromThisApp()
@@ -364,14 +364,14 @@ int compChatByMsg(final ChatMetadata lhs, final ChatMetadata rhs)
    if (rhs.msgs.isEmpty)
       return -1;
 
-   if (lhs.msgs.last.message.isEmpty && rhs.msgs.last.message.isEmpty)
+   if (lhs.msgs.last.body.isEmpty && rhs.msgs.last.body.isEmpty)
       return lhs.date > rhs.date ? -1
            : lhs.date < rhs.date ? 1 : 0;
 
-   if (lhs.msgs.last.message.isEmpty)
+   if (lhs.msgs.last.body.isEmpty)
       return 1;
 
-   if (rhs.msgs.last.message.isEmpty)
+   if (rhs.msgs.last.body.isEmpty)
       return -1;
 
    return lhs.msgs.last.date > rhs.msgs.last.date ? -1
