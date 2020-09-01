@@ -745,16 +745,14 @@ Widget makeImgListView({
 	       icon: Icon(Icons.add_a_photo, color: stl.colorScheme.primary),
 	    );
 
-	    Widget addWdg = makeWdgOverImg(add);
-	    wdgs.add(Positioned(child: addWdg, bottom: 4.0, right: 4.0));
-
 	    IconButton remove = IconButton(
 	       onPressed: (){addImg(ctx, i);},
 	       icon: Icon(Icons.cancel, color: stl.colorScheme.primary),
 	    );
 
-	    Widget removeWdg = makeWdgOverImg(remove);
-	    wdgs.add(Positioned(child: removeWdg, top: 4.0, right: 4.0));
+
+	    Widget addWdg = makeWdgOverImg(Column(children: <Widget>[remove, add]));
+	    wdgs.add(Positioned(child: addWdg, bottom: 4.0, right: 4.0));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0, left: 4.0));
 	 } else {
 	    assert(false);
@@ -913,7 +911,7 @@ Widget makeNewPostFinalScreen({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   final OnPressedF02 onAddPhoto,
+   final OnPressedF02 onAddImg,
    final OnPressedF04 onPublishPost,
    final OnPressedF04 onRemovePost,
 }) {
@@ -930,7 +928,7 @@ Widget makeNewPostFinalScreen({
       locRootNode: locRootNode,
       prodRootNode: prodRootNode,
       imgFiles: imgFiles,
-      onAddPhoto: onAddPhoto,
+      onAddImg: onAddImg,
       onExpandImg: (int j){ log('Noop00'); },
       onAddPostToFavorite: () { log('Noop01'); },
       onDelPost: () { log('Noop02');},
@@ -1411,7 +1409,7 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF12 onSetTreeCode,
    final OnPressedF03 onSetExDetail,
    final OnPressedF03 onSetInDetail,
-   final OnPressedF02 onAddPhoto,
+   final OnPressedF02 onAddImg,
    final OnPressedF04 onPublishPost,
    final OnPressedF04 onRemovePost,
    final OnPressedF08 onRangeValueChanged,
@@ -1490,7 +1488,7 @@ Widget makeNewPostScreenWdgs({
 	    exDetailsRootNode: exDetailsRootNode,
 	    inDetailsRootNode: inDetailsRootNode,
 	    imgFiles: imgFiles,
-	    onAddPhoto: onAddPhoto,
+	    onAddImg: onAddImg,
 	    onPublishPost: onPublishPost,
 	    onRemovePost: onRemovePost,
 	 );
@@ -2853,7 +2851,7 @@ Row makePostRowElem({
          [ TextSpan(
               text: value,
               style: stl.ltTitle.copyWith(
-                 color: stl.infoValueColor
+                 color: valueTextColor
               ),
            ),
          ],
@@ -2864,7 +2862,7 @@ Row makePostRowElem({
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
-      [ Icon(Icons.arrow_right, color: valueTextColor)
+      [ Icon(Icons.arrow_right, color: keyTextColor)
       , ConstrainedBox(
            child: left,
            constraints: BoxConstraints(
@@ -2988,7 +2986,7 @@ List<Widget> makePostStats({
 	 key: titleAndFields[1],
 	 value: '${post.onSearch}',
 	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.primary,
       ),
    );
 
@@ -2997,7 +2995,7 @@ List<Widget> makePostStats({
 	 key: titleAndFields[2],
 	 value: '${post.views}',
 	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.primary,
       ),
    );
 
@@ -3006,7 +3004,7 @@ List<Widget> makePostStats({
 	 key: titleAndFields[3],
 	 value: '${post.clicks}',
 	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.onSecondary,
+	 valueTextColor: stl.colorScheme.primary,
       ),
    );
 
@@ -3211,7 +3209,6 @@ Widget makeTextWdg({
    String text,
    EdgeInsets edgeInsets = const EdgeInsets.all(3.0),
    FontWeight fontWeight = FontWeight.normal,
-   Color backgroundColor = const Color(0xFFFFFFFF),
    Color textColor = const Color(0xFF000000),
    double fontSize = stl.subtitleFontSize,
 }) {
@@ -3753,7 +3750,7 @@ class PostWidget extends StatefulWidget {
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    List<PickedFile> imgFiles;
-   OnPressedF02 onAddPhoto;
+   OnPressedF02 onAddImg;
    OnPressedF01 onExpandImg;
    OnPressedF00 onAddPostToFavorite;
    OnPressedF00 onDelPost;
@@ -3774,7 +3771,7 @@ class PostWidget extends StatefulWidget {
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
    , @required this.imgFiles
-   , @required this.onAddPhoto
+   , @required this.onAddImg
    , @required this.onExpandImg
    , @required this.onAddPostToFavorite
    , @required this.onDelPost
@@ -3818,7 +3815,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       exDetailsRootNode: widget.exDetailsRootNode,
 	       inDetailsRootNode: widget.inDetailsRootNode,
 	       imgFiles: widget.imgFiles,
-	       onAddPhoto: widget.onAddPhoto,
+	       onAddImg: widget.onAddImg,
 	       onExpandImg: widget.onExpandImg,
 	       onReportPost: () 
 	       {
@@ -3923,14 +3920,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 onPinPost: widget.onPinPost,
       );
 
-      // TODO: Change this to a shorter form.
       final String dateStr = makeDateString2(widget.post.date);
       final double dateFontSize = 12.0;
 
       Widget dateWdg = makeTextWdg(
 	 text: '${dateStr}',
 	 edgeInsets: const EdgeInsets.only(left: 0.0, top: 0.0, bottom: 0.0),
-	 backgroundColor: null,
 	 textColor: Colors.grey,
 	 fontSize: dateFontSize,
       );
@@ -3939,11 +3934,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       final int views = widget.post.views;
       final int clicks = widget.post.clicks;
 
-      Widget viewsWdg = makeTextWdg(
+      Widget statsWdgs = makeTextWdg(
 	 text: '${onSearch}/${views}/${clicks}',
 	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 0.0, bottom: 0.0),
-	 backgroundColor: null,
-	 textColor: Colors.grey,
+	 textColor: stl.colorScheme.primary,
 	 fontSize: dateFontSize,
       );
 
@@ -3964,12 +3958,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 	 Widget kmText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 2),
-	    backgroundColor: null,
 	 );
 
 	 Widget priceText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 0),
-	    backgroundColor: null,
 	 );
 
 	 imgWdg = Stack(
@@ -4020,7 +4012,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       // following way.
       if (widget.post.images.isEmpty && (widget.imgFiles.length < cts.maxImgsPerPost)) {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
-	    onPressed: () {widget.onAddPhoto(ctx, -1);},
+	    onPressed: () {widget.onAddImg(ctx, -1);},
 	    icon: Icons.add_a_photo,
 	    color: stl.colorScheme.primary,
 	 );
@@ -4068,9 +4060,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    text: TextSpan(
 	       text: '$modelStr ',
 	       style: TextStyle(
-		  color: Colors.black,
+		  color: stl.colorScheme.primary,
 		  fontSize: postFontSize,
-		  fontWeight: FontWeight.normal,
+		  fontWeight: FontWeight.w600,
 	       ),
 	       children: <TextSpan>
 	       [ TextSpan(
@@ -4092,22 +4084,22 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> exWdgs = makeDetailsTextWdgs(
 	 fields: exDetailsNames,
-	 backgroundColor: Colors.blueGrey[100],
-	 textColor: Colors.black,
+	 backgroundColor: Colors.orange[500],
+	 textColor: Colors.white,
 	 fontSize: postFontSize,
       );
 
       List<Widget> inWdgs = makeDetailsTextWdgs(
 	 fields: inDetailsNames,
-	 backgroundColor: Colors.brown[100],
-	 textColor: Colors.black,
+	 backgroundColor: Colors.deepOrange[500],
+	 textColor: Colors.white,
 	 fontSize: postFontSize,
       );
 
       const double spacing = 10.0;
       const double runSpacing = 3.0;
 
-      Widget s1 = Padding(
+      Widget exWrap = Padding(
 	 padding: EdgeInsets.all(3.0),
 	 child: Wrap(
 	    children: exWdgs,
@@ -4116,7 +4108,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 ),
       );
 
-      Widget s2 = Padding(
+      Widget inWrap = Padding(
 	 padding: EdgeInsets.all(3.0),
 	 child: Wrap(
 	    children: inWdgs,
@@ -4134,9 +4126,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       Column infoWdg = Column(children: <Widget>
       [ SizedBox(width: postTxtWidth, height: h1, child: modelTitle)
-      , SizedBox(width: postTxtWidth, height: h2, child: s1)
-      , SizedBox(width: postTxtWidth, height: h2, child: s2)
-      , Expanded(child: SizedBox(width: postTxtWidth, child: Row(children: <Widget>[viewsWdg, Spacer(), dateWdg])))
+      , SizedBox(width: postTxtWidth, height: h2, child: exWrap)
+      , SizedBox(width: postTxtWidth, height: h2, child: inWrap)
+      , Expanded(child: SizedBox(width: postTxtWidth, child: Row(children: <Widget>[statsWdgs, Spacer(), dateWdg])))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
@@ -4161,7 +4153,7 @@ Widget makePostDetailsWdg({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   final OnPressedF02 onAddPhoto,
+   final OnPressedF02 onAddImg,
    final OnPressedF01 onExpandImg,
    final OnPressedF00 onReportPost,
    final OnPressedF00 onSharePost,
@@ -4176,7 +4168,7 @@ Widget makePostDetailsWdg({
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
       onExpandImg: (int j){ onExpandImg(j); },
-      addImg: onAddPhoto,
+      addImg: onAddImg,
    );
 
    rows.add(listView);
@@ -4301,7 +4293,7 @@ Widget makeNewPostLv({
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
             imgFiles: List<PickedFile>(),
-            onAddPhoto: (var ctx, var i) {log('Error: Please fix.');},
+            onAddImg: (var ctx, var i) {log('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(i, k);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
 	    onDelPost: () {onDelPost(ctx, i);},
@@ -4811,7 +4803,7 @@ Widget makeChatTab({
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
             imgFiles: List<PickedFile>(),
-            onAddPhoto: (var a, var b) {log('Noop10');},
+            onAddImg: (var a, var b) {log('Noop10');},
             onExpandImg: onExpandImg,
             onAddPostToFavorite:() {log('Noop14');},
 	    onDelPost: onDelPost,
@@ -5318,7 +5310,7 @@ class OccaseState extends State<Occase>
    // Used to either add or remove a photo from the new post.
    // i = -1 ==> add
    // i != -1 ==> remove, in this case i is the index to remove.
-   Future<void> _onAddPhoto(BuildContext ctx, int i) async
+   Future<void> _onAddImg(BuildContext ctx, int i) async
    {
       try {
          // It looks like we do not need to show any dialog here to
@@ -6970,7 +6962,7 @@ class OccaseState extends State<Occase>
 	 onSetExDetail: _onSetExDetail,
 	 onSetInDetail: _onSetInDetail,
 	 imgFiles: _imgFiles,
-	 onAddPhoto: _onAddPhoto,
+	 onAddImg: _onAddImg,
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
