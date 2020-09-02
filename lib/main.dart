@@ -809,7 +809,7 @@ RichText makeSearchTitle({
    return RichText(
       text: TextSpan(
          text: '$name$separator',
-         style: stl.newPostTitleLT.copyWith(fontSize: stl.ltTitleFontSize),
+         style: stl.newPostTitleLT,
          children: <TextSpan>
          [ TextSpan(
               text: value,
@@ -1249,6 +1249,41 @@ Widget makeNewPostInDetailLT({
    );
 }
 
+Widget padNewPostWidget(Widget w)
+{
+   return Padding(
+      padding: EdgeInsets.only(left: stl.leftIndent),
+      child: w,
+   );
+}
+
+Widget makeDropBox()
+{
+   return DropdownButton<int>(
+      value: 500,
+      //icon: Icon(Icons.arrow_downward, color: stl.colorScheme.onSecondary),
+      icon: null,
+      iconSize: 24,
+      elevation: 16,
+      style: stl.newPostTitleLT.copyWith(color: stl.colorScheme.primary),
+      underline: null,
+      //underline: Container(
+      //   height: 2,
+      //   color: stl.colorScheme.secondary,
+      //),
+      onChanged: (int newValue) {
+	 //setState(() { dropdownValue = newValue; });
+      },
+      items: <int>[500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 40000, 50000, 75000, 100000]
+	 .map<DropdownMenuItem<int>>((int value) {
+	       return DropdownMenuItem<int>(
+		  value: value,
+		  child: Text('$value'),
+	 );
+      }).toList(),
+   );
+}
+
 List<Widget> makeNewPostWdgs({
    BuildContext ctx,
    final int tab,
@@ -1275,7 +1310,7 @@ List<Widget> makeNewPostWdgs({
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
       );
 
-      list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: location));
+      list.add(padNewPostWidget(location));
       list.add(stl.newPostDivider);
    }
 
@@ -1290,7 +1325,7 @@ List<Widget> makeNewPostWdgs({
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
       );
 
-      list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: product));
+      list.add(padNewPostWidget(product));
       list.add(stl.newPostDivider);
    }
 
@@ -1302,6 +1337,19 @@ List<Widget> makeNewPostWdgs({
    final int productIdx = post.getProductDetailIdx();
    if (productIdx == -1)
       return list;
+
+   {
+      //Widget year = makeDropBox();
+      //list.add(padNewPostWidget(Row(
+      //         children: <Widget>
+      //         [ Text('${g.param.postValueTitles[2]}: ', style: stl.newPostTitleLT)
+      //         , year
+      //         ],
+      //      ),
+      //   ),
+      //);
+      //list.add(stl.newPostDivider);
+   }
 
    {  // Price, kilometer, year
       final List<Widget> values = makeValueSliders(
@@ -1927,7 +1975,7 @@ Widget makeFAButtonMiddleScreen({
    final OnPressedF00 onSearch,
 }) {
    //log('$onSearchScreen $isWide $hasFavPosts');
-   if (onSearchScreen || (isWide && !hasFavPosts))
+   if (onSearchScreen || (isWide && !hasFavPosts) || onSearch == null)
       return SizedBox.shrink();
 
    return FloatingActionButton(
@@ -4233,13 +4281,15 @@ Widget makeEmptyTabText(String msg)
 }
 
 Widget makeOwnEmptyScreenWidget({
+   final String message,
+   final String buttonMsg,
    final OnPressedF00 onPressed,
 }) {
-   Widget text = makeEmptyTabText(g.param.newPostMessage);
+   Widget text = makeEmptyTabText(message);
 
    Widget button = createRaisedButton(
       onPressed,
-      g.param.newPostAppBarTitle,
+      buttonMsg,
       stl.colorScheme.secondary,
       stl.colorScheme.onSecondary,
    );
@@ -4252,13 +4302,58 @@ Widget makeOwnEmptyScreenWidget({
    );
 }
 
-Widget makeFavEmptyScreenWidget()
-{
-   Widget text = makeEmptyTabText(g.param.emptyFavMessage);
-   return Center(child: text);
+Widget makeSearchInitTab({
+   final String newPostMsg,
+   final String newSearchMsg,
+   final String randomPostsMsg,
+   final String newPostButtonTxt,
+   final String searchButtonTxt,
+   final String randomPostsButtonTxt,
+   final OnPressedF00 onGoToNewPostTabPressed,
+   final OnPressedF00 onSearchPressed,
+   final OnPressedF00 onLastestPostsPressed,
+}) {
+   Widget newPostText = makeEmptyTabText(newPostMsg);
+   Widget newSearchText = makeEmptyTabText(newSearchMsg);
+   Widget randomPostsText = makeEmptyTabText(randomPostsMsg);
+
+   Widget b0 = createRaisedButton(
+      onGoToNewPostTabPressed,
+      newPostButtonTxt,
+      stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
+   );
+
+   Widget b1 = createRaisedButton(
+      onSearchPressed,
+      searchButtonTxt,
+      stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
+   );
+
+   Widget b2 = createRaisedButton(
+      onLastestPostsPressed,
+      randomPostsButtonTxt,
+      stl.colorScheme.secondary,
+      stl.colorScheme.onSecondary,
+   );
+
+   return Center(
+      child: Column(
+	 mainAxisAlignment: MainAxisAlignment.center,
+         children: <Widget>
+	 [ newPostText
+	 , b0
+	 , newSearchText
+	 , b1
+	 , randomPostsText
+	 , b2
+	 ],
+      ),
+   );
 }
 
-Widget makeNewPostLv({
+Widget makeSearchResultPosts({
    final int nNewPosts,
    final Node locRootNode,
    final Node prodRootNode,
@@ -4271,8 +4366,24 @@ Widget makeNewPostLv({
    final OnPressedF02 onSharePost,
    final OnPressedF02 onReportPost,
    final OnPressedF09 onPostVisualization,
-   final OnPressedF09 onPostClick,
+   final OnPressedF09 onPostPressed,
+   final OnPressedF00 onSearchPressed,
+   final OnPressedF00 onGoToNewPostTabPressed,
+   final OnPressedF00 onLatestPostsPressed,
 }) {
+   if (posts.isEmpty)
+      return makeSearchInitTab(
+	 newPostMsg: 'Intersted in a new car',
+	 newSearchMsg: 'Search your dream car',
+	 randomPostsMsg: 'Show me the latest offers',
+	 newPostButtonTxt: 'Go',
+	 searchButtonTxt: 'Search',
+	 randomPostsButtonTxt: 'Latest',
+	 onGoToNewPostTabPressed: onGoToNewPostTabPressed,
+	 onSearchPressed: onSearchPressed,
+	 onLastestPostsPressed: onLatestPostsPressed,
+      );
+
    // No controller should be assigned to this listview. This will break the
    // automatic hiding of the tabbar
    return ListView.separated(
@@ -4301,7 +4412,7 @@ Widget makeNewPostLv({
 	    onReportPost: () {onReportPost(ctx, i);},
 	    onPinPost: (){log('Noop20');},
 	    onVisualization: onPostVisualization,
-	    onClick: onPostClick,
+	    onClick: onPostPressed,
          );
       },
    );
@@ -4753,15 +4864,22 @@ Widget makeChatTab({
    final OnPressedF03 onExpandImg1,
    final OnPressedF01 onSharePost,
    final OnPressedF00 onPost,
+   final OnPressedF00 onGoToNewPostTabPressed,
 }) {
    if (posts.length == 0) {
       if (tab == cts.ownIdx)
 	 return makeOwnEmptyScreenWidget(
+	    message: g.param.newPostMessage,
+	    buttonMsg: g.param.newPostAppBarTitle,
             onPressed: onPost,
 	 );
 
       if (tab == cts.favIdx)
-	 return makeFavEmptyScreenWidget();
+	 return makeOwnEmptyScreenWidget(
+	    message: g.param.emptyFavMessage,
+	    buttonMsg: 'Anzeige erstellen',
+	    onPressed: onGoToNewPostTabPressed,
+	 );
    }
 
    // No controller should be assigned to this listview. This will
@@ -5137,9 +5255,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
-      log(_numberOfMatchingPosts);
-      await _searchPosts2();
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
       setState(() { });
    }
 
@@ -5397,6 +5513,11 @@ class OccaseState extends State<Occase>
 
       // The chat index in the fav screen is always zero.
       await _onChatPressed(cts.favIdx, h, 0);
+   }
+
+   void _onGoToNewPostTabPressed()
+   {
+      _tabCtrl.animateTo(cts.ownIdx, duration: Duration(seconds: 2));
    }
 
    // For the meaning of the index j see makeNewPostImpl.
@@ -6300,7 +6421,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onPost(Map<String, dynamic> ack)
+   int _onPost(Map<String, dynamic> ack)
    {
       for (var item in ack['posts']) {
          try {
@@ -6317,10 +6438,7 @@ class OccaseState extends State<Occase>
       }
 
       _appState.posts.sort(compPostByDate);
-
-      setState(() {
-	 _nNewPosts = _appState.posts.length;
-      });
+      return _appState.posts.length;
    }
 
    Future<void> _onPublishAck({
@@ -6518,9 +6636,14 @@ class OccaseState extends State<Occase>
 	    _searchBeginDate = DateTime.now().millisecondsSinceEpoch;
 	 });
 
-	 await _searchPosts2();
+	 final int n = await _searchImpl(_posts[cts.searchIdx]);
 
-	 setState(() { _searchBeginDate = 0; });
+	 setState(() {
+	    if (n == 0)
+	       _newSearchPressed = true;
+
+	    _searchBeginDate = 0;
+	 });
       } catch (e) {
 	 log(e);
       }
@@ -6851,19 +6974,12 @@ class OccaseState extends State<Occase>
       setState(() {});
    }
 
-   Future<String> _searchPosts(String url) async
+   Future<String> _searchPosts(String url, Post post) async
    {
       try {
-	 // TODO: Set a timeout on the http request.
-
-	 var response = await http.post(url,
-	    body: jsonEncode(_posts[cts.searchIdx].toJson()),
-	 );
-
+	 var response = await http.post(url, body: jsonEncode(post.toJson()));
 	 if (response.statusCode == 200)
 	    return response.body;
-
-	 log('Error: Unable to find search matches.');
 	 return '';
       } catch (e) {
 	 print(e);
@@ -6872,20 +6988,31 @@ class OccaseState extends State<Occase>
       return '';
    }
 
-   Future<void> _searchPosts2() async
+   Future<int> _onLatestPostsPressed() async
+   {
+      // TODO: Instead of sending a default constructed post, we should make a
+      // http request with an empty string.
+      await _searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
+   }
+
+   Future<int> _searchImpl(Post post) async
    {
       try {
 	 _nNewPosts = 0;
 	 await _appState.clearPosts();
 
-	 _posts[cts.ownIdx] = Post(rangesMinMax: g.param.rangesMinMax);
-	 final String body = await _searchPosts(cts.dbSearchPostsUrl);
-	 if (body.isEmpty)
-	    return; // Perhaps show a dialog with an error message?
+	 final String body = await _searchPosts(cts.dbSearchPostsUrl, post);
+	 if (body.isEmpty) {
+	    return 0; // Perhaps show a dialog with an error message?
+	    print('Error');
+	 }
 
-	 _onPost(jsonDecode(body));
+	 return _onPost(jsonDecode(body));
       } catch (e) {
+	 print('Error');
       }
+
+      return 0;
    }
 
    Future<void> _onSetSearchLocationCode(List<int> code) async
@@ -6894,7 +7021,7 @@ class OccaseState extends State<Occase>
 	 return;
 
       _posts[cts.searchIdx].location = code;
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
 
       setState(() { });
    }
@@ -6905,7 +7032,7 @@ class OccaseState extends State<Occase>
 	 return;
 
       _posts[cts.searchIdx].product = code;
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl);
+      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
 
       setState(() {});
    }
@@ -6992,7 +7119,7 @@ class OccaseState extends State<Occase>
 
    Widget _makeSearchResultTab()
    {
-      Widget w = makeNewPostLv(
+      Widget w = makeSearchResultPosts(
 	 nNewPosts: _nNewPosts,
 	 locRootNode: _locRootNode,
 	 prodRootNode: _prodRootNode,
@@ -7005,7 +7132,10 @@ class OccaseState extends State<Occase>
 	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
 	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
          onPostVisualization: _onPostVisualization,
-         onPostClick: _onPostClick,
+         onPostPressed: _onPostClick,
+	 onSearchPressed: _onSearchPressed,
+	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
+	 onLatestPostsPressed: _onLatestPostsPressed,
       );
 
       if (_searchBeginDate == 0)
@@ -7037,7 +7167,7 @@ class OccaseState extends State<Occase>
 	 lpChatMsgs: _lpChatMsgs,
 	 onNewPost: _newPostPressed ? null : _onNewPost,
 	 onFwdSendButton: _onFwdSendButton,
-	 onSearch: _onSearchPressed,
+	 onSearch: _appState.posts.isEmpty ? null : _onSearchPressed,
       );
    }
 
@@ -7063,6 +7193,7 @@ class OccaseState extends State<Occase>
 	 onExpandImg1: (int i, int j) {_onExpandImg(i, j, i);},
 	 onSharePost: (int i) {_onClickOnPost(i, 1);},
 	 onPost: _onNewPost,
+	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
       );
    }
 
