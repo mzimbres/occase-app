@@ -172,7 +172,7 @@ const double leftIndent = 10.0;
 
 final Divider newPostDivider = Divider(
    color: Colors.grey,
-   height: 2.0,
+   height: 1.0,
    indent: leftIndent,
    endIndent: leftIndent,
    thickness: 1.0,

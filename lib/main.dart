@@ -727,7 +727,7 @@ Widget makeImgListView({
 	       url: post.images[l - i - 1],
 	       boxFit: boxFit,
 	    );
-	    wdgs.add(tmp);
+	    wdgs.add(InteractiveViewer(child: tmp));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles.isNotEmpty) {
 	    Widget tmp = getImage(
@@ -738,7 +738,7 @@ Widget makeImgListView({
 	       filterQuality: FilterQuality.high,
 	    );
 
-	    wdgs.add(tmp);
+	    wdgs.add(InteractiveViewer(child: tmp));
 
 	    IconButton add = IconButton(
 	       onPressed: (){addImg(ctx, -1);},
@@ -749,7 +749,6 @@ Widget makeImgListView({
 	       onPressed: (){addImg(ctx, i);},
 	       icon: Icon(Icons.cancel, color: stl.colorScheme.primary),
 	    );
-
 
 	    Widget addWdg = makeWdgOverImg(Column(children: <Widget>[remove, add]));
 	    wdgs.add(Positioned(child: addWdg, bottom: 4.0, right: 4.0));
@@ -1149,7 +1148,7 @@ Widget makeNewPostLT({
       );
       
    return ListTile(
-       contentPadding: EdgeInsets.all(3.0),
+       contentPadding: EdgeInsets.only(left: stl.leftIndent),
        leading: leading,
        title: Text(title,
 	  maxLines: 1,
@@ -1186,6 +1185,7 @@ ListView makeNewPostListView(List<Widget> list)
 Widget makeChooseTreeNodeDialog({
    BuildContext ctx,
    final int tab,
+   final int fromDepth,
    final String title,
    final List<int> defaultCode,
    final Node root,
@@ -1194,7 +1194,12 @@ Widget makeChooseTreeNodeDialog({
 }) {
    String subtitle = root.name(g.param.langIdx);
    if (defaultCode.isNotEmpty)
-      subtitle = loadNames(root, defaultCode, g.param.langIdx).join(', ');
+      subtitle = loadNames(
+	 rootNode: root,
+	 code: defaultCode,
+	 languageIndex: g.param.langIdx,
+	 fromDepth: fromDepth,
+      ).join(', ');
 
    return makeNewPostLT(
       title: title,
@@ -1303,6 +1308,7 @@ List<Widget> makeNewPostWdgs({
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: tab,
+	 fromDepth: 1,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
@@ -1310,7 +1316,7 @@ List<Widget> makeNewPostWdgs({
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 0);},
       );
 
-      list.add(padNewPostWidget(location));
+      list.add(location);
       list.add(stl.newPostDivider);
    }
 
@@ -1318,6 +1324,7 @@ List<Widget> makeNewPostWdgs({
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: tab,
+	 fromDepth: 0,
 	 title: g.param.newPostTabNames[1],
 	 defaultCode: post.product,
 	 root: prodRootNode,
@@ -1325,7 +1332,7 @@ List<Widget> makeNewPostWdgs({
 	 onSetTreeCode: (var code) { onSetTreeCode(code, 1);},
       );
 
-      list.add(padNewPostWidget(product));
+      list.add(product);
       list.add(stl.newPostDivider);
    }
 
@@ -1370,9 +1377,9 @@ List<Widget> makeNewPostWdgs({
 	 final int k = post.exDetails[i] < length ? post.exDetails[i] : 0;
 
 	 final List<String> names = loadNames(
-	    exDetailsRootNode,
-	    <int>[productIdx, i, k],
-	    g.param.langIdx,
+	    rootNode: exDetailsRootNode,
+	    code: <int>[productIdx, i, k],
+	    languageIndex: g.param.langIdx,
 	 );
 
 	 final List<String> detailStrs = listAllDetails(
@@ -1405,7 +1412,7 @@ List<Widget> makeNewPostWdgs({
 	    },
 	 );
 
-	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: exDetailWdg));
+	 list.add(exDetailWdg);
 	 list.add(stl.newPostDivider);
       }
    }
@@ -1437,7 +1444,7 @@ List<Widget> makeNewPostWdgs({
 	    onSetInDetail: (var state) {onSetInDetail(i, state);},
 	 );
 
-	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: inDetailWdg));
+	 list.add(inDetailWdg);
 	 list.add(stl.newPostDivider);
       }
    }
@@ -1502,7 +1509,7 @@ Widget makeNewPostScreenWdgs({
 	    },
 	 );
 
-	 list.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: descWidget));
+	 list.add(descWidget);
 	 list.add(stl.newPostDivider);
       }
 
@@ -1608,7 +1615,7 @@ List<Widget> makeValueSliders({
 
       final RichText rt = makeSearchTitle(
 	 name: names[i],
-	 value: '$value',
+	 value: makeRangeStr(post, i),
 	 separator: ': ',
       );
 
@@ -1642,6 +1649,7 @@ Widget makeSearchScreenWdg({
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: cts.searchIdx,
+	 fromDepth: 1,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
@@ -1649,7 +1657,7 @@ Widget makeSearchScreenWdg({
 	 onSetTreeCode: onSetLocationCode,
       );
 
-      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: location));
+      foo.add(location);
       foo.add(stl.newPostDivider);
    }
 
@@ -1657,6 +1665,7 @@ Widget makeSearchScreenWdg({
       Widget product = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: cts.searchIdx,
+	 fromDepth: 0,
 	 defaultCode: post.product,
 	 title: g.param.newPostTabNames[1],
 	 root: prodRootNode,
@@ -1664,7 +1673,7 @@ Widget makeSearchScreenWdg({
 	 onSetTreeCode: onSetProductCode,
       );
 
-      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: product));
+      foo.add(product);
       foo.add(stl.newPostDivider);
    }
 
@@ -1696,7 +1705,7 @@ Widget makeSearchScreenWdg({
 	 onSetInDetail: onSearchDetail,
       );
 
-      foo.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: detail));
+      foo.add(detail);
       foo.add(stl.newPostDivider);
    }
 
@@ -2972,7 +2981,11 @@ List<Widget> makeTreeInfo(
 ) {
    List<Widget> ret = <Widget>[];
    ret.add(makePostSectionTitle(title));
-   List<String> names = loadNames(rootNode, code, g.param.langIdx);
+   List<String> names = loadNames(
+      rootNode: rootNode,
+      code: code,
+      languageIndex: g.param.langIdx,
+   );
 
    List<Widget> tmp = List<Widget>.generate(names.length, (int j)
    {
@@ -3027,7 +3040,7 @@ List<Widget> makePostStats({
 }) {
    List<Widget> list = <Widget>[];
 
-   list.add(makePostSectionTitle(titleAndFields[0]));
+   //list.add(makePostSectionTitle(titleAndFields[0]));
 
    list.add(makePostRowElem(
 	 ctx: ctx,
@@ -3174,17 +3187,19 @@ Widget makePostDescription(BuildContext ctx, int tab, String desc)
 {
    final double width = makeMaxWidth(ctx, tab);
 
-   return ConstrainedBox(
-      constraints: BoxConstraints(
-         maxWidth: stl.infoWidthFactor * width,
-         minWidth: stl.infoWidthFactor * width,
-      ),
-      child: Text(
-         desc,
-         //overflow: TextOverflow.ellipsis,
-         style: stl.textField,
-      ),
-   );
+   return Padding(
+         padding: EdgeInsets.all(stl.postSectionPadding),
+         child: ConstrainedBox(
+	    constraints: BoxConstraints(
+	       maxWidth: width,
+	       minWidth: width,
+	    ),
+	    child: Text(desc,
+	       //overflow: TextOverflow.ellipsis,
+	       style: stl.textField,
+	    ),
+	 ),
+      );
 }
 
 List<Widget> assemblePostRows({
@@ -3218,9 +3233,9 @@ String makeTreeItemStr(Node root, List<int> nodeCoordinate)
       return '';
 
    final List<String> names = loadNames(
-      root,
-      nodeCoordinate,
-      g.param.langIdx,
+      rootNode: root,
+      code: nodeCoordinate,
+      languageIndex: g.param.langIdx,
    );
 
    final int l = names.length;
@@ -3790,6 +3805,152 @@ List<Widget> makeDetailsTextWdgs({
    );
 }
 
+class PostDetailsWidget extends StatefulWidget {
+   int tab;
+   Post post;
+   Node locRootNode;
+   Node prodRootNode;
+   Node exDetailsRootNode;
+   Node inDetailsRootNode;
+   List<PickedFile> imgFiles;
+   OnPressedF02 onAddImg;
+   OnPressedF01 onExpandImg;
+   OnPressedF00 onAddPostToFavorite;
+   OnPressedF00 onDelPost;
+   OnPressedF00 onSharePost;
+   OnPressedF00 onReportPost;
+
+   @override
+   PostDetailsWidgetState createState() => PostDetailsWidgetState();
+
+   PostDetailsWidget(
+   { @required this.tab
+   , @required this.post
+   , @required this.locRootNode
+   , @required this.prodRootNode
+   , @required this.exDetailsRootNode
+   , @required this.inDetailsRootNode
+   , @required this.imgFiles
+   , @required this.onAddImg
+   , @required this.onExpandImg
+   , @required this.onAddPostToFavorite
+   , @required this.onDelPost
+   , @required this.onSharePost
+   , @required this.onReportPost
+   });
+}
+
+class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProviderStateMixin {
+   @override
+   void dispose()
+      { super.dispose(); }
+
+   @override
+   void initState()
+      { super.initState(); }
+
+   @override
+   Widget build(BuildContext ctx)
+   {
+      final int tab = cts.searchIdx;
+      Widget detailsWdg = makePostDetailsWdg(
+	 ctx: ctx,
+	 tab: tab,
+	 post: widget.post,
+	 locRootNode: widget.locRootNode,
+	 prodRootNode: widget.prodRootNode,
+	 exDetailsRootNode: widget.exDetailsRootNode,
+	 inDetailsRootNode: widget.inDetailsRootNode,
+	 imgFiles: widget.imgFiles,
+	 onAddImg: widget.onAddImg,
+	 onExpandImg: widget.onExpandImg,
+	 onReportPost: () 
+	 {
+	    Navigator.of(ctx).pop();
+	    widget.onReportPost();
+	 },
+	 onSharePost: () 
+	 {
+	    Navigator.of(ctx).pop();
+	    widget.onSharePost();
+	 },
+      );
+
+      final
+      FlatButton ok = FlatButton(
+	 child: Text(g.param.newFiltersFinalScreenButton[0]),
+	 onPressed: () { Navigator.of(ctx).pop(); },
+      );
+
+      List<Widget> actions = List<Widget>();
+
+      final double width = makeTabWidth(ctx, tab);
+      if (widget.tab == cts.searchIdx) {
+	 ChatMetadata cm = ChatMetadata(
+	   peer: widget.post.from,
+	   nick: widget.post.nick,
+	   avatar: widget.post.avatar,
+	   date: DateTime.now().millisecondsSinceEpoch,
+	 );
+
+	 Widget tmp = makeChatListTile(
+	    ctx: ctx,
+	    chat: cm,
+	    now: 0,
+	    isFwdChatMsgs: false,
+	    avatar: '',
+	    padding: stl.chatListTilePadding,
+	    elevation: 2.0,
+	    onChatLeadingPressed: () {},
+	    onChatLongPressed: () {},
+	    onStartChatPressed: () { Navigator.of(ctx).pop(); widget.onAddPostToFavorite(); },
+	 );
+	 
+	 actions.add(SizedBox(width: width, child: tmp));
+      }
+
+      const double margin = 0.0;
+      const double insetPadding = 0.0;
+      final double height = makeMaxHeight(ctx);
+
+      Widget ret = makeNewPostDialogWdg(
+	 width: width,
+	 height: height,
+	 title: null,
+	 indent: margin,
+	 diagBorderRadius: 0.0,
+	 list: <Widget>[detailsWdg],
+	 actions: actions,
+	 insetPadding: const EdgeInsets.only(
+	    left: 0.0,
+	    right: 0.0,
+	    top: insetPadding,
+	    bottom: insetPadding,
+	 ),
+      );
+
+      return Stack(children: <Widget>
+      [ ret
+      , Positioned(
+	  right: 0.0,
+	  top: 0.0,
+	  child: Card(
+	     elevation: 0.0,
+	     color: Colors.white.withOpacity(0.3),
+	     margin: EdgeInsets.only(
+		top: margin + insetPadding,
+		right: insetPadding,
+	     ),
+	     child: IconButton(
+		onPressed:  () {Navigator.of(ctx).pop();},
+		//padding: EdgeInsets.all(0.0),
+		icon: Icon(Icons.clear, color: Colors.black),
+	     ),
+	   ),
+	),
+      ]);
+   }
+}
 class PostWidget extends StatefulWidget {
    int tab;
    Post post;
@@ -3845,18 +4006,16 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       super.initState();
    }
 
-   Future<void> _onShowDetails(BuildContext ctx) async
+   Future<int> _onShowDetails(BuildContext ctx) async
    {
       widget.onClick(widget.post.id);
 
-      final int code = await showDialog<int>(
+      return await showDialog<int>(
 	 context: ctx,
-	 builder: (BuildContext ctx2)
+	 builder: (BuildContext ctx)
 	 {
-	    final int tab = cts.searchIdx;
-	    Widget detailsWdg = makePostDetailsWdg(
-	       ctx: ctx2,
-	       tab: tab,
+	    return PostDetailsWidget(
+	       tab: widget.tab,
 	       post: widget.post,
 	       locRootNode: widget.locRootNode,
 	       prodRootNode: widget.prodRootNode,
@@ -3865,91 +4024,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       imgFiles: widget.imgFiles,
 	       onAddImg: widget.onAddImg,
 	       onExpandImg: widget.onExpandImg,
-	       onReportPost: () 
-	       {
-		  Navigator.of(ctx).pop();
-		  widget.onReportPost();
-	       },
-	       onSharePost: () 
-	       {
-		  Navigator.of(ctx).pop();
-		  widget.onSharePost();
-	       },
-	    );
-
-            final
-	    FlatButton ok = FlatButton(
-	       child: Text(g.param.newFiltersFinalScreenButton[0]),
-	       onPressed: () { Navigator.of(ctx).pop(); },
-	    );
-
-	    List<Widget> actions = List<Widget>();
-
-	    final double width = makeTabWidth(ctx, tab);
-	    if (widget.tab == cts.searchIdx) {
-	       ChatMetadata cm = ChatMetadata(
-		 peer: widget.post.from,
-		 nick: widget.post.nick,
-		 avatar: widget.post.avatar,
-		 date: DateTime.now().millisecondsSinceEpoch,
-	       );
-
-	       Widget tmp = makeChatListTile(
-		  ctx: ctx,
-		  chat: cm,
-		  now: 0,
-		  isFwdChatMsgs: false,
-		  avatar: '',
-		  padding: stl.chatListTilePadding,
-		  elevation: 2.0,
-		  onChatLeadingPressed: () {},
-		  onChatLongPressed: () {},
-		  onStartChatPressed: () { Navigator.of(ctx).pop(); widget.onAddPostToFavorite(); },
-	       );
-               
-	       actions.add(SizedBox(width: width, child: tmp));
-	    }
-
-	    const double margin = 0.0;
-	    const double insetPadding = 0.0;
-	    final double height = makeMaxHeight(ctx);
-
-	    Widget ret = makeNewPostDialogWdg(
-	       width: width,
-	       height: height,
-               title: null,
-	       indent: margin,
-	       diagBorderRadius: 0.0,
-	       list: <Widget>[detailsWdg],
-               actions: actions,
-	       insetPadding: const EdgeInsets.only(
-	          left: 0.0,
-		  right: 0.0,
-		  top: insetPadding,
-		  bottom: insetPadding,
-	       ),
-	    );
-
-	    return Stack(children: <Widget>
-               [ ret
-	       , Positioned(
-		   right: 0.0,
-		   top: 0.0,
-		   child: Card(
-		      elevation: 0.0,
-		      color: Colors.white.withOpacity(0.3),
-		      margin: EdgeInsets.only(
-		         top: margin + insetPadding,
-		         right: insetPadding,
-		      ),
-		      child: IconButton(
-		         onPressed:  () {Navigator.of(ctx).pop();},
-		         //padding: EdgeInsets.all(0.0),
-		         icon: Icon(Icons.clear, color: Colors.black),
-		      ),
-		    ),
-		 ),
-	       ],
+	       onAddPostToFavorite: widget.onAddPostToFavorite,
+	       onDelPost: widget.onDelPost,
+	       onSharePost: widget.onSharePost,
+	       onReportPost: widget.onReportPost,
 	    );
 	 },
       );

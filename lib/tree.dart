@@ -109,27 +109,34 @@ class Node {
 }
 
 // Given a node code and the menu it corresponds to produces an array
-// with the names of the parent up until the root direct child.
-List<String> loadNames(
-   Node root,
+// with the names of the parent up until the root node direct child.
+//
+// Loads only names with depth greater than or equal to fromDepth.
+//
+List<String> loadNames({
+   Node rootNode,
    List<int> code,
-   int langIdx,
-) {
+   int languageIndex,
+   int fromDepth = 0,
+}) {
    if (code.isEmpty)
       return List<String>();
 
    List<String> names = List<String>();
    bool missing = false;
-   for (int i in code) {
-      if (i >= root.children.length || missing) {
+   for (int i = 0; i < code.length; ++i) {
+      if (code[i] >= rootNode.children.length || missing) {
          missing = true;
-         names.add('');
+	 if (i >= fromDepth)
+	    names.add('');
          continue;
       }
 
-      Node next = root.children[i];
-      names.add(next.name(langIdx));
-      root = next;
+      Node next = rootNode.children[code[i]];
+      if (i >= fromDepth)
+	 names.add(next.name(languageIndex));
+
+      rootNode = next;
    }
 
    return names;
