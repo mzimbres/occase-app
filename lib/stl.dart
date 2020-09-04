@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 final Color chatLongPressendColor = Colors.grey[350]; 
 
 const double mainFontSize = 16.0;
+const double delImgWidgOpacity = 0.5;
 
 // Margin used so that the post card boarder has some distance from
 // the screen border or whatever widget it happens to be inside of.

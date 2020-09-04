@@ -685,21 +685,20 @@ Widget makeImgListView({
    final double height,
    Post post,
    BoxFit boxFit,
-   List<PickedFile> imgFiles,
+   List<PickedFile> imgFiles = null,
    OnPressedF01 onExpandImg,
-   OnPressedF02 addImg,
+   OnPressedF01 onDelImg,
 }) {
    final int l1 = post.images.length;
-   final int l2 = imgFiles.length;
 
-   if (l1 == 0 && l2 == 0)
+   if (l1 == 0 && imgFiles == null)
       return makeImgPlaceholder(
 	 width,
 	 height,
 	 makeImgTextPlaceholder(g.param.addImgMsg),
       );
 
-   final int l = l1 == 0 ? l2 : l1;
+   final int l = l1 == 0 ? imgFiles.length : l1;
 
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
@@ -708,14 +707,6 @@ Widget makeImgListView({
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
-         //FlatButton b = FlatButton(
-         //   onPressed: (){onExpandImg(l -i -1);},
-         //   child: Container(
-         //      width: width,
-         //      height: height,
-         //   ),
-         //);
-
 	 Widget imgCounter = makeTextWdg(text: '${i + 1}/$l');
 
 	 List<Widget> wdgs = List<Widget>();
@@ -729,7 +720,7 @@ Widget makeImgListView({
 	    );
 	    wdgs.add(InteractiveViewer(child: tmp));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
-	 } else if (imgFiles.isNotEmpty) {
+	 } else if (imgFiles != null && imgFiles.isNotEmpty) {
 	    Widget tmp = getImage(
 	       path: imgFiles[i].path,
 	       width: width,
@@ -740,18 +731,23 @@ Widget makeImgListView({
 
 	    wdgs.add(InteractiveViewer(child: tmp));
 
-	    IconButton add = IconButton(
-	       onPressed: (){addImg(ctx, -1);},
-	       icon: Icon(Icons.add_a_photo, color: stl.colorScheme.primary),
-	    );
-
-	    IconButton remove = IconButton(
-	       onPressed: (){addImg(ctx, i);},
+	    IconButton delIcon = IconButton(
+	       onPressed: (){onDelImg(i);},
 	       icon: Icon(Icons.cancel, color: stl.colorScheme.primary),
 	    );
 
-	    Widget addWdg = makeWdgOverImg(Column(children: <Widget>[remove, add]));
-	    wdgs.add(Positioned(child: addWdg, bottom: 4.0, right: 4.0));
+	    wdgs.add(Positioned(
+		  bottom: 0.0,
+		  right: 0.0,
+                  child: Card(
+		     elevation: 0.0,
+		     color: Colors.white.withOpacity(stl.delImgWidgOpacity),
+		     margin: EdgeInsets.zero,
+		     child: delIcon,
+		  ),
+	       ),
+	    );
+
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0, left: 4.0));
 	 } else {
 	    assert(false);
@@ -910,7 +906,8 @@ Widget makeNewPostFinalScreen({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   final OnPressedF02 onAddImg,
+   final OnPressedF00 onAddImg,
+   final OnPressedF01 onDelImg,
    final OnPressedF04 onPublishPost,
    final OnPressedF04 onRemovePost,
 }) {
@@ -928,6 +925,7 @@ Widget makeNewPostFinalScreen({
       prodRootNode: prodRootNode,
       imgFiles: imgFiles,
       onAddImg: onAddImg,
+      onDelImg: onDelImg,
       onExpandImg: (int j){ log('Noop00'); },
       onAddPostToFavorite: () { log('Noop01'); },
       onDelPost: () { log('Noop02');},
@@ -1464,7 +1462,8 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF12 onSetTreeCode,
    final OnPressedF03 onSetExDetail,
    final OnPressedF03 onSetInDetail,
-   final OnPressedF02 onAddImg,
+   final OnPressedF00 onAddImg,
+   final OnPressedF01 onDelImg,
    final OnPressedF04 onPublishPost,
    final OnPressedF04 onRemovePost,
    final OnPressedF08 onRangeValueChanged,
@@ -1544,6 +1543,7 @@ Widget makeNewPostScreenWdgs({
 	    inDetailsRootNode: inDetailsRootNode,
 	    imgFiles: imgFiles,
 	    onAddImg: onAddImg,
+	    onDelImg: onDelImg,
 	    onPublishPost: onPublishPost,
 	    onRemovePost: onRemovePost,
 	 );
@@ -3345,9 +3345,7 @@ List<Widget> makePostButtons({
       onPressed: onSharePost,
       color: stl.colorScheme.primary,
       //constraints: bc,
-      icon: Icon(Icons.share,
-         color: stl.colorScheme.secondary,
-      ),
+      icon: Icon(Icons.share, color: stl.colorScheme.secondary),
    );
 
    IconData pinIcon = pinDate == 0 ? Icons.place : Icons.pin_drop;
@@ -3813,7 +3811,8 @@ class PostDetailsWidget extends StatefulWidget {
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    List<PickedFile> imgFiles;
-   OnPressedF02 onAddImg;
+   OnPressedF00 onAddImg;
+   OnPressedF01 onDelImg;
    OnPressedF01 onExpandImg;
    OnPressedF00 onAddPostToFavorite;
    OnPressedF00 onDelPost;
@@ -3830,8 +3829,9 @@ class PostDetailsWidget extends StatefulWidget {
    , @required this.prodRootNode
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
-   , @required this.imgFiles
+   , this.imgFiles = null
    , @required this.onAddImg
+   , @required this.onDelImg
    , @required this.onExpandImg
    , @required this.onAddPostToFavorite
    , @required this.onDelPost
@@ -3849,6 +3849,17 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
    void initState()
       { super.initState(); }
 
+   Future<void> _onAddImg() async
+   {
+      await widget.onAddImg();
+      setState(() {});
+   }
+
+   void _onDelImg(int i)
+   {
+      setState(() {widget.onDelImg(i);});
+   }
+
    @override
    Widget build(BuildContext ctx)
    {
@@ -3862,17 +3873,12 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 exDetailsRootNode: widget.exDetailsRootNode,
 	 inDetailsRootNode: widget.inDetailsRootNode,
 	 imgFiles: widget.imgFiles,
-	 onAddImg: widget.onAddImg,
+	 onDelImg: _onDelImg,
 	 onExpandImg: widget.onExpandImg,
 	 onReportPost: () 
 	 {
 	    Navigator.of(ctx).pop();
 	    widget.onReportPost();
-	 },
-	 onSharePost: () 
-	 {
-	    Navigator.of(ctx).pop();
-	    widget.onSharePost();
 	 },
       );
 
@@ -3929,25 +3935,43 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 ),
       );
 
+      Widget leaveDetails = IconButton(
+         onPressed: () { Navigator.of(ctx).pop(); },
+         icon: Icon(Icons.clear, color: Colors.black),
+      );
+
+      IconButton icon;
+      if (widget.imgFiles != null)
+	 icon = IconButton(
+	    onPressed: _onAddImg,
+	    icon: Icon(Icons.add_a_photo, color: stl.colorScheme.primary),
+	 );
+      else {
+	 icon = IconButton(
+	    icon: Icon(Icons.share, color: stl.colorScheme.primary),
+	    onPressed: (){print('aaaaaaaaaaa');},
+            //() {
+            //  Navigator.of(ctx).pop();
+            //  widget.onSharePost();
+            //}
+	 );
+      }
+
       return Stack(children: <Widget>
       [ ret
       , Positioned(
-	  right: 0.0,
-	  top: 0.0,
-	  child: Card(
-	     elevation: 0.0,
-	     color: Colors.white.withOpacity(0.3),
-	     margin: EdgeInsets.only(
-		top: margin + insetPadding,
-		right: insetPadding,
-	     ),
-	     child: IconButton(
-		onPressed:  () {Navigator.of(ctx).pop();},
-		//padding: EdgeInsets.all(0.0),
-		icon: Icon(Icons.clear, color: Colors.black),
-	     ),
-	   ),
-	),
+          right: 0.0,
+          top: 0.0,
+          child: Card(
+             elevation: 0.0,
+             color: Colors.white.withOpacity(stl.delImgWidgOpacity),
+             margin: EdgeInsets.only(
+                top: margin + insetPadding,
+                right: insetPadding,
+             ),
+             child: Column(children: <Widget>[leaveDetails, icon]),
+          ),
+       ),
       ]);
    }
 }
@@ -3959,7 +3983,8 @@ class PostWidget extends StatefulWidget {
    Node exDetailsRootNode;
    Node inDetailsRootNode;
    List<PickedFile> imgFiles;
-   OnPressedF02 onAddImg;
+   OnPressedF00 onAddImg;
+   OnPressedF01 onDelImg;
    OnPressedF01 onExpandImg;
    OnPressedF00 onAddPostToFavorite;
    OnPressedF00 onDelPost;
@@ -3979,8 +4004,9 @@ class PostWidget extends StatefulWidget {
    , @required this.prodRootNode
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
-   , @required this.imgFiles
+   , this.imgFiles = null
    , @required this.onAddImg
+   , @required this.onDelImg
    , @required this.onExpandImg
    , @required this.onAddPostToFavorite
    , @required this.onDelPost
@@ -4023,6 +4049,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       inDetailsRootNode: widget.inDetailsRootNode,
 	       imgFiles: widget.imgFiles,
 	       onAddImg: widget.onAddImg,
+	       onDelImg: widget.onDelImg,
 	       onExpandImg: widget.onExpandImg,
 	       onAddPostToFavorite: widget.onAddPostToFavorite,
 	       onDelPost: widget.onDelPost,
@@ -4114,7 +4141,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	      )
 	    ],
 	 );
-      } else if (widget.imgFiles.isNotEmpty) {
+      } else if (widget.imgFiles != null && widget.imgFiles.isNotEmpty) {
 	 imgWdg = getImage(
 	    path: widget.imgFiles.last.path,
 	    width: imgAvatarWidth,
@@ -4136,9 +4163,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       // The add a photo button should appear only when this function is
       // called on the new posts tab. We determine that in the
       // following way.
-      if (widget.post.images.isEmpty && (widget.imgFiles.length < cts.maxImgsPerPost)) {
+      if (widget.imgFiles != null) {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
-	    onPressed: () {widget.onAddImg(ctx, -1);},
+	    onPressed: widget.onAddImg,
 	    icon: Icons.add_a_photo,
 	    color: stl.colorScheme.primary,
 	 );
@@ -4279,10 +4306,9 @@ Widget makePostDetailsWdg({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<PickedFile> imgFiles,
-   final OnPressedF02 onAddImg,
+   final OnPressedF01 onDelImg,
    final OnPressedF01 onExpandImg,
    final OnPressedF00 onReportPost,
-   final OnPressedF00 onSharePost,
 }) {
    List<Widget> rows = <Widget>[];
 
@@ -4294,7 +4320,7 @@ Widget makePostDetailsWdg({
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
       onExpandImg: (int j){ onExpandImg(j); },
-      addImg: onAddImg,
+      onDelImg: onDelImg,
    );
 
    rows.add(listView);
@@ -4312,19 +4338,6 @@ Widget makePostDetailsWdg({
 	 padding: 4.0,
 	 backgroundColor: stl.colorScheme.secondary,
    ));
-
-   //--------------------------------------------------------------------------
-
-
-   IconButton share = IconButton(
-      icon: Icon(
-	 Icons.share,
-	 color: stl.colorScheme.primary,
-      ),
-      onPressed: onSharePost,
-   );
-
-   rows.add(share);
 
    //--------------------------------------------------------------------------
 
@@ -4432,6 +4445,7 @@ Widget makeSearchInitTab({
 }
 
 Widget makeSearchResultPosts({
+   final bool isWide,
    final int nNewPosts,
    final Node locRootNode,
    final Node prodRootNode,
@@ -4449,7 +4463,7 @@ Widget makeSearchResultPosts({
    final OnPressedF00 onGoToNewPostTabPressed,
    final OnPressedF00 onLatestPostsPressed,
 }) {
-   if (posts.isEmpty)
+   if (posts.isEmpty && !isWide)
       return makeSearchInitTab(
 	 newPostMsg: 'Intersted in a new car',
 	 newSearchMsg: 'Search your dream car',
@@ -4481,8 +4495,8 @@ Widget makeSearchResultPosts({
             inDetailsRootNode: inDetailsRootNode,
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
-            imgFiles: List<PickedFile>(),
-            onAddImg: (var ctx, var i) {log('Error: Please fix.');},
+            onAddImg: () {log('Error: Please fix.');},
+            onDelImg: (int i) {log('Error: Please fix.');},
             onExpandImg: (int k) {onExpandImg(i, k);},
             onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
 	    onDelPost: () {onDelPost(ctx, i);},
@@ -4998,8 +5012,9 @@ Widget makeChatTab({
 	    prodRootNode: prodRootNode,
             exDetailsRootNode: exDetailsRootNode,
             inDetailsRootNode: inDetailsRootNode,
-            imgFiles: List<PickedFile>(),
-            onAddImg: (var a, var b) {log('Noop10');},
+            imgFiles: null,
+            onAddImg: () {log('Noop10');},
+            onDelImg: (int i) {log('Noop10');},
             onExpandImg: onExpandImg,
             onAddPostToFavorite:() {log('Noop14');},
 	    onDelPost: onDelPost,
@@ -5501,32 +5516,30 @@ class OccaseState extends State<Occase>
       );
    }
 
-   // Used to either add or remove a photo from the new post.
-   // i = -1 ==> add
-   // i != -1 ==> remove, in this case i is the index to remove.
-   Future<void> _onAddImg(BuildContext ctx, int i) async
+   Future<void> _onAddImg() async
    {
       try {
          // It looks like we do not need to show any dialog here to
          // inform the maximum number of photos has been reached.
-         if (i == -1) {
-            PickedFile img = await _picker.getImage(
-               source: ImageSource.gallery,
-               maxWidth: cts.imgWidth,
-               maxHeight: cts.imgHeight,
-               imageQuality: cts.imgQuality,
-            );
+	 PickedFile img = await _picker.getImage(
+	    source: ImageSource.gallery,
+	    maxWidth: cts.imgWidth,
+	    maxHeight: cts.imgHeight,
+	    imageQuality: cts.imgQuality,
+	 );
 
-            if (img == null)
-               return;
+	 if (img == null)
+	    return;
 
-            setState((){_imgFiles.add(img); });
-         } else {
-            setState((){_imgFiles.removeAt(i); });
-         }
+	 setState((){_imgFiles.add(img); });
       } catch (e) {
          log(e);
       }
+   }
+
+   void _onDelImg(int i)
+   {
+      setState((){_imgFiles.removeAt(i); });
    }
 
    // i = index in _appState.posts, _appState.favPosts, _own_posts.
@@ -7068,9 +7081,6 @@ class OccaseState extends State<Occase>
 
    Future<int> _onLatestPostsPressed() async
    {
-      // TODO: Instead of sending a default constructed post, we should make a
-      // http request with an empty string.
-      await _searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
    }
 
    Future<int> _searchImpl(Post post) async
@@ -7168,6 +7178,7 @@ class OccaseState extends State<Occase>
 	 onSetInDetail: _onSetInDetail,
 	 imgFiles: _imgFiles,
 	 onAddImg: _onAddImg,
+	 onDelImg: _onDelImg,
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
@@ -7195,9 +7206,10 @@ class OccaseState extends State<Occase>
       );
    }
 
-   Widget _makeSearchResultTab()
+   Widget _makeSearchResultTab(BuildContext ctx)
    {
       Widget w = makeSearchResultPosts(
+	 isWide: isWideScreen(ctx),
 	 nNewPosts: _nNewPosts,
 	 locRootNode: _locRootNode,
 	 prodRootNode: _prodRootNode,
@@ -7213,7 +7225,7 @@ class OccaseState extends State<Occase>
          onPostPressed: _onPostClick,
 	 onSearchPressed: _onSearchPressed,
 	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
-	 onLatestPostsPressed: _onLatestPostsPressed,
+	 onLatestPostsPressed: () {_onSearch(ctx, 10);},
       );
 
       if (_searchBeginDate == 0)
@@ -7367,7 +7379,7 @@ class OccaseState extends State<Occase>
       if (_newSearchPressed && !isWide) {
 	 ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
       } else {
-	 ret[cts.searchIdx] = _makeSearchResultTab();
+	 ret[cts.searchIdx] = _makeSearchResultTab(ctx);
       }
 
       if ((_newSearchPressed || _appState.favPosts.isEmpty) && isWide) {
