@@ -1,5 +1,5 @@
 import 'dart:async' show Future, Timer;
-import 'dart:html' show window;
+import 'dart:html' show window, BroadcastChannel;
 import 'dart:convert';
 import 'dart:collection';
 import 'dart:developer';
@@ -15,22 +15,36 @@ class Persistency {
    static const String _favPostsKey = 'favPosts';
    static const String _msgQueueKey = 'msgQueueKey';
 
+   BroadcastChannel _crossTabWriteDetector = BroadcastChannel('_configKey');
+
+   Persistency(Function onCrossTab)
+   {
+      _crossTabWriteDetector.onMessage.listen(
+	 onCrossTab,
+	 onError: (var err) {print(err);},
+	 onDone: () {print('End');},
+      );
+   }
+
    void _persistMsgQueue(List<AppMsgQueueElem> msgQueue)
    {
       final String str = jsonEncode(msgQueue);
       window.localStorage[_msgQueueKey] = str;
+      _crossTabWriteDetector.postMessage('');
    }
 
    void _persistPosts(List<Post> posts, String key)
    {
       final String str = jsonEncode(posts);
       window.localStorage[key] = str;
+      _crossTabWriteDetector.postMessage('');
    }
 
    Future<void> persistConfig(Config c) async
    {
       final String str = jsonEncode(c.toJson());
       window.localStorage[_configKey] = str;
+      _crossTabWriteDetector.postMessage('');
    }
 
    Future<Config> loadConfig() async

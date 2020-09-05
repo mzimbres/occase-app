@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 
 final Color chatLongPressendColor = Colors.grey[350]; 
 
+const double bigFontSize = 20.0;
 const double mainFontSize = 16.0;
+const double smallFontSize = 14.0;
 const double delImgWidgOpacity = 0.5;
-
-// Margin used so that the post card boarder has some distance from
-// the screen border or whatever widget it happens to be inside of.
-const double postMargin = 1.0;
-
-const double listTileSubtitleFontSize = 14.0;
 
 // The padding of chat messages inside ist box.
 const double chatMsgPadding = 5.0;
@@ -29,63 +25,36 @@ const ColorScheme colorScheme = const ColorScheme.light(
 
 const Color infoKeyColor = Colors.black;
 const Color infoKeyArrowColor = infoKeyColor;
-const Color infoValueColor = primaryColor;
-
-const double titleFontSize = 20.0;
-const double subheadFontSize = 16.0;
-const double subtitleFontSize = 14.0;
 
 const TextTheme tt = TextTheme(
-   title: TextStyle(fontSize: titleFontSize),
-   subhead: TextStyle(fontSize: subheadFontSize),
+   title: TextStyle(fontSize: bigFontSize),
+   subhead: TextStyle(fontSize: mainFontSize),
 );
 
-const TextStyle tsSubheadPrimary = TextStyle(
-   fontSize: subheadFontSize,
+const TextStyle tsMainPrimary = TextStyle(
+   fontSize: mainFontSize,
    color: primaryColor,
 );
 
-const TextStyle tsSubheadOnPrimary = TextStyle(
-   fontSize: subheadFontSize,
+const TextStyle tsMainBlack = TextStyle(
+   fontSize: mainFontSize,
    color: Colors.black,
 );
 
-//-------------------------------------------------------------------------
-// This section contains some style of ListTiles so that they have a
-// uniform appearence on the app.
-
-// All ListTile titles should use the same fontsize. An exception is
-// made to those LT that are used on the appBar, they need a larger
-// fontSize
-const double ltTitleFontSize = subheadFontSize;
-const double ltSubtitleFontSize = subtitleFontSize;
-
-const TextStyle ltTitle = TextStyle(
-   fontSize: ltTitleFontSize,
+const TextStyle tsMainBlackBold = TextStyle(
+   fontSize: mainFontSize,
    color: Colors.black,
    fontWeight: FontWeight.w500,
 );
 
-final TextStyle newPostTitleLT = TextStyle(
-   fontSize: ltTitleFontSize,
-   color: Colors.black,
-   fontWeight: FontWeight.normal,
-);
-
 final TextStyle newPostSubtitleLT = TextStyle(
-   fontSize: ltSubtitleFontSize,
+   fontSize: smallFontSize,
    color: Colors.grey,
    fontWeight: FontWeight.normal,
 );
 
-const TextStyle ltTitleOnPrimary = TextStyle(
-   fontSize: ltTitleFontSize,
-   color: onPrimaryColor,
-   fontWeight: FontWeight.w500,
-);
-
 final TextStyle ltSubtitle = TextStyle(
-   fontSize: ltSubtitleFontSize,
+   fontSize: smallFontSize,
    color: Colors.grey[700],
    fontWeight: FontWeight.w300,
 );
@@ -93,7 +62,7 @@ final TextStyle ltSubtitle = TextStyle(
 final Color onPrimarySubtitleColor = Colors.white;
 
 final TextStyle ltSubtitleOnPrimary = TextStyle(
-   fontSize: ltSubtitleFontSize,
+   fontSize: smallFontSize,
    color: onPrimarySubtitleColor,
    fontWeight: FontWeight.normal,
 );
@@ -105,7 +74,7 @@ const TextStyle appBarLtTitle = TextStyle(
 );
 
 final TextStyle appBarLtSubtitle = TextStyle(
-   fontSize: ltSubtitleFontSize,
+   fontSize: smallFontSize,
    color: onPrimarySubtitleColor,
    fontWeight: FontWeight.normal,
 );

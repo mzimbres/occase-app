@@ -449,7 +449,7 @@ Widget makeNtfScreen({
 
    CheckboxListTile chat = CheckboxListTile(
       dense: true,
-      title: Text(titleDescription[0], style: stl.ltTitle),
+      title: Text(titleDescription[0], style: stl.tsMainBlackBold),
       subtitle: Text(titleDescription[1], style: stl.ltSubtitle),
       value: ntfConfig.chat,
       onChanged: (bool v) { onChange(0, v); },
@@ -586,7 +586,7 @@ Widget makeNetImgBox({
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
                color: stl.colorScheme.background,
-               fontSize: stl.tt.headline6.fontSize,
+               fontSize: stl.mainFontSize,
             ),
          );
 
@@ -785,7 +785,7 @@ RichText makeExpTileTitle(
    return RichText(
       text: TextSpan(
          text: '$first$sep ',
-         style: stl.tsSubheadOnPrimary,
+         style: stl.tsMainBlack,
          children: <TextSpan>
          [ TextSpan(
               text: second,
@@ -804,13 +804,13 @@ RichText makeSearchTitle({
    return RichText(
       text: TextSpan(
          text: '$name$separator',
-         style: stl.newPostTitleLT,
+         style: stl.tsMainBlack,
          children: <TextSpan>
          [ TextSpan(
               text: value,
               style: stl.newPostSubtitleLT.copyWith(
 		 color: stl.colorScheme.primary,
-		 fontSize: stl.ltTitleFontSize,
+		 fontSize: stl.mainFontSize,
 	      ),
            ),
          ],
@@ -885,7 +885,7 @@ List<Widget> makeCheckBoxes(
       final bool v = ((state & (1 << i)) != 0);
       CheckboxListTile tmp = CheckboxListTile(
          dense: true,
-         title: Text(items[i], style: stl.newPostTitleLT),
+         title: Text(items[i], style: stl.tsMainBlack),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
          activeColor: stl.colorScheme.primary,
@@ -1151,7 +1151,7 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.newPostTitleLT,
+	  style: stl.tsMainBlack,
        ),
        dense: true,
        subtitle:
@@ -1160,7 +1160,7 @@ Widget makeNewPostLT({
 	     overflow: TextOverflow.ellipsis,
 	     style: stl.newPostSubtitleLT.copyWith(
 		color: stl.colorScheme.primary,
-		fontSize: stl.ltTitleFontSize,
+		fontSize: stl.mainFontSize,
 	     ),
 	  ),
        onTap: onTap,
@@ -1268,7 +1268,7 @@ Widget makeDropBox()
       icon: null,
       iconSize: 24,
       elevation: 16,
-      style: stl.newPostTitleLT.copyWith(color: stl.colorScheme.primary),
+      style: stl.tsMainPrimary,
       underline: null,
       //underline: Container(
       //   height: 2,
@@ -1347,7 +1347,8 @@ List<Widget> makeNewPostWdgs({
       //Widget year = makeDropBox();
       //list.add(padNewPostWidget(Row(
       //         children: <Widget>
-      //         [ Text('${g.param.postValueTitles[2]}: ', style: stl.newPostTitleLT)
+      //         [ Text('${g.param.postValueTitles[2]}: ', style:
+      //         stl.tsMainPrimary)
       //         , year
       //         ],
       //      ),
@@ -2103,8 +2104,9 @@ Card makeChatMsgWidget(
          [ Icon(Icons.forward, color: stl.chatDateColor)
          , Text(g.param.msgOnRedirectedChat,
             style: TextStyle(color: redirTitleColor,
-               fontSize: stl.listTileSubtitleFontSize,
-               fontStyle: FontStyle.italic),
+               fontSize: stl.smallFontSize,
+               fontStyle: FontStyle.italic,
+	    ),
            )
          ]
       );
@@ -2723,7 +2725,7 @@ Widget makePayPriceListTile({
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltTitle,
+      style: stl.tsMainBlackBold,
    );
 
    Widget leading = Card(
@@ -2786,7 +2788,9 @@ Widget makePaymentChoiceWidget(
    List<Widget> widgets = List<Widget>();
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
-      child: Text(g.param.paymentTitle, style: stl.tsSubheadPrimary),
+      child: Text(g.param.paymentTitle,
+	 style: stl.tsMainPrimary,
+      ),
    );
 
    widgets.add(title);
@@ -2895,19 +2899,16 @@ Row makePostRowElem({
    String key,
    String value,
    Color keyTextColor = stl.infoKeyColor,
-   Color valueTextColor = stl.infoValueColor,
+   Color valueTextColor = stl.primaryColor,
 }) {
    RichText left = RichText(
       text: TextSpan(
          text: key + ': ',
-         style: stl.ltTitle.copyWith(
-            color: keyTextColor,
-            fontWeight: FontWeight.normal,
-         ),
+         style: stl.tsMainBlack.copyWith(color: keyTextColor),
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.ltTitle.copyWith(
+              style: stl.tsMainBlackBold.copyWith(
                  color: valueTextColor
               ),
            ),
@@ -2943,7 +2944,7 @@ List<Widget> makePostInRows(
 
       Text text = Text(' ${nodes[i].name(g.param.langIdx)}',
          style: stl.tt.subtitle1.copyWith(
-            color: stl.infoValueColor,
+            color: stl.primaryColor,
          ),
       );
 
@@ -2965,7 +2966,7 @@ Widget makePostSectionTitle(String str)
       child: Padding(
          padding: EdgeInsets.all(stl.postSectionPadding),
          child: Text(str,
-            style: stl.ltTitle.copyWith(color: stl.infoValueColor),
+            style: stl.tsMainPrimary,
          ),
       ),
    );
@@ -3273,7 +3274,7 @@ Widget makeTextWdg({
    EdgeInsets edgeInsets = const EdgeInsets.all(3.0),
    FontWeight fontWeight = FontWeight.normal,
    Color textColor = const Color(0xFF000000),
-   double fontSize = stl.subtitleFontSize,
+   double fontSize = stl.mainFontSize,
 }) {
    Widget w = Padding(
       child: Text(text,
@@ -3315,7 +3316,7 @@ Widget makeImgTextPlaceholder(final String str)
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
          color: stl.colorScheme.background,
-         fontSize: stl.tt.headline6.fontSize,
+         fontSize: stl.mainFontSize,
       ),
    );
 }
@@ -3476,7 +3477,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
-	 title: Text(widget.title, style: stl.newPostTitleLT),
+	 title: Text(widget.title, style: stl.tsMainBlack),
 	 indent: stl.newPostPadding,
 	 list: list,
 	 actions: <FlatButton>[ok],
@@ -3530,7 +3531,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       for (int i = 0; i < widget.names.length; ++i) {
 	 CheckboxListTile cb = CheckboxListTile(
 	    dense: true,
-	    title: Text(widget.names[i], style: stl.newPostTitleLT),
+	    title: Text(widget.names[i], style: stl.tsMainBlack),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
 	    activeColor: stl.colorScheme.primary,
@@ -3549,7 +3550,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       return makeNewPostDialogWdg(
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
-	 title: Text(widget.title, style: stl.newPostTitleLT),
+	 title: Text(widget.title, style: stl.tsMainBlack),
 	 indent: stl.newPostPadding,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
@@ -3627,7 +3628,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 insetPadding: insetPadding,
 	 title: Text(
             g.param.postDescTitle,
-	    style: stl.newPostTitleLT,
+	    style: stl.tsMainBlack,
 	 ),
 	 content: content,
 	 actions: <Widget>[ok],
@@ -3733,11 +3734,11 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       Widget titleWdg = RichText(
 	 text: TextSpan(
 	    text: '${g.param.newPostTabNames[0]}: ',
-	    style: stl.newPostTitleLT,
+	    style: stl.tsMainBlack,
 	    children: <TextSpan>
 	    [ TextSpan(
 		 text: titleStr,
-		 style: stl.newPostTitleLT.copyWith(color: stl.colorScheme.secondary),
+		 style: stl.tsMainBlack.copyWith(color: stl.colorScheme.secondary),
 	      ),
 	    ],
 	 ),
@@ -4064,7 +4065,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
    Widget build(BuildContext ctx)
    {
       widget.onVisualization(widget.post.id);
-      const double postFontSize = 14.0;
 
       final List<Widget> buttons = makePostButtons(
 	 pinDate: widget.post.pinDate,
@@ -4073,14 +4073,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 onPinPost: widget.onPinPost,
       );
 
-      final String dateStr = makeDateString2(widget.post.date);
-      final double dateFontSize = 12.0;
-
       Widget dateWdg = makeTextWdg(
-	 text: '${dateStr}',
-	 edgeInsets: const EdgeInsets.only(left: 0.0, top: 0.0, bottom: 0.0),
+	 text: makeDateString2(widget.post.date),
+	 edgeInsets: const EdgeInsets.all(0.0),
 	 textColor: Colors.grey,
-	 fontSize: dateFontSize,
+	 fontSize: stl.smallFontSize,
       );
 
       final int onSearch = widget.post.onSearch;
@@ -4091,7 +4088,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 text: '${onSearch}/${views}/${clicks}',
 	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 0.0, bottom: 0.0),
 	 textColor: stl.colorScheme.primary,
-	 fontSize: dateFontSize,
+	 fontSize: stl.smallFontSize,
       );
 
       final double imgAvatarWidth = makeImgAvatarWidth(ctx, widget.tab);
@@ -4214,7 +4211,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       text: '$modelStr ',
 	       style: TextStyle(
 		  color: stl.colorScheme.primary,
-		  fontSize: postFontSize,
+		  fontSize: stl.mainFontSize,
 		  fontWeight: FontWeight.w600,
 	       ),
 	       children: <TextSpan>
@@ -4239,21 +4236,21 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 fields: exDetailsNames,
 	 backgroundColor: Colors.orange[500],
 	 textColor: Colors.white,
-	 fontSize: postFontSize,
+	 fontSize: stl.mainFontSize,
       );
 
       List<Widget> inWdgs = makeDetailsTextWdgs(
 	 fields: inDetailsNames,
 	 backgroundColor: Colors.deepOrange[500],
 	 textColor: Colors.white,
-	 fontSize: postFontSize,
+	 fontSize: stl.mainFontSize,
       );
 
-      const double spacing = 10.0;
+      const double spacing = 1.0;
       const double runSpacing = 3.0;
 
       Widget exWrap = Padding(
-	 padding: EdgeInsets.all(3.0),
+	 padding: EdgeInsets.only(left: 3.0),
 	 child: Wrap(
 	    children: exWdgs,
 	    spacing: spacing,
@@ -4262,7 +4259,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
 
       Widget inWrap = Padding(
-	 padding: EdgeInsets.all(3.0),
+	 padding: EdgeInsets.only(left: 3.0),
 	 child: Wrap(
 	    children: inWdgs,
 	    spacing: spacing,
@@ -4281,7 +4278,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       [ SizedBox(width: postTxtWidth, height: h1, child: modelTitle)
       , SizedBox(width: postTxtWidth, height: h2, child: exWrap)
       , SizedBox(width: postTxtWidth, height: h2, child: inWrap)
-      , Expanded(child: SizedBox(width: postTxtWidth, child: Row(children: <Widget>[statsWdgs, Spacer(), dateWdg])))
+      , SizedBox(width: postTxtWidth, height: h1, child: Row(children: <Widget>[statsWdgs, Spacer(), dateWdg]))
       ]);
 
       row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
@@ -4523,7 +4520,8 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style: stl.newPostTitleLT),
+	 title: Text(child.name(g.param.langIdx), style:
+	       stl.tsMainBlack),
 	 dense: true,
 	 onTap: onLeafPressed,
 	 enabled: true,
@@ -4541,7 +4539,8 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style: stl.newPostTitleLT),
+	 title: Text(child.name(g.param.langIdx), style:
+	       stl.tsMainBlack),
 	 dense: true,
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx, 4),
@@ -4818,7 +4817,7 @@ Widget makeChatListTile({
          chat.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-         style: stl.ltTitle,
+         style: stl.tsMainBlackBold,
       ),
    );
 
@@ -5147,7 +5146,7 @@ class OccaseState extends State<Occase>
    Node _exDetailsRoot;
    Node _inDetailsRoot;
 
-   AppState _appState = AppState();
+   AppState _appState;
 
    // Will be set to true if the user scrolls up a chat screen so that
    // the jump down button can be used
@@ -5275,6 +5274,8 @@ class OccaseState extends State<Occase>
 
       WidgetsBinding.instance.addObserver(this);
 
+      _appState = AppState(_onCrossTabWrite);
+
       //_firebaseMessaging.configure(
       //   onMessage: (Map<String, dynamic> message) async {
       //     log("onMessage: $message");
@@ -5296,6 +5297,12 @@ class OccaseState extends State<Occase>
       });
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
+   }
+
+   Future<void> _onCrossTabWrite(MessageEvent) async
+   {
+      await _appState.load();
+      setState((){});
    }
 
    bool _tryNewWSConnection()
@@ -5374,11 +5381,9 @@ class OccaseState extends State<Occase>
    @override
    void didChangeAppLifecycleState(AppLifecycleState state)
    {
-      //final bool tryWsReconnect = _tryNewWSConnection();
-      //if (state == AppLifecycleState.resumed && tryWsReconnect) {
-      //   log('Trying to reconnect.');
-      //   _stablishNewConnection(_fcmToken);
-      //}
+      if (state == AppLifecycleState.resumed) {
+	 setState((){print('Trying to reconnect.');});
+      }
    }
 
    int _tabIndex()

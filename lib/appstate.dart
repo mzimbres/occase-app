@@ -47,14 +47,28 @@ class AppState {
    // to the server is lost. 
    Queue<AppMsgQueueElem> appMsgQueue = Queue<AppMsgQueueElem>();
 
-   Persistency _persistency = Persistency();
+   Persistency _persistency;
 
    List<Post> get posts => _posts;
 
-   AppState();
+   void clearState()
+   {
+      cfg = Config();
+      _posts = List<Post>();
+      favPosts = List<Post>();
+      ownPosts = List<Post>();
+      outPost = Post(rangesMinMax: g.param.rangesMinMax);
+      appMsgQueue = Queue<AppMsgQueueElem>();
+   }
+
+   AppState(Function onCrossTab)
+   {
+      _persistency = Persistency(onCrossTab);
+   }
 
    Future<void> load() async
    {
+      clearState();
       try {
 	 await _persistency.open();
       } catch (e) {
@@ -100,7 +114,6 @@ class AppState {
 
       List<AppMsgQueueElem> tmp = await _persistency.loadOutChatMsg();
       appMsgQueue = Queue<AppMsgQueueElem>.from(tmp.reversed);
-      log('Login: ${cfg.user} ${cfg.key} ${cfg.userId}');
    }
 
    Future<void> clearPosts() async

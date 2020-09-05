@@ -24,6 +24,8 @@ class Persistency {
       return Config.fromJson(jsonDecode(maps[0]['cfg']));
    }
 
+   Persistency(Function);
+
    Future<List<Post>> loadPosts() async
    {
       List<Map<String, dynamic>> maps = await _db.rawQuery(sql.loadPosts);
