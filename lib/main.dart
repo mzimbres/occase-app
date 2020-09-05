@@ -397,10 +397,10 @@ Widget makeRegisterScreen({
    );
 
    Widget button = createRaisedButton(
-      onContinue,
-      g.param.next,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+      onPressed: onContinue,
+      text: g.param.next,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
    Column col = Column(
@@ -467,10 +467,10 @@ Widget makeNtfScreen({
            padding: EdgeInsets.only(bottom: 30.0),
         ),
         createRaisedButton(
-           () {onChange(-1, false);},
-           g.param.ok,
-	   stl.colorScheme.secondary,
-	   stl.colorScheme.onSecondary,
+           onPressed: () {onChange(-1, false);},
+           text: g.param.ok,
+	   color: stl.colorScheme.secondary,
+	   textColor: stl.colorScheme.onSecondary,
         ),
       ]
    );
@@ -898,6 +898,23 @@ List<Widget> makeCheckBoxes(
    return ret;
 }
 
+Widget makeNewPostSetionTitle(String title)
+{
+   return Center(
+      child: Padding(
+	 padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+	 child: Text(title,
+	    style: TextStyle(
+	       fontSize: 18.0,
+	       color: stl.colorScheme.primary,
+	       fontWeight: FontWeight.w500,
+	    ),
+	 ),
+      ),
+   );
+
+}
+
 Widget makeNewPostFinalScreen({
    BuildContext ctx,
    final Post post,
@@ -908,7 +925,7 @@ Widget makeNewPostFinalScreen({
    final List<PickedFile> imgFiles,
    final OnPressedF00 onAddImg,
    final OnPressedF01 onDelImg,
-   final OnPressedF04 onPublishPost,
+   final OnPressedF00 onPublishPost,
    final OnPressedF04 onRemovePost,
 }) {
 
@@ -916,7 +933,7 @@ Widget makeNewPostFinalScreen({
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
 
-   Widget w0 = PostWidget(
+   Widget postWdg = PostWidget(
       tab: cts.ownIdx,
       post: post,
       exDetailsRootNode: exDetailsRootNode,
@@ -936,28 +953,53 @@ Widget makeNewPostFinalScreen({
       onClick: (var s) {log('Noop08');},
    );
 
-   Widget w1 = createRaisedButton(
-      () {onRemovePost(ctx);},
-      g.param.cancel,
-      stl.expTileCardColor,
-      Colors.black,
+   Widget cancelButton = createRaisedButton(
+      onPressed: () {onRemovePost(ctx);},
+      text: g.param.cancel,
+      color: stl.expTileCardColor,
+      textColor: Colors.black,
    );
 
-   Widget w2 = createRaisedButton(
-      () { onPublishPost(ctx); },
-      g.param.newPostAppBarTitle,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+   Widget sendButton = createRaisedButton(
+      onPressed: onPublishPost,
+      text: g.param.newPostAppBarTitle,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
-   Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
-
-   Widget tmp = Padding(
+   Widget buttonsRow = Padding(
       padding: EdgeInsets.only(top: 30.0, bottom: 30.0),
-      child: r,
+      child: Row(children: <Widget>
+	 [ Expanded(child: cancelButton)
+	 , Expanded(child: sendButton)
+	 ]),
    );
 
-   return Column(children: <Widget>[w0, tmp]);
+   // ----------------------------------
+
+
+   Widget payment = Padding(
+      padding: EdgeInsets.only(left: 60, right: 60),
+      child: Column(
+	 mainAxisSize: MainAxisSize.min,
+	 children: makePaymentOptions(
+	    onFreePaymentPressed: () {},
+	    onStandardPaymentPressed: () {},
+	    onPremiumPaymentPressed: () {},
+	 )
+      ),
+   );
+
+   // ----------------------------------
+
+
+   return Column(children: <Widget>
+   [ makeNewPostSetionTitle(g.param.reviewAndSend)
+   , postWdg
+   , makeNewPostSetionTitle('Payment')
+   , payment
+   , buttonsRow
+   ]);
 }
 
 List<Widget> makeTabActions({
@@ -1485,8 +1527,25 @@ Widget makeNewPostScreenWdgs({
       onNewPostValueChanged: onNewPostValueChanged,
    );
 
-   if (list.length < 5)
+   if (list.length < 5) {
+      Widget finalScreen = makeNewPostFinalScreen(
+	 ctx: ctx,
+	 post: post,
+	 locRootNode: locRootNode,
+	 prodRootNode: prodRootNode,
+	 exDetailsRootNode: exDetailsRootNode,
+	 inDetailsRootNode: inDetailsRootNode,
+	 imgFiles: imgFiles,
+	 onAddImg: onAddImg,
+	 onDelImg: onDelImg,
+	 onPublishPost: null,
+	 onRemovePost: onRemovePost,
+      );
+
+      list.add(finalScreen);
+
       return makeNewPostListView(list);
+   }
 
    if (list.length > 2) {
       {  // Description
@@ -1515,27 +1574,8 @@ Widget makeNewPostScreenWdgs({
 
       // ---------------------------------------------------
 
-      { // Title
-	 Text pageTitle = Text(g.param.reviewAndSend,
-	    style: TextStyle(
-	       fontSize: 18.0,
-	       color: stl.colorScheme.primary,
-	       fontWeight: FontWeight.w500,
-	    ),
-	 );
-
-	 Padding tmp = Padding(
-	    child: pageTitle,
-	   padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
-	 );
-
-	 list.add(Center(child: tmp));
-      }
-
-   // ----------------------------------
-
-      { // final
-	 Widget finalScreen = makeNewPostFinalScreen(
+      {  // final
+         Widget finalScreen = makeNewPostFinalScreen(
 	    ctx: ctx,
 	    post: post,
 	    locRootNode: locRootNode,
@@ -1545,24 +1585,15 @@ Widget makeNewPostScreenWdgs({
 	    imgFiles: imgFiles,
 	    onAddImg: onAddImg,
 	    onDelImg: onDelImg,
-	    onPublishPost: onPublishPost,
+	    onPublishPost: () {onPublishPost(ctx);},
 	    onRemovePost: onRemovePost,
 	 );
 
-	 //Card c = Card(
-	 //   margin: const EdgeInsets.all(0.0),
-	 //   color: Colors.white,
-	 //   child: finalScreen,
-	 //   elevation: 2.0,
-	 //   shape: RoundedRectangleBorder(
-	 //      borderRadius: BorderRadius.all(Radius.circular(0.0)),
-	 //   ),
-	 //);
-
 	 list.add(finalScreen);
       }
+   }
 
-   } // ------------------------
+   // ------------------------
 
    final Widget lv = makeNewPostListView(list);
 
@@ -1735,10 +1766,10 @@ Widget makeSearchScreenWdg({
 	 buttonTitle += ': $numberOfMatchingPosts';
 
       Widget w2 = createRaisedButton(
-         () {onSearchPressed(2);},
-         buttonTitle,
-         stl.colorScheme.secondary,
-         stl.colorScheme.onSecondary,
+         onPressed: () {onSearchPressed(2);},
+         text: buttonTitle,
+         color: stl.colorScheme.secondary,
+         textColor: stl.colorScheme.onSecondary,
       );
 
       //Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
@@ -2709,7 +2740,6 @@ String makeStrAbbrev(final String str)
 }
 
 Widget makePayPriceListTile({
-   BuildContext ctx,
    String price,
    String title,
    String subtitle,
@@ -2746,12 +2776,12 @@ Widget makePayPriceListTile({
        title: titleW,
        dense: false,
        subtitle: subtitleW,
-       trailing: Icon(Icons.keyboard_arrow_right),
-       contentPadding: EdgeInsets.symmetric(horizontal: 2),
+       //trailing: Icon(Icons.keyboard_arrow_right),
+       contentPadding: EdgeInsets.symmetric(horizontal: 0),
        onTap: onTap,
        enabled: true,
        selected: false,
-       isThreeLine: true,
+       isThreeLine: false,
     );
 }
 
@@ -2781,10 +2811,39 @@ Widget makePayPriceListTile({
 //   );
 //}
 
-Widget makePaymentChoiceWidget(
-   BuildContext ctx,
-   Function freePayment)
-{
+List<Widget> makePaymentOptions({
+   OnPressedF00 onFreePaymentPressed,
+   OnPressedF00 onStandardPaymentPressed,
+   OnPressedF00 onPremiumPaymentPressed,
+}) {
+   List<OnPressedF00> payments = <OnPressedF00>
+   [ onFreePaymentPressed
+   , onStandardPaymentPressed
+   , onPremiumPaymentPressed
+   ];
+
+   List<Widget> list = <Widget>[];
+
+   for (int i = 0; i < g.param.payments0.length; ++i) {
+      Widget p = makePayPriceListTile(
+         price: g.param.payments0[i],
+         title: g.param.payments1[i],
+         subtitle: g.param.payments2[i],
+         priceColor: stl.priceColors[i],
+         onTap: payments[i],
+      );
+
+      list.add(p);
+   }
+
+   return list;
+}
+
+Widget makePaymentChoiceWidget({
+   OnPressedF00 onFreePaymentPressed,
+   OnPressedF00 onStandardPaymentPressed,
+   OnPressedF00 onPremiumPaymentPressed,
+}) {
    List<Widget> widgets = List<Widget>();
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
@@ -2795,30 +2854,18 @@ Widget makePaymentChoiceWidget(
 
    widgets.add(title);
 
-   // Depending on the length of the text, change the function ListTile.
-   // dense: true,
-   // isThreeLine: false,
-   List<Function> payments = <Function>
-   [ () { freePayment(ctx);   }
-   , () { print('===> pay1'); }
-   , () { print('===> pay2'); }
-   ];
-   for (int i = 0; i < g.param.payments0.length; ++i) {
-      Widget p = makePayPriceListTile(
-         ctx: ctx,
-         price: g.param.payments0[i],
-         title: g.param.payments1[i],
-         subtitle: g.param.payments2[i],
-         priceColor: stl.priceColors[i],
-         onTap: payments[i],
-      );
 
-      widgets.add(p);
-   }
+   List<Widget> pay = makePaymentOptions(
+      onFreePaymentPressed: onFreePaymentPressed,
+      onStandardPaymentPressed: onStandardPaymentPressed,
+      onPremiumPaymentPressed: onPremiumPaymentPressed,
+   );
+
+   widgets.addAll(pay);
 
    return Card(
       margin: const EdgeInsets.only(
-       left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
+       left: 2.0, right: 2.0, top: 2.0, bottom: 0.0
       ),
       color: stl.colorScheme.background,
       //elevation: 0.0,
@@ -2835,14 +2882,14 @@ Widget makePaymentChoiceWidget(
    );
 }
 
-Widget createRaisedButton(
+Widget createRaisedButton({
    OnPressedF00 onPressed,
-   final String txt,
+   final String text,
    Color color,
    Color textColor,
-) {
+}) {
    RaisedButton but = RaisedButton(
-      child: Text(txt,
+      child: Text(text,
 	 style: TextStyle(
 	    fontWeight: FontWeight.bold,
 	    fontSize: stl.mainFontSize,
@@ -4234,14 +4281,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> exWdgs = makeDetailsTextWdgs(
 	 fields: exDetailsNames,
-	 backgroundColor: Colors.orange[500],
+	 backgroundColor: Colors.lime[600],
 	 textColor: Colors.white,
 	 fontSize: stl.mainFontSize,
       );
 
       List<Widget> inWdgs = makeDetailsTextWdgs(
 	 fields: inDetailsNames,
-	 backgroundColor: Colors.deepOrange[500],
+	 backgroundColor: Colors.orange[400],
 	 textColor: Colors.white,
 	 fontSize: stl.mainFontSize,
       );
@@ -4376,10 +4423,10 @@ Widget makeOwnEmptyScreenWidget({
    Widget text = makeEmptyTabText(message);
 
    Widget button = createRaisedButton(
-      onPressed,
-      buttonMsg,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+      onPressed: onPressed,
+      text: buttonMsg,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
    return Center(
@@ -4406,24 +4453,24 @@ Widget makeSearchInitTab({
    Widget randomPostsText = makeEmptyTabText(randomPostsMsg);
 
    Widget b0 = createRaisedButton(
-      onGoToNewPostTabPressed,
-      newPostButtonTxt,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+      onPressed: onGoToNewPostTabPressed,
+      text: newPostButtonTxt,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
    Widget b1 = createRaisedButton(
-      onSearchPressed,
-      searchButtonTxt,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+      onPressed: onSearchPressed,
+      text: searchButtonTxt,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
    Widget b2 = createRaisedButton(
-      onLastestPostsPressed,
-      randomPostsButtonTxt,
-      stl.colorScheme.secondary,
-      stl.colorScheme.onSecondary,
+      onPressed: onLastestPostsPressed,
+      text: randomPostsButtonTxt,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
    );
 
    return Center(
@@ -6054,12 +6101,13 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             return makePaymentChoiceWidget(
-               ctx,
-               (BuildContext ctx) async
+               onFreePaymentPressed: () async
                {
                   Navigator.of(ctx).pop();
                   await _requestFilenames();
                },
+               onStandardPaymentPressed: (){},
+               onPremiumPaymentPressed: (){},
             );
          },
       );
