@@ -448,9 +448,9 @@ Widget makeNtfScreen({
    assert(titleDescription.length >= 2);
 
    CheckboxListTile chat = CheckboxListTile(
-      dense: true,
-      title: Text(titleDescription[0], style: stl.tsMainBlackBold),
-      subtitle: Text(titleDescription[1], style: stl.ltSubtitle),
+      //dense: false,
+      title: Text(titleDescription[0]),
+      subtitle: Text(titleDescription[1]),
       value: ntfConfig.chat,
       onChanged: (bool v) { onChange(0, v); },
       activeColor: stl.colorScheme.primary,
@@ -884,8 +884,8 @@ List<Widget> makeCheckBoxes(
    for (int i = 0; i < items.length; ++i) {
       final bool v = ((state & (1 << i)) != 0);
       CheckboxListTile tmp = CheckboxListTile(
-         dense: true,
-         title: Text(items[i], style: stl.tsMainBlack),
+         //dense: false,
+         title: Text(items[i]),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
          activeColor: stl.colorScheme.primary,
@@ -927,8 +927,10 @@ Widget makeNewPostFinalScreen({
    final OnPressedF01 onDelImg,
    final OnPressedF00 onPublishPost,
    final OnPressedF04 onRemovePost,
+   final OnPressedF00 onFreePaymentPressed,
+   final OnPressedF00 onStandardPaymentPressed,
+   final OnPressedF00 onPremiumPaymentPressed,
 }) {
-
    // NOTE: This ListView is used to provide a new context, so that
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
@@ -979,19 +981,19 @@ Widget makeNewPostFinalScreen({
 
 
    Widget payment = Padding(
-      padding: EdgeInsets.only(left: 60, right: 60),
+      padding: EdgeInsets.symmetric(horizontal: stl.paymentPadding),
       child: Column(
 	 mainAxisSize: MainAxisSize.min,
-	 children: makePaymentOptions(
-	    onFreePaymentPressed: () {},
-	    onStandardPaymentPressed: () {},
-	    onPremiumPaymentPressed: () {},
+	 children: makePaymentPlanOptions(
+	    post: post,
+	    onFreePaymentPressed: onFreePaymentPressed,
+	    onStandardPaymentPressed: onStandardPaymentPressed,
+	    onPremiumPaymentPressed: onPremiumPaymentPressed,
 	 )
       ),
    );
 
    // ----------------------------------
-
 
    return Column(children: <Widget>
    [ makeNewPostSetionTitle(g.param.reviewAndSend)
@@ -1193,17 +1195,17 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.tsMainBlack,
+	  //style: stl.tsMainBlack,
        ),
-       dense: true,
+       //dense: true,
        subtitle:
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.ellipsis,
-	     style: stl.newPostSubtitleLT.copyWith(
-		color: stl.colorScheme.primary,
-		fontSize: stl.mainFontSize,
-	     ),
+	     //style: stl.newPostSubtitleLT.copyWith(
+	     //   color: stl.colorScheme.primary,
+	     //   fontSize: stl.mainFontSize,
+	     //),
 	  ),
        onTap: onTap,
        enabled: true,
@@ -1512,6 +1514,9 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF08 onRangeValueChanged,
    final OnPressedF06 onNewPostValueChanged,
    final OnPressedF09 onSetPostDescription,
+   final OnPressedF00 onFreePaymentPressed,
+   final OnPressedF00 onStandardPaymentPressed,
+   final OnPressedF00 onPremiumPaymentPressed,
 }) {
    List<Widget> list = makeNewPostWdgs(
       ctx: ctx,
@@ -1540,6 +1545,9 @@ Widget makeNewPostScreenWdgs({
 	 onDelImg: onDelImg,
 	 onPublishPost: null,
 	 onRemovePost: onRemovePost,
+	 onFreePaymentPressed: onFreePaymentPressed,
+	 onStandardPaymentPressed: onStandardPaymentPressed,
+	 onPremiumPaymentPressed: onPremiumPaymentPressed,
       );
 
       list.add(finalScreen);
@@ -1587,6 +1595,9 @@ Widget makeNewPostScreenWdgs({
 	    onDelImg: onDelImg,
 	    onPublishPost: () {onPublishPost(ctx);},
 	    onRemovePost: onRemovePost,
+	    onFreePaymentPressed: onFreePaymentPressed,
+	    onStandardPaymentPressed: onStandardPaymentPressed,
+	    onPremiumPaymentPressed: onPremiumPaymentPressed,
 	 );
 
 	 list.add(finalScreen);
@@ -1617,7 +1628,7 @@ Widget makeNewPostScreenWdgs({
 Widget makeSearchAppBar({final String title})
 {
    return ListTile(
-      dense: true,
+      //dense: true,
       title: Text(title,
 	 maxLines: 1,
 	 overflow: TextOverflow.ellipsis,
@@ -2623,7 +2634,7 @@ Widget makeChatScreen({
              overflow: TextOverflow.ellipsis,
              style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.onSecondary),
           ),
-          dense: true,
+          //dense: true,
           subtitle:
              Text(cps.subtitle,
                 maxLines: 1,
@@ -2740,6 +2751,7 @@ String makeStrAbbrev(final String str)
 }
 
 Widget makePayPriceListTile({
+   bool selected,
    String price,
    String title,
    String subtitle,
@@ -2749,40 +2761,40 @@ Widget makePayPriceListTile({
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltSubtitle,
+      //style: stl.ltSubtitle,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: stl.tsMainBlackBold,
+      //style: stl.tsMainBlackBold,
    );
 
-   Widget leading = Card(
-      margin: const EdgeInsets.all(0.0),
-      color: priceColor,
-      elevation: 0.0,
+   IconData icon = selected ? Icons.check_box : Icons.check_box_outline_blank;
+   Color backgroundColor = selected ? Colors.amber[200] : Colors.white;
+
+   return Card(
+      elevation: 1.0,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      color: backgroundColor,
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+         borderRadius: BorderRadius.all(
+            Radius.circular(stl.cornerRadius),
+         ),
       ),
-      child: Padding(
-         padding: EdgeInsets.all(10.0),
-         child: Text(price, style: TextStyle(color: Colors.white)),
+      child: ListTile(
+         leading: Icon(icon),
+         title: titleW,
+         //dense: false,
+         subtitle: subtitleW,
+         trailing: Text(price),
+         contentPadding: EdgeInsets.symmetric(horizontal: 10),
+         onTap: onTap,
+         enabled: true,
+         selected: selected,
+         isThreeLine: false,
       ),
    );
-
-   return ListTile(
-       leading: leading,
-       title: titleW,
-       dense: false,
-       subtitle: subtitleW,
-       //trailing: Icon(Icons.keyboard_arrow_right),
-       contentPadding: EdgeInsets.symmetric(horizontal: 0),
-       onTap: onTap,
-       enabled: true,
-       selected: false,
-       isThreeLine: false,
-    );
 }
 
 //void pay()
@@ -2811,7 +2823,8 @@ Widget makePayPriceListTile({
 //   );
 //}
 
-List<Widget> makePaymentOptions({
+List<Widget> makePaymentPlanOptions({
+   Post post, 
    OnPressedF00 onFreePaymentPressed,
    OnPressedF00 onStandardPaymentPressed,
    OnPressedF00 onPremiumPaymentPressed,
@@ -2826,6 +2839,7 @@ List<Widget> makePaymentOptions({
 
    for (int i = 0; i < g.param.payments0.length; ++i) {
       Widget p = makePayPriceListTile(
+	 selected: post.priority == i,
          price: g.param.payments0[i],
          title: g.param.payments1[i],
          subtitle: g.param.payments2[i],
@@ -2839,12 +2853,50 @@ List<Widget> makePaymentOptions({
    return list;
 }
 
+Widget makePaymentOptions({
+   String title,
+   String subtitle,
+   OnPressedF00 onTap,
+}) {
+   Text subtitleW = Text(subtitle,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+   );
+
+   Text titleW = Text(title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+   );
+
+   return Card(
+      elevation: 1.0,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      color: stl.colorScheme.background,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(
+            Radius.circular(stl.cornerRadius),
+         ),
+      ),
+      child: ListTile(
+         //leading: Icon(Icons.check_box),
+         title: titleW,
+         subtitle: subtitleW,
+         contentPadding: EdgeInsets.symmetric(horizontal: 10),
+         onTap: onTap,
+         enabled: true,
+         //selected: selected,
+         isThreeLine: false,
+      ),
+   );
+}
+
 Widget makePaymentChoiceWidget({
    OnPressedF00 onFreePaymentPressed,
    OnPressedF00 onStandardPaymentPressed,
    OnPressedF00 onPremiumPaymentPressed,
 }) {
-   List<Widget> widgets = List<Widget>();
+   List<Widget> list = <Widget>[];
+
    Widget title = Padding(
       padding: EdgeInsets.all(10.0),
       child: Text(g.param.paymentTitle,
@@ -2852,32 +2904,37 @@ Widget makePaymentChoiceWidget({
       ),
    );
 
-   widgets.add(title);
+   list.add(title);
 
-
-   List<Widget> pay = makePaymentOptions(
-      onFreePaymentPressed: onFreePaymentPressed,
-      onStandardPaymentPressed: onStandardPaymentPressed,
-      onPremiumPaymentPressed: onPremiumPaymentPressed,
+   Widget paypal = makePaymentOptions(
+      title: 'PayPal',
+      subtitle: 'ksksk sksksk',
+      onTap: onFreePaymentPressed,
    );
 
-   widgets.addAll(pay);
+   list.add(paypal);
+
+   Widget creditCard = makePaymentOptions(
+      title: 'Credit Card',
+      subtitle: '',
+      onTap: onFreePaymentPressed,
+   );
+
+   list.add(creditCard);
 
    return Card(
-      margin: const EdgeInsets.only(
-       left: 2.0, right: 2.0, top: 2.0, bottom: 0.0
-      ),
+      margin: const EdgeInsets.all(2),
       color: stl.colorScheme.background,
-      //elevation: 0.0,
+      elevation: 1.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.only(
-           topLeft: Radius.circular(20.0),
-           topRight: Radius.circular(20.0),
+           topLeft: Radius.circular(stl.cornerRadius),
+           topRight: Radius.circular(stl.cornerRadius),
          ),
       ),
       child: Column(
          mainAxisSize: MainAxisSize.min,
-         children: widgets
+         children: list
       ),
    );
 }
@@ -3577,8 +3634,8 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       List<Widget> exDetails = List<Widget>();
       for (int i = 0; i < widget.names.length; ++i) {
 	 CheckboxListTile cb = CheckboxListTile(
-	    dense: true,
-	    title: Text(widget.names[i], style: stl.tsMainBlack),
+	    //dense: true,
+	    title: Text(widget.names[i]),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
 	    activeColor: stl.colorScheme.primary,
@@ -3841,7 +3898,7 @@ List<Widget> makeDetailsTextWdgs({
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
-	             fontWeight: FontWeight.normal,
+	             fontWeight: FontWeight.w300,
 	             color: textColor,
 	          ),
 	       ),
@@ -4281,7 +4338,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> exWdgs = makeDetailsTextWdgs(
 	 fields: exDetailsNames,
-	 backgroundColor: Colors.lime[600],
+	 backgroundColor: Colors.lime[500],
 	 textColor: Colors.white,
 	 fontSize: stl.mainFontSize,
       );
@@ -4567,9 +4624,8 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style:
-	       stl.tsMainBlack),
-	 dense: true,
+	 title: Text(child.name(g.param.langIdx)),
+	 //dense: true,
 	 onTap: onLeafPressed,
 	 enabled: true,
 	 onLongPress: (){},
@@ -4586,14 +4642,13 @@ ListTile makeNewPostTreeWdg({
 	 //   ),
 	 //   backgroundColor: stl.colorScheme.secondary,
 	 //),
-	 title: Text(child.name(g.param.langIdx), style:
-	       stl.tsMainBlack),
-	 dense: true,
+	 title: Text(child.name(g.param.langIdx)),
+	 //dense: false,
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx, 4),
 	    maxLines: 1,
 	    overflow: TextOverflow.ellipsis,
-	    style: stl.newPostSubtitleLT,
+	    //style: stl.newPostSubtitleLT,
 	 ),
 	 trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
 	 onTap: onNodePressed,
@@ -4612,13 +4667,11 @@ List<Widget> makeNewPostTreeWdgs({
    List<Widget> list = List<Widget>();
 
    for (int i = 0; i < node.children.length; ++i) {
-      Node child = node.children[i];
       Widget o =  makeNewPostTreeWdg(
-	 child: child,
+	 child: node.children[i],
 	 onLeafPressed: () {onLeafPressed(i);},
 	 onNodePressed: () {onNodePressed(i);},
       );
-      //list.add(SizedBox(width: makeMaxWidth(ctx, tab), child: o));
       list.add(o);
    }
 
@@ -4848,7 +4901,7 @@ Widget makeChatListTile({
    );
 
    ListTile lt =  ListTile(
-      dense: false,
+      //dense: false,
       enabled: true,
       trailing: trailing,
       onTap: onStartChatPressed,
@@ -4864,7 +4917,7 @@ Widget makeChatListTile({
          chat.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-         style: stl.tsMainBlackBold,
+         //style: stl.tsMainBlackBold,
       ),
    );
 
@@ -5631,6 +5684,13 @@ class OccaseState extends State<Occase>
    {
       setState(() {
 	 _posts[cts.ownIdx].description = description;
+      });
+   }
+
+   void _onSetPostPriority(int prio)
+   {
+      setState(() {
+	 _posts[cts.ownIdx].priority = prio;
       });
    }
 
@@ -7236,6 +7296,9 @@ class OccaseState extends State<Occase>
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
 	 onSetPostDescription: _onSetPostDescription,
+	 onFreePaymentPressed: () { _onSetPostPriority(0);},
+	 onStandardPaymentPressed: () { _onSetPostPriority(1);},
+	 onPremiumPaymentPressed: () { _onSetPostPriority(2);},
       );
    }
 

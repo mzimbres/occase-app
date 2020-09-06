@@ -151,4 +151,5 @@ final Divider newPostDivider = Divider(
 const double newPostPadding = 5.0;
 const double alertDialogInsetPadding = 3.0;
 const double minButtonWidth = 100.0;
+const double paymentPadding = 20.0;
 
