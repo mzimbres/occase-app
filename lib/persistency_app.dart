@@ -128,8 +128,12 @@ class Persistency {
       await _db.execute(sql.delPostWithId, [post[i].id]);
    }
 
-   Future<void> updateNUnreadMsgs(String postId, String peer) async
-   {
+   Future<void> updateNUnreadMsgs({
+      bool isFav,
+      String postId,
+      String peer,
+      List<Posts> posts,
+   }) async {
       await _db.rawUpdate(sql.updateNUnreadMsgs, [0, postId, peer]);
    }
 

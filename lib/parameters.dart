@@ -18,12 +18,10 @@ class Parameters {
    String appName = 'Occase';
    String _adminId = 'admin-id';
    String _adminNick = 'Louis';
-   List<String> _delOwnChatTitleStr = <String>[''];
-   List<String> _delFavChatTitleStr = <String>[''];
-   List<String> _devChatOkStr = <String>[''];
+   List<String> _delChatTitle = <String>[''];
    List<String> _delChatCancelStr = <String>[''];
    List<String> _newPostAppBarTitle = <String>[''];
-   List<String> _filterAppBarTitle = <String>[''];
+   List<String> _searchAppBarTitle = <String>[''];
    List<String> _postRefSectionTitle = <String>[''];
    List<String> _postExDetailsTitle = <String>[''];
    List<String> _postDescTitle = <String>[''];
@@ -67,20 +65,16 @@ class Parameters {
    List<String> _postMinImgsContent = <String>[''];
    List<String> _changeNickAppBarTitle = <String>[''];
    List<String> _changeNtfAppBarTitle = <String>[''];
-   List<String> _payments0 = <String>[''];
+   List<String> _paymentValues = <String>[''];
    List<String> _share = <String>[''];
    List<String> _shareSubject = <String>[''];
-   List<String> _reviewAndSend = <String>[''];
    List<String> _information = <String>[''];
    List<String> _supportEmail = <String>[''];
    List<String> _supportEmailSubject = <String>[''];
-   List<String> _newPostMessage = <String>[''];
-   List<String> _emptyFavMessage = <String>[''];
    List<String> _adminChatMsg = <String>[''];
 
    List<List<String>> _tabNames = <List<String>>[<String>['' ,'' , '']];
    List<List<String>> _newPostTabNames = <List<String>>[<String>['', '', '', '']];
-   List<List<String>> _filterTabNames = <List<String>>[<String>['', '', '', '']];
    List<List<String>> _descList =  <List<String>>[<String>['', '', '', '', '']];
    List<List<String>> _dialogTitles =  <List<String>>[<String>['' ,'' ,'' ,'' , '']];
    List<List<String>> _dialogBodies =  <List<String>>[<String>['', '', '', '', '']];
@@ -89,13 +83,20 @@ class Parameters {
    List<List<String>> _rangeUnits =  <List<String>>[<String>['', '', '', '', '', '']];
    List<List<String>> _newPostErrorTitles = <List<String>>[<String>[ '', '']];
    List<List<String>> _newPostErrorBodies = <List<String>> [<String>['' , '']];
-   List<List<String>> _newFiltersFinalScreenButton = <List<String>>[<String>['', '', '']];
+   List<List<String>> _usefulWords = <List<String>>[<String>['', '', '']];
    List<List<String>> _ntfTitleDesc =  <List<String>>[<String>['', '']];
-   List<List<String>> _menuDepthNames0 = <List<String>>[<String>['', '', '', '', '', '', '']];
-   List<List<String>> _menuDepthNames1 = <List<String>>[<String>['', '', '', '', '', '', '']];
-   List<List<String>> _payments1 = <List<String>>[<String>['']];
-   List<List<String>> _payments2 = <List<String>>[<String>['']];
+   List<List<String>> _locationTreeDepthNames = <List<String>>[<String>['', '', '', '', '', '', '']];
+   List<List<String>> _productTreeDepthNames = <List<String>>[<String>['', '', '', '', '', '', '']];
+   List<List<String>> _paymentValueTitles = <List<String>>[<String>['']];
+   List<List<String>> _paymentValueSubtitles = <List<String>>[<String>['']];
    List<List<String>> _statsTitleAndFields = <List<String>>[<String>['']];
+   List<List<String>> _newPostSectionNames = <List<String>>[<String>['']];
+   List<List<String>> _onEmptyOwnMsg = <List<String>>[<String>['']];
+   List<List<String>> _onEmptySeaMsg = <List<String>>[<String>['']];
+   List<List<String>> _onEmptyFavMsg = <List<String>>[<String>['']];
+   List<List<String>> _onEmptyOwnButtonNames = <List<String>>[<String>['']];
+   List<List<String>> _onEmptySeaButtonNames = <List<String>>[<String>['']];
+   List<List<String>> _onEmptyFavButtonNames = <List<String>>[<String>['']];
 
    List<int> rangesMinMax;
    List<int> rangeDivs;
@@ -125,12 +126,10 @@ class Parameters {
 
    String get adminId                   => _adminId;
    String get adminNick                 => _adminNick;
-   String get delOwnChatTitleStr        => _delOwnChatTitleStr[_langIdx];
-   String get delFavChatTitleStr        => _delFavChatTitleStr[_langIdx];
-   String get devChatOkStr              => _devChatOkStr[_langIdx];
+   String get delChatTitle              => _delChatTitle[_langIdx];
    String get delChatCancelStr          => _delChatCancelStr[_langIdx];
    String get newPostAppBarTitle        => _newPostAppBarTitle[_langIdx];
-   String get filterAppBarTitle         => _filterAppBarTitle[_langIdx];
+   String get searchAppBarTitle         => _searchAppBarTitle[_langIdx];
    String get postRefSectionTitle       => _postRefSectionTitle[_langIdx];
    String get postExDetailsTitle        => _postExDetailsTitle[_langIdx];
    String get postDescTitle             => _postDescTitle[_langIdx];
@@ -176,17 +175,13 @@ class Parameters {
    String get changeNtfAppBarTitle      => _changeNtfAppBarTitle[_langIdx];
    String get share                     => _share[_langIdx];
    String get shareSubject              => _shareSubject[_langIdx];
-   String get reviewAndSend             => _reviewAndSend[_langIdx];
    String get information               => _information[_langIdx];
    String get supportEmail              => _supportEmail[_langIdx];
    String get supportEmailSubject       => _supportEmailSubject[_langIdx];
-   String get newPostMessage            => _newPostMessage[_langIdx];
-   String get emptyFavMessage           => _emptyFavMessage[_langIdx];
    String get adminChatMsg              => _adminChatMsg[_langIdx];
 
    List<String> get tabNames                     => _tabNames[_langIdx];
    List<String> get newPostTabNames              => _newPostTabNames[_langIdx];
-   List<String> get filterTabNames               => _filterTabNames[_langIdx];
    List<String> get descList                     => _descList[_langIdx];
    List<String> get dialogTitles                 => _dialogTitles[_langIdx];
    List<String> get dialogBodies                 => _dialogBodies[_langIdx];
@@ -195,14 +190,21 @@ class Parameters {
    List<String> get rangeUnits                   => _rangeUnits[_langIdx];
    List<String> get newPostErrorTitles           => _newPostErrorTitles[_langIdx];
    List<String> get newPostErrorBodies           => _newPostErrorBodies[_langIdx];
-   List<String> get newFiltersFinalScreenButton  => _newFiltersFinalScreenButton[_langIdx];
+   List<String> get usefulWords                  => _usefulWords[_langIdx];
    List<String> get ntfTitleDesc                 => _ntfTitleDesc[_langIdx];
-   List<String> get menuDepthNames0              => _menuDepthNames0[_langIdx];
-   List<String> get menuDepthNames1              => _menuDepthNames1[_langIdx];
-   List<String> get payments0                    => _payments0;
-   List<String> get payments1                    => _payments1[_langIdx];
-   List<String> get payments2                    => _payments2[_langIdx];
+   List<String> get locationTreeDepthNames       => _locationTreeDepthNames[_langIdx];
+   List<String> get productTreeDepthNames        => _productTreeDepthNames[_langIdx];
+   List<String> get paymentValues                => _paymentValues;
+   List<String> get paymentValueTitles           => _paymentValueTitles[_langIdx];
+   List<String> get paymentValueSubtitles        => _paymentValueSubtitles[_langIdx];
    List<String> get statsTitleAndFields          => _statsTitleAndFields[_langIdx];
+   List<String> get newPostSectionNames          => _newPostSectionNames[_langIdx];
+   List<String> get onEmptyOwnMsg                => _onEmptyOwnMsg[_langIdx];
+   List<String> get onEmptySeaMsg                => _onEmptySeaMsg[_langIdx];
+   List<String> get onEmptyFavMsg                => _onEmptyFavMsg[_langIdx];
+   List<String> get onEmptyOwnButtonNames        => _onEmptyOwnButtonNames[_langIdx];
+   List<String> get onEmptySeaButtonNames        => _onEmptySeaButtonNames[_langIdx];
+   List<String> get onEmptyFavButtonNames        => _onEmptyFavButtonNames[_langIdx];
 
    int get langIdx => _langIdx;
 
@@ -211,12 +213,10 @@ class Parameters {
       appName                      = map['appName'];
       _adminId                     = map['adminId'];
       _adminNick                   = map['adminNick'];
-      _delOwnChatTitleStr          = decodeList2(map['delOwnChatTitleStr']);
-      _delFavChatTitleStr          = decodeList2(map['delFavChatTitleStr']);
-      _devChatOkStr                = decodeList2(map['devChatOkStr']);
+      _delChatTitle                = decodeList2(map['delChatTitle']);
       _delChatCancelStr            = decodeList2(map['delChatCancelStr']);
       _newPostAppBarTitle          = decodeList2(map['newPostAppBarTitle']);
-      _filterAppBarTitle           = decodeList2(map['filterAppBarTitle']);
+      _searchAppBarTitle           = decodeList2(map['searchAppBarTitle']);
       _postRefSectionTitle         = decodeList2(map['postRefSectionTitle']);
       _postExDetailsTitle          = decodeList2(map['postExDetailsTitle']);
       _postDescTitle               = decodeList2(map['postDescTitle']);
@@ -262,18 +262,14 @@ class Parameters {
       _changeNtfAppBarTitle        = decodeList2(map['changeNtfAppBarTitle']);
       _share                       = decodeList2(map['share']);
       _shareSubject                = decodeList2(map['shareSubject']);
-      _reviewAndSend               = decodeList2(map['reviewAndSend']);
       _information                 = decodeList2(map['information']);
       _supportEmail                = decodeList2(map['supportEmail']);
       _supportEmailSubject         = decodeList2(map['supportEmailSubject']);
-      _newPostMessage              = decodeList2(map['newPostMessage']);
-      _emptyFavMessage             = decodeList2(map['emptyFavMessage']);
       _adminChatMsg                = decodeList2(map['adminChatMsg']);
-      _payments0                   = decodeList2(map['payments0']);
+      _paymentValues               = decodeList2(map['paymentValues']);
 
       _tabNames                    = decodeList3(map['tabNames']);
       _newPostTabNames             = decodeList3(map['newPostTabNames']);
-      _filterTabNames              = decodeList3(map['filterTabNames']);
       _descList                    = decodeList3(map['descList']);
       _dialogTitles                = decodeList3(map['dialogTitles']);
       _dialogBodies                = decodeList3(map['dialogBodies']);
@@ -282,13 +278,20 @@ class Parameters {
       _rangeUnits                  = decodeList3(map['rangeUnits']);
       _newPostErrorTitles          = decodeList3(map['newPostErrorTitles']);
       _newPostErrorBodies          = decodeList3(map['newPostErrorBodies']);
-      _newFiltersFinalScreenButton = decodeList3(map['newFiltersFinalScreenButton']);
+      _usefulWords                 = decodeList3(map['usefulWords']);
       _ntfTitleDesc                = decodeList3(map['ntfTitleDesc']);
-      _menuDepthNames0             = decodeList3(map['menuDepthNames0']);
-      _menuDepthNames1             = decodeList3(map['menuDepthNames1']);
-      _payments1                   = decodeList3(map['payments1']);
-      _payments2                   = decodeList3(map['payments2']);
+      _locationTreeDepthNames      = decodeList3(map['locationTreeDepthNames']);
+      _productTreeDepthNames       = decodeList3(map['productTreeDepthNames']);
+      _paymentValueTitles          = decodeList3(map['paymentValueTitles']);
+      _paymentValueSubtitles       = decodeList3(map['paymentValueSubtitles']);
       _statsTitleAndFields         = decodeList3(map['statsTitleAndFields']);
+      _newPostSectionNames         = decodeList3(map['newPostSectionNames']);
+      _onEmptyOwnMsg               = decodeList3(map['onEmptyOwnMsg']);
+      _onEmptySeaMsg               = decodeList3(map['onEmptySeaMsg']);
+      _onEmptyFavMsg               = decodeList3(map['onEmptyFavMsg']);
+      _onEmptyOwnButtonNames       = decodeList3(map['onEmptyOwnButtonNames']);
+      _onEmptySeaButtonNames       = decodeList3(map['onEmptySeaButtonNames']);
+      _onEmptyFavButtonNames       = decodeList3(map['onEmptyFavButtonNames']);
 
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -302,12 +305,10 @@ class Parameters {
          'appName':                     appName,
          'adminId':                     _adminId,
          'adminNick':                   _adminNick,
-         'delOwnChatTitleStr':          _delOwnChatTitleStr,
-         'delFavChatTitleStr':          _delFavChatTitleStr,
-         'devChatOkStr':                _devChatOkStr,
+         'delChatTitle':                _delChatTitle,
          'delChatCancelStr':            _delChatCancelStr,
          'newPostAppBarTitle':          _newPostAppBarTitle,
-         'filterAppBarTitle':           _filterAppBarTitle,
+         'searchAppBarTitle':           _searchAppBarTitle,
          'postRefSectionTitle':         _postRefSectionTitle,
          'postExDetailsTitle':          _postExDetailsTitle,
          'postDescTitle':               _postDescTitle,
@@ -353,17 +354,19 @@ class Parameters {
          'changeNtfAppBarTitle':        _changeNtfAppBarTitle,
          'share':                       _share,
          'shareSubject':                _shareSubject,
-         'reviewAndSend':               _reviewAndSend,
          'information':                 _information,
          'supportEmail':                _supportEmail,
          'supportEmailSubject':         _supportEmailSubject,
-         'newPostMessage':              _newPostMessage,
-         'emptyFavMessage':             _emptyFavMessage,
+         'onEmptyOwnMsg':               _onEmptyOwnMsg,
+         'onEmptySeaMsg':               _onEmptySeaMsg,
+         'onEmptyFavMsg':               _onEmptyFavMsg,
+         'onEmptyOwnButtonNames':       _onEmptyOwnButtonNames,
+         'onEmptySeaButtonNames':       _onEmptySeaButtonNames,
+         'onEmptyFavButtonNames':       _onEmptyFavButtonNames,
          'adminChatMsg':                _adminChatMsg,
-         'payments0':                   _payments0,
+         'paymentValues':               _paymentValues,
          'tabNames':                    _tabNames,
          'newPostTabNames':             _newPostTabNames,
-         'filterTabNames':              _filterTabNames,
          'descList':                    _descList,
          'dialogTitles':                _dialogTitles,
          'dialogBodies':                _dialogBodies,
@@ -372,13 +375,14 @@ class Parameters {
          'rangeUnits':                  _rangeUnits,
          'newPostErrorTitles':          _newPostErrorTitles,
          'newPostErrorBodies':          _newPostErrorBodies,
-         'newFiltersFinalScreenButton': _newFiltersFinalScreenButton,
+         'usefulWords':                 _usefulWords,
          'ntfTitleDesc':                _ntfTitleDesc,
-         'menuDepthNames0':             _menuDepthNames0,
-         'menuDepthNames1':             _menuDepthNames1,
-         'payments1':                   _payments1,
-         'payments2':                   _payments2,
+         'locationTreeDepthNames':      _locationTreeDepthNames,
+         'productTreeDepthNames':       _productTreeDepthNames,
+         'paymentValueTitles':          _paymentValueTitles,
+         'paymentValueSubtitles':       _paymentValueSubtitles,
          'statsTitleAndFields':         _statsTitleAndFields,
+         'newPostSectionNames':         _newPostSectionNames,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
          'discreteRanges':              discreteRanges,

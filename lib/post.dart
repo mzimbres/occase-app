@@ -583,7 +583,7 @@ class Post {
       return l;
    }
 
-   int getChatHistIdx(final String peer)
+   int getChatMetadataIndex(final String peer)
    {
       return chats.indexWhere((e) {return e.peer == peer;});
    }
@@ -593,7 +593,7 @@ class Post {
       final String nick,
       final String avatar,
    ) {
-      final int i = getChatHistIdx(peer);
+      final int i = getChatMetadataIndex(peer);
       if (i == -1)
          return addChat(peer, nick, avatar);
 

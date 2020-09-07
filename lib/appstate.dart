@@ -198,40 +198,51 @@ class AppState {
       await _persistency.persistConfig(cfg);
    }
 
-   Future<int>
-   setChatMessage(String postId, String peer, ChatItem ci, bool fav) async
-   {
-      List<Post> list = ownPosts;
-      if (fav)
-	 list = favPosts;
+   Future<int> addChatMessage({
+      String postId,
+      String peer,
+      ChatItem chatItem,
+      bool isFav,
+   }) async {
+      List<Post> list = isFav ? favPosts : ownPosts;
 
-      final int i = list.indexWhere((e) { return e.id == postId;});
+      final int i = list.indexWhere((e) { return e.id == postId; });
       assert(i != -1);
 
       Post post = list[i];
+
       // We have to make sure every unread msg is marked as read
       // before we receive any reply.
-      final int j = post.getChatHistIdx(peer);
+      final int j = post.getChatMetadataIndex(peer);
       assert(j != -1);
 
-      await _persistency.insertChatMsg(postId, peer, ci);
-      final int id = post.chats[j].addChatItem(ci);
+      await _persistency.insertChatMsg(postId, peer, chatItem);
+      final int id = post.chats[j].addChatItem(chatItem);
 
       await _persistency.insertChatOnPost(postId, post.chats[j]);
 
       post.chats.sort(compChats);
       list.sort(compPosts);
-      if (fav)
+
+      if (isFav)
 	 _persistency.persistFavPosts(favPosts);
       else
-	 _persistency.persistFavPosts(ownPosts);
+	 _persistency.persistOwnPosts(ownPosts);
 
       return id;
    }
 
-   Future<void> setNUnreadMsgs(String id, String from) async
-   {
-      await _persistency.updateNUnreadMsgs(id, from);
+   Future<void> updateNUnreadMsgs({
+      bool isFav,
+      String postId,
+      String peer,
+   }) async {
+      await _persistency.updateNUnreadMsgs(
+	 isFav: isFav,
+	 postId: postId,
+	 peer: peer,
+	 posts: isFav ? favPosts : ownPosts,
+      );
    }
 
    Future<void> setPinPostDate(int i, bool fav) async
@@ -302,7 +313,7 @@ class AppState {
       await _persistency.insertChatOnPost3(postId, chat, peer, ci, isFav, posts);
    }
 
-   Future<void> insertOutChatMsg(String payload, int isChat) async
+   Future<String> addAppMsgToQueueAndGetNext(String payload, int isChat) async
    {
       final bool isEmpty = appMsgQueue.isEmpty;
 
@@ -315,6 +326,11 @@ class AppState {
       appMsgQueue.add(tmp);
 
       tmp.rowid = await _persistency.insertOutChatMsg(appMsgQueue);
+
+      if (isEmpty)
+	 return appMsgQueue.first.payload;
+
+      return '';
    }
 
    Future<bool> deleteOutChatMsg() async

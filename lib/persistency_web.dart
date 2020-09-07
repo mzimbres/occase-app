@@ -106,8 +106,14 @@ class Persistency {
       _persistPosts(posts, _ownPostsKey);
    }
 
-   Future<void> updateNUnreadMsgs(String postId, String peer) async
-   {
+   Future<void> updateNUnreadMsgs({
+      bool isFav,
+      String postId,
+      String peer,
+      List<Post> posts,
+   }) async {
+      final String key = isFav ? _favPostsKey : _ownPostsKey;
+      _persistPosts(posts, key);
    }
 
    Future<void> insertPost(List<Post> posts, int i, bool isFav) async

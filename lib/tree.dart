@@ -558,15 +558,6 @@ makeMenuElems(final Node root, int index, int maxDepth)
    return elems;
 }
 
-int compStringForPostWdg(String a, String b)
-{
-   final bool c1 = a.length > 4 && a.length < 10;
-   final bool c2 = b.length > 4 && b.length < 10;
-
-   return ( c1 && !c2) ? -1
-	: (!c1 &&  c2) ? 1 : 0;
-}
-
 // Return a list of all ex details for the given product i.
 List<String> makeExDetailsNamesAll(Node root, List<int> exDetails, int i, int lang)
 {
@@ -584,8 +575,6 @@ List<String> makeExDetailsNamesAll(Node root, List<int> exDetails, int i, int la
       String str = root.children[i].children[j].children[k].name(lang);
       list.add(str);
    }
-
-   list.sort(compStringForPostWdg);
 
    return list;
 }
@@ -612,8 +601,6 @@ List<String> makeInDetailNamesAll(Node root, List<int> inDetails, int i, int lan
       );
       ret.addAll(names);
    }
-
-   ret.sort(compStringForPostWdg);
 
    return ret;
 }
