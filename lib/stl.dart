@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 final Color chatLongPressendColor = Colors.grey[350]; 
 
 const double bigFontSize = 20.0;
+const double largerFontSize = 18.0;
 const double mainFontSize = 16.0;
 const double smallFontSize = 14.0;
 const double delImgWidgOpacity = 0.5;
@@ -48,9 +49,9 @@ const TextStyle tsMainBlackBold = TextStyle(
 );
 
 final TextStyle newPostSubtitleLT = TextStyle(
-   fontSize: smallFontSize,
-   color: Colors.grey,
-   fontWeight: FontWeight.normal,
+   fontSize: largerFontSize,
+   color: Colors.deepOrange,
+   fontWeight: FontWeight.w300,
 );
 
 final TextStyle ltSubtitle = TextStyle(

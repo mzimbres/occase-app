@@ -808,10 +808,7 @@ RichText makeSearchTitle({
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.newPostSubtitleLT.copyWith(
-		 color: stl.colorScheme.primary,
-		 fontSize: stl.mainFontSize,
-	      ),
+              style: stl.newPostSubtitleLT,
            ),
          ],
       ),
@@ -1052,57 +1049,6 @@ List<Widget> makeTabActions({
    return ret;
 }
 
-List<Widget> makeGlobalActionsWeb({
-   OnPressedF00 onSearchPressed,
-   OnPressedF00 onNewPost,
-   OnPressedF15 onAppBarVertPressed,
-}) {
-   List<Widget> ret = List<Widget>();
-
-   IconButton searchButton = IconButton(
-      icon: Icon(
-	 Icons.search,
-	 color: stl.colorScheme.onPrimary,
-      ),
-      tooltip: g.param.notificationsButton,
-      onPressed: onSearchPressed,
-   );
-
-   IconButton publishButton = IconButton(
-      icon: Icon(
-	 stl.newPostIcon,
-	 color: stl.colorScheme.onPrimary,
-      ),
-      onPressed: onNewPost,
-   );
-
-   //ret.add(publishButton);
-   //ret.add(searchButton);
-   ret.add(makeAppBarVertAction(onAppBarVertPressed));
-
-   return ret;
-}
-
-List<Widget> makeGlobalActionsApp({
-   bool hasLPChats,
-   bool hasLPChatMsgs,
-   OnPressedF00 onSearchPressed,
-   OnPressedF00 onNewPost,
-   OnPressedF15 onAppBarVertPressed,
-}) {
-   // We only add the global action buttons if
-   // 1. There is no chat selected for selection.
-   // 2. We are not forwarding a message.
-   if (!hasLPChats && !hasLPChatMsgs)
-      return makeGlobalActionsWeb(
-	 onSearchPressed: onSearchPressed,
-	 onNewPost: onNewPost,
-	 onAppBarVertPressed: onAppBarVertPressed,
-      );
-
-   return List<Widget>();
-}
-
 Widget makeAppBarLeading({
    final bool hasLpChats,
    final bool hasLpChatMsgs,
@@ -1202,10 +1148,7 @@ Widget makeNewPostLT({
 	  Text(subTitle,
 	     maxLines: 1,
 	     overflow: TextOverflow.ellipsis,
-	     //style: stl.newPostSubtitleLT.copyWith(
-	     //   color: stl.colorScheme.primary,
-	     //   fontSize: stl.mainFontSize,
-	     //),
+	     style: stl.newPostSubtitleLT,
 	  ),
        onTap: onTap,
        enabled: true,
@@ -2951,6 +2894,7 @@ Widget createRaisedButton({
    final String text,
    Color color,
    Color textColor,
+   double minWidth = stl.minButtonWidth,
 }) {
    RaisedButton but = RaisedButton(
       child: Text(text,
@@ -2965,7 +2909,7 @@ Widget createRaisedButton({
       onPressed: onPressed,
    );
 
-   return Center(child: ButtonTheme(minWidth: stl.minButtonWidth, child: but));
+   return Center(child: ButtonTheme(minWidth: minWidth, child: but));
 }
 
 // Study how to convert this into an elipsis like whatsapp.
@@ -3423,13 +3367,14 @@ Widget makeAddOrRemoveWidget({
 
 Widget makeImgTextPlaceholder(final String str)
 {
-   return Text(str,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-         color: stl.colorScheme.background,
-         fontSize: stl.mainFontSize,
-      ),
-   );
+   return SizedBox.shrink();
+   //return Text(str,
+   //   overflow: TextOverflow.ellipsis,
+   //   style: TextStyle(
+   //      color: stl.colorScheme.background,
+   //      fontSize: stl.mainFontSize,
+   //   ),
+   //);
 }
 
 Widget makeNewPostDialogWdg({
@@ -3806,7 +3751,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	    children: <TextSpan>
 	    [ TextSpan(
 		 text: titleStr,
-		 style: stl.tsMainBlack.copyWith(color: stl.colorScheme.secondary),
+		 style: stl.newPostSubtitleLT,
 	      ),
 	    ],
 	 ),
@@ -4417,12 +4362,15 @@ Widget makePostDetailsWdg({
 
 Widget makeEmptyTabText(String msg)
 {
-   return Padding(
-      padding: EdgeInsets.all(20.0),
-      child: Text(msg,
-	 style: TextStyle(
-	    fontSize: 16.0,
-	    color: stl.colorScheme.primary,
+   return Center(
+      child: Padding(
+	 padding: EdgeInsets.all(40.0),
+	 child: Text(msg,
+	    textAlign: TextAlign.center,
+	    style: TextStyle(
+	       fontSize: stl.bigFontSize,
+	       color: stl.colorScheme.primary,
+	    ),
 	 ),
       ),
    );
@@ -4456,20 +4404,20 @@ Widget makeOnEmptyBodyMsg({
 Widget makeSearchInitTab({
    final List<String> msgs,
    final List<String> buttonNames,
-   final List<Post> posts,
    final OnPressedF00 onGoToNewPostTabPressed,
    final OnPressedF00 onSearchPressed,
    final OnPressedF00 onLastestPostsPressed,
 }) {
    Widget newPostText = makeEmptyTabText(msgs[0]);
    Widget newSearchText = makeEmptyTabText(msgs[1]);
-   Widget randomPostsText = makeEmptyTabText(msgs[2]);
 
+   const double width = 150;
    Widget goToNewPost = createRaisedButton(
       onPressed: onGoToNewPostTabPressed,
       text: buttonNames[0],
       color: stl.colorScheme.secondary,
       textColor: stl.colorScheme.onSecondary,
+      minWidth: width,
    );
 
    Widget goToSearch = createRaisedButton(
@@ -4477,6 +4425,7 @@ Widget makeSearchInitTab({
       text: buttonNames[1],
       color: stl.colorScheme.secondary,
       textColor: stl.colorScheme.onSecondary,
+      minWidth: width,
    );
 
    Widget seeLatest = createRaisedButton(
@@ -4484,6 +4433,7 @@ Widget makeSearchInitTab({
       text: buttonNames[2],
       color: stl.colorScheme.secondary,
       textColor: stl.colorScheme.onSecondary,
+      minWidth: width,
    );
 
    return Center(
@@ -4532,7 +4482,6 @@ Widget makeSearchResultPosts({
       return makeSearchInitTab(
 	 msgs: g.param.onEmptySeaMsg,
 	 buttonNames: g.param.onEmptySeaButtonNames,
-	 posts: posts,
 	 onGoToNewPostTabPressed: onGoToNewPostTabPressed,
 	 onSearchPressed: onSearchPressed,
 	 onLastestPostsPressed: onLatestPostsPressed,
@@ -4555,7 +4504,6 @@ Widget makeSearchResultPosts({
 	    return makeSearchInitTab(
 	       msgs: g.param.onEmptySeaMsg,
 	       buttonNames: g.param.onEmptySeaButtonNames,
-	       posts: posts,
 	       onGoToNewPostTabPressed: onGoToNewPostTabPressed,
 	       onSearchPressed: onSearchPressed,
 	       onLastestPostsPressed: onLatestPostsPressed,
@@ -4620,7 +4568,7 @@ ListTile makeNewPostTreeWdg({
 	    child.getChildrenNames(g.param.langIdx, 4),
 	    maxLines: 1,
 	    overflow: TextOverflow.ellipsis,
-	    //style: stl.newPostSubtitleLT,
+	    style: stl.newPostSubtitleLT.copyWith(fontSize: stl.mainFontSize),
 	 ),
 	 trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
 	 onTap: onNodePressed,
@@ -5442,7 +5390,16 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
       _stablishNewConnection(_fcmToken);
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
+
+      // Do not await for the async op to complete to avoid blocking
+      // the init and consequently the page loading time.
+      _loadMatchingPostsCounter();
+
+      // In wide mode we want to show some posts when the user opens
+      // the webpage. We cannot however await here, we just launch the
+      // async operation whithout waiting for it to complete.
+      _searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
+
       setState(() { });
    }
 
@@ -6633,8 +6590,11 @@ class OccaseState extends State<Occase>
             log("Error: Invalid post detected.");
          }
       }
+      
+      setState(() {
+	 _appState.posts.sort(compPostByDate);
+      });
 
-      _appState.posts.sort(compPostByDate);
       return _appState.posts.length;
    }
 
@@ -6943,6 +6903,8 @@ class OccaseState extends State<Occase>
 
    void _onSearchPressed()
    {
+      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(seconds: 2));
+
       setState(() {
 	 prepareNewPost(cts.searchIdx);
 	 _newSearchPressed = true;
@@ -7203,6 +7165,12 @@ class OccaseState extends State<Occase>
       return 0;
    }
 
+   Future<void> _loadMatchingPostsCounter() async
+   {
+      final String n = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
+      setState((){_numberOfMatchingPosts = n;});
+   }
+
    Future<void> _onSetSearchLocationCode(List<int> code) async
    {
       if (code.isEmpty)
@@ -7403,28 +7371,25 @@ class OccaseState extends State<Occase>
       );
    }
 
-   List<Widget> _makeGlobalActionsApp(BuildContext ctx, int i)
+   List<Widget> _makeGlobalActionsApp(BuildContext ctx, int tab)
    {
       // In the web version we do not need to hide anything if there are long
       // pressed chats.
-      return makeGlobalActionsApp(
-	 hasLPChats: _hasLPChats(i),
-	 hasLPChatMsgs: _hasLPChatMsgs(i),
-	 onSearchPressed: _onSearchPressed,
-	 onNewPost: _onNewPost,
-	 onAppBarVertPressed: _onAppBarVertPressed,
-      );
+
+      // We only add the global action buttons if
+      // 1. There is no chat selected for selection.
+      // 2. We are not forwarding a message.
+      if (!_hasLPChats(tab) && !_hasLPChatMsgs(tab))
+	 return <Widget>[makeAppBarVertAction(_onAppBarVertPressed)];
+
+      return <Widget>[];
    }
 
    List<Widget> _makeGlobalActionsWeb(BuildContext ctx)
    {
       // In the web version we do not need to hide anything if there are long
       // pressed chats.
-      return makeGlobalActionsWeb(
-	 onSearchPressed: _onSearchPressed,
-	 onNewPost: _onNewPost,
-	 onAppBarVertPressed: _onAppBarVertPressed,
-      );
+      return <Widget>[makeAppBarVertAction(_onAppBarVertPressed)];
    }
 
 
