@@ -50,7 +50,7 @@ const TextStyle tsMainBlackBold = TextStyle(
 
 final TextStyle newPostSubtitleLT = TextStyle(
    fontSize: largerFontSize,
-   color: Colors.deepOrange,
+   color: Colors.deepOrange[900],
    fontWeight: FontWeight.w300,
 );
 
@@ -69,7 +69,7 @@ final TextStyle ltSubtitleOnPrimary = TextStyle(
 );
 
 const TextStyle appBarLtTitle = TextStyle(
-   fontSize: 18.0,
+   fontSize: largerFontSize,
    color: onPrimaryColor,
    fontWeight: FontWeight.w500,
 );
@@ -78,14 +78,6 @@ final TextStyle appBarLtSubtitle = TextStyle(
    fontSize: smallFontSize,
    color: onPrimarySubtitleColor,
    fontWeight: FontWeight.normal,
-);
-
-//-------------------------------------------------------------------------
-
-// Text style of TextFields.
-const TextStyle textField = TextStyle(
-   fontSize: 15.0,
-   color: Colors.black,
 );
 
 //-------------------------------------------------------------------------

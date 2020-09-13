@@ -337,7 +337,7 @@ TextField makeNickTxtField(
    Color enabledColor = focusedColor;
 
    return TextField(
-      style: stl.textField,
+      style: stl.tsMainBlack,
       controller: txtCtrl,
       maxLines: 1,
       maxLength: fieldMaxLength,
@@ -2028,26 +2028,23 @@ Card makeChatMsgWidget(
    bool isNewMsg,
    String ownNick,
 ) {
-   Color txtColor = Colors.black;
    Color color = Color(0xFFFFFFFF);
    Color onSelectedMsgColor = Colors.grey[300];
    if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
-      //txtColor = stl.colorScheme.onPrimary;
       //color = Color(0xFF0080CF);
    }
 
    if (chatMetadata.msgs[i].isLongPressed) {
       onSelectedMsgColor = Colors.blue[200];
       color = Colors.blue[100];
-      txtColor = Colors.black;
    }
 
    RichText msgAndDate = RichText(
       text: TextSpan(
          text: chatMetadata.msgs[i].body,
-         style: stl.textField.copyWith(color: txtColor),
+         style: stl.tsMainBlack,
          children: <TextSpan>
          [ TextSpan(
               text: '  ${makeDateString(chatMetadata.msgs[i].date)}',
@@ -2216,10 +2213,9 @@ ListView makeChatMsgListView(
                          child: Text(
                             '${chatMetadata.divisorUnreadMsgs}',
                             style: TextStyle(
-                               fontSize: 17.0,
+                               fontSize: stl.largerFontSize,
                                fontWeight: FontWeight.normal,
-                               color:
-                               stl.colorScheme.primary,
+                               color: stl.colorScheme.primary,
                             ),
                          )
                       ),
@@ -2228,7 +2224,6 @@ ListView makeChatMsgListView(
             }
 
             if (i > chatMetadata.divisorUnreadMsgsIdx) {
-	       log('$i ${chatMetadata.divisorUnreadMsgsIdx}');
                i -= 1; // For the shift
 	    }
          }
@@ -2417,7 +2412,7 @@ Widget makeChatScreen({
    );
 
    TextField tf = TextField(
-       style: stl.textField,
+       style: stl.tsMainBlack,
        controller: editCtrl,
        keyboardType: TextInputType.multiline,
        maxLines: null,
@@ -3252,7 +3247,7 @@ Widget makePostDescription(BuildContext ctx, int tab, String desc)
 	    ),
 	    child: Text(desc,
 	       //overflow: TextOverflow.ellipsis,
-	       style: stl.textField,
+	       style: stl.tsMainBlack,
 	    ),
 	 ),
       );
@@ -3608,7 +3603,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 keyboardType: TextInputType.multiline,
 	 maxLines: null,
 	 maxLength: 1000,
-	 style: stl.textField,
+	 style: stl.tsMainBlack,
 	 decoration: InputDecoration.collapsed(hintText: hint),
       );
 
@@ -4969,10 +4964,10 @@ Widget makeChatTab({
    final List<Post> posts,
    final OnPressedF03 onPressed,
    final OnPressedF03 onLongPressed,
-   final OnPressedF01 onDelPost1,
-   final OnPressedF01 onPinPost1,
+   final OnPressedF01 onDelPost,
+   final OnPressedF01 onPinPost,
          OnPressedF05 onUserInfoPressed,
-   final OnPressedF03 onExpandImg1,
+   final OnPressedF03 onExpandImg,
    final OnPressedF01 onSharePost,
    final OnPressedF00 onPost,
    final OnPressedF00 onGoToNewPostTabPressed,
@@ -5019,14 +5014,14 @@ Widget makeChatTab({
 		  onPressed: onGoToNewPostTabPressed,
 	       );
 	 }
-         OnPressedF00 onPinPost = () {onPinPost1(i);};
-         OnPressedF00 onDelPost = () {onDelPost1(i);};
-         OnPressedF01 onExpandImg = (int j) {onExpandImg1(i, j);};
+         OnPressedF00 onPinPost2 = () {onPinPost(i);};
+         OnPressedF00 onDelPost2 = () {onDelPost(i);};
+         OnPressedF01 onExpandImg2 = (int j) {onExpandImg(i, j);};
 
          if (isFwdChatMsgs) {
             onUserInfoPressed = (var a, var b, var c){};
-            onPinPost = (){};
-            onDelPost = (){};
+            onPinPost2 = (){};
+            onDelPost2 = (){};
          }
 
          Widget title = Text(makeTreeItemStr(locRootNode, posts[i].location),
@@ -5037,7 +5032,7 @@ Widget makeChatTab({
          // If the post contains no images, which should not happen,
          // we provide no expand image button.
          if (posts[i].images.isEmpty)
-            onExpandImg = (int j){log('Error: post.images is empty.');};
+            onExpandImg2 = (int j){log('Error: post.images is empty.');};
 
 	 Widget bbb = PostWidget(
 	    tab: tab,
@@ -5049,12 +5044,12 @@ Widget makeChatTab({
             imgFiles: null,
             onAddImg: () {log('Noop10');},
             onDelImg: (int i) {log('Noop10');},
-            onExpandImg: onExpandImg,
+            onExpandImg: onExpandImg2,
             onAddPostToFavorite:() {log('Noop14');},
-	    onDelPost: onDelPost,
+	    onDelPost: onDelPost2,
 	    onSharePost: () {onSharePost(i);},
 	    onReportPost:() {log('Noop18');},
-	    onPinPost: onPinPost,
+	    onPinPost: onPinPost2,
 	    onVisualization: (String) {log('Noop19');},
 	    onClick: (String) {log('Noop20');},
 	 );
@@ -5558,10 +5553,10 @@ class OccaseState extends State<Occase>
    void _clearPostsDialog(BuildContext ctx)
    {
       _showSimpleDialog(
-         ctx,
-         () async { await _clearPosts(); },
-         g.param.clearPostsTitle,
-         Text(g.param.clearPostsContent),
+         ctx: ctx,
+         onOk: () async { await _clearPosts(); },
+         title: g.param.clearPostsTitle,
+         content: Text(g.param.clearPostsContent),
       );
    }
 
@@ -6080,24 +6075,24 @@ class OccaseState extends State<Occase>
 
       if (i == 0) {
          _showSimpleDialog(
-            ctx,
-            (){
+            ctx: ctx,
+            onOk: (){
                _newPostPressed = false;
                _posts[cts.ownIdx] = null;
                setState((){});
             },
-            g.param.cancelPost,
-            Text(g.param.cancelPostContent),
+	    title: g.param.cancelPost,
+            content: Text(g.param.cancelPostContent),
          );
          return;
       }
 
       if (_imgFiles.length < cts.minImgsPerPost) {
          _showSimpleDialog(
-            ctx,
-            (){ },
-            g.param.postMinImgs,
-            Text(g.param.postMinImgsContent),
+            ctx: ctx,
+            onOk: (){ },
+            title: g.param.postMinImgs,
+            content: Text(g.param.postMinImgsContent),
          );
          return;
       }
@@ -6127,10 +6122,10 @@ class OccaseState extends State<Occase>
    void _removePostDialog(BuildContext ctx, int tab, int i)
    {
       _showSimpleDialog(
-         ctx,
-         () async { await _onRemovePost(tab, i);},
-         g.param.dialogTitles[4],
-         Text(g.param.dialogBodies[4]),
+         ctx: ctx,
+         onOk: () async { await _onRemovePost(tab, i);},
+         title: g.param.dialogTitles[4],
+         content: Text(g.param.dialogBodies[4]),
       );
    }
 
@@ -6220,10 +6215,10 @@ class OccaseState extends State<Occase>
       final String url = cts.gravatarUrl + avatar + '.jpg';
 
       _showSimpleDialog(
-         ctx,
-         (){},
-         title,
-         makeNetImgBox(
+         ctx: ctx,
+         onOk: (){},
+         title: title,
+         content: makeNetImgBox(
             width: cts.onClickAvatarWidth,
             height: cts.onClickAvatarWidth,
             url: url,
@@ -6349,7 +6344,8 @@ class OccaseState extends State<Occase>
    {
       try {
 	 final String body = jsonEncode({'post_id': postId});
-	 var response = await http.put(cts.dbClickUrl,
+	 print(cts.dbClickUrl + ' ' + body);
+	 var response = await http.post(cts.dbClickUrl,
 	    body: body,
 	 );
 
@@ -6377,15 +6373,15 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      final int favIdx = _appState.favPosts.indexWhere((e) {
+      final int ownIdx = _appState.ownPosts.indexWhere((e) {
          return e.id == postId;
       });
 
       List<Post> posts;
-      if (favIdx != -1)
-         posts = _appState.favPosts;
-      else
+      if (ownIdx != -1)
          posts = _appState.ownPosts;
+      else
+         posts = _appState.favPosts;
 
       await _onChatImpl(
          to: to,
@@ -6398,7 +6394,7 @@ class OccaseState extends State<Occase>
          isRedirected: isRedirected,
          refersTo: refersTo,
          peerMsgId: peerMsgId,
-	 isFav: favIdx != -1,
+	 isFav: ownIdx == -1,
       );
    }
 
@@ -6581,10 +6577,6 @@ class OccaseState extends State<Occase>
          try {
             Post post = Post.fromJson(item, g.param.rangeDivs.length);
             post.status = 1;
-
-            if (post.from == _appState.cfg.userId)
-               continue;
-
             _appState.posts.add(post);
          } catch (e) {
             log("Error: Invalid post detected.");
@@ -6747,12 +6739,12 @@ class OccaseState extends State<Occase>
       _lastDisconnect = DateTime.now().millisecondsSinceEpoch;
    }
 
-   void _showSimpleDialog(
+   void _showSimpleDialog({
       BuildContext ctx,
       Function onOk,
       String title,
       Widget content,
-   ) {
+   }) {
       showDialog(
          context: ctx,
          builder: (BuildContext ctx)
@@ -7008,10 +7000,10 @@ class OccaseState extends State<Occase>
       try {
          if (_txtCtrl.text.length < cts.nickMinLength) {
             _showSimpleDialog(
-               ctx,
-               (){},
-               g.param.onEmptyNickTitle,
-               Text(g.param.onEmptyNickContent),
+               ctx: ctx,
+               onOk: (){},
+               title: g.param.onEmptyNickTitle,
+               content: Text(g.param.onEmptyNickContent),
             );
             return;
          }
@@ -7348,10 +7340,10 @@ class OccaseState extends State<Occase>
 	 posts: posts,
 	 onPressed: (int j, int k) {_onChatPressed(i, j, k);},
 	 onLongPressed: (int j, int k) {_onChatLP(i, j, k);},
-	 onDelPost1: (int j) { _removePostDialog(ctx, i, j);},
-	 onPinPost1: (int j) {_onPinPost(i, j);},
+	 onDelPost: (int j) { _removePostDialog(ctx, i, j);},
+	 onPinPost: (int j) {_onPinPost(i, j);},
 	 onUserInfoPressed: _onUserInfoPressed,
-	 onExpandImg1: (int i, int j) {_onExpandImg(i, j, i);},
+	 onExpandImg: (int i, int j) {_onExpandImg(i, j, i);},
 	 onSharePost: (int i) {_onClickOnPost(i, 1);},
 	 onPost: _onNewPost,
 	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
@@ -7538,9 +7530,11 @@ class OccaseState extends State<Occase>
          {
             String title = g.param.newPostErrorTitles[_newPostErrorCode];
             String body = g.param.newPostErrorBodies[_newPostErrorCode];
-            _showSimpleDialog(ctx, (){},
-               title,
-               Text(body)
+            _showSimpleDialog(
+	       ctx: ctx,
+	       onOk: (){},
+               title: title,
+               content: Text(body)
             );
             _newPostErrorCode = -1;
          });

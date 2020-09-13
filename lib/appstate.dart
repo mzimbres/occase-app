@@ -276,8 +276,9 @@ class AppState {
 
    Future<Post> delFavPost(int i) async
    {
+      Post post = favPosts.removeAt(i);
       await _persistency.delFavPost(favPosts, i);
-      return favPosts.removeAt(i);
+      return post;
    }
 
    Future<Post> delOwnPost(int i) async
