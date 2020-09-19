@@ -22,6 +22,7 @@ const ColorScheme colorScheme = const ColorScheme.light(
       secondaryVariant: Color(0xFFff5635),
       onSecondary: Color(0xFF434b79),
       onPrimary: onPrimaryColor,
+      background: Color(0xFFEEEEEE),
 );
 
 const Color infoKeyColor = Colors.black;

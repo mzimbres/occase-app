@@ -53,8 +53,9 @@ const String dbSearchPostsUrl =   dbHttpUrl + '/posts/search';
 const String dbUploadCreditUrl =  dbHttpUrl + '/posts/upload-credit';
 const String dbDeletePostUrl =    dbHttpUrl + '/posts/delete';
 const String dbPostUrl =          dbHttpUrl + '/posts/publish';
-const String dbVisualizationUrl = dbHttpUrl + '/posts/visualization';
-const String dbClickUrl =         dbHttpUrl + '/post/click';
+const String dbVisualizationUrl = dbHttpUrl + '/posts/visualizations';
+const String dbClickUrl =         dbHttpUrl + '/posts/click';
+const String dbPublishUrl =       dbHttpUrl + '/posts/publish';
 
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;

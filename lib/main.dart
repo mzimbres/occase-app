@@ -321,7 +321,7 @@ Widget makeImgExpandScreen(Function onWillPopScope, Post post)
       child: Scaffold(
          //appBar: AppBar(title: Text(g.param.appName)),
          body: Center(child: foo),
-         backgroundColor: stl.colorScheme.primary,
+	 backgroundColor: stl.colorScheme.background,
       ),
    );
 }
@@ -516,7 +516,7 @@ Widget makeConfigScaffold({
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
       child: Scaffold(
-	 backgroundColor: Colors.white,
+	 backgroundColor: stl.colorScheme.background,
 	 appBar: AppBar(
 	    title: Text(title,
 	       style: TextStyle(color: stl.colorScheme.onPrimary),
@@ -1820,7 +1820,7 @@ Widget makeAppScaffoldWdg({
 	       ];
 	    },
 	 ),
-	 backgroundColor: Colors.white,
+	 backgroundColor: stl.colorScheme.background,
 	 floatingActionButton: floatBut,
       ),
    );
@@ -1836,13 +1836,12 @@ Widget makeWebScaffoldWdg({
          child: Scaffold(
             appBar : appBar,
             body: body,
-            backgroundColor: Colors.white,
+	    backgroundColor: stl.colorScheme.background,
       ),
    );
 }
 
 List<Widget> makeTabWdgs({
-   BuildContext ctx,
    List<int> counters,
    List<double> opacities,
 }) {
@@ -1850,7 +1849,6 @@ List<Widget> makeTabWdgs({
 
    for (int i = 0; i < g.param.tabNames.length; ++i) {
       Widget w = makeTabWidget(
-	 ctx,
 	 counters[i],
 	 g.param.tabNames[i],
 	 opacities[i]
@@ -1873,7 +1871,6 @@ TabBar makeTabBar(
       return null;
 
    List<Widget> wdgs = makeTabWdgs(
-      ctx: ctx,
       counters: counters,
       opacities: opacities,
    );
@@ -2029,7 +2026,7 @@ Card makeChatMsgWidget(
    String ownNick,
 ) {
    Color color = Color(0xFFFFFFFF);
-   Color onSelectedMsgColor = Colors.grey[300];
+   Color onSelectedMsgColor = stl.colorScheme.background;
    if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
@@ -2466,7 +2463,6 @@ Widget makeChatScreen({
             bottom: 53.0,
             right: 23.0,
             child: makeUnreadMsgsCircle(
-               ctx,
                chatMetadata.nUnreadMsgs,
                stl.colorScheme.secondaryVariant,
                stl.colorScheme.onSecondary,
@@ -2603,18 +2599,17 @@ Widget makeChatScreen({
                ),
             ),
          body: mainCol,
-         backgroundColor: Colors.grey[300],
+	 backgroundColor: stl.colorScheme.background,
       )
    );
 }
 
 Widget makeTabWidget(
-   BuildContext ctx,
-   int n,
+   int nUnread,
    String title,
    double opacity,
 ) {
-   if (n == 0)
+   if (nUnread == 0)
       return Center(child: Text(title));
 
    List<Widget> widgets = List<Widget>(2);
@@ -2624,8 +2619,7 @@ Widget makeTabWidget(
    // for opacity values.
    widgets[1] = Opacity(
       child: makeUnreadMsgsCircle(
-         ctx,
-         n,
+         nUnread,
          stl.colorScheme.secondary,
          stl.colorScheme.onSecondary,
       ),
@@ -2909,16 +2903,17 @@ Widget createRaisedButton({
 
 // Study how to convert this into an elipsis like whatsapp.
 Container makeUnreadMsgsCircle(
-   BuildContext ctx,
-   int n,
-   Color bgColor,
+   int nUnread,
+   Color backgroundColor,
    Color textColor,
 ) {
-   final Text txt =
-      Text("$n",
-           style: TextStyle(
-              color: textColor,
-              fontSize: Theme.of(ctx).textTheme.caption.fontSize));
+   final Text txt = Text("$nUnread",
+      style: TextStyle(
+	 color: textColor,
+	 fontSize: stl.smallFontSize,
+      ),
+   );
+
    final Radius rd = const Radius.circular(45.0);
    return Container(
        margin: const EdgeInsets.all(2.0),
@@ -2931,7 +2926,7 @@ Container makeUnreadMsgsCircle(
        //width: 21.0,
        decoration:
           BoxDecoration(
-             color: bgColor,
+             color: backgroundColor,
              borderRadius:
                 BorderRadius.only(
                    topLeft:  rd,
@@ -3105,7 +3100,7 @@ List<Widget> makePostStats({
    list.add(makePostRowElem(
 	 ctx: ctx,
 	 key: titleAndFields[2],
-	 value: '${post.views}',
+	 value: '${post.visualizations}',
 	 keyTextColor: stl.colorScheme.onSecondary,
 	 valueTextColor: stl.colorScheme.primary,
       ),
@@ -3389,14 +3384,6 @@ Widget makeNewPostDialogWdg({
       children: list,
    );
 
-   //ListView col = ListView.builder(
-   //   scrollDirection: Axis.vertical,
-   //   //shrinkWrap: true,
-   //   padding: const EdgeInsets.all(0.0),
-   //   itemCount: list.length,
-   //   itemBuilder: (BuildContext ctx, int i) { return list[i]; },
-   //);
-
    Widget content = Container(
       //child: col,
       child: SingleChildScrollView(
@@ -3420,7 +3407,7 @@ Widget makeNewPostDialogWdg({
       contentPadding: EdgeInsets.all(indent),
       actions: actions,
       insetPadding: insetPadding,
-      backgroundColor: Colors.grey[200],
+      backgroundColor: stl.colorScheme.background,
       content: content,
       shape: RoundedRectangleBorder(
 	 borderRadius: BorderRadius.all(Radius.circular(diagBorderRadius)),
@@ -4092,11 +4079,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
 
       final int onSearch = widget.post.onSearch;
-      final int views = widget.post.views;
+      final int visualizations = widget.post.visualizations;
       final int clicks = widget.post.clicks;
 
       Widget statsWdgs = makeTextWdg(
-	 text: '${onSearch}/${views}/${clicks}',
+	 text: '${onSearch}/${visualizations}/${clicks}',
 	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 0.0, bottom: 0.0),
 	 textColor: stl.colorScheme.primary,
 	 fontSize: stl.smallFontSize,
@@ -4251,7 +4238,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
-	 backgroundColor: Colors.lime[500],
+	 backgroundColor: Colors.blueGrey[300],
 	 textColor: Colors.white,
 	 fontSize: stl.mainFontSize,
       );
@@ -4533,14 +4520,7 @@ ListTile makeNewPostTreeWdg({
 }) {
    if (child.isLeaf()) {
       return ListTile(
-	 //leading: CircleAvatar(
-	 //   child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-	 //      style: TextStyle(color: stl.colorScheme.onSecondary),
-	 //   ),
-	 //   backgroundColor: stl.colorScheme.secondary,
-	 //),
 	 title: Text(child.name(g.param.langIdx)),
-	 //dense: true,
 	 onTap: onLeafPressed,
 	 enabled: true,
 	 onLongPress: (){},
@@ -4549,16 +4529,7 @@ ListTile makeNewPostTreeWdg({
    
    return
       ListTile(
-	 //leading: CircleAvatar(
-	 //   child: Text(makeStrAbbrev(child.name(g.param.langIdx)),
-	 //      style: TextStyle(
-	 //         color: stl.colorScheme.onSecondary
-	 //      ),
-	 //   ),
-	 //   backgroundColor: stl.colorScheme.secondary,
-	 //),
 	 title: Text(child.name(g.param.langIdx)),
-	 //dense: false,
 	 subtitle: Text(
 	    child.getChildrenNames(g.param.langIdx, 4),
 	    maxLines: 1,
@@ -4729,7 +4700,6 @@ Widget makeChatListTileTrailingWidget(
             children: <Widget>
       [ Icon(Icons.place)
       , makeUnreadMsgsCircle(
-          ctx,
           nUnreadMsgs,
           stl.colorScheme.secondary,
           stl.colorScheme.onSecondary,
@@ -4753,7 +4723,6 @@ Widget makeChatListTileTrailingWidget(
          children: <Widget>
          [ dateText
          , makeUnreadMsgsCircle(
-             ctx,
              nUnreadMsgs,
              stl.colorScheme.secondary,
              stl.colorScheme.onSecondary,
@@ -4803,7 +4772,7 @@ Widget makeChatListTile({
    if (chat.isLongPressed) {
       bgColor = stl.chatLongPressendColor;
    } else {
-      bgColor = stl.colorScheme.background;
+      bgColor = stl.colorScheme.surface;
    }
 
    Widget trailing = makeChatListTileTrailingWidget(
@@ -4873,7 +4842,7 @@ Widget makeChatsExp(
       if (n > 0)
          ++nUnreadChats;
 
-      Widget card = makeChatListTile(
+      list[i] = makeChatListTile(
          ctx: ctx,
          chat: ch[i],
          now: now,
@@ -4885,18 +4854,10 @@ Widget makeChatsExp(
          onChatLongPressed: () { onLongPressed(i); },
          onStartChatPressed: () { onPressed(i); },
       );
-
-      list[i] = Padding(
-         child: card,
-         padding: EdgeInsets.only(
-            left: stl.chatTilePadding,
-            right: stl.chatTilePadding,
-            bottom: stl.chatTilePadding,
-         ),
-      );
    }
 
-  if (ch.length < 5) {
+  //if (ch.length < 5) {
+  if (true) {
      return Padding(
         child: Column(children: list),
         padding: EdgeInsets.only(top: stl.chatTilePadding),
@@ -4915,8 +4876,7 @@ Widget makeChatsExp(
       );
    }
 
-   bool expState = (ch.length < 6 && ch.length > 0)
-                       || nUnreadChats != 0;
+   bool expState = (ch.length < 6 && ch.length > 0) || nUnreadChats != 0;
 
    // I have observed that if the post has no chats and a chat
    // arrives, the chat expansion will continue collapsed independent
@@ -5070,8 +5030,8 @@ Widget makeChatTab({
          return Card(
             elevation: 2.0,
 	    margin: EdgeInsets.only(bottom: 15.0),
-	    color: Colors.grey[300],
-	    child: Column(children: <Widget> [bbb, chatExpansion ]),
+	    color: stl.colorScheme.surface,
+	    child: Column(children: <Widget> [bbb, chatExpansion]),
 	 );
       },
    );
@@ -5447,14 +5407,14 @@ class OccaseState extends State<Occase>
       return _tabCtrl.index == cts.favIdx;
    }
 
-   bool _isOnFavChat()
+   bool _isOnFavChat(int tab)
    {
-      return _isOnFav() && _posts[cts.favIdx] != null && _chats[cts.favIdx] != null;
+      return tab == cts.favIdx && _posts[cts.favIdx] != null && _chats[cts.favIdx] != null;
    }
 
-   bool _isOnOwnChat()
+   bool _isOnOwnChat(int tab)
    {
-      return _isOnOwn() && _posts[cts.ownIdx] != null && _chats[cts.ownIdx] != null;
+      return tab == cts.ownIdx && _posts[cts.ownIdx] != null && _chats[cts.ownIdx] != null;
    }
 
    bool _onTabSwitch()
@@ -5925,7 +5885,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendPost() async
    {
-      _posts[cts.ownIdx].from = _appState.cfg.userId;
+      _posts[cts.ownIdx].from = '';
       _posts[cts.ownIdx].nick = _appState.cfg.nick;
       _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[cts.ownIdx].status = 3;
@@ -5935,23 +5895,60 @@ class OccaseState extends State<Occase>
       // echoed back to us. It has to be filtered out from _appState.posts
       // since that list should not contain our own posts.
 
-      var pubMap =
+      var map =
       { 'cmd': 'publish'
+      , 'user': _appState.cfg.user
+      , 'key': _appState.cfg.key
       , 'post': _appState.outPost
       };
 
-      final String payload = jsonEncode(pubMap);
-      log(payload);
-      _websocket.sink.add(payload);
+      var resp = await http.post(cts.dbPublishUrl,
+	 body: jsonEncode(map),
+      );
+
+      if (resp.statusCode != 200) {
+	 // TODO: Show dialog.
+	 log('Error on _sendPost:  ${resp.statusCode}');
+	 setState(() {_newPostErrorCode = 0;});
+	 return;
+      }
+
+      Map<String, dynamic> respMap = jsonDecode(resp.body);
+      final String result = respMap['result'] ?? 'fail';
+      final String postId = respMap['id'] ?? '';
+      final String adminId = respMap['admin_id'] ?? g.param.adminId;
+      final int date = respMap['date'] ?? -1;
+
+      int errorCode = 0;
+      if (result == 'ok' && postId.isNotEmpty && date != -1) {
+         await _appState.addOwnPost(postId, date);
+	 await _onChatImpl(
+	    to: _appState.cfg.userId,
+	    postId: postId,
+	    body: g.param.adminChatMsg,
+	    peer: adminId,
+	    nick: g.param.adminNick,
+	    avatar: emailToGravatarHash(cts.occaseEmail),
+	    posts: _appState.ownPosts,
+	    isRedirected: 0,
+	    refersTo: -1,
+	    peerMsgId: 0,
+	    isFav: false,
+	 );
+
+	 errorCode = 1;
+      }
+
+      setState(() {_newPostErrorCode = errorCode;});
    }
 
    Future<void> _deletePostFromServer(Post post) async
    {
       var map =
-      { 'from': post.from
+      { 'user': _appState.cfg.user
+      , 'key': _appState.cfg.key
       , 'post_id': post.id
-      , 'delete_key': post.delete_key
-      , 'master_delete_key': _deletePostPwd
+      , 'admin_delete_key': _deletePostPwd
       };
 
       var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
@@ -6029,7 +6026,16 @@ class OccaseState extends State<Occase>
    {
       try {
 	 setState(() {_sendingPost = true;});
-	 var resp = await http.post(cts.dbUploadCreditUrl, body: '');
+
+	 var body =
+	 { 'user': _appState.cfg.user
+	 , 'key': _appState.cfg.key
+	 };
+
+	 var resp = await http.post(cts.dbUploadCreditUrl,
+	    body: jsonEncode(body),
+	 );
+
 	 if (resp.statusCode != 200) {
 	    log('Error: _requestFilenames ${resp.statusCode}');
 	    setState(() { _leaveNewPostScreen(); });
@@ -6097,26 +6103,30 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      await showModalBottomSheet<void>(
-         context: ctx,
-         backgroundColor: Colors.white,
-         elevation: 1.0,
-         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20.0)),
-         ),
-         builder: (BuildContext ctx)
-         {
-            return makePaymentChoiceWidget(
-               onFreePaymentPressed: () async
-               {
-                  Navigator.of(ctx).pop();
-                  await _requestFilenames();
-               },
-               onStandardPaymentPressed: (){},
-               onPremiumPaymentPressed: (){},
-            );
-         },
-      );
+      if (_posts[cts.ownIdx].priority == 0) {
+	 await _requestFilenames();
+      } else {
+	 await showModalBottomSheet<void>(
+	    context: ctx,
+	    backgroundColor: Colors.white,
+	    elevation: 1.0,
+	    shape: RoundedRectangleBorder(
+	       borderRadius: BorderRadius.all(Radius.circular(20.0)),
+	    ),
+	    builder: (BuildContext ctx)
+	    {
+	       return makePaymentChoiceWidget(
+		  onFreePaymentPressed: () async
+		  {
+		     Navigator.of(ctx).pop();
+		     await _requestFilenames();
+		  },
+		  onStandardPaymentPressed: (){},
+		  onPremiumPaymentPressed: (){},
+	       );
+	    },
+	 );
+      }
    }
 
    void _removePostDialog(BuildContext ctx, int tab, int i)
@@ -6328,12 +6338,18 @@ class OccaseState extends State<Occase>
       // Visualizations that occurr while the user is offline will be
       // lost. This can be fixes later.
       try {
-	 var response = await http.put(cts.dbVisualizationUrl,
-	    body: jsonEncode({'post_ids': <String>[postId]}),
+	 var map =
+	 { 'cmd': 'visualizations'
+	 , 'post_ids': <String>[postId]
+	 };
+
+	 print(map);
+	 var response = await http.post(cts.dbVisualizationUrl,
+	    body: jsonEncode(map),
 	 );
 
 	 if (response.statusCode != 200)
-	    print('Error: Unable to put visualization.');
+	    print('Error: Unable to post visualization.');
 
       } catch (e) {
 	 print(e);
@@ -6343,14 +6359,17 @@ class OccaseState extends State<Occase>
    Future<void> _onPostClick(String postId) async
    {
       try {
-	 final String body = jsonEncode({'post_id': postId});
-	 print(cts.dbClickUrl + ' ' + body);
+	 var map =
+	 { 'cmd': 'click'
+	 , 'post_id': postId
+	 };
+
 	 var response = await http.post(cts.dbClickUrl,
-	    body: body,
+	    body: jsonEncode(map),
 	 );
 
 	 if (response.statusCode != 200)
-	    print('Error: Unable to put click.');
+	    print('Error: Unable to post click.');
 
       } catch (e) {
 	 print(e);
@@ -6590,35 +6609,6 @@ class OccaseState extends State<Occase>
       return _appState.posts.length;
    }
 
-   Future<void> _onPublishAck({
-      final int date,
-      final String result,
-      final String postId,
-      final String adminId,
-   }) async {
-      int errorCode = 0;
-      if (result == 'ok' && postId.isNotEmpty && date != -1) {
-         await _appState.addOwnPost(postId, date);
-	 await _onChatImpl(
-	    to: _appState.cfg.userId,
-	    postId: postId,
-	    body: g.param.adminChatMsg,
-	    peer: adminId,
-	    nick: g.param.adminNick,
-	    avatar: emailToGravatarHash(cts.occaseEmail),
-	    posts: _appState.ownPosts,
-	    isRedirected: 0,
-	    refersTo: -1,
-	    peerMsgId: 0,
-	    isFav: false,
-	 );
-
-	 errorCode = 1;
-      }
-
-      setState(() {_newPostErrorCode = errorCode;});
-   }
-
    Future<void> _onWSDataImpl() async
    {
       while (_wsMsgQueue.isNotEmpty) {
@@ -6695,13 +6685,6 @@ class OccaseState extends State<Occase>
 	       );
 	    } else if (cmd == "post") {
 	       _onPost(map);
-	    } else if (cmd == "publish_ack") {
-	       await _onPublishAck(
-		  result: map['result'] ?? 'fail',
-		  postId: map['id'] ?? '',
-		  date: map['date'] ?? -1,
-		  adminId: map['admin_id'] ?? g.param.adminId,
-	       );
 	    } else if (cmd == "register_ack") {
 	       await _onRegisterAck(
 		  result: map["result"] ?? 'fail',
@@ -7144,6 +7127,7 @@ class OccaseState extends State<Occase>
 	 await _appState.clearPosts();
 
 	 final String body = await _searchPosts(cts.dbSearchPostsUrl, post);
+	 print(body);
 	 if (body.isEmpty) {
 	    return 0; // Perhaps show a dialog with an error message?
 	    print('Error');
@@ -7208,7 +7192,7 @@ class OccaseState extends State<Occase>
 	 postSummary: makeTreeItemStr(_locRootNode, _posts[tab].product),
 	 dragedIdx: _dragedIdxs[tab],
 	 showChatJumpDownButton: _showChatJumpDownButtons[tab],
-	 avatar: _isOnFavChat() ? _posts[tab].avatar : _chats[tab].avatar,
+	 avatar: _isOnFavChat(tab) ? _posts[tab].avatar : _chats[tab].avatar,
 	 ownNick: _appState.cfg.nick,
 	 onWillPopScope: () { _onPopChat(tab);},
 	 onSendChatMsg: () {_onSendChat(tab);},
@@ -7281,7 +7265,7 @@ class OccaseState extends State<Occase>
 	 posts: _appState.posts,
 	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	 onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 0);},
+	 onDelPost: (var a, int j) {},
 	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
 	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
          onPostVisualization: _onPostVisualization,
@@ -7565,10 +7549,14 @@ class OccaseState extends State<Occase>
       final bool isWide = isWideScreen(ctx);
       if (isWide) {
 	 const double sep = 3.0;
-	 Divider div = Divider(height: sep, thickness: sep, indent: 0.0, color: Colors.grey);
+	 Divider div = Divider(
+	    height: sep,
+	    thickness: sep,
+	    indent: 0.0,
+	    color: stl.colorScheme.background,
+	 );
 
 	 List<Widget> tabWdgs = makeTabWdgs(
-	    ctx: ctx,
 	    counters: newMsgCounters,
 	    opacities: cts.newMsgsOpacitiesWeb,
 	 );
@@ -7580,7 +7568,7 @@ class OccaseState extends State<Occase>
 	 );
 
 	 Widget own;
-	 if (_isOnOwnChat())
+	 if (_isOnOwnChat(cts.ownIdx))
 	    own = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.ownIdx)), div]);
 	 else
 	    own = Column(children: <Widget>[div, ownTopBar, Expanded(child: bodies[cts.ownIdx]), div]);
@@ -7607,12 +7595,18 @@ class OccaseState extends State<Occase>
 	 );
 
          Widget fav;
-	 if (_isOnFavChat())
+	 if (_isOnFavChat(cts.favIdx))
 	    fav = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.favIdx)), div]);
 	 else
 	    fav = Column(children: <Widget>[div, favTopBar, Expanded(child: bodies[cts.favIdx]), div]);
 
-	 VerticalDivider vdiv = VerticalDivider(width: sep, thickness: sep, indent: 0.0, color: Colors.grey);
+	 VerticalDivider vdiv = VerticalDivider(
+	    width: sep,
+	    thickness: sep,
+	    indent: 0.0,
+	    color: stl.colorScheme.background,
+	 );
+
 	 Widget body = Row(children: <Widget>
 	    [ vdiv
 	    , Expanded(flex: cts.tabFlexValues[cts.ownIdx], child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
@@ -7637,7 +7631,7 @@ class OccaseState extends State<Occase>
 	 );
       }
 
-      if (_isOnFavChat() || _isOnOwnChat())
+      if (_isOnFavChat(screenIdx) || _isOnOwnChat(screenIdx))
          return _makeChatScreen(ctx, screenIdx);
 
       List<Widget> actions = _makeTabActions(ctx, screenIdx);

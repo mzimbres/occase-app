@@ -450,9 +450,9 @@ class Post {
    int onSearch = 0;
 
    // The number of visualizations this post had so far.
-   int views = 0;
+   int visualizations = 0;
 
-   // The number of detailed views this post had.
+   // The number of detailed visualizations this post had.
    int clicks = 0;
 
    // Post id received from on publish ack from the server.
@@ -469,9 +469,6 @@ class Post {
 
    // The string *description* inputed when user writes an post.
    String description;
-
-   // Post delete key, that only the post owner knows.
-   String delete_key;
 
    // Location tree code.
    List<int> location = <int>[];
@@ -503,7 +500,6 @@ class Post {
    , this.pinDate = 0
    , this.status = -1
    , this.description = ''
-   , this.delete_key = ''
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
@@ -559,10 +555,9 @@ class Post {
       ret.status = this.status;
       ret.priority = this.priority;
       ret.onSearch = this.onSearch;
-      ret.views = this.views;
+      ret.visualizations = this.visualizations;
       ret.clicks = this.clicks;
       ret.description = this.description;
-      ret.delete_key = this.delete_key;
       ret.images = List<String>.from(this.images);
       ret.chats = List<ChatMetadata>.from(this.chats);
       return ret;
@@ -644,10 +639,9 @@ class Post {
 	 status = map['status'] ?? -1;
 	 priority = map['priority'] ?? 0;
 	 onSearch = map['on_search'] ?? 0;
-	 views = map['views'] ?? 0;
+	 visualizations = map['visualizations'] ?? 0;
 	 clicks = map['clicks'] ?? 0;
 	 description = map['description'] ?? '';
-	 delete_key = map['delete_key'] ?? '';
 	 images = decodeList(0, '', map['images']);
 	 chats = decChatMetadataList(map['chats']);
       } catch (e) {
@@ -680,7 +674,6 @@ class Post {
       , 'nick': nick
       , 'avatar': avatar
       , 'description': description
-      , 'delete_key': delete_key
       , 'location': location
       , 'product': product
       , 'ex_details': exDetails
@@ -693,7 +686,7 @@ class Post {
       , 'chats': chats
       , 'priority': priority
       , 'on_search': onSearch
-      , 'views': views
+      , 'visualizations': visualizations
       , 'clicks': clicks
       };
    }
@@ -718,7 +711,6 @@ Map<String, dynamic> postToMap(Post post)
    , 'in_details': jsonEncode(post.inDetails)
    , 'range_values': jsonEncode(post.rangeValues)
    , 'description': post.description
-   , 'delete_key': post.delete_key
    , 'images': post.images
    };
 
