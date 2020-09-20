@@ -58,7 +58,7 @@ typedef OnPressedF16 = void Function(String, int);
 
 bool isWideScreenImpl(double w)
 {
-   return w > (3 * cts.tabDefaultWidth);
+   return (w - 14) > (3 * cts.tabMaxWidth);
 }
 
 double makeTabWidthImpl(double w, int tab)
@@ -86,23 +86,30 @@ bool isWideScreen(BuildContext ctx)
    return isWideScreenImpl(w);
 }
 
-double makeImgAvatarWidth(BuildContext ctx, int tab)
+double makePostAvatarWidth(BuildContext ctx)
 {
-   final double w = MediaQuery.of(ctx).size.width;
-   if (isWideScreenImpl(w))
-      return cts.postImgAvatarTabWidthRate * cts.tabDefaultWidth;
+   final double width = MediaQuery.of(ctx).size.width;
 
-   if (w > cts.tabDefaultWidth)
-      return cts.postImgAvatarTabWidthRate * cts.tabDefaultWidth;
+   if (isWideScreenImpl(width))
+      return cts.tabMaxWidth / 3.0;
 
-   return cts.postImgAvatarTabWidthRate * w;
+   if (width > cts.tabMaxWidth)
+      return cts.tabMaxWidth / 3.0;
+
+   return width / 3.0;
 }
 
-double makePostTextWidth(BuildContext ctx, int tab)
+double makePostTextWidth(BuildContext ctx)
 {
-   final double tabWidth = makeTabWidth(ctx, tab);
-   final double imgWidth = makeImgAvatarWidth(ctx, tab);
-   return tabWidth - imgWidth - 10.00;
+   final double imgWidth = makePostAvatarWidth(ctx);
+   return 2 * imgWidth;
+}
+
+double makePostWidgetWidth(BuildContext ctx)
+{
+   final double a = makePostAvatarWidth(ctx);
+   final double b = makePostTextWidth(ctx);
+   return a + b;
 }
 
 double makeDialogWidth(BuildContext ctx, int tab)
@@ -124,7 +131,7 @@ double makeMaxWidth(BuildContext ctx, int tab)
    if (isWideScreenImpl(w))
       return makeTabWidthImpl(w, tab);
 
-   final double max = w > cts.tabDefaultWidth ? cts.tabDefaultWidth : w;
+   final double max = w > cts.tabMaxWidth ? cts.tabMaxWidth : w;
    return max;
 }
 
@@ -932,24 +939,27 @@ Widget makeNewPostFinalScreen({
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
 
-   Widget postWdg = PostWidget(
-      tab: cts.ownIdx,
-      post: post,
-      exDetailsRootNode: exDetailsRootNode,
-      inDetailsRootNode: inDetailsRootNode,
-      locRootNode: locRootNode,
-      prodRootNode: prodRootNode,
-      imgFiles: imgFiles,
-      onAddImg: onAddImg,
-      onDelImg: onDelImg,
-      onExpandImg: (int j){ log('Noop00'); },
-      onAddPostToFavorite: () { log('Noop01'); },
-      onDelPost: () { log('Noop02');},
-      onSharePost: () { log('Noop03');},
-      onReportPost: () { log('Noop05');},
-      onPinPost: () { log('Noop06');},
-      onVisualization: (var s) {log('Noop07');},
-      onClick: (var s) {log('Noop08');},
+   SizedBox postBox = SizedBox(
+      width: makePostWidgetWidth(ctx),
+      child: PostWidget(
+	 tab: cts.ownIdx,
+	 post: post,
+	 exDetailsRootNode: exDetailsRootNode,
+	 inDetailsRootNode: inDetailsRootNode,
+	 locRootNode: locRootNode,
+	 prodRootNode: prodRootNode,
+	 imgFiles: imgFiles,
+	 onAddImg: onAddImg,
+	 onDelImg: onDelImg,
+	 onExpandImg: (int j){ log('Noop00'); },
+	 onAddPostToFavorite: () { log('Noop01'); },
+	 onDelPost: () { log('Noop02');},
+	 onSharePost: () { log('Noop03');},
+	 onReportPost: () { log('Noop05');},
+	 onPinPost: () { log('Noop06');},
+	 onVisualization: () {log('Noop07');},
+	 onClick: () {log('Noop08');},
+      ),
    );
 
    Widget cancelButton = createRaisedButton(
@@ -969,13 +979,10 @@ Widget makeNewPostFinalScreen({
    Widget buttonsRow = Padding(
       padding: EdgeInsets.only(top: 30.0, bottom: 30.0),
       child: Row(children: <Widget>
-	 [ Expanded(child: cancelButton)
-	 , Expanded(child: sendButton)
-	 ]),
+      [ Expanded(child: cancelButton)
+      , Expanded(child: sendButton)
+      ]),
    );
-
-   // ----------------------------------
-
 
    Widget payment = Padding(
       padding: EdgeInsets.symmetric(horizontal: stl.paymentPadding),
@@ -990,11 +997,9 @@ Widget makeNewPostFinalScreen({
       ),
    );
 
-   // ----------------------------------
-
    return Column(children: <Widget>
    [ makeNewPostSetionTitle(g.param.newPostSectionNames[1])
-   , postWdg
+   , postBox
    , makeNewPostSetionTitle(g.param.newPostSectionNames[2])
    , payment
    , buttonsRow
@@ -1930,6 +1935,7 @@ Widget makeFaButton(
 
 List<Widget> makeFaButtons({
    final bool isWide,
+   final bool isOnOwnChat,
    final bool hasFavPosts,
    final int nOwnPosts,
    final bool newSearchPressed,
@@ -1941,13 +1947,17 @@ List<Widget> makeFaButtons({
 }) {
    List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
-   ret[0] = makeFaButton(
-      nOwnPosts,
-      onNewPost,
-      () {onFwdSendButton(0);},
-      lpChats[0].length,
-      lpChatMsgs[0].length
-   );
+   if (isOnOwnChat) {
+      ret[0] = SizedBox.shrink();
+   } else {
+      ret[0] = makeFaButton(
+	 nOwnPosts,
+	 onNewPost,
+	 () {onFwdSendButton(0);},
+	 lpChats[0].length,
+	 lpChatMsgs[0].length
+      );
+   }
 
    ret[1] = makeFAButtonMiddleScreen(
       onSearchScreen: newSearchPressed,
@@ -2585,6 +2595,7 @@ Widget makeChatScreen({
        );
    }
 
+   final double boderWidth = isWideScreen(ctx) ? 4 : 0;
    return WillPopScope(
          onWillPop: () async { return onWillPopScope();},
          child: Scaffold(
@@ -2598,8 +2609,15 @@ Widget makeChatScreen({
                   onPressed: onWillPopScope,
                ),
             ),
-         body: mainCol,
 	 backgroundColor: stl.colorScheme.background,
+         body: Container(
+            child: mainCol,
+	    decoration: BoxDecoration(
+	       color: stl.colorScheme.background,
+	       shape: BoxShape.rectangle,
+	       border: Border.all(width: boderWidth, color: stl.colorScheme.secondary),
+	    ),
+	 ),
       )
    );
 }
@@ -2924,17 +2942,16 @@ Container makeUnreadMsgsCircle(
        ),
        //height: 21.0,
        //width: 21.0,
-       decoration:
-          BoxDecoration(
-             color: backgroundColor,
-             borderRadius:
-                BorderRadius.only(
-                   topLeft:  rd,
-                   topRight: rd,
-                   bottomLeft: rd,
-                   bottomRight: rd
-                )
-             ),
+       decoration: BoxDecoration(
+	  color: backgroundColor,
+	  borderRadius:
+	     BorderRadius.only(
+		topLeft:  rd,
+		topRight: rd,
+		bottomLeft: rd,
+		bottomRight: rd
+	     )
+	  ),
       child: Center(widthFactor: 1.0, child: txt)
    );
 }
@@ -3204,7 +3221,7 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 Card putPostElemOnCard({
    List<Widget> list,
    double padding,
-   Color backgroundColor = Colors.white, 
+   Color backgroundColor = stl.backgroundColor, 
 }) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -3389,14 +3406,14 @@ Widget makeNewPostDialogWdg({
       child: SingleChildScrollView(
          scrollDirection: Axis.vertical,
          reverse: false,
-         child: col
+         child: col,
       ),
       constraints: BoxConstraints(
 	 maxHeight: height,
 	 maxWidth: width,
       ),
       decoration: BoxDecoration(
-	 color: Colors.white,
+	 color: stl.colorScheme.background,
 	 shape: BoxShape.rectangle,
 	 borderRadius: BorderRadius.all(const Radius.circular(stl.cornerRadius)),
       ),
@@ -3789,7 +3806,7 @@ List<Widget> makeDetailsTextWdgs({
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
-	             fontWeight: FontWeight.w400,
+	             fontWeight: FontWeight.w300,
 	             color: textColor,
 	          ),
 	       ),
@@ -3897,15 +3914,13 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
 	 Widget tmp = makeChatListTile(
 	    ctx: ctx,
-	    chat: cm,
-	    now: 0,
-	    isFwdChatMsgs: false,
-	    avatar: '',
-	    padding: stl.chatListTilePadding,
-	    elevation: 2.0,
+	    chatMetadata: cm,
 	    onChatLeadingPressed: () {},
 	    onChatLongPressed: () {},
-	    onStartChatPressed: () { Navigator.of(ctx).pop(); widget.onAddPostToFavorite(); },
+	    onStartChatPressed: () {
+	       Navigator.of(ctx).pop();
+	       widget.onAddPostToFavorite();
+	    },
 	 );
 	 
 	 actions.add(SizedBox(width: width, child: tmp));
@@ -3956,10 +3971,10 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       return Stack(children: <Widget>
       [ ret
       , Positioned(
-          right: 0.0,
-          top: 0.0,
+          right: 0,
+          top: 0,
           child: Card(
-             elevation: 0.0,
+             elevation: 0,
              color: Colors.white.withOpacity(stl.delImgWidgOpacity),
              margin: EdgeInsets.only(
                 top: margin + insetPadding,
@@ -3997,8 +4012,8 @@ class PostWidget extends StatefulWidget {
    OnPressedF00 onSharePost;
    OnPressedF00 onReportPost;
    OnPressedF00 onPinPost;
-   OnPressedF09 onVisualization;
-   OnPressedF09 onClick;
+   OnPressedF00 onVisualization;
+   OnPressedF00 onClick;
 
    @override
    PostWidgetState createState() => PostWidgetState();
@@ -4040,7 +4055,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
    Future<int> _onShowDetails(BuildContext ctx) async
    {
-      widget.onClick(widget.post.id);
+      widget.onVisualization();
 
       return await showDialog<int>(
 	 context: ctx,
@@ -4057,10 +4072,13 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       onAddImg: widget.onAddImg,
 	       onDelImg: widget.onDelImg,
 	       onExpandImg: widget.onExpandImg,
-	       onAddPostToFavorite: widget.onAddPostToFavorite,
 	       onDelPost: widget.onDelPost,
 	       onSharePost: widget.onSharePost,
 	       onReportPost: widget.onReportPost,
+	       onAddPostToFavorite: () {
+		  widget.onClick();
+		  widget.onAddPostToFavorite();
+	       },
 	    );
 	 },
       );
@@ -4069,27 +4087,19 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
    @override
    Widget build(BuildContext ctx)
    {
-      widget.onVisualization(widget.post.id);
-
-      Widget dateWdg = makeTextWdg(
-	 text: makeDateString2(widget.post.date),
-	 edgeInsets: const EdgeInsets.all(0.0),
-	 textColor: Colors.grey,
-	 fontSize: stl.smallFontSize,
-      );
-
-      final int onSearch = widget.post.onSearch;
       final int visualizations = widget.post.visualizations;
-      final int clicks = widget.post.clicks;
+      final String name = g.param.statsTitleAndFields[2];
+      final String date = makeDateString3(widget.post.date);
 
       Widget statsWdgs = makeTextWdg(
-	 text: '${onSearch}/${visualizations}/${clicks}',
-	 edgeInsets: const EdgeInsets.only(left: 5.0, top: 0.0, bottom: 0.0),
-	 textColor: stl.colorScheme.primary,
-	 fontSize: stl.smallFontSize,
+	 text: '$name: ${visualizations} - ${date}',
+	 edgeInsets: const EdgeInsets.all(5.0),
+	 textColor: Colors.black,
+	 fontSize: stl.mainFontSize,
+	 fontWeight: FontWeight.w300,
       );
 
-      final double imgAvatarWidth = makeImgAvatarWidth(ctx, widget.tab);
+      final double postAvatarWidth = makePostAvatarWidth(ctx);
 
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
@@ -4097,8 +4107,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    //margin: const EdgeInsets.only(top: 10.0),
 	    margin: const EdgeInsets.all(0.0),
 	    child: makeNetImgBox(
-	       width: imgAvatarWidth,
-	       height: imgAvatarWidth,
+	       width: postAvatarWidth,
+	       height: postAvatarWidth,
 	       url: widget.post.images.first,
 	       boxFit: BoxFit.cover,
 	    ),
@@ -4139,16 +4149,16 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       } else if (widget.imgFiles != null && widget.imgFiles.isNotEmpty) {
 	 imgWdg = getImage(
 	    path: widget.imgFiles.last.path,
-	    width: imgAvatarWidth,
-	    height: imgAvatarWidth,
+	    width: postAvatarWidth,
+	    height: postAvatarWidth,
 	    fit: BoxFit.cover,
 	    filterQuality: FilterQuality.high,
 	 );
       } else {
 	 Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
 	 imgWdg = makeImgPlaceholder(
-	    imgAvatarWidth,
-	    imgAvatarWidth,
+	    postAvatarWidth,
+	    postAvatarWidth,
 	    w,
 	 );
       }
@@ -4208,7 +4218,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 detailsNames.removeRange(15, detailsNames.length);
 
       Padding modelTitle = Padding(
-	 padding: const EdgeInsets.only(left: 5.0, top: 3.0),
+	 padding: const EdgeInsets.all(5.0),
 	 child: RichText(
 	    overflow: TextOverflow.ellipsis,
 	    text: TextSpan(
@@ -4223,7 +4233,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		    text: locationStr,
 		    style: TextStyle(
 		       color: Colors.grey,
-		       fontSize: 12.0,
+		       fontSize: stl.smallFontSize,
 		       fontWeight: FontWeight.normal,
 		    ),
 		 ),
@@ -4238,12 +4248,12 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
-	 backgroundColor: Colors.blueGrey[300],
-	 textColor: Colors.white,
+	 backgroundColor: Colors.blueGrey[50],
+	 textColor: Colors.black,
 	 fontSize: stl.mainFontSize,
       );
 
-      const double spacing = 1.0;
+      const double spacing = 3.0;
       const double runSpacing = 3.0;
 
       Widget detailsWrap = Padding(
@@ -4255,20 +4265,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 ),
       );
 
-      final double h1 = imgAvatarWidth * 2.0 / 12.0;
-      double h2 = imgAvatarWidth * 4.0 / 12.0;
-      if (h2 > 43)
-	 h2 = 43;
-      final double h3 = imgAvatarWidth * 2.0 / 12.0;
-      final double postTxtWidth = makePostTextWidth(ctx, widget.tab);
-
+      final double postTxtWidth = makePostTextWidth(ctx);
       Column infoWdg = Column(children: <Widget>
-      [ SizedBox(width: postTxtWidth, height: h1, child: modelTitle)
-      , SizedBox(width: postTxtWidth, height: h2 + h2, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.symmetric(vertical: 10), child:detailsWrap)))
-      , SizedBox(width: postTxtWidth, height: h1, child: Row(children: <Widget>[statsWdgs, Spacer(), dateWdg]))
+      [ SizedBox(width: postTxtWidth, child: modelTitle)
+      , Expanded(child: SizedBox(width: postTxtWidth, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.symmetric(vertical: 10), child:detailsWrap))))
+      , SizedBox(width: postTxtWidth, child: statsWdgs)
       ]);
 
-      row1List.add(SizedBox(height: imgAvatarWidth, child: infoWdg));
+      row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
 
       return RaisedButton(
 	 color: Colors.white,
@@ -4277,6 +4281,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 child: Row(children: row1List),
 	 padding: const EdgeInsets.all(0.0),
 	 onLongPress: widget.onDelPost,
+	 shape: RoundedRectangleBorder(
+	    borderRadius: BorderRadius.only(
+	       topLeft: Radius.circular(stl.chatPostCornerRadius),
+	       topRight: Radius.circular(stl.chatPostCornerRadius),
+	       bottomLeft: Radius.circular(0.0),
+	       bottomRight: Radius.circular(0.0),
+	    ),
+	 ),
       );
    }
 }
@@ -4491,24 +4503,24 @@ Widget makeSearchResultPosts({
 	       onLastestPostsPressed: onLatestPostsPressed,
 	    );
 
-         return PostWidget(
+	 return PostWidget(
 	    tab: cts.searchIdx,
-            post: posts[i],
-            exDetailsRootNode: exDetailsRootNode,
-            inDetailsRootNode: inDetailsRootNode,
+	    post: posts[i],
+	    exDetailsRootNode: exDetailsRootNode,
+	    inDetailsRootNode: inDetailsRootNode,
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
-            onAddImg: () {log('Error: Please fix.');},
-            onDelImg: (int i) {log('Error: Please fix.');},
-            onExpandImg: (int k) {onExpandImg(i, k);},
-            onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
+	    onAddImg: () {log('Error: Please fix.');},
+	    onDelImg: (int i) {log('Error: Please fix.');},
+	    onExpandImg: (int k) {onExpandImg(i, k);},
+	    onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
 	    onDelPost: () {onDelPost(ctx, i);},
 	    onSharePost: () {onSharePost(ctx, i);},
 	    onReportPost: () {onReportPost(ctx, i);},
 	    onPinPost: (){log('Noop20');},
-	    onVisualization: onPostVisualization,
-	    onClick: onPostPressed,
-         );
+	    onVisualization: () {onPostVisualization(posts[i].id);},
+	    onClick: () {onPostPressed(posts[i].id);},
+	 );
       },
    );
 }
@@ -4527,20 +4539,19 @@ ListTile makeNewPostTreeWdg({
       );
    }
    
-   return
-      ListTile(
-	 title: Text(child.name(g.param.langIdx)),
-	 subtitle: Text(
-	    child.getChildrenNames(g.param.langIdx, 4),
-	    maxLines: 1,
-	    overflow: TextOverflow.ellipsis,
-	    style: stl.newPostSubtitleLT.copyWith(fontSize: stl.mainFontSize),
-	 ),
-	 trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
-	 onTap: onNodePressed,
-	 enabled: true,
-	 isThreeLine: false,
-      );
+   return ListTile(
+      title: Text(child.name(g.param.langIdx)),
+      subtitle: Text(
+	 child.getChildrenNames(g.param.langIdx, 4),
+	 maxLines: 1,
+	 overflow: TextOverflow.ellipsis,
+	 style: stl.newPostSubtitleLT.copyWith(fontSize: stl.mainFontSize),
+      ),
+      trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
+      onTap: onNodePressed,
+      enabled: true,
+      isThreeLine: false,
+   );
 }
 
 List<Widget> makeNewPostTreeWdgs({
@@ -4678,6 +4689,14 @@ String makeDateString2(int date)
    return format.format(dateObj);
 }
 
+String makeDateString3(int date)
+{
+   date *= 1000;
+   DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
+   DateFormat format = Intl(g.param.localeName).date().add_yMEd();
+   return format.format(dateObj);
+}
+
 Widget makeChatListTileTrailingWidget(
    BuildContext ctx,
    int nUnreadMsgs,
@@ -4758,125 +4777,115 @@ Color selectColor(String peer)
 
 Widget makeChatListTile({
    BuildContext ctx,
-   ChatMetadata chat,
-   int now,
-   bool isFwdChatMsgs,
-   String avatar,
-   double padding,
-   double elevation,
+   ChatMetadata chatMetadata,
+   int now = 0,
+   bool isFwdChatMsgs = false,
+   String avatar = '',
+   double padding = stl.chatListTilePadding,
+   double elevation = 2.0,
    OnPressedF00 onChatLeadingPressed,
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
 }) {
-   Color bgColor;
-   if (chat.isLongPressed) {
+   Color bgColor = stl.colorScheme.surface;
+   if (chatMetadata.isLongPressed)
       bgColor = stl.chatLongPressendColor;
-   } else {
-      bgColor = stl.colorScheme.surface;
-   }
 
    Widget trailing = makeChatListTileTrailingWidget(
       ctx,
-      chat.nUnreadMsgs,
-      chat.getLastChatMsgDate(),
-      chat.pinDate,
+      chatMetadata.nUnreadMsgs,
+      chatMetadata.getLastChatMsgDate(),
+      chatMetadata.pinDate,
       now,
       isFwdChatMsgs
    );
 
    ListTile lt =  ListTile(
-      //dense: false,
       enabled: true,
       trailing: trailing,
       onTap: onStartChatPressed,
       onLongPress: onChatLongPressed,
-      subtitle: makeChatTileSubtitle(ctx, chat),
+      subtitle: makeChatTileSubtitle(ctx, chatMetadata),
       leading: makeChatListTileLeading(
-         chat.isLongPressed,
+         chatMetadata.isLongPressed,
          avatar,
-         selectColor(chat.peer),
+         selectColor(chatMetadata.peer),
          onChatLeadingPressed,
       ),
-      title: Text(
-         chat.getChatDisplayName(),
+      title: Text(chatMetadata.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-         //style: stl.tsMainBlackBold,
       ),
    );
 
-   return Padding(
-	 padding: EdgeInsets.all(padding),
-	 child: Card(
-	    child: lt,
-	    color: bgColor,
-	    margin: EdgeInsets.all(0.0),
-	    elevation: elevation,
-	    shape: RoundedRectangleBorder(
-	       borderRadius: BorderRadius.all(
-		  Radius.circular(stl.cornerRadius)
-	       ),
-	       //side: BorderSide(width: 1.0, color: Colors.grey),
-	    ),
+   return  Card(
+      child: lt,
+      color: bgColor,
+      margin: EdgeInsets.all(0.0),
+      elevation: elevation,
+      shape: RoundedRectangleBorder(
+	 borderRadius: BorderRadius.only(
+	    topLeft: Radius.circular(0.0),
+	    topRight: Radius.circular(0.0),
+	    bottomLeft: Radius.circular(stl.chatPostCornerRadius),
+	    bottomRight: Radius.circular(stl.chatPostCornerRadius),
 	 ),
+      ),
    );
 }
 
-Widget makeChatsExp(
+Widget makeChatsExp({
    BuildContext ctx,
    bool isFav,
    bool isFwdChatMsgs,
    int now,
    Post post,
-   List<ChatMetadata> ch,
+   List<ChatMetadata> chatItem,
    OnPressedF01 onPressed,
    OnPressedF01 onLongPressed,
    OnPressedF16 onLeadingPressed,
-   Function onPinPost,
-) {
-   List<Widget> list = List<Widget>(ch.length);
+}) {
+   List<Widget> list = List<Widget>(chatItem.length);
 
    int nUnreadChats = 0;
    for (int i = 0; i < list.length; ++i) {
-      final int n = ch[i].nUnreadMsgs;
+      final int n = chatItem[i].nUnreadMsgs;
       if (n > 0)
          ++nUnreadChats;
 
-      list[i] = makeChatListTile(
-         ctx: ctx,
-         chat: ch[i],
-         now: now,
-         isFwdChatMsgs: isFwdChatMsgs,
-         avatar: isFav ? post.avatar : ch[i].avatar,
-	 padding: 0.0,
-	 elevation: 0.0,
-         onChatLeadingPressed: (){onLeadingPressed(post.id, i);},
-         onChatLongPressed: () { onLongPressed(i); },
-         onStartChatPressed: () { onPressed(i); },
+      list[i] = Padding(
+         padding: const EdgeInsets.only(top: stl.chatTilePadding),
+         child: makeChatListTile(
+	    ctx: ctx,
+	    chatMetadata: chatItem[i],
+	    now: now,
+	    isFwdChatMsgs: isFwdChatMsgs,
+	    avatar: isFav ? post.avatar : chatItem[i].avatar,
+	    padding: 0.0,
+	    onChatLeadingPressed: (){onLeadingPressed(post.id, i);},
+	    onChatLongPressed: () { onLongPressed(i); },
+	    onStartChatPressed: () { onPressed(i); },
+         ),
       );
    }
 
-  //if (ch.length < 5) {
-  if (true) {
-     return Padding(
-        child: Column(children: list),
-        padding: EdgeInsets.only(top: stl.chatTilePadding),
-     );
-  }
+  //if (chatItem.length < 5) {
+  if (true)
+     return Column(children: list);
 
   Widget title;
    if (nUnreadChats == 0) {
-      title = Text('${ch.length} ${g.param.numberOfChatsSuffix}');
+      title = Text('${chatItem.length} ${g.param.numberOfChatsSuffix}');
    } else {
       title = makeExpTileTitle(
-         '${ch.length} ${g.param.numberOfChatsSuffix}',
+         '${chatItem.length} ${g.param.numberOfChatsSuffix}',
          '$nUnreadChats ${g.param.numberOfUnreadChatsSuffix}',
          ', ',
          false,
       );
    }
 
-   bool expState = (ch.length < 6 && ch.length > 0) || nUnreadChats != 0;
+   bool expState = (chatItem.length < 6 && chatItem.length > 0) || nUnreadChats != 0;
 
    // I have observed that if the post has no chats and a chat
    // arrives, the chat expansion will continue collapsed independent
@@ -4994,44 +5003,47 @@ Widget makeChatTab({
          if (posts[i].images.isEmpty)
             onExpandImg2 = (int j){log('Error: post.images is empty.');};
 
-	 Widget bbb = PostWidget(
-	    tab: tab,
-            post: posts[i],
-	    locRootNode: locRootNode,
-	    prodRootNode: prodRootNode,
-            exDetailsRootNode: exDetailsRootNode,
-            inDetailsRootNode: inDetailsRootNode,
-            imgFiles: null,
-            onAddImg: () {log('Noop10');},
-            onDelImg: (int i) {log('Noop10');},
-            onExpandImg: onExpandImg2,
-            onAddPostToFavorite:() {log('Noop14');},
-	    onDelPost: onDelPost2,
-	    onSharePost: () {onSharePost(i);},
-	    onReportPost:() {log('Noop18');},
-	    onPinPost: onPinPost2,
-	    onVisualization: (String) {log('Noop19');},
-	    onClick: (String) {log('Noop20');},
+	 SizedBox postBox = SizedBox(
+	    width: makePostWidgetWidth(ctx),
+	    child: PostWidget(
+	       tab: tab,
+	       post: posts[i],
+	       locRootNode: locRootNode,
+	       prodRootNode: prodRootNode,
+	       exDetailsRootNode: exDetailsRootNode,
+	       inDetailsRootNode: inDetailsRootNode,
+	       imgFiles: null,
+	       onAddImg: () {log('Noop10');},
+	       onDelImg: (int i) {log('Noop10');},
+	       onExpandImg: onExpandImg2,
+	       onAddPostToFavorite:() {log('Noop14');},
+	       onDelPost: onDelPost2,
+	       onSharePost: () {onSharePost(i);},
+	       onReportPost:() {log('Noop18');},
+	       onPinPost: onPinPost2,
+	       onVisualization: () {log('Noop19');},
+	       onClick: () {log('Noop20');},
+	    )
 	 );
 
-         Widget chatExpansion = makeChatsExp(
-            ctx,
-            tab == cts.favIdx,
-            isFwdChatMsgs,
-            DateTime.now().millisecondsSinceEpoch,
-            posts[i],
-            posts[i].chats,
-            (int j) {onPressed(i, j);},
-            (int j) {onLongPressed(i, j);},
-            (String a, int b) {onUserInfoPressed(ctx, a, b);},
-            onPinPost,
-         );
+	 SizedBox chatExp = SizedBox(
+	    width: makePostWidgetWidth(ctx),
+	    child: makeChatsExp(
+	       ctx: ctx,
+	       isFav: tab == cts.favIdx,
+	       isFwdChatMsgs: isFwdChatMsgs,
+	       now: DateTime.now().millisecondsSinceEpoch,
+	       post: posts[i],
+	       chatItem: posts[i].chats,
+	       onPressed: (int j) {onPressed(i, j);},
+	       onLongPressed: (int j) {onLongPressed(i, j);},
+	       onLeadingPressed: (String a, int b) {onUserInfoPressed(ctx, a, b);},
+	    ),
+	 );
 
-         return Card(
-            elevation: 2.0,
-	    margin: EdgeInsets.only(bottom: 15.0),
-	    color: stl.colorScheme.surface,
-	    child: Column(children: <Widget> [bbb, chatExpansion]),
+	 return Padding(
+	    padding: stl.postChatPadding,
+	    child: Column(children: <Widget> [postBox, chatExp])
 	 );
       },
    );
@@ -5928,7 +5940,7 @@ class OccaseState extends State<Occase>
 	    body: g.param.adminChatMsg,
 	    peer: adminId,
 	    nick: g.param.adminNick,
-	    avatar: emailToGravatarHash(cts.occaseEmail),
+	    avatar: emailToGravatarHash(cts.occaseGravatarEmail),
 	    posts: _appState.ownPosts,
 	    isRedirected: 0,
 	    refersTo: -1,
@@ -7255,48 +7267,49 @@ class OccaseState extends State<Occase>
 
    Widget _makeSearchResultTab(BuildContext ctx)
    {
-      Widget w = makeSearchResultPosts(
-	 isWide: isWideScreen(ctx),
-	 nNewPosts: _nNewPosts,
-	 locRootNode: _locRootNode,
-	 prodRootNode: _prodRootNode,
-	 exDetailsRootNode: _exDetailsRoot,
-	 inDetailsRootNode: _inDetailsRoot,
-	 posts: _appState.posts,
-	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
-	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	 onDelPost: (var a, int j) {},
-	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
-         onPostVisualization: _onPostVisualization,
-         onPostPressed: _onPostClick,
-	 onSearchPressed: _onSearchPressed,
-	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
-	 onLatestPostsPressed: () {_onSearch(ctx, 10);},
+      SizedBox sb = SizedBox(
+	 width: makePostWidgetWidth(ctx),
+	 child: makeSearchResultPosts(
+	    isWide: isWideScreen(ctx),
+	    nNewPosts: _nNewPosts,
+	    locRootNode: _locRootNode,
+	    prodRootNode: _prodRootNode,
+	    exDetailsRootNode: _exDetailsRoot,
+	    inDetailsRootNode: _inDetailsRoot,
+	    posts: _appState.posts,
+	    onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
+	    onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	    onDelPost: (var a, int j) {},
+	    onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	    onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	    onPostVisualization: _onPostVisualization,
+	    onPostPressed: _onPostClick,
+	    onSearchPressed: _onSearchPressed,
+	    onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
+	    onLatestPostsPressed: () {_onSearch(ctx, 10);},
+	 ),
       );
 
       if (_searchBeginDate == 0)
-	 return w;
-
-      List<Widget> ret = <Widget>[w];
+	 return sb;
 
       ModalBarrier mb = ModalBarrier(
 	 color: Colors.grey.withOpacity(0.4),
 	 dismissible: false,
       );
 
-      ret.add(mb);
-      ret.add(Center(child: CircularProgressIndicator()));
-
-      return Stack(children: ret);
+      return Stack(children: <Widget>
+      [ sb
+      , mb
+      , Center(child: CircularProgressIndicator())
+      ]);
    }
 
    List<Widget> _makeFaButtons(BuildContext ctx)
    {
-      final bool isWide = isWideScreen(ctx);
-
       return makeFaButtons(
-	 isWide: isWide,
+	 isOnOwnChat: _isOnOwnChat(cts.ownIdx),
+	 isWide: isWideScreen(ctx),
 	 hasFavPosts: _appState.favPosts.isNotEmpty,
 	 nOwnPosts: _appState.ownPosts.length,
 	 newSearchPressed: _newSearchPressed,
@@ -7568,10 +7581,20 @@ class OccaseState extends State<Occase>
 	 );
 
 	 Widget own;
-	 if (_isOnOwnChat(cts.ownIdx))
-	    own = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.ownIdx)), div]);
-	 else
-	    own = Column(children: <Widget>[div, ownTopBar, Expanded(child: bodies[cts.ownIdx]), div]);
+	 if (_isOnOwnChat(cts.ownIdx)) {
+	    own = Column(children: <Widget>
+	    [ div
+	    , Expanded(child: _makeChatScreen(ctx, cts.ownIdx))
+	    , div
+	    ]);
+	 } else {
+	    own = Column(children: <Widget>
+	    [ div
+	    , ownTopBar
+	    , Expanded(child: bodies[cts.ownIdx])
+	    , div
+	    ]);
+	 }
 
 	 Widget searchTopBar = AppBar(
 	    actions: _makeTabActions(ctx, cts.searchIdx),
@@ -7595,10 +7618,20 @@ class OccaseState extends State<Occase>
 	 );
 
          Widget fav;
-	 if (_isOnFavChat(cts.favIdx))
-	    fav = Column(children: <Widget>[div, Expanded(child: _makeChatScreen(ctx, cts.favIdx)), div]);
-	 else
-	    fav = Column(children: <Widget>[div, favTopBar, Expanded(child: bodies[cts.favIdx]), div]);
+	 if (_isOnFavChat(cts.favIdx)) {
+	    fav = Column(children: <Widget>
+	    [ div
+	    , Expanded(child: _makeChatScreen(ctx, cts.favIdx))
+	    , div
+	    ]);
+	 } else {
+	    fav = Column(children: <Widget>
+	    [ div
+	    , favTopBar
+	    , Expanded(child: bodies[cts.favIdx])
+	    , div
+	    ]);
+	 }
 
 	 VerticalDivider vdiv = VerticalDivider(
 	    width: sep,
@@ -7609,11 +7642,11 @@ class OccaseState extends State<Occase>
 
 	 Widget body = Row(children: <Widget>
 	    [ vdiv
-	    , Expanded(flex: cts.tabFlexValues[cts.ownIdx], child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[own, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.ownIdx])]))
 	    , vdiv
-	    , Expanded(flex: cts.tabFlexValues[cts.searchIdx], child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.searchIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[search, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.searchIdx])]))
 	    , vdiv
-	    , Expanded(flex: cts.tabFlexValues[cts.favIdx], child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.favIdx])]))
+	    , Expanded(child: Stack(children: <Widget>[fav, Positioned(bottom: 20.0, right: 20.0, child: fltButtons[cts.favIdx])]))
 	    , vdiv
 	    ],
 	 );

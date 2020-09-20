@@ -14,6 +14,7 @@ const double postSectionPadding = 5.0;
 
 const Color primaryColor = Color(0xFF434b79);
 const Color onPrimaryColor = Colors.white;
+const Color backgroundColor = Color(0xFFEEEEEE);
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
@@ -22,7 +23,7 @@ const ColorScheme colorScheme = const ColorScheme.light(
       secondaryVariant: Color(0xFFff5635),
       onSecondary: Color(0xFF434b79),
       onPrimary: onPrimaryColor,
-      background: Color(0xFFEEEEEE),
+      background: backgroundColor,
 );
 
 const Color infoKeyColor = Colors.black;
@@ -90,7 +91,11 @@ const double chatListTilePadding = 6.0;
 
 const double cornerRadius = 8.0;
 
-const chatTilePadding = 4.0;
+const EdgeInsets postChatPadding = const EdgeInsets.symmetric(vertical: 10.0);
+
+const double chatPostCornerRadius = 2.0;
+
+const chatTilePadding = 2.0;
 
 const Icon unknownPersonIcon = Icon(
    Icons.person,

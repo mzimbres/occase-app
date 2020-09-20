@@ -1,14 +1,20 @@
 
-const double tabDefaultWidth = 350.0;
+//-------------------------------------------------------------------------------
+// Some contants used to calculate widths and heights of widget and
+// tabs.
+
+const double tabMaxWidth = 450.0;
+const double postAvatarTabWidthRate = 1.0 / 3.0;
+const double imgWidth = tabMaxWidth;
+const double imgHeight = tabMaxWidth / 3.0;
+
+//-------------------------------------------------------------------------------
 
 // Quality of the image, see
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
 const int imgQuality = 75;
 const int maxImgsPerPost = 6;
 const int minImgsPerPost = 0;
-const double postImgAvatarTabWidthRate = 0.381966;
-const double imgWidth = tabDefaultWidth;
-const double imgHeight = imgWidth / 1.618033;
 
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
@@ -16,19 +22,18 @@ const int emailMaxLength = 50;
 
 // This constant should be set to the maximum number of exclusive
 // details among all pruducts. At the moment this is 6 for cars and I
-// see no reason for it being much more than that. This value will
-// be used to initialize the corresponding array in the Post class. At
+// see no reason for it being much more than that. This value will be
+// used to initialize the corresponding array in the Post class. At
 // the moment of post creation we do not know which product it will
 // carry and therefore we also do not know the size we need. For
 // backward compatibility it may be a good idea to make room for
 // further expansion.
 const int maxExDetailSize = 20;
-
 // See the comment in maxExDetailSize
 const int maxInDetailSize = 20;
 
 const String gravatarUrl = 'https://www.gravatar.com/avatar/';
-const String occaseEmail = 'occase.app@gmail.com';
+const String occaseGravatarEmail = 'occase.app@gmail.com';
 
 // Use media query instead of this.
 const double onClickAvatarWidth = 200.0;
@@ -69,8 +74,6 @@ const int ownIdx = 0;
 const int searchIdx = 1;
 const int favIdx = 2;
 
-const List<double> tabWidthRates = const <double>[0.291, 0.42, 0.291];
-const List<int> tabFlexValues = const <int>[29, 42, 29];
-
+const List<double> tabWidthRates = const <double>[0.33333, 0.33333, 0.33333];
 const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
 
