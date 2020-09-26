@@ -170,7 +170,7 @@ class Coord {
 
 void myprint(Coord c, String prefix)
 {
-   log('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
+   print('$prefix ===> (${c.post.id}, ${c.chat.peer}, ${c.msgIdx})');
 }
 
 void toggleChatPinDate(ChatMetadata chat)
@@ -1015,17 +1015,14 @@ List<Widget> makeTabActions({
    OnPressedF00 pinChats,
    OnPressedF00 onClearPostsDialog,
 }) {
-   final bool fav = tab == cts.favIdx;
-   final bool own = tab == cts.ownIdx;
-   final bool search = tab == cts.searchIdx;
-
-   List<Widget> ret = List<Widget>();
-   if (own) {
+   if (tab == cts.ownIdx) {
       if (newPostPressed) {
       } else if (hasLPChats && !hasLPChatMsgs) {
-	 ret = makeOnLongPressedActions(deleteChatDialog, pinChats);
+	 return makeOnLongPressedActions(deleteChatDialog, pinChats);
       }
-   } else if (fav) {
+   }
+
+   if (tab == cts.favIdx) {
       if (hasLPChats && !hasLPChatMsgs) {
 	 IconButton delChatBut = IconButton(
 	    icon: Icon(
@@ -1036,22 +1033,11 @@ List<Widget> makeTabActions({
 	    onPressed: deleteChatDialog,
 	 );
 
-	 ret.add(delChatBut);
+	 return <Widget>[delChatBut];
       }
-   } else if (search) {
-      //IconButton clearPosts = IconButton(
-      //   icon: Icon(
-      //      Icons.delete_forever,
-      //      color: stl.colorScheme.onPrimary,
-      //   ),
-      //   tooltip: g.param.clearPosts,
-      //   onPressed: onClearPostsDialog,
-      //);
-
-      //ret.add(clearPosts);
    }
 
-   return ret;
+   return <Widget>[];
 }
 
 Widget makeAppBarLeading({
@@ -1468,8 +1454,8 @@ Widget makeNewPostScreenWdgs({
 }) {
    List<Widget> list = <Widget>[];
 
-   list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
-   list.add(stl.newPostDivider);
+   //list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
+   //list.add(stl.newPostDivider);
 
    List<Widget> mainWidgets = makeNewPostWdgs(
       ctx: ctx,
@@ -1854,9 +1840,9 @@ List<Widget> makeTabWdgs({
 
    for (int i = 0; i < g.param.tabNames.length; ++i) {
       Widget w = makeTabWidget(
-	 counters[i],
-	 g.param.tabNames[i],
-	 opacities[i]
+	 nUnread: counters[i],
+	 title: g.param.tabNames[i],
+	 opacity: opacities[i]
       );
 
       list.add(w);
@@ -1937,13 +1923,14 @@ List<Widget> makeFaButtons({
    final bool isWide,
    final bool isOnOwnChat,
    final bool hasFavPosts,
+   final int nPosts,
    final int nOwnPosts,
    final bool newSearchPressed,
    final List<List<Coord>> lpChats,
    final List<List<Coord>> lpChatMsgs,
    final OnPressedF00 onNewPost,
    final OnPressedF01 onFwdSendButton,
-   final OnPressedF00 onSearch,
+   final OnPressedF00 onGoToSearch,
 }) {
    List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
@@ -1960,10 +1947,11 @@ List<Widget> makeFaButtons({
    }
 
    ret[1] = makeFAButtonMiddleScreen(
-      onSearchScreen: newSearchPressed,
+      newSearchPressed: newSearchPressed,
       isWide: isWide,
       hasFavPosts: hasFavPosts,
-      onSearch: onSearch,
+      hasPosts: nPosts != 0,
+      onGoToSearch: onGoToSearch,
    );
 
    ret[2] = makeFaButton(
@@ -1978,17 +1966,17 @@ List<Widget> makeFaButtons({
 }
 
 Widget makeFAButtonMiddleScreen({
-   final bool onSearchScreen,
+   final bool newSearchPressed,
    final bool isWide,
    final bool hasFavPosts,
-   final OnPressedF00 onSearch,
+   final bool hasPosts,
+   final OnPressedF00 onGoToSearch,
 }) {
-   //log('$onSearchScreen $isWide $hasFavPosts');
-   if (onSearchScreen || (isWide && !hasFavPosts) || onSearch == null)
+   if (newSearchPressed || !hasPosts)
       return SizedBox.shrink();
 
    return FloatingActionButton(
-      onPressed: onSearch,
+      onPressed: onGoToSearch,
       backgroundColor: stl.colorScheme.secondary,
       mini: false,
       child: Icon(
@@ -2622,11 +2610,11 @@ Widget makeChatScreen({
    );
 }
 
-Widget makeTabWidget(
+Widget makeTabWidget({
    int nUnread,
    String title,
    double opacity,
-) {
+}) {
    if (nUnread == 0)
       return Center(child: Text(title));
 
@@ -2644,7 +2632,10 @@ Widget makeTabWidget(
       opacity: opacity,
    );
 
-   return Row(children: widgets);
+   return Row(
+      children: widgets,
+      mainAxisAlignment: MainAxisAlignment.center,
+   );
 }
 
 CircleAvatar makeChatListTileLeading(
@@ -4094,9 +4085,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget statsWdgs = makeTextWdg(
 	 text: '$name: ${visualizations} - ${date}',
 	 edgeInsets: const EdgeInsets.all(5.0),
-	 textColor: Colors.black,
-	 fontSize: stl.mainFontSize,
-	 fontWeight: FontWeight.w300,
+	 textColor: Colors.grey,
+	 fontSize: stl.smallFontSize,
+	 fontWeight: FontWeight.normal,
       );
 
       final double postAvatarWidth = makePostAvatarWidth(ctx);
@@ -4373,9 +4364,10 @@ Widget makeEmptyTabText(String msg)
 Widget makeOnEmptyBodyMsg({
    final List<String> message,
    final List<String> buttonMsgs,
-   final OnPressedF00 onPressed,
+   final OnPressedF00 onPressed = null,
 }) {
-   Widget text = makeEmptyTabText(message.first);
+   if (onPressed == null)
+      return makeEmptyTabText(message.first);
 
    Widget button = createRaisedButton(
       onPressed: onPressed,
@@ -4388,7 +4380,7 @@ Widget makeOnEmptyBodyMsg({
       child: Column(
 	 mainAxisAlignment: MainAxisAlignment.center,
          children: <Widget>
-	 [ text
+	 [ makeEmptyTabText(message.first)
 	 , button
 	 ],
       ),
@@ -4396,31 +4388,41 @@ Widget makeOnEmptyBodyMsg({
 }
 
 Widget makeSearchInitTab({
+   final bool isWide,
    final List<String> msgs,
    final List<String> buttonNames,
-   final OnPressedF00 onGoToNewPostTabPressed,
-   final OnPressedF00 onSearchPressed,
+   final OnPressedF00 onCreateAd,
+   final OnPressedF00 onGoToSearch,
    final OnPressedF00 onLastestPostsPressed,
 }) {
-   Widget newPostText = makeEmptyTabText(msgs[0]);
-   Widget newSearchText = makeEmptyTabText(msgs[1]);
-
    const double width = 150;
-   Widget goToNewPost = createRaisedButton(
-      onPressed: onGoToNewPostTabPressed,
-      text: buttonNames[0],
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-      minWidth: width,
-   );
+   List<Widget> list = <Widget>[];
+
+   if (!isWide) {
+      list.add(makeEmptyTabText(msgs[0]));
+
+      Widget goToNewPost = createRaisedButton(
+	 onPressed: onCreateAd,
+	 text: buttonNames[0],
+	 color: stl.colorScheme.secondary,
+	 textColor: stl.colorScheme.onSecondary,
+	 minWidth: width,
+      );
+
+      list.add(goToNewPost);
+   }
+
+   Widget newSearchText = makeEmptyTabText(msgs[1]);
+   list.add(newSearchText);
 
    Widget goToSearch = createRaisedButton(
-      onPressed: onSearchPressed,
+      onPressed: onGoToSearch,
       text: buttonNames[1],
       color: stl.colorScheme.secondary,
       textColor: stl.colorScheme.onSecondary,
       minWidth: width,
    );
+
 
    Widget seeLatest = createRaisedButton(
       onPressed: onLastestPostsPressed,
@@ -4430,32 +4432,30 @@ Widget makeSearchInitTab({
       minWidth: width,
    );
 
+   Widget tmp = Padding(
+      padding: EdgeInsets.only(bottom: 30),
+      child: Row(
+	  mainAxisAlignment: MainAxisAlignment.center,
+	  crossAxisAlignment: CrossAxisAlignment.center,
+	  children: <Widget>
+	  [ Padding(child: seeLatest, padding: EdgeInsets.only(right: 20))
+	  , goToSearch
+	  ]
+      ),
+   );
+
+   list.add(tmp);
+
    return Center(
       child: Column(
 	 mainAxisAlignment: MainAxisAlignment.center,
-         children: <Widget>
-	 [ newPostText
-	 , goToNewPost
-	 , newSearchText
-	 , Padding(
-	      padding: EdgeInsets.only(bottom: 30),
-	      child: Row(
-		 mainAxisAlignment: MainAxisAlignment.center,
-		 crossAxisAlignment: CrossAxisAlignment.center,
-		 children: <Widget>
-		 [ Padding(child: seeLatest, padding: EdgeInsets.only(right: 20))
-		 , goToSearch
-		 ]
-	      ),
-	   ),
-	 ],
+         children: list,
       ),
    );
 }
 
 Widget makeSearchResultPosts({
    final bool isWide,
-   final int nNewPosts,
    final Node locRootNode,
    final Node prodRootNode,
    final Node exDetailsRootNode,
@@ -4468,16 +4468,17 @@ Widget makeSearchResultPosts({
    final OnPressedF02 onReportPost,
    final OnPressedF09 onPostVisualization,
    final OnPressedF09 onPostPressed,
-   final OnPressedF00 onSearchPressed,
-   final OnPressedF00 onGoToNewPostTabPressed,
+   final OnPressedF00 onCreateAd,
+   final OnPressedF00 onGoToSearch,
    final OnPressedF00 onLatestPostsPressed,
 }) {
-   if (posts.isEmpty && !isWide)
+   if (posts.isEmpty)
       return makeSearchInitTab(
+	 isWide: isWide,
 	 msgs: g.param.onEmptySeaMsg,
 	 buttonNames: g.param.onEmptySeaButtonNames,
-	 onGoToNewPostTabPressed: onGoToNewPostTabPressed,
-	 onSearchPressed: onSearchPressed,
+	 onCreateAd: isWide ? null : onCreateAd,
+	 onGoToSearch: onGoToSearch,
 	 onLastestPostsPressed: onLatestPostsPressed,
       );
 
@@ -4494,12 +4495,13 @@ Widget makeSearchResultPosts({
       },
       itemBuilder: (BuildContext ctx, int i)
       {
-	 if (i == posts.length && !isWide)
+	 if (i == posts.length)
 	    return makeSearchInitTab(
+	       isWide: isWide,
 	       msgs: g.param.onEmptySeaMsg,
 	       buttonNames: g.param.onEmptySeaButtonNames,
-	       onGoToNewPostTabPressed: onGoToNewPostTabPressed,
-	       onSearchPressed: onSearchPressed,
+	       onCreateAd: isWide ? null : onCreateAd,
+	       onGoToSearch: onGoToSearch,
 	       onLastestPostsPressed: onLatestPostsPressed,
 	    );
 
@@ -4908,22 +4910,41 @@ Widget makeChatsExp({
    );
 }
 
-Widget wrapPostOnButton(
-   BuildContext ctx,
-   List<Widget> wlist,
-   double elevation,
-   Function onPressed)
-{
-   return RaisedButton(
-      color: Colors.white,
-      onPressed: onPressed,
-      elevation: elevation,
-      child: Column(children: wlist),
-      padding: const EdgeInsets.all(0.0),
-   );
+Widget makeTabDefaultWidget({
+   final bool isWide,
+   final int tab,
+   final OnPressedF00 onCreateAd,
+   final OnPressedF00 onGoToSearch,
+   final OnPressedF00 onLatestPostsPressed,
+}) {
+   if (isWide) {
+      if (tab == cts.ownIdx)
+	 return makeOnEmptyBodyMsg(
+	    message: g.param.onEmptyOwnMsg,
+	    buttonMsgs: g.param.onEmptyOwnButtonNames,
+	    onPressed: onCreateAd,
+	 );
+
+      if (tab == cts.favIdx)
+	 return makeOnEmptyBodyMsg(
+	    message: g.param.onEmptyFavMsg,
+	    buttonMsgs: g.param.onEmptyOwnButtonNames,
+	    onPressed: onCreateAd,
+	 );
+   } else {
+      return makeSearchInitTab(
+	 isWide: isWide,
+	 msgs: g.param.onEmptySeaMsg,
+	 buttonNames: g.param.onEmptySeaButtonNames,
+	 onCreateAd: onCreateAd,
+	 onGoToSearch: onGoToSearch,
+	 onLastestPostsPressed: onLatestPostsPressed,
+      );
+   }
 }
 
 Widget makeChatTab({
+   final bool isWide,
    final bool isFwdChatMsgs,
    final int tab,
    final Node locRootNode,
@@ -4931,31 +4952,25 @@ Widget makeChatTab({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final List<Post> posts,
-   final OnPressedF03 onPressed,
-   final OnPressedF03 onLongPressed,
+   final OnPressedF03 onChatPressed,
+   final OnPressedF03 onChatLongPressed,
    final OnPressedF01 onDelPost,
    final OnPressedF01 onPinPost,
          OnPressedF05 onUserInfoPressed,
    final OnPressedF03 onExpandImg,
    final OnPressedF01 onSharePost,
-   final OnPressedF00 onPost,
-   final OnPressedF00 onGoToNewPostTabPressed,
+   final OnPressedF00 onCreateAd,
+   final OnPressedF00 onGoToSearch,
+   final OnPressedF00 onLatestPostsPressed,
 }) {
-   if (posts.length == 0) {
-      if (tab == cts.ownIdx)
-	 return makeOnEmptyBodyMsg(
-	    message: g.param.onEmptyOwnMsg,
-	    buttonMsgs: g.param.onEmptyOwnButtonNames,
-            onPressed: onPost,
-	 );
-
-      if (tab == cts.favIdx)
-	 return makeOnEmptyBodyMsg(
-	    message: g.param.onEmptyFavMsg,
-	    buttonMsgs: g.param.onEmptyOwnButtonNames,
-	    onPressed: onGoToNewPostTabPressed,
-	 );
-   }
+   if (posts.isEmpty)
+      return makeTabDefaultWidget(
+	 isWide: isWide,
+	 tab: tab,
+	 onCreateAd: onCreateAd,
+	 onGoToSearch: onGoToSearch,
+	 onLatestPostsPressed: onLatestPostsPressed,
+      );
 
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
@@ -4968,21 +4983,15 @@ Widget makeChatTab({
       itemCount: posts.length + 1,
       itemBuilder: (BuildContext ctx, int i)
       {
-	 if (i == posts.length) {
-	    if (tab == cts.ownIdx)
-	       return makeOnEmptyBodyMsg(
-		  message: g.param.onEmptyOwnMsg,
-		  buttonMsgs: g.param.onEmptyOwnButtonNames,
-		  onPressed: onPost,
-	       );
+	 if (i == posts.length)
+	    return makeTabDefaultWidget(
+	       isWide: isWide,
+	       tab: tab,
+	       onCreateAd: onCreateAd,
+	       onGoToSearch: onGoToSearch,
+	       onLatestPostsPressed: onLatestPostsPressed,
+	    );
 
-	    if (tab == cts.favIdx)
-	       return makeOnEmptyBodyMsg(
-		  message: g.param.onEmptyFavMsg,
-		  buttonMsgs: g.param.onEmptyOwnButtonNames,
-		  onPressed: onGoToNewPostTabPressed,
-	       );
-	 }
          OnPressedF00 onPinPost2 = () {onPinPost(i);};
          OnPressedF00 onDelPost2 = () {onDelPost(i);};
          OnPressedF01 onExpandImg2 = (int j) {onExpandImg(i, j);};
@@ -5035,8 +5044,8 @@ Widget makeChatTab({
 	       now: DateTime.now().millisecondsSinceEpoch,
 	       post: posts[i],
 	       chatItem: posts[i].chats,
-	       onPressed: (int j) {onPressed(i, j);},
-	       onLongPressed: (int j) {onLongPressed(i, j);},
+	       onPressed: (int j) {onChatPressed(i, j);},
+	       onLongPressed: (int j) {onChatLongPressed(i, j);},
 	       onLeadingPressed: (String a, int b) {onUserInfoPressed(ctx, a, b);},
 	    ),
 	 );
@@ -5194,18 +5203,14 @@ class OccaseState extends State<Occase>
    // The current chat, if any.
    List<ChatMetadata> _chats = List<ChatMetadata>(3);
 
-   // The number of posts in the _appState.posts array that hasn't been seen
-   // yet by the user.
-   int _nNewPosts = 0;
-
    // This list will store the posts in _fav or _own chat screens that
    // have been long pressed by the user. However, once one post is
    // long pressed to select the others is enough to perform a simple
    // click.
-   List<List<Coord>> _lpChats = List<List<Coord>>.filled(3, List<Coord>());
+   List<List<Coord>> _lpChats = List<List<Coord>>(3);
 
    // A temporary variable used to store forwarded chat messages.
-   List<List<Coord>> _lpChatMsgs = List<List<Coord>>.filled(3, List<Coord>());
+   List<List<Coord>> _lpChatMsgs = List<List<Coord>>(3);
 
    Queue<dynamic> _wsMsgQueue = Queue<dynamic>();
 
@@ -5273,6 +5278,13 @@ class OccaseState extends State<Occase>
       _chatScrollCtrl[cts.favIdx].addListener(() {_chatScrollListener(cts.favIdx);});
 
       Timer.periodic(Duration(seconds: cts.pongTimeoutSeconds), _reconnectCallback);
+      _lpChats[0] = List<Coord>();
+      _lpChats[1] = List<Coord>();
+      _lpChats[2] = List<Coord>();
+
+      _lpChatMsgs[0] = List<Coord>();
+      _lpChatMsgs[1] = List<Coord>();
+      _lpChatMsgs[2] = List<Coord>();
 
       WidgetsBinding.instance.addObserver(this);
 
@@ -5352,7 +5364,6 @@ class OccaseState extends State<Occase>
 
       await _appState.load();
 
-      _nNewPosts = 0;
       _goToRegScreen = _appState.cfg.nick.isEmpty;
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
@@ -5365,7 +5376,7 @@ class OccaseState extends State<Occase>
       // In wide mode we want to show some posts when the user opens
       // the webpage. We cannot however await here, we just launch the
       // async operation whithout waiting for it to complete.
-      _searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
+      //_searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
 
       setState(() { });
    }
@@ -5519,7 +5530,7 @@ class OccaseState extends State<Occase>
    Future<void> _clearPosts() async
    {
       await _appState.clearPosts();
-      setState((){ _nNewPosts = 0; });
+      setState((){ });
    }
 
    void _clearPostsDialog(BuildContext ctx)
@@ -5560,15 +5571,13 @@ class OccaseState extends State<Occase>
 
    // i = index in _appState.posts, _appState.favPosts, _own_posts.
    // j = image index in the post.
-   void _onExpandImg(int i, int j, int k)
+   void _onExpandImg(int i, int j, int tab)
    {
       //log('Expand image clicked with $i $j.');
 
-      //_nNewPosts
-
       setState((){
-         _expPostIdxs[k] = i;
-         _expImgIdxs[k] = j;
+         _expPostIdxs[tab] = i;
+         _expImgIdxs[tab] = j;
       });
    }
 
@@ -5629,11 +5638,6 @@ class OccaseState extends State<Occase>
       await _onChatPressed(cts.favIdx, h, 0);
    }
 
-   void _onGoToNewPostTabPressed()
-   {
-      _tabCtrl.animateTo(cts.ownIdx, duration: Duration(seconds: 2));
-   }
-
    // For the meaning of the index j see makeNewPostImpl.
    //
    // j = 0: Ignore post.
@@ -5663,12 +5667,15 @@ class OccaseState extends State<Occase>
       _posts[i].reset();
    }
 
-   void _onNewPost()
+   void _onCreateAd()
    {
       setState(() {
 	 _newPostPressed = true;
 	 prepareNewPost(cts.ownIdx);
       });
+
+      // Needed only in the mobile view.
+      _tabCtrl.animateTo(cts.ownIdx, duration: Duration(milliseconds: 700));
    }
 
    bool _onWillPopSearchTab()
@@ -6251,19 +6258,17 @@ class OccaseState extends State<Occase>
 
    void _onChatLPImpl(List<Post> posts, int i, int j, int k)
    {
-      final Coord tmp = Coord(post: posts[i], chat: posts[i].chats[j]);
-
       handleLPChats(
          _lpChats[k],
          toggleLPChat(posts[i].chats[j]),
-         tmp,
+	 Coord(post: posts[i], chat: posts[i].chats[j]),
 	 compPostIdAndPeer,
       );
    }
 
-   void _onChatLP(int i, int j, int k)
+   void _onChatLongPressed(int tab, int j, int k)
    {
-      if (i == cts.favIdx) {
+      if (tab == cts.favIdx) {
          _onChatLPImpl(_appState.favPosts, j, k, cts.favIdx);
       } else {
          _onChatLPImpl(_appState.ownPosts, j, k, cts.ownIdx);
@@ -6300,9 +6305,12 @@ class OccaseState extends State<Occase>
          msgIdx: k
       );
 
-      handleLPChats(_lpChatMsgs[i],
-                    toggleLPChatMsg(_chats[i].msgs[k]),
-                    tmp, compPeerAndChatIdx);
+      handleLPChats(
+	 _lpChatMsgs[i],
+         toggleLPChatMsg(_chats[i].msgs[k]),
+	 tmp,
+	 compPeerAndChatIdx,
+      );
 
       setState((){});
    }
@@ -6602,7 +6610,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   int _onPost(Map<String, dynamic> ack)
+   int _onPosts(Map<String, dynamic> ack)
    {
       for (var item in ack['posts']) {
          try {
@@ -6696,7 +6704,7 @@ class OccaseState extends State<Occase>
 		  result: map["result"] ?? 'fail',
 	       );
 	    } else if (cmd == "post") {
-	       _onPost(map);
+	       _onPosts(map);
 	    } else if (cmd == "register_ack") {
 	       await _onRegisterAck(
 		  result: map["result"] ?? 'fail',
@@ -6767,10 +6775,10 @@ class OccaseState extends State<Occase>
    // The variable i can assume the following values
    // 0: Leaves the screen.
    //
-   Future<void> _onSearch(BuildContext ctx, int i) async
+   Future<void> _onSearch(bool isWide, int i) async
    {
       try {
-	 if (!isWideScreen(ctx))
+	 if (!isWide)
 	    setState(() {_newSearchPressed = false;});
 
 	 if (i == 0) {
@@ -6851,9 +6859,9 @@ class OccaseState extends State<Occase>
       return false;
    }
 
-   bool _hasLPChats(int i)
+   bool _hasLPChats(int tab)
    {
-      return _lpChats[i].isNotEmpty;
+      return _lpChats[tab].isNotEmpty;
    }
 
    bool _hasLPChatMsgs(int i)
@@ -6888,14 +6896,23 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onSearchPressed()
+   void _onGoToSearch()
    {
-      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(seconds: 2));
+      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
 
       setState(() {
 	 prepareNewPost(cts.searchIdx);
 	 _newSearchPressed = true;
       });
+   }
+
+   void _onLatestPostsPressed(bool isWide)
+   {
+      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
+
+      prepareNewPost(cts.searchIdx);
+      _onSearch(isWide, 10);
+      setState(() { });
    }
 
    Future<void> _pinChats(int i) async
@@ -7128,16 +7145,9 @@ class OccaseState extends State<Occase>
       return '';
    }
 
-   Future<int> _onLatestPostsPressed() async
-   {
-   }
-
    Future<int> _searchImpl(Post post) async
    {
       try {
-	 _nNewPosts = 0;
-	 await _appState.clearPosts();
-
 	 final String body = await _searchPosts(cts.dbSearchPostsUrl, post);
 	 print(body);
 	 if (body.isEmpty) {
@@ -7145,7 +7155,8 @@ class OccaseState extends State<Occase>
 	    print('Error');
 	 }
 
-	 return _onPost(jsonDecode(body));
+	 await _appState.clearPosts();
+	 return _onPosts(jsonDecode(body));
       } catch (e) {
 	 print('Error');
       }
@@ -7247,6 +7258,7 @@ class OccaseState extends State<Occase>
 
    Widget _makeSearchScreenWdg(BuildContext ctx)
    {
+      final bool isWide = isWideScreen(ctx);
       return makeSearchScreenWdg(
 	 ctx: ctx,
 	 state: _posts[cts.searchIdx].exDetails[0],
@@ -7257,7 +7269,7 @@ class OccaseState extends State<Occase>
 	 post: _posts[cts.searchIdx],
 	 ranges: g.param.rangesMinMax,
 	 divisions: g.param.rangeDivs,
-	 onSearchPressed: (int i) {_onSearch(ctx, i);},
+	 onSearchPressed: (int i) {_onSearch(isWide, i);},
 	 onSearchDetail: (int j) {_onSearchDetail(0, j);},
 	 onValueChanged: _onSearchValueChanged,
 	 onSetLocationCode: _onSetSearchLocationCode,
@@ -7267,11 +7279,11 @@ class OccaseState extends State<Occase>
 
    Widget _makeSearchResultTab(BuildContext ctx)
    {
+      final bool isWide = isWideScreen(ctx);
       SizedBox sb = SizedBox(
 	 width: makePostWidgetWidth(ctx),
 	 child: makeSearchResultPosts(
-	    isWide: isWideScreen(ctx),
-	    nNewPosts: _nNewPosts,
+	    isWide: isWide,
 	    locRootNode: _locRootNode,
 	    prodRootNode: _prodRootNode,
 	    exDetailsRootNode: _exDetailsRoot,
@@ -7284,9 +7296,9 @@ class OccaseState extends State<Occase>
 	    onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
 	    onPostVisualization: _onPostVisualization,
 	    onPostPressed: _onPostClick,
-	    onSearchPressed: _onSearchPressed,
-	    onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
-	    onLatestPostsPressed: () {_onSearch(ctx, 10);},
+	    onCreateAd: _onCreateAd,
+	    onGoToSearch: _onGoToSearch,
+	    onLatestPostsPressed: () {_onSearch(isWide, 10);},
 	 ),
       );
 
@@ -7315,47 +7327,51 @@ class OccaseState extends State<Occase>
 	 newSearchPressed: _newSearchPressed,
 	 lpChats: _lpChats,
 	 lpChatMsgs: _lpChatMsgs,
-	 onNewPost: _newPostPressed ? null : _onNewPost,
+	 onNewPost: _newPostPressed ? null : _onCreateAd,
 	 onFwdSendButton: _onFwdSendButton,
-	 onSearch: _appState.posts.isEmpty ? null : _onSearchPressed,
+	 onGoToSearch: _appState.posts.isEmpty ? null : _onGoToSearch,
+	 nPosts: _appState.posts.length,
       );
    }
 
-   Widget _makeChatTab(BuildContext ctx, int i)
+   Widget _makeChatTab(BuildContext ctx, int tab)
    {
       List<Post> posts = _appState.ownPosts;
-      if (i == cts.favIdx)
+      if (tab == cts.favIdx)
 	 posts = _appState.favPosts;
 
+      final bool isWide = isWideScreen(ctx);
       return makeChatTab(
-	 isFwdChatMsgs: _lpChatMsgs[i].isNotEmpty,
-	 tab: i,
+	 isWide: isWide,
+	 isFwdChatMsgs: _lpChatMsgs[tab].isNotEmpty,
+	 tab: tab,
 	 locRootNode: _locRootNode,
 	 prodRootNode: _prodRootNode,
 	 exDetailsRootNode: _exDetailsRoot,
 	 inDetailsRootNode: _inDetailsRoot,
 	 posts: posts,
-	 onPressed: (int j, int k) {_onChatPressed(i, j, k);},
-	 onLongPressed: (int j, int k) {_onChatLP(i, j, k);},
-	 onDelPost: (int j) { _removePostDialog(ctx, i, j);},
-	 onPinPost: (int j) {_onPinPost(i, j);},
+	 onChatPressed: (int j, int k) {_onChatPressed(tab, j, k);},
+	 onChatLongPressed: (int j, int k) {_onChatLongPressed(tab, j, k);},
+	 onDelPost: (int j) { _removePostDialog(ctx, tab, j);},
+	 onPinPost: (int j) {_onPinPost(tab, j);},
 	 onUserInfoPressed: _onUserInfoPressed,
-	 onExpandImg: (int i, int j) {_onExpandImg(i, j, i);},
-	 onSharePost: (int i) {_onClickOnPost(i, 1);},
-	 onPost: _onNewPost,
-	 onGoToNewPostTabPressed: _onGoToNewPostTabPressed,
+	 onExpandImg: (int i, int j) {_onExpandImg(i, j, tab);},
+	 onSharePost: (int tab) {_onClickOnPost(tab, 1);},
+	 onCreateAd: _onCreateAd,
+	 onGoToSearch: _onGoToSearch,
+	 onLatestPostsPressed: () {_onLatestPostsPressed(isWide);},
       );
    }
 
-   List<Widget> _makeTabActions(BuildContext ctx, int i)
+   List<Widget> _makeTabActions(BuildContext ctx, int tab)
    {
       return makeTabActions(
-         tab: i,
+         tab: tab,
 	 newPostPressed: _newPostPressed,
-	 hasLPChats: _hasLPChats(i),
-	 hasLPChatMsgs: _hasLPChatMsgs(i),
-	 deleteChatDialog: () {_deleteChatDialog(ctx, i);},
-	 pinChats: () {_pinChats(i);},
+	 hasLPChats: _hasLPChats(tab),
+	 hasLPChatMsgs: _hasLPChatMsgs(tab),
+	 deleteChatDialog: () {_deleteChatDialog(ctx, tab);},
+	 pinChats: () {_pinChats(tab);},
 	 onClearPostsDialog: () { _clearPostsDialog(ctx); },
       );
    }
@@ -7415,7 +7431,6 @@ class OccaseState extends State<Occase>
    {
       List<int> ret = List<int>(g.param.tabNames.length);
       ret[cts.ownIdx] = _getNUnreadOwnChats();
-      //ret[cts.searchIdx] = _nNewPosts; // Let this out for the moment.
       ret[cts.searchIdx] = 0;
       ret[cts.favIdx] = _getNUnreadFavChats();
       return ret;
@@ -7433,13 +7448,16 @@ class OccaseState extends State<Occase>
 	 ret[cts.ownIdx] = _makeChatTab(ctx, cts.ownIdx);
       }
 
+      final bool emptyPosts = _appState.posts.isEmpty;
+      final bool emptyFav = _appState.favPosts.isEmpty;
+
       if (_newSearchPressed && !isWide) {
 	 ret[cts.searchIdx] = _makeSearchScreenWdg(ctx);
       } else {
 	 ret[cts.searchIdx] = _makeSearchResultTab(ctx);
       }
 
-      if ((_newSearchPressed || _appState.favPosts.isEmpty) && isWide) {
+      if (_newSearchPressed && isWide) {
 	 ret[cts.favIdx] = _makeSearchScreenWdg(ctx);
       } else {
 	 ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
@@ -7574,12 +7592,6 @@ class OccaseState extends State<Occase>
 	    opacities: cts.newMsgsOpacitiesWeb,
 	 );
 
-	 Widget ownTopBar = AppBar(
-	    actions: _makeTabActions(ctx, cts.ownIdx),
-	    title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
-	    leading: _makeAppBarLeading(isWide, cts.ownIdx),
-	 );
-
 	 Widget own;
 	 if (_isOnOwnChat(cts.ownIdx)) {
 	    own = Column(children: <Widget>
@@ -7588,33 +7600,30 @@ class OccaseState extends State<Occase>
 	    , div
 	    ]);
 	 } else {
-	    own = Column(children: <Widget>
-	    [ div
-	    , ownTopBar
-	    , Expanded(child: bodies[cts.ownIdx])
-	    , div
-	    ]);
-	 }
+	    List<Widget> local = <Widget>[];
+            local.add(div);
 
-	 Widget searchTopBar = AppBar(
-	    actions: _makeTabActions(ctx, cts.searchIdx),
-	    title: _makeAppBarTitleWdg(isWide, cts.searchIdx, tabWdgs[cts.searchIdx]),
-	    leading: _makeAppBarLeading(isWide, cts.searchIdx),
-	 );
+	    if (_newPostPressed || _appState.ownPosts.isNotEmpty) {
+	       Widget ownTopBar = AppBar(
+		  actions: _makeTabActions(ctx, cts.ownIdx),
+		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
+		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
+	       );
+	       local.add(ownTopBar);
+	    }
+
+            local.add(Expanded(child: bodies[cts.ownIdx]));
+            local.add(div);
+
+	    own = Column(children: local);
+	 }
 
 	 Widget search = Column(
 	    children: <Widget>
 	    [ div
-	    , searchTopBar
 	    , Expanded(child: bodies[cts.searchIdx])
 	    , div
 	    ]
-	 );
-
-	 Widget favTopBar = AppBar(
-	    actions: _makeTabActions(ctx, cts.favIdx),
-	    title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
-	    leading: _makeAppBarLeading(isWide, cts.favIdx),
 	 );
 
          Widget fav;
@@ -7625,12 +7634,22 @@ class OccaseState extends State<Occase>
 	    , div
 	    ]);
 	 } else {
-	    fav = Column(children: <Widget>
-	    [ div
-	    , favTopBar
-	    , Expanded(child: bodies[cts.favIdx])
-	    , div
-	    ]);
+	    List<Widget> local = <Widget>[];
+            local.add(div);
+
+	    if (_newSearchPressed) {
+	       Widget favTopBar = AppBar(
+		  actions: _makeTabActions(ctx, cts.favIdx),
+		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
+		  leading: _makeAppBarLeading(isWide, cts.favIdx),
+	       );
+	       local.add(favTopBar);
+	    }
+
+	    local.add(Expanded(child: bodies[cts.favIdx]));
+            local.add(div);
+
+	    fav = Column(children: local);
 	 }
 
 	 VerticalDivider vdiv = VerticalDivider(
