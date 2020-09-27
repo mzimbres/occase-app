@@ -1937,7 +1937,7 @@ List<Widget> makeFaButtons({
    if (isOnOwnChat) {
       ret[0] = SizedBox.shrink();
    } else {
-      ret[0] = makeFaButton(
+      ret[cts.ownIdx] = makeFaButton(
 	 nOwnPosts,
 	 onNewPost,
 	 () {onFwdSendButton(0);},
@@ -1946,7 +1946,7 @@ List<Widget> makeFaButtons({
       );
    }
 
-   ret[1] = makeFAButtonMiddleScreen(
+   ret[cts.searchIdx] = makeFAButtonMiddleScreen(
       newSearchPressed: newSearchPressed,
       isWide: isWide,
       hasFavPosts: hasFavPosts,
@@ -1954,7 +1954,7 @@ List<Widget> makeFaButtons({
       onGoToSearch: onGoToSearch,
    );
 
-   ret[2] = makeFaButton(
+   ret[cts.favIdx] = makeFaButton(
       -1,
       null,
       () {onFwdSendButton(2);},
@@ -1972,7 +1972,13 @@ Widget makeFAButtonMiddleScreen({
    final bool hasPosts,
    final OnPressedF00 onGoToSearch,
 }) {
-   if (newSearchPressed || !hasPosts)
+   if (!isWide && (newSearchPressed || !hasPosts))
+      return SizedBox.shrink();
+
+   if (isWide && newSearchPressed)
+      return SizedBox.shrink();
+
+   if (isWide && !hasFavPosts)
       return SizedBox.shrink();
 
    return FloatingActionButton(
@@ -4363,7 +4369,7 @@ Widget makeEmptyTabText(String msg)
 
 Widget makeOnEmptyBodyMsg({
    final List<String> message,
-   final List<String> buttonMsgs,
+   final String buttonName,
    final OnPressedF00 onPressed = null,
 }) {
    if (onPressed == null)
@@ -4371,7 +4377,7 @@ Widget makeOnEmptyBodyMsg({
 
    Widget button = createRaisedButton(
       onPressed: onPressed,
-      text: buttonMsgs[0],
+      text: buttonName,
       color: stl.colorScheme.secondary,
       textColor: stl.colorScheme.onSecondary,
    );
@@ -4379,6 +4385,7 @@ Widget makeOnEmptyBodyMsg({
    return Center(
       child: Column(
 	 mainAxisAlignment: MainAxisAlignment.center,
+	 crossAxisAlignment: CrossAxisAlignment.center,
          children: <Widget>
 	 [ makeEmptyTabText(message.first)
 	 , button
@@ -4396,60 +4403,80 @@ Widget makeSearchInitTab({
    final OnPressedF00 onLastestPostsPressed,
 }) {
    const double width = 150;
+
+   if (isWide) {
+      List<Widget> list = <Widget>[];
+      list.add(makeEmptyTabText(msgs[1]));
+
+      Widget tmp = Padding(
+	 padding: EdgeInsets.only(bottom: 30),
+	 child: createRaisedButton(
+	    onPressed: onLastestPostsPressed,
+	    text: buttonNames[1],
+	    color: stl.colorScheme.secondary,
+	    textColor: stl.colorScheme.onSecondary,
+	    minWidth: width,
+	 ),
+      );
+
+      list.add(tmp);
+
+      return Center(
+	 child: Column(
+	    mainAxisAlignment: MainAxisAlignment.center,
+	    crossAxisAlignment: CrossAxisAlignment.center,
+	    children: list,
+	 ),
+      );
+   }
    List<Widget> list = <Widget>[];
+   list.add(makeEmptyTabText(msgs[0]));
 
-   if (!isWide) {
-      list.add(makeEmptyTabText(msgs[0]));
+   Widget w1 = createRaisedButton(
+      onPressed: onCreateAd,
+      text: buttonNames[0],
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
+      minWidth: width,
+   );
 
-      Widget goToNewPost = createRaisedButton(
-	 onPressed: onCreateAd,
-	 text: buttonNames[0],
+   list.add(w1);
+
+   list.add(makeEmptyTabText(msgs[1]));
+
+   Widget w2 = Padding(
+      padding: EdgeInsets.only(bottom: 30),
+      child: createRaisedButton(
+	 onPressed: onLastestPostsPressed,
+	 text: buttonNames[1],
 	 color: stl.colorScheme.secondary,
 	 textColor: stl.colorScheme.onSecondary,
 	 minWidth: width,
-      );
-
-      list.add(goToNewPost);
-   }
-
-   Widget newSearchText = makeEmptyTabText(msgs[1]);
-   list.add(newSearchText);
-
-   Widget goToSearch = createRaisedButton(
-      onPressed: onGoToSearch,
-      text: buttonNames[1],
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-      minWidth: width,
-   );
-
-
-   Widget seeLatest = createRaisedButton(
-      onPressed: onLastestPostsPressed,
-      text: buttonNames[2],
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-      minWidth: width,
-   );
-
-   Widget tmp = Padding(
-      padding: EdgeInsets.only(bottom: 30),
-      child: Row(
-	  mainAxisAlignment: MainAxisAlignment.center,
-	  crossAxisAlignment: CrossAxisAlignment.center,
-	  children: <Widget>
-	  [ Padding(child: seeLatest, padding: EdgeInsets.only(right: 20))
-	  , goToSearch
-	  ]
       ),
    );
 
-   list.add(tmp);
+   list.add(w2);
+
+   list.add(makeEmptyTabText(msgs[2]));
+
+   Widget w3 = Padding(
+	 padding: EdgeInsets.only(bottom: 30),
+	 child: createRaisedButton(
+	 onPressed: onGoToSearch,
+	 text: buttonNames[2],
+	 color: stl.colorScheme.secondary,
+	 textColor: stl.colorScheme.onSecondary,
+	 minWidth: width,
+      ),
+   );
+
+   list.add(w3);
 
    return Center(
       child: Column(
 	 mainAxisAlignment: MainAxisAlignment.center,
-         children: list,
+	 crossAxisAlignment: CrossAxisAlignment.center,
+	 children: list,
       ),
    );
 }
@@ -4495,15 +4522,15 @@ Widget makeSearchResultPosts({
       },
       itemBuilder: (BuildContext ctx, int i)
       {
-	 if (i == posts.length)
-	    return makeSearchInitTab(
-	       isWide: isWide,
-	       msgs: g.param.onEmptySeaMsg,
-	       buttonNames: g.param.onEmptySeaButtonNames,
-	       onCreateAd: isWide ? null : onCreateAd,
-	       onGoToSearch: onGoToSearch,
-	       onLastestPostsPressed: onLatestPostsPressed,
-	    );
+	 //if (i == posts.length)
+	 //   return makeSearchInitTab(
+	 //      isWide: isWide,
+	 //      msgs: g.param.onEmptySeaMsg,
+	 //      buttonNames: g.param.onEmptySeaButtonNames,
+	 //      onCreateAd: isWide ? null : onCreateAd,
+	 //      onGoToSearch: onGoToSearch,
+	 //      onLastestPostsPressed: onLatestPostsPressed,
+	 //   );
 
 	 return PostWidget(
 	    tab: cts.searchIdx,
@@ -4921,15 +4948,15 @@ Widget makeTabDefaultWidget({
       if (tab == cts.ownIdx)
 	 return makeOnEmptyBodyMsg(
 	    message: g.param.onEmptyOwnMsg,
-	    buttonMsgs: g.param.onEmptyOwnButtonNames,
+	    buttonName: g.param.onEmptyOwnButtonNames[0],
 	    onPressed: onCreateAd,
 	 );
 
       if (tab == cts.favIdx)
 	 return makeOnEmptyBodyMsg(
 	    message: g.param.onEmptyFavMsg,
-	    buttonMsgs: g.param.onEmptyOwnButtonNames,
-	    onPressed: onCreateAd,
+	    buttonName: g.param.onEmptyFavButtonNames[0],
+	    onPressed: onGoToSearch,
 	 );
    } else {
       return makeSearchInitTab(
@@ -4980,18 +5007,9 @@ Widget makeChatTab({
          right: stl.postListViewSidePadding,
          top: stl.postListViewTopPadding,
       ),
-      itemCount: posts.length + 1,
+      itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
       {
-	 if (i == posts.length)
-	    return makeTabDefaultWidget(
-	       isWide: isWide,
-	       tab: tab,
-	       onCreateAd: onCreateAd,
-	       onGoToSearch: onGoToSearch,
-	       onLatestPostsPressed: onLatestPostsPressed,
-	    );
-
          OnPressedF00 onPinPost2 = () {onPinPost(i);};
          OnPressedF00 onDelPost2 = () {onDelPost(i);};
          OnPressedF01 onExpandImg2 = (int j) {onExpandImg(i, j);};
@@ -7329,7 +7347,7 @@ class OccaseState extends State<Occase>
 	 lpChatMsgs: _lpChatMsgs,
 	 onNewPost: _newPostPressed ? null : _onCreateAd,
 	 onFwdSendButton: _onFwdSendButton,
-	 onGoToSearch: _appState.posts.isEmpty ? null : _onGoToSearch,
+	 onGoToSearch: _onGoToSearch,
 	 nPosts: _appState.posts.length,
       );
    }
@@ -7637,7 +7655,7 @@ class OccaseState extends State<Occase>
 	    List<Widget> local = <Widget>[];
             local.add(div);
 
-	    if (_newSearchPressed) {
+	    if (_newSearchPressed || _appState.favPosts.isNotEmpty) {
 	       Widget favTopBar = AppBar(
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
