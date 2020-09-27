@@ -90,6 +90,7 @@ const double postListViewSidePadding = 0.0;
 const double chatListTilePadding = 6.0;
 
 const double cornerRadius = 8.0;
+const double buttonMinWidth = 150;
 
 const EdgeInsets postChatPadding = const EdgeInsets.symmetric(vertical: 10.0);
 

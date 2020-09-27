@@ -550,7 +550,7 @@ Widget makeInfoScreen(
    Column col = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>
-      [ makeHiddenButton(onHiddenButtonLP, Colors.white),
+      [ makeHiddenButton(onHiddenButtonLP, stl.backgroundColor),
         RaisedButton(
 	    onPressed: onSendEmail,
 	    child: Text(g.param.supportEmail,
@@ -561,7 +561,7 @@ Widget makeInfoScreen(
 	       ),
 	    ),
 	 ),
-	 makeHiddenButton((){}, Colors.white),
+	 makeHiddenButton((){}, stl.backgroundColor),
       ],
    );
 
@@ -4351,45 +4351,63 @@ Widget makePostDetailsWdg({
    return putPostElemOnCard(list: rows, padding: 0.0);
 }
 
+Widget makeDefaultTextWidget({String text})
+{
+   return Text(text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+	 fontSize: stl.bigFontSize,
+	 color: stl.colorScheme.primary,
+      ),
+   );
+}
+
 Widget makeEmptyTabText(String msg)
 {
    return Center(
       child: Padding(
 	 padding: EdgeInsets.all(40.0),
-	 child: Text(msg,
-	    textAlign: TextAlign.center,
-	    style: TextStyle(
-	       fontSize: stl.bigFontSize,
-	       color: stl.colorScheme.primary,
-	    ),
-	 ),
+	 child: makeDefaultTextWidget(text: msg),
       ),
    );
 }
 
-Widget makeOnEmptyBodyMsg({
-   final List<String> message,
-   final String buttonName,
-   final OnPressedF00 onPressed = null,
-}) {
-   if (onPressed == null)
-      return makeEmptyTabText(message.first);
-
-   Widget button = createRaisedButton(
-      onPressed: onPressed,
-      text: buttonName,
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-   );
-
+Widget makeDefaultWidgetCard({
+   double width = stl.buttonMinWidth,
+   String buttonName,
+   String description,
+   final OnPressedF00 onPressed,
+})
+{
    return Center(
-      child: Column(
-	 mainAxisAlignment: MainAxisAlignment.center,
-	 crossAxisAlignment: CrossAxisAlignment.center,
-         children: <Widget>
-	 [ makeEmptyTabText(message.first)
-	 , button
-	 ],
+	 child:Card(
+	 color: Colors.white,
+	 margin: EdgeInsets.only(top: 15, bottom: 15, left: 30, right: 30),
+	 elevation: 2,
+	 shape: RoundedRectangleBorder(
+	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
+	 ),
+	 child: Padding(
+	    padding: EdgeInsets.all(10),
+	    child: Column(
+	       mainAxisAlignment: MainAxisAlignment.center,
+	       crossAxisAlignment: CrossAxisAlignment.center,
+	       mainAxisSize: MainAxisSize.min,
+	       children: <Widget>
+	       [ makeDefaultTextWidget(text: description)
+	       , Padding(
+	       	    padding: EdgeInsets.only(top: 10),
+	       	    child: createRaisedButton(
+	       	       onPressed: onPressed,
+	       	       text: buttonName,
+	       	       color: stl.colorScheme.secondary,
+	       	       textColor: stl.colorScheme.onSecondary,
+	       	       minWidth: width,
+	       	    ),
+	         ),
+	       ],
+	    ),
+	 ),
       ),
    );
 }
@@ -4402,81 +4420,36 @@ Widget makeSearchInitTab({
    final OnPressedF00 onGoToSearch,
    final OnPressedF00 onLastestPostsPressed,
 }) {
-   const double width = 150;
-
-   if (isWide) {
-      List<Widget> list = <Widget>[];
-      list.add(makeEmptyTabText(msgs[1]));
-
-      Widget tmp = Padding(
-	 padding: EdgeInsets.only(bottom: 30),
-	 child: createRaisedButton(
-	    onPressed: onLastestPostsPressed,
-	    text: buttonNames[1],
-	    color: stl.colorScheme.secondary,
-	    textColor: stl.colorScheme.onSecondary,
-	    minWidth: width,
-	 ),
-      );
-
-      list.add(tmp);
-
-      return Center(
-	 child: Column(
-	    mainAxisAlignment: MainAxisAlignment.center,
-	    crossAxisAlignment: CrossAxisAlignment.center,
-	    children: list,
-	 ),
-      );
-   }
-   List<Widget> list = <Widget>[];
-   list.add(makeEmptyTabText(msgs[0]));
-
-   Widget w1 = createRaisedButton(
-      onPressed: onCreateAd,
-      text: buttonNames[0],
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-      minWidth: width,
-   );
-
-   list.add(w1);
-
-   list.add(makeEmptyTabText(msgs[1]));
-
-   Widget w2 = Padding(
-      padding: EdgeInsets.only(bottom: 30),
-      child: createRaisedButton(
+   if (isWide)
+      return makeDefaultWidgetCard(
+	 description: msgs[1],
+	 buttonName: buttonNames[1],
 	 onPressed: onLastestPostsPressed,
-	 text: buttonNames[1],
-	 color: stl.colorScheme.secondary,
-	 textColor: stl.colorScheme.onSecondary,
-	 minWidth: width,
-      ),
+      );
+
+   Widget w0 = makeDefaultWidgetCard(
+      description: msgs[0],
+      buttonName: buttonNames[0],
+      onPressed: onCreateAd,
    );
 
-   list.add(w2);
-
-   list.add(makeEmptyTabText(msgs[2]));
-
-   Widget w3 = Padding(
-	 padding: EdgeInsets.only(bottom: 30),
-	 child: createRaisedButton(
-	 onPressed: onGoToSearch,
-	 text: buttonNames[2],
-	 color: stl.colorScheme.secondary,
-	 textColor: stl.colorScheme.onSecondary,
-	 minWidth: width,
-      ),
+   Widget w1 = makeDefaultWidgetCard(
+      description: msgs[1],
+      buttonName: buttonNames[1],
+      onPressed: onLastestPostsPressed,
    );
 
-   list.add(w3);
+   Widget w2 = makeDefaultWidgetCard(
+      description: msgs[2],
+      buttonName: buttonNames[2],
+      onPressed: onGoToSearch,
+   );
 
    return Center(
       child: Column(
 	 mainAxisAlignment: MainAxisAlignment.center,
 	 crossAxisAlignment: CrossAxisAlignment.center,
-	 children: list,
+	 children: <Widget>[w0, w1, w2],
       ),
    );
 }
@@ -4522,16 +4495,6 @@ Widget makeSearchResultPosts({
       },
       itemBuilder: (BuildContext ctx, int i)
       {
-	 //if (i == posts.length)
-	 //   return makeSearchInitTab(
-	 //      isWide: isWide,
-	 //      msgs: g.param.onEmptySeaMsg,
-	 //      buttonNames: g.param.onEmptySeaButtonNames,
-	 //      onCreateAd: isWide ? null : onCreateAd,
-	 //      onGoToSearch: onGoToSearch,
-	 //      onLastestPostsPressed: onLatestPostsPressed,
-	 //   );
-
 	 return PostWidget(
 	    tab: cts.searchIdx,
 	    post: posts[i],
@@ -4946,15 +4909,15 @@ Widget makeTabDefaultWidget({
 }) {
    if (isWide) {
       if (tab == cts.ownIdx)
-	 return makeOnEmptyBodyMsg(
-	    message: g.param.onEmptyOwnMsg,
+	 return makeDefaultWidgetCard(
+	    description: g.param.onEmptyOwnMsg[0],
 	    buttonName: g.param.onEmptyOwnButtonNames[0],
 	    onPressed: onCreateAd,
 	 );
 
       if (tab == cts.favIdx)
-	 return makeOnEmptyBodyMsg(
-	    message: g.param.onEmptyFavMsg,
+	 return makeDefaultWidgetCard(
+	    description: g.param.onEmptyFavMsg[0],
 	    buttonName: g.param.onEmptyFavButtonNames[0],
 	    onPressed: onGoToSearch,
 	 );
@@ -7626,6 +7589,11 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.ownIdx),
 		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
+		  backgroundColor: Colors.grey,
+		  primary: false,
+		  shape: RoundedRectangleBorder(
+		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
+		  ),
 	       );
 	       local.add(ownTopBar);
 	    }
@@ -7660,6 +7628,11 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
 		  leading: _makeAppBarLeading(isWide, cts.favIdx),
+		  backgroundColor: Colors.grey,
+		  primary: false,
+		  shape: RoundedRectangleBorder(
+		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
+		  ),
 	       );
 	       local.add(favTopBar);
 	    }
