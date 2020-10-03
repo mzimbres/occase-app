@@ -77,3 +77,5 @@ const int favIdx = 2;
 const List<double> tabWidthRates = const <double>[0.33333, 0.33333, 0.33333];
 const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
 
+const int maxTreeDepth = 8;
+

@@ -725,7 +725,7 @@ Widget makeImgListView({
 	       url: post.images[l - i - 1],
 	       boxFit: boxFit,
 	    );
-	    wdgs.add(InteractiveViewer(child: tmp));
+	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (imgFiles != null && imgFiles.isNotEmpty) {
 	    Widget tmp = getImage(
@@ -736,7 +736,7 @@ Widget makeImgListView({
 	       filterQuality: FilterQuality.high,
 	    );
 
-	    wdgs.add(InteractiveViewer(child: tmp));
+	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
 
 	    IconButton delIcon = IconButton(
 	       onPressed: (){onDelImg(i);},
@@ -1126,7 +1126,7 @@ Widget makeNewPostLT({
           backgroundColor: Colors.white,
       );
       
-   return ListTile(
+   Widget lt = ListTile(
        contentPadding: EdgeInsets.only(left: stl.leftIndent),
        leading: leading,
        title: Text(title,
@@ -1144,7 +1144,17 @@ Widget makeNewPostLT({
        onTap: onTap,
        enabled: true,
        isThreeLine: false,
-    );
+   );
+
+   return Card(
+      margin: const EdgeInsets.all(2),
+      color: Colors.blueGrey[100],
+      child: lt,
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
+      ),
+   );
 }
 
 ListView makeNewPostListView(List<Widget> list)
@@ -1293,7 +1303,6 @@ List<Widget> makeNewPostWdgs({
       );
 
       list.add(location);
-      list.add(stl.newPostDivider);
    }
 
    {  // Product
@@ -1309,7 +1318,6 @@ List<Widget> makeNewPostWdgs({
       );
 
       list.add(product);
-      list.add(stl.newPostDivider);
    }
 
    // ---------------------------------------------------
@@ -1332,7 +1340,6 @@ List<Widget> makeNewPostWdgs({
       //      ),
       //   ),
       //);
-      //list.add(stl.newPostDivider);
    }
 
    {  // Price, kilometer, year
@@ -1390,7 +1397,6 @@ List<Widget> makeNewPostWdgs({
 	 );
 
 	 list.add(exDetailWdg);
-	 list.add(stl.newPostDivider);
       }
    }
 
@@ -1422,7 +1428,6 @@ List<Widget> makeNewPostWdgs({
 	 );
 
 	 list.add(inDetailWdg);
-	 list.add(stl.newPostDivider);
       }
    }
 
@@ -3217,7 +3222,6 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 
 Card putPostElemOnCard({
    List<Widget> list,
-   double padding,
    Color backgroundColor = stl.backgroundColor, 
 }) {
    Column col = Column(
@@ -3231,10 +3235,7 @@ Card putPostElemOnCard({
       //color: stl.colorScheme.background,
       color: backgroundColor,
       margin: EdgeInsets.all(0.0),
-      child: Padding(
-         child: col,
-         padding: EdgeInsets.all(padding),
-      ),
+      child: col,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
             Radius.circular(0.0)
@@ -3385,11 +3386,12 @@ Widget makeNewPostDialogWdg({
    final double width,
    final double height,
    final Widget title,
-   final double indent,
+   final double contentPadding,
    final List<Widget> list,
    final List<Widget> actions,
    final double diagBorderRadius = stl.cornerRadius,
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: stl.alertDialogInsetPadding, vertical: stl.alertDialogInsetPadding),
+   final Color backgroundColor = stl.backgroundColor,
 }) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -3399,7 +3401,6 @@ Widget makeNewPostDialogWdg({
    );
 
    Widget content = Container(
-      //child: col,
       child: SingleChildScrollView(
          scrollDirection: Axis.vertical,
          reverse: false,
@@ -3418,10 +3419,10 @@ Widget makeNewPostDialogWdg({
 
    return AlertDialog(
       title: title,
-      contentPadding: EdgeInsets.all(indent),
+      contentPadding: EdgeInsets.all(contentPadding),
       actions: actions,
       insetPadding: insetPadding,
-      backgroundColor: stl.colorScheme.background,
+      backgroundColor: backgroundColor,
       content: content,
       shape: RoundedRectangleBorder(
 	 borderRadius: BorderRadius.all(Radius.circular(diagBorderRadius)),
@@ -3487,7 +3488,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
-	 indent: stl.newPostPadding,
+	 contentPadding: stl.newPostPadding,
 	 list: list,
 	 actions: <FlatButton>[ok],
       );
@@ -3560,7 +3561,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
-	 indent: stl.newPostPadding,
+	 contentPadding: stl.newPostPadding,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
       );
@@ -3778,7 +3779,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	 width: makeDialogWidth(ctx, cts.ownIdx),
 	 height: makeDialogHeight(ctx, cts.ownIdx),
 	 title: titleWdg,
-	 indent: stl.newPostPadding,
+	 contentPadding: stl.newPostPadding,
 	 list: locWdgs,
 	 actions: <FlatButton>[back, cancel, ok],
       );
@@ -3876,7 +3877,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       final int tab = cts.searchIdx;
       Widget detailsWdg = makePostDetailsWdg(
 	 ctx: ctx,
-	 tab: tab,
+	 tab: widget.tab,
 	 post: widget.post,
 	 locRootNode: widget.locRootNode,
 	 prodRootNode: widget.prodRootNode,
@@ -3923,18 +3924,21 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 actions.add(SizedBox(width: width, child: tmp));
       }
 
-      const double margin = 0.0;
+      const double margin = 0;
       const double insetPadding = 0.0;
       final double height = makeMaxHeight(ctx);
+      final Color backColor = widget.tab == cts.searchIdx ?
+	    stl.colorScheme.primary : stl.colorScheme.background;
 
       Widget ret = makeNewPostDialogWdg(
 	 width: width,
 	 height: height,
 	 title: null,
-	 indent: margin,
+	 contentPadding: margin,
 	 diagBorderRadius: 0.0,
 	 list: <Widget>[detailsWdg],
 	 actions: actions,
+	 backgroundColor: backColor,
 	 insetPadding: const EdgeInsets.only(
 	    left: 0.0,
 	    right: 0.0,
@@ -4328,7 +4332,6 @@ Widget makePostDetailsWdg({
 
    rows.add(putPostElemOnCard(
 	 list: stats,
-	 padding: 4.0,
 	 backgroundColor: stl.colorScheme.secondary,
    ));
 
@@ -4344,11 +4347,11 @@ Widget makePostDetailsWdg({
       inDetailsRootNode: inDetailsRootNode,
    );
 
-   rows.add(putPostElemOnCard(list: tmp, padding: 4.0));
+   rows.add(putPostElemOnCard(list: tmp));
 
    //--------------------------------------------------------------------------
 
-   return putPostElemOnCard(list: rows, padding: 0.0);
+   return putPostElemOnCard(list: rows);
 }
 
 Widget makeDefaultTextWidget({String text})
@@ -4357,7 +4360,8 @@ Widget makeDefaultTextWidget({String text})
       textAlign: TextAlign.center,
       style: TextStyle(
 	 fontSize: stl.bigFontSize,
-	 color: stl.colorScheme.primary,
+	 color: Colors.grey[300],
+	 fontWeight: FontWeight.normal,
       ),
    );
 }
@@ -4373,42 +4377,53 @@ Widget makeEmptyTabText(String msg)
 }
 
 Widget makeDefaultWidgetCard({
+   bool isWide,
    double width = stl.buttonMinWidth,
    String buttonName,
    String description,
    final OnPressedF00 onPressed,
 })
 {
-   return Center(
-	 child:Card(
-	 color: Colors.white,
-	 margin: EdgeInsets.only(top: 15, bottom: 15, left: 30, right: 30),
-	 elevation: 2,
-	 shape: RoundedRectangleBorder(
-	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
-	 ),
-	 child: Padding(
-	    padding: EdgeInsets.all(10),
-	    child: Column(
-	       mainAxisAlignment: MainAxisAlignment.center,
-	       crossAxisAlignment: CrossAxisAlignment.center,
-	       mainAxisSize: MainAxisSize.min,
-	       children: <Widget>
-	       [ makeDefaultTextWidget(text: description)
-	       , Padding(
-	       	    padding: EdgeInsets.only(top: 10),
-	       	    child: createRaisedButton(
-	       	       onPressed: onPressed,
-	       	       text: buttonName,
-	       	       color: stl.colorScheme.secondary,
-	       	       textColor: stl.colorScheme.onSecondary,
-	       	       minWidth: width,
-	       	    ),
-	         ),
-	       ],
-	    ),
-	 ),
+   Widget text = makeDefaultTextWidget(text: description);
+
+   final double padding = 30;
+   Widget card = Card(
+      color: stl.colorScheme.primary,
+      margin: EdgeInsets.only(top: 30, bottom: 3, left: 30, right: 30),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+	 borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
       ),
+      child: Padding(
+	 padding: EdgeInsets.all(padding),
+	 child: text,
+      ),
+   );
+
+   Widget button = createRaisedButton(
+      onPressed: onPressed,
+      text: buttonName,
+      color: stl.colorScheme.secondary,
+      textColor: stl.colorScheme.onSecondary,
+      minWidth: width,
+   );
+
+   final double top = isWide ? 100 : 0;
+   Widget col = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ card
+      , Padding(
+	   padding: EdgeInsets.only(top: top),
+	   child: button,
+	),
+      ],
+   );
+
+   return Center(
+      child: col,
    );
 }
 
@@ -4422,24 +4437,28 @@ Widget makeSearchInitTab({
 }) {
    if (isWide)
       return makeDefaultWidgetCard(
+	 isWide: isWide,
 	 description: msgs[1],
 	 buttonName: buttonNames[1],
 	 onPressed: onLastestPostsPressed,
       );
 
    Widget w0 = makeDefaultWidgetCard(
+      isWide: isWide,
       description: msgs[0],
       buttonName: buttonNames[0],
       onPressed: onCreateAd,
    );
 
    Widget w1 = makeDefaultWidgetCard(
+      isWide: isWide,
       description: msgs[1],
       buttonName: buttonNames[1],
       onPressed: onLastestPostsPressed,
    );
 
    Widget w2 = makeDefaultWidgetCard(
+      isWide: isWide,
       description: msgs[2],
       buttonName: buttonNames[2],
       onPressed: onGoToSearch,
@@ -4910,6 +4929,7 @@ Widget makeTabDefaultWidget({
    if (isWide) {
       if (tab == cts.ownIdx)
 	 return makeDefaultWidgetCard(
+	    isWide: isWide,
 	    description: g.param.onEmptyOwnMsg[0],
 	    buttonName: g.param.onEmptyOwnButtonNames[0],
 	    onPressed: onCreateAd,
@@ -4917,6 +4937,7 @@ Widget makeTabDefaultWidget({
 
       if (tab == cts.favIdx)
 	 return makeDefaultWidgetCard(
+	    isWide: isWide,
 	    description: g.param.onEmptyFavMsg[0],
 	    buttonName: g.param.onEmptyFavButtonNames[0],
 	    onPressed: onGoToSearch,
@@ -5331,17 +5352,14 @@ class OccaseState extends State<Occase>
       g.param = Parameters.fromJson(jsonDecode(text));
       await initializeDateFormatting(g.param.localeName, null);
 
-      final String locTreeStr = await rootBundle.loadString('data/locations.comp.tree');
-      _locRootNode = makeTree(locTreeStr);
+      final String configTree = await rootBundle.loadString('data/config.tree.comp');
+      Node node = parseTree(configTree.split('\n'));
+      assert(node.children.length == 4);
 
-      final String prodTreeStr = await rootBundle.loadString('data/products.comp.tree');
-      _prodRootNode = makeTree(prodTreeStr);
-
-      final String exDetailsStr = await rootBundle.loadString('data/ex_details.comp.tree');
-      _exDetailsRoot = makeTree(exDetailsStr);
-
-      final String inDetailsStr = await rootBundle.loadString('data/in_details.comp.tree');
-      _inDetailsRoot = makeTree(inDetailsStr);
+      _locRootNode = node.children[0];
+      _prodRootNode = node.children[1];
+      _exDetailsRoot = node.children[2];
+      _inDetailsRoot = node.children[3];
 
       await _appState.load();
 
@@ -6891,6 +6909,8 @@ class OccaseState extends State<Occase>
    {
       _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
 
+      if (isWide)
+	 _newSearchPressed = true;
       prepareNewPost(cts.searchIdx);
       _onSearch(isWide, 10);
       setState(() { });
@@ -7279,7 +7299,7 @@ class OccaseState extends State<Occase>
 	    onPostPressed: _onPostClick,
 	    onCreateAd: _onCreateAd,
 	    onGoToSearch: _onGoToSearch,
-	    onLatestPostsPressed: () {_onSearch(isWide, 10);},
+	    onLatestPostsPressed: () {_onLatestPostsPressed(isWide);},
 	 ),
       );
 
@@ -7586,6 +7606,7 @@ class OccaseState extends State<Occase>
 
 	    if (_newPostPressed || _appState.ownPosts.isNotEmpty) {
 	       Widget ownTopBar = AppBar(
+		  elevation: 1,
 		  actions: _makeTabActions(ctx, cts.ownIdx),
 		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
@@ -7625,6 +7646,7 @@ class OccaseState extends State<Occase>
 
 	    if (_newSearchPressed || _appState.favPosts.isNotEmpty) {
 	       Widget favTopBar = AppBar(
+		  elevation: 1,
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
 		  leading: _makeAppBarLeading(isWide, cts.favIdx),

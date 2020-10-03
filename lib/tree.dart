@@ -4,27 +4,21 @@ import 'package:occase/sql.dart' as sql;
 import 'package:occase/constants.dart' as cts;
 
 class NodeInfo {
-   String code;
-   String name;
    int depth;
-   int leafReach;
-   int index;
+   String name;
 
    NodeInfo({
-      this.code = '',
-      this.name = '',
       this.depth = -1,
-      this.leafReach = -1,
-      this.index = -1,
+      this.name = '',
    });
 }
 
-// To avoid using global variable for the language index I will will set them
-// lazily as they are used. Unfourtunately we cannot store the index only once
-// as the toString method has no argument.
+// To avoid using global variable for the language index I will will
+// set them lazily as they are used. Unfourtunately we cannot store
+// the index only once as the toString method has no argument.
 class Node {
    List<String> _name = <String>[''];
-   List<int> code;
+   List<int> _code = List<int>();
    int leafCounter;
    int leafReach;
 
@@ -34,12 +28,19 @@ class Node {
 
    Node(String rawName, // In the form a:b:c
    { this.leafReach = 0
-   , this.code
+   , List<int> code
    , this.leafCounter = 0
    })
    {
+      _code = code;
       _name = rawName.split(':');
       children = List<Node>();
+   }
+
+   List<int> get code
+   {
+      _code.removeWhere((o) => o == -1);
+      return _code;
    }
 
    String makeRawName()
@@ -132,6 +133,9 @@ List<String> loadNames({
          continue;
       }
 
+      if (code[i] == -1)
+	 return names;
+
       Node next = rootNode.children[code[i]];
       if (i >= fromDepth)
 	 names.add(next.name(languageIndex));
@@ -185,68 +189,65 @@ NodeInfo parseFields(String line)
    );
 }
 
-Node parseTree(List<NodeInfo> elems)
+Node parseTree(List<String> lines)
 {
-   // The first pass finds out the tree depth.
-   final int menuDepth = findTreeDepth(elems);
-   assert(menuDepth != 0);
-
-   List<int> codes = List.filled(menuDepth, -1);
+   // Make sure cts.maxTreeDepth is enough.
+   List<int> codes = List.filled(cts.maxTreeDepth, -1);
 
    List<Node> st = <Node>[];
    int lastDepth = 0;
    Node root = Node('');
-   for (NodeInfo me in elems) {
-      //print('${me.depth}; ${me.name}; ${me.code}; ${me.leafReach}; ${me.index}');
+   for (String line in lines) {
+      if (line.isEmpty)
+	 continue;
+
+      NodeInfo ni = parseFields(line);
       if (st.isEmpty) {
-         root.setName(me.name);
-         root.code = List<int>();
-         root.leafReach = 0;
+         root.setName(ni.name);
          st.add(root);
          continue;
       }
 
-      codes[me.depth - 1] += 1;
-      for (int i = me.depth; i < codes.length; ++i)
+      codes[ni.depth - 1] += 1;
+      for (int i = ni.depth; i < codes.length; ++i)
          codes[i] = -1;
 
-      List<int> code = List<int>.from(codes);
-      code.removeWhere((o) => o == -1);
+      List<int> code = List<int>.from(codes.getRange(1, codes.length));
 
       // TODO: The implementation in C++ uses push_front in the deque.
       // We should do the same here, otherwise the nodes appear in the
       // wrong order.
-      if (me.depth > lastDepth) {
-         if (lastDepth + 1 != me.depth) {
-            print('Error on node: $lastDepth -- ${me.depth};${me.name};${me.leafReach}');
+      if (ni.depth > lastDepth) {
+         if (lastDepth + 1 != ni.depth) {
+            print('Error on node: $lastDepth -- ${ni.depth};${ni.name}');
             return Node('');
          }
 
          // We found the child of the last node pushed on the stack.
-         Node p = Node(me.name, code: code);
+         Node p = Node(ni.name, code: code);
 
          st.last.children.add(p);
          st.add(p);
          ++lastDepth;
-      } else if (me.depth < lastDepth) {
+      } else if (ni.depth < lastDepth) {
          // Now we have to pop that number of nodes from the stack
          // until we get to the node that should be the parent of the
          // current line.
-         int deltaDepth = lastDepth - me.depth;
+         int deltaDepth = lastDepth - ni.depth;
          for (int i = 0; i < deltaDepth; ++i)
             st.removeLast();
 
          st.removeLast();
 
          // Now we can add the new node.
-         Node p = Node(me.name, code: code);
+         Node p = Node(ni.name, code: code);
          st.last.children.add(p);
          st.add(p);
 
-         lastDepth = me.depth;
+         lastDepth = ni.depth;
       } else {
          st.removeLast();
-         Node p = Node(me.name, code: code);
+         Node p = Node(ni.name, code: code);
          st.last.children.add(p);
          st.add(p);
          // Last depth stays equal.
@@ -254,19 +255,6 @@ Node parseTree(List<NodeInfo> elems)
    }
 
    return root;
-}
-
-Node makeTree(String tree)
-{
-   List<String> lines = tree.split('\n');
-   lines.removeWhere((String o) {return o.isEmpty;});
-
-   List<NodeInfo> elems = List.generate(lines.length, (int i)
-      { return parseFields(lines[i]); });
-
-   Node node = parseTree(elems);
-   //loadLeafCounters(node);
-   return node;
 }
 
 // Counts all leaf counters of the children. If the leaf counter of a child is
@@ -544,11 +532,8 @@ makeMenuElems(final Node root, int index, int maxDepth)
    while (current != null) {
       if (current.code.length <= maxDepth) {
          NodeInfo me = NodeInfo(
-            code: current.code.join('.'),
             name: current.makeRawName(),
             depth: current.code.length, 
-            leafReach: current.leafReach, 
-            index: index, 
          );
          elems.add(me);
       }
