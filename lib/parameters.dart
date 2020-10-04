@@ -92,10 +92,10 @@ class Parameters {
    List<List<String>> _statsTitleAndFields = <List<String>>[<String>['']];
    List<List<String>> _newPostSectionNames = <List<String>>[<String>['']];
    List<List<String>> _onEmptyOwnMsg = <List<String>>[<String>['']];
-   List<List<String>> _onEmptySeaMsg = <List<String>>[<String>['']];
+   List<List<String>> _onEmptySeaMsg = <List<String>>[<String>['', '', '', '']];
    List<List<String>> _onEmptyFavMsg = <List<String>>[<String>['']];
    List<List<String>> _onEmptyOwnButtonNames = <List<String>>[<String>['']];
-   List<List<String>> _onEmptySeaButtonNames = <List<String>>[<String>['']];
+   List<List<String>> _onEmptySeaButtonNames = <List<String>>[<String>['', '', '', '']];
    List<List<String>> _onEmptyFavButtonNames = <List<String>>[<String>['']];
 
    List<int> rangesMinMax;

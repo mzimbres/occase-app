@@ -1688,7 +1688,7 @@ Widget makeSearchScreenWdg({
       Widget detail = makeNewPostInDetailLT(
 	 ctx: ctx,
 	 state: state,
-	 title: exDetailsRootNode.children[productIndex].children[detailIndex].name(g.param.langIdx),
+	 title: exDetailsRootNode.at(productIndex, detailIndex).name(g.param.langIdx),
 	 subtitle: subtitles.join(', '),
 	 details: details,
 	 onSetInDetail: onSearchDetail,
@@ -3148,7 +3148,7 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
    List<Widget> list = List<Widget>();
    list.add(makePostSectionTitle(g.param.postExDetailsTitle));
 
-   final int l1 = exDetailsRootNode.children[idx].children.length;
+   final int l1 = exDetailsRootNode.at1(idx).children.length;
    for (int i = 0; i < l1; ++i) {
       final int n = exDetailsRootNode.children[idx].children[i].children.length;
       final int k = post.exDetails[i];
@@ -3158,8 +3158,8 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
       list.add(
          makePostRowElem(
 	    ctx: ctx,
-            key: exDetailsRootNode.children[idx].children[i].name(g.param.langIdx),
-            value: exDetailsRootNode.children[idx].children[i].children[k].name(g.param.langIdx),
+            key: exDetailsRootNode.at(idx, i).name(g.param.langIdx),
+            value: exDetailsRootNode.at(idx, i).children[k].name(g.param.langIdx),
          ),
       );
    }
@@ -3201,16 +3201,16 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
    if (i == -1)
       return List<Widget>();
 
-   final int l1 = inDetailsRootNode.children[i].children.length;
+   final int l1 = inDetailsRootNode.at1(i).children.length;
    for (int j = 0; j < l1; ++j) {
       List<Widget> foo = makePostInRows(
-         inDetailsRootNode.children[i].children[j].children,
+         inDetailsRootNode.at(i, j).children,
          post.inDetails[j],
       );
 
       if (foo.length != 0) {
          all.add(makePostSectionTitle(
-               inDetailsRootNode.children[i].children[j].name(g.param.langIdx),
+	       inDetailsRootNode.at(i, j).name(g.param.langIdx),
             ),
          );
          all.addAll(foo);
@@ -5154,10 +5154,10 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
-   Node _locRootNode;
-   Node _prodRootNode;
-   Node _exDetailsRoot;
-   Node _inDetailsRoot;
+   Node _locRootNode = Node('');
+   Node _prodRootNode = Node('');
+   Node _exDetailsRoot = Node('');
+   Node _inDetailsRoot = Node('');
 
    AppState _appState;
 
@@ -5346,13 +5346,17 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _init() async
+   Future<void> _initTrees() async
    {
-      final String text = await rootBundle.loadString('data/parameters.txt');
-      g.param = Parameters.fromJson(jsonDecode(text));
-      await initializeDateFormatting(g.param.localeName, null);
+      final bool a = _locRootNode.children.isNotEmpty;
+      final bool b = _prodRootNode.children.isNotEmpty;
+      final bool c = _exDetailsRoot.children.isNotEmpty;
+      final bool d = _inDetailsRoot.children.isNotEmpty;
 
-      final String configTree = await rootBundle.loadString('data/config.tree.comp');
+      if (a || b || c || d)
+	 return;
+
+      final String configTree = await rootBundle.loadString('data/config.comp.tree.txt');
       Node node = parseTree(configTree.split('\n'));
       assert(node.children.length == 4);
 
@@ -5360,6 +5364,13 @@ class OccaseState extends State<Occase>
       _prodRootNode = node.children[1];
       _exDetailsRoot = node.children[2];
       _inDetailsRoot = node.children[3];
+   }
+
+   Future<void> _init() async
+   {
+      final String text = await rootBundle.loadString('data/parameters.txt');
+      g.param = Parameters.fromJson(jsonDecode(text));
+      await initializeDateFormatting(g.param.localeName, null);
 
       await _appState.load();
 
@@ -5666,8 +5677,10 @@ class OccaseState extends State<Occase>
       _posts[i].reset();
    }
 
-   void _onCreateAd()
+   Future<void> _onCreateAd() async
    {
+      await _initTrees();
+
       setState(() {
 	 _newPostPressed = true;
 	 prepareNewPost(cts.ownIdx);
@@ -6895,8 +6908,10 @@ class OccaseState extends State<Occase>
       }
    }
 
-   void _onGoToSearch()
+   Future<void> _onGoToSearch() async
    {
+      await _initTrees();
+
       _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
 
       setState(() {
@@ -6905,8 +6920,10 @@ class OccaseState extends State<Occase>
       });
    }
 
-   void _onLatestPostsPressed(bool isWide)
+   Future<void> _onLatestPostsPressed(bool isWide) async
    {
+      await _initTrees();
+
       _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
 
       if (isWide)
@@ -7491,15 +7508,15 @@ class OccaseState extends State<Occase>
    @override
    Widget build(BuildContext ctx)
    {
-      final bool mustWait =
-	 (_locRootNode   == null) ||
-	 (_prodRootNode  == null) ||
-         (_exDetailsRoot == null) ||
-         (_inDetailsRoot == null) ||
-         (g.param == null);
+      //final bool mustWait =
+      //   (_locRootNode   == null) ||
+      //   (_prodRootNode  == null) ||
+      //   (_exDetailsRoot == null) ||
+      //   (_inDetailsRoot == null) ||
+      //   (g.param == null);
 
-      if (mustWait)
-         return makeWaitLoadTreeScreen();
+      //if (mustWait)
+      //   return makeWaitLoadTreeScreen();
 
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);

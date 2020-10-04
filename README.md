@@ -62,3 +62,6 @@ Notifications
 
 DATA='{"notification": {"body": "this is a body","title": "this is a title"}, "priority": "high", "data": {"click_action": "FLUTTER_NOTIFICATION_CLICK", "id": "1", "status": "done"}, "to": "<FCM TOKEN>"}' 
 
+https://developers.google.com/web/fundamentals/primers/service-workers
+https://developers.google.com/web/updates/2015/03/push-notifications-on-the-open-web
+https://www.html5rocks.com/en/tutorials/workers/basics/

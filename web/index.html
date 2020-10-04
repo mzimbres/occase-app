@@ -1,19 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Autos und Gebrauchtwagen schnell kaufen und verkaufen mit Instant Messaging">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="app">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
   <meta name="theme-color" content="#434b79"/>
+
   <title>Occase: Autos und Gebrauchtwagen</title>
-  <link rel="preload" as="script" href="main.dart.js">
-  <link rel="preload" as="fetch" href="assets/data/ex_details.comp.tree" crossorigin>
-  <link rel="preload" as="fetch" href="assets/data/in_details.comp.tree" crossorigin>
-  <link rel="preload" as="fetch" href="assets/data/locations.comp.tree" crossorigin>
-  <link rel="preload" as="fetch" href="assets/data/products.comp.tree" crossorigin>
-  <link rel="preload" as="font" href="assets/fonts/MaterialIcons-Regular.otf" crossorigin="anonymous">
   <link rel="manifest" href="/manifest.json">
+
+  <link rel="preload" as="script" href="main.dart.js">
+  <link rel="preload" as="fetch" href="assets/data/config.comp.tree.txt" crossorigin>
+  <link rel="preload" as="fetch" href="assets/data/parameters.txt" crossorigin>
+  <link rel="preload" as="font" href="assets/fonts/MaterialIcons-Regular.otf" crossorigin="anonymous">
 </head>
+
 <body>
+  <!-- This script installs service_worker.js to provide PWA functionality to
+       application. For more information, see:
+       https://developers.google.com/web/fundamentals/primers/service-workers -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('flutter-first-frame', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js');
+      });
+    }
+  </script>
   <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>
