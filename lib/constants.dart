@@ -3,10 +3,11 @@
 // Some contants used to calculate widths and heights of widget and
 // tabs.
 
-const double tabMaxWidth = 450.0;
-const double postAvatarTabWidthRate = 1.0 / 3.0;
-const double imgWidth = tabMaxWidth;
-const double imgHeight = tabMaxWidth / 3.0;
+const double widgetMaxWidth = 450.0;
+const double imgWidth = widgetMaxWidth;
+const double imgHeight = widgetMaxWidth / 3.0;
+
+const double goldenRatio = 1.618033;
 
 //-------------------------------------------------------------------------------
 

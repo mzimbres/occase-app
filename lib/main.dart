@@ -58,7 +58,7 @@ typedef OnPressedF16 = void Function(String, int);
 
 bool isWideScreenImpl(double w)
 {
-   return (w - 14) > (3 * cts.tabMaxWidth);
+   return (w - 14) > (3 * cts.widgetMaxWidth);
 }
 
 double makeTabWidthImpl(double w, int tab)
@@ -75,9 +75,16 @@ double makeTabWidth(BuildContext ctx, int tab)
    return makeTabWidthImpl(w, tab);
 }
 
-double makeImgHeight(BuildContext ctx, int tab)
+double makeWidgetWidth(BuildContext ctx)
 {
-   return makeTabWidth(ctx, tab) / 1.618033;
+   final double w = MediaQuery.of(ctx).size.width;
+
+   return  w > cts.widgetMaxWidth ? cts.widgetMaxWidth : w;
+}
+
+double makeImgHeight(BuildContext ctx)
+{
+   return makeWidgetWidth(ctx) / cts.goldenRatio;
 }
 
 bool isWideScreen(BuildContext ctx)
@@ -86,54 +93,21 @@ bool isWideScreen(BuildContext ctx)
    return isWideScreenImpl(w);
 }
 
+// ------------------
+// Use flexible factor instead.
 double makePostAvatarWidth(BuildContext ctx)
 {
-   final double width = MediaQuery.of(ctx).size.width;
-
-   if (isWideScreenImpl(width))
-      return cts.tabMaxWidth / 3.0;
-
-   if (width > cts.tabMaxWidth)
-      return cts.tabMaxWidth / 3.0;
-
-   return width / 3.0;
+   final double w = makeWidgetWidth(ctx);
+   return w / (1 + cts.goldenRatio);
 }
 
 double makePostTextWidth(BuildContext ctx)
 {
-   final double imgWidth = makePostAvatarWidth(ctx);
-   return 2 * imgWidth;
+   final double w = makeWidgetWidth(ctx);
+   final double A = makePostAvatarWidth(ctx);
+   return w - A - 10;
 }
-
-double makePostWidgetWidth(BuildContext ctx)
-{
-   final double a = makePostAvatarWidth(ctx);
-   final double b = makePostTextWidth(ctx);
-   return a + b;
-}
-
-double makeDialogWidth(BuildContext ctx, int tab)
-{
-   double w = makeTabWidth(ctx, tab);
-   return 0.98 * w;
-}
-
-double makeDialogHeight(BuildContext ctx, int tab)
-{
-   double w = makeTabWidth(ctx, tab);
-   return 0.98 * w;
-}
-
-double makeMaxWidth(BuildContext ctx, int tab)
-{
-   final double w = MediaQuery.of(ctx).size.width;
-
-   if (isWideScreenImpl(w))
-      return makeTabWidthImpl(w, tab);
-
-   final double max = w > cts.tabMaxWidth ? cts.tabMaxWidth : w;
-   return max;
-}
+// ------------------
 
 double makeMaxHeight(BuildContext ctx)
 {
@@ -143,6 +117,20 @@ double makeMaxHeight(BuildContext ctx)
 Future<void> fcmOnBackgroundMessage(Map<String, dynamic> message) async
 {
   log("onBackgroundMessage: $message");
+}
+
+Widget imposeWidth({
+   Widget child,
+   double width,
+}) {
+   return Center(
+      child: ConstrainedBox(
+	 constraints: BoxConstraints(
+	    maxWidth: width,
+	 ),
+	 child: child,
+      ),
+   );
 }
 
 String emailToGravatarHash(String email)
@@ -292,7 +280,7 @@ Scaffold makeWaitLoadTreeScreen()
 
 Widget makeImgExpandScreen(Function onWillPopScope, Post post)
 {
-   //final double width = makeMaxWidth(ctx, tab);
+   //final double width = makeWidgetWidth(ctx, tab);
    //final double height = makeMaxHeight(ctx);
 
    final int l = post.images.length;
@@ -939,27 +927,24 @@ Widget makeNewPostFinalScreen({
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
 
-   SizedBox postBox = SizedBox(
-      width: makePostWidgetWidth(ctx),
-      child: PostWidget(
-	 tab: cts.ownIdx,
-	 post: post,
-	 exDetailsRootNode: exDetailsRootNode,
-	 inDetailsRootNode: inDetailsRootNode,
-	 locRootNode: locRootNode,
-	 prodRootNode: prodRootNode,
-	 imgFiles: imgFiles,
-	 onAddImg: onAddImg,
-	 onDelImg: onDelImg,
-	 onExpandImg: (int j){ log('Noop00'); },
-	 onAddPostToFavorite: () { log('Noop01'); },
-	 onDelPost: () { log('Noop02');},
-	 onSharePost: () { log('Noop03');},
-	 onReportPost: () { log('Noop05');},
-	 onPinPost: () { log('Noop06');},
-	 onVisualization: () {log('Noop07');},
-	 onClick: () {log('Noop08');},
-      ),
+   Widget postBox = PostWidget(
+      tab: cts.ownIdx,
+      post: post,
+      exDetailsRootNode: exDetailsRootNode,
+      inDetailsRootNode: inDetailsRootNode,
+      locRootNode: locRootNode,
+      prodRootNode: prodRootNode,
+      imgFiles: imgFiles,
+      onAddImg: onAddImg,
+      onDelImg: onDelImg,
+      onExpandImg: (int j){ log('Noop00'); },
+      onAddPostToFavorite: () { log('Noop01'); },
+      onDelPost: () { log('Noop02');},
+      onSharePost: () { log('Noop03');},
+      onReportPost: () { log('Noop05');},
+      onPinPost: () { log('Noop06');},
+      onVisualization: () {log('Noop07');},
+      onClick: () {log('Noop08');},
    );
 
    Widget cancelButton = createRaisedButton(
@@ -1460,7 +1445,6 @@ Widget makeNewPostScreenWdgs({
    List<Widget> list = <Widget>[];
 
    //list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
-   //list.add(stl.newPostDivider);
 
    List<Widget> mainWidgets = makeNewPostWdgs(
       ctx: ctx,
@@ -1523,7 +1507,6 @@ Widget makeNewPostScreenWdgs({
 	 );
 
 	 list.add(descWidget);
-	 list.add(stl.newPostDivider);
       }
 
       // ---------------------------------------------------
@@ -1610,7 +1593,6 @@ List<Widget> makeValueSliders({
 
       sliders.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
       sliders.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: slider));
-      sliders.add(stl.newPostDivider);
    }
 
    return sliders;
@@ -1647,7 +1629,6 @@ Widget makeSearchScreenWdg({
       );
 
       foo.add(location);
-      foo.add(stl.newPostDivider);
    }
 
    {  // Product
@@ -1663,7 +1644,6 @@ Widget makeSearchScreenWdg({
       );
 
       foo.add(product);
-      foo.add(stl.newPostDivider);
    }
 
    {  // Details
@@ -1695,7 +1675,6 @@ Widget makeSearchScreenWdg({
       );
 
       foo.add(detail);
-      foo.add(stl.newPostDivider);
    }
 
    {  // Values
@@ -2145,7 +2124,7 @@ Card makeChatMsgWidget(
       marginRight = tmp;
    }
 
-   final double screenWidth = makeMaxWidth(ctx, tab);
+   final double screenWidth = makeWidgetWidth(ctx);
    Card w1 = Card(
       margin: EdgeInsets.only(
             left: marginLeft,
@@ -3246,7 +3225,7 @@ Card putPostElemOnCard({
 
 Widget makePostDescription(BuildContext ctx, int tab, String desc)
 {
-   final double width = makeMaxWidth(ctx, tab);
+   final double width = makeWidgetWidth(ctx);
 
    return Padding(
          padding: EdgeInsets.all(stl.postSectionPadding),
@@ -3485,8 +3464,8 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidth(ctx, cts.ownIdx),
-	 height: makeDialogHeight(ctx, cts.ownIdx),
+	 width: makeWidgetWidth(ctx),
+	 height: makeWidgetWidth(ctx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
 	 contentPadding: stl.newPostPadding,
 	 list: list,
@@ -3558,8 +3537,8 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidth(ctx, cts.ownIdx),
-	 height: makeDialogHeight(ctx, cts.ownIdx),
+	 width: makeWidgetWidth(ctx),
+	 height: makeWidgetWidth(ctx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
 	 contentPadding: stl.newPostPadding,
 	 list: exDetails,
@@ -3776,8 +3755,8 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       );
 
       return makeNewPostDialogWdg(
-	 width: makeDialogWidth(ctx, cts.ownIdx),
-	 height: makeDialogHeight(ctx, cts.ownIdx),
+	 width: makeWidgetWidth(ctx),
+	 height: makeWidgetWidth(ctx),
 	 title: titleWdg,
 	 contentPadding: stl.newPostPadding,
 	 list: locWdgs,
@@ -4312,7 +4291,7 @@ Widget makePostDetailsWdg({
    Widget listView = makeImgListView(
       ctx: ctx,
       width: makeTabWidth(ctx, tab),
-      height: makeImgHeight(ctx, tab),
+      height: makeImgHeight(ctx),
       post: post,
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
@@ -4360,7 +4339,7 @@ Widget makeDefaultTextWidget({String text})
       textAlign: TextAlign.center,
       style: TextStyle(
 	 fontSize: stl.bigFontSize,
-	 color: Colors.grey[300],
+	 color: Colors.grey[200],
 	 fontWeight: FontWeight.normal,
       ),
    );
@@ -4389,7 +4368,7 @@ Widget makeDefaultWidgetCard({
    final double padding = 30;
    Widget card = Card(
       color: stl.colorScheme.primary,
-      margin: EdgeInsets.only(top: 30, bottom: 3, left: 30, right: 30),
+      margin: EdgeInsets.only(top: 30, bottom: 1, left: 30, right: 30),
       elevation: 1,
       shape: RoundedRectangleBorder(
 	 borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
@@ -5014,42 +4993,36 @@ Widget makeChatTab({
          if (posts[i].images.isEmpty)
             onExpandImg2 = (int j){log('Error: post.images is empty.');};
 
-	 SizedBox postBox = SizedBox(
-	    width: makePostWidgetWidth(ctx),
-	    child: PostWidget(
-	       tab: tab,
-	       post: posts[i],
-	       locRootNode: locRootNode,
-	       prodRootNode: prodRootNode,
-	       exDetailsRootNode: exDetailsRootNode,
-	       inDetailsRootNode: inDetailsRootNode,
-	       imgFiles: null,
-	       onAddImg: () {log('Noop10');},
-	       onDelImg: (int i) {log('Noop10');},
-	       onExpandImg: onExpandImg2,
-	       onAddPostToFavorite:() {log('Noop14');},
-	       onDelPost: onDelPost2,
-	       onSharePost: () {onSharePost(i);},
-	       onReportPost:() {log('Noop18');},
-	       onPinPost: onPinPost2,
-	       onVisualization: () {log('Noop19');},
-	       onClick: () {log('Noop20');},
-	    )
+	 Widget postBox = PostWidget(
+	    tab: tab,
+	    post: posts[i],
+	    locRootNode: locRootNode,
+	    prodRootNode: prodRootNode,
+	    exDetailsRootNode: exDetailsRootNode,
+	    inDetailsRootNode: inDetailsRootNode,
+	    imgFiles: null,
+	    onAddImg: () {log('Noop10');},
+	    onDelImg: (int i) {log('Noop10');},
+	    onExpandImg: onExpandImg2,
+	    onAddPostToFavorite:() {log('Noop14');},
+	    onDelPost: onDelPost2,
+	    onSharePost: () {onSharePost(i);},
+	    onReportPost:() {log('Noop18');},
+	    onPinPost: onPinPost2,
+	    onVisualization: () {log('Noop19');},
+	    onClick: () {log('Noop20');},
 	 );
 
-	 SizedBox chatExp = SizedBox(
-	    width: makePostWidgetWidth(ctx),
-	    child: makeChatsExp(
-	       ctx: ctx,
-	       isFav: tab == cts.favIdx,
-	       isFwdChatMsgs: isFwdChatMsgs,
-	       now: DateTime.now().millisecondsSinceEpoch,
-	       post: posts[i],
-	       chatItem: posts[i].chats,
-	       onPressed: (int j) {onChatPressed(i, j);},
-	       onLongPressed: (int j) {onChatLongPressed(i, j);},
-	       onLeadingPressed: (String a, int b) {onUserInfoPressed(ctx, a, b);},
-	    ),
+	 Widget chatExp = makeChatsExp(
+	    ctx: ctx,
+	    isFav: tab == cts.favIdx,
+	    isFwdChatMsgs: isFwdChatMsgs,
+	    now: DateTime.now().millisecondsSinceEpoch,
+	    post: posts[i],
+	    chatItem: posts[i].chats,
+	    onPressed: (int j) {onChatPressed(i, j);},
+	    onLongPressed: (int j) {onChatLongPressed(i, j);},
+	    onLeadingPressed: (String a, int b) {onUserInfoPressed(ctx, a, b);},
 	 );
 
 	 return Padding(
@@ -7298,26 +7271,23 @@ class OccaseState extends State<Occase>
    Widget _makeSearchResultTab(BuildContext ctx)
    {
       final bool isWide = isWideScreen(ctx);
-      SizedBox sb = SizedBox(
-	 width: makePostWidgetWidth(ctx),
-	 child: makeSearchResultPosts(
-	    isWide: isWide,
-	    locRootNode: _locRootNode,
-	    prodRootNode: _prodRootNode,
-	    exDetailsRootNode: _exDetailsRoot,
-	    inDetailsRootNode: _inDetailsRoot,
-	    posts: _appState.posts,
-	    onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
-	    onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	    onDelPost: (var a, int j) {},
-	    onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
-	    onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
-	    onPostVisualization: _onPostVisualization,
-	    onPostPressed: _onPostClick,
-	    onCreateAd: _onCreateAd,
-	    onGoToSearch: _onGoToSearch,
-	    onLatestPostsPressed: () {_onLatestPostsPressed(isWide);},
-	 ),
+      Widget sb = makeSearchResultPosts(
+	 isWide: isWide,
+	 locRootNode: _locRootNode,
+	 prodRootNode: _prodRootNode,
+	 exDetailsRootNode: _exDetailsRoot,
+	 inDetailsRootNode: _inDetailsRoot,
+	 posts: _appState.posts,
+	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
+	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
+	 onDelPost: (var a, int j) {},
+	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
+	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
+	 onPostVisualization: _onPostVisualization,
+	 onPostPressed: _onPostClick,
+	 onCreateAd: _onCreateAd,
+	 onGoToSearch: _onGoToSearch,
+	 onLatestPostsPressed: () {_onLatestPostsPressed(isWide);},
       );
 
       if (_searchBeginDate == 0)
@@ -7481,7 +7451,11 @@ class OccaseState extends State<Occase>
 	 ret[cts.favIdx] = _makeChatTab(ctx, cts.favIdx);
       }
 
-      return ret;
+      return List<Widget>.generate(
+	 ret.length,
+	 (int i) { return imposeWidth(child: ret[i], width: makeWidgetWidth(ctx)); },
+         growable: false,
+      );
    }
 
    bool _makeOnWillPop(int i)
@@ -7529,7 +7503,7 @@ class OccaseState extends State<Occase>
             title: g.param.changeNickAppBarTitle,
             previousEmail: _appState.cfg.email,
             previousNick: _appState.cfg.nick,
-	    maxWidth: makeMaxWidth(ctx, cts.ownIdx),
+	    maxWidth: makeWidgetWidth(ctx),
 	    onWillPopScope: () {setState(() {_goToRegScreen = false;});},
          );
       }
@@ -7639,7 +7613,10 @@ class OccaseState extends State<Occase>
             local.add(Expanded(child: bodies[cts.ownIdx]));
             local.add(div);
 
-	    own = Column(children: local);
+	    own = imposeWidth(
+	       child: Column(children: local),
+	       width: makeWidgetWidth(ctx),
+	    );
 	 }
 
 	 Widget search = Column(
@@ -7679,7 +7656,10 @@ class OccaseState extends State<Occase>
 	    local.add(Expanded(child: bodies[cts.favIdx]));
             local.add(div);
 
-	    fav = Column(children: local);
+	    fav = imposeWidth(
+	       child: Column(children: local),
+	       width: makeWidgetWidth(ctx),
+	    );
 	 }
 
 	 VerticalDivider vdiv = VerticalDivider(
