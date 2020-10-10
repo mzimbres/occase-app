@@ -15,6 +15,8 @@ const double postSectionPadding = 5.0;
 const Color primaryColor = Color(0xFF434b79);
 const Color onPrimaryColor = Colors.white;
 const Color backgroundColor = Color(0xFFEEEEEE);
+const Color secondaryColor = Color(0xFFffa32c);
+const Color onSecondaryColor = primaryColor;
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,

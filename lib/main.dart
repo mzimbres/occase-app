@@ -1819,6 +1819,8 @@ Widget makeWebScaffoldWdg({
 List<Widget> makeTabWdgs({
    List<int> counters,
    List<double> opacities,
+   Color backgroundColor = stl.secondaryColor,
+   Color textColor = stl.onSecondaryColor,
 }) {
    List<Widget> list = List<Widget>();
 
@@ -1826,7 +1828,9 @@ List<Widget> makeTabWdgs({
       Widget w = makeTabWidget(
 	 nUnread: counters[i],
 	 title: g.param.tabNames[i],
-	 opacity: opacities[i]
+	 opacity: opacities[i],
+	 backgroundColor: backgroundColor,
+	 textColor: textColor,
       );
 
       list.add(w);
@@ -2451,9 +2455,9 @@ Widget makeChatScreen({
             bottom: 53.0,
             right: 23.0,
             child: makeUnreadMsgsCircle(
-               chatMetadata.nUnreadMsgs,
-               stl.colorScheme.secondaryVariant,
-               stl.colorScheme.onSecondary,
+               unread: chatMetadata.nUnreadMsgs,
+               backgroundColor: stl.colorScheme.secondaryVariant,
+               textColor: stl.colorScheme.onSecondary,
             ),
          );
 
@@ -2604,6 +2608,8 @@ Widget makeTabWidget({
    int nUnread,
    String title,
    double opacity,
+   Color backgroundColor,
+   Color textColor,
 }) {
    if (nUnread == 0)
       return Center(child: Text(title));
@@ -2615,9 +2621,9 @@ Widget makeTabWidget({
    // for opacity values.
    widgets[1] = Opacity(
       child: makeUnreadMsgsCircle(
-         nUnread,
-         stl.colorScheme.secondary,
-         stl.colorScheme.onSecondary,
+         unread: nUnread,
+         backgroundColor: backgroundColor,
+         textColor: textColor,
       ),
       opacity: opacity,
    );
@@ -2901,12 +2907,13 @@ Widget createRaisedButton({
 }
 
 // Study how to convert this into an elipsis like whatsapp.
-Container makeUnreadMsgsCircle(
-   int nUnread,
+Container makeUnreadMsgsCircle({
+   int unread,
    Color backgroundColor,
    Color textColor,
-) {
-   final Text txt = Text("$nUnread",
+}) {
+   final
+   Text txt = Text("$unread",
       style: TextStyle(
 	 color: textColor,
 	 fontSize: stl.smallFontSize,
@@ -3772,6 +3779,7 @@ List<Widget> makeDetailsTextWdgs({
    Color backgroundColor,
    Color textColor,
    double fontSize,
+   FontWeight fontWeight = FontWeight.w500,
 }) {
    return List<Widget>.generate(fields.length, (int i) {
       return Card(
@@ -3783,7 +3791,7 @@ List<Widget> makeDetailsTextWdgs({
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
-	             fontWeight: FontWeight.w300,
+	             fontWeight: fontWeight,
 	             color: textColor,
 	          ),
 	       ),
@@ -4074,7 +4082,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget statsWdgs = makeTextWdg(
 	 text: '$name: ${visualizations} - ${date}',
 	 edgeInsets: const EdgeInsets.all(5.0),
-	 textColor: Colors.grey,
+	 textColor: stl.colorScheme.primary,
 	 fontSize: stl.smallFontSize,
 	 fontWeight: FontWeight.normal,
       );
@@ -4194,15 +4202,15 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      if (detailsNames.length > 15)
-	 detailsNames.removeRange(15, detailsNames.length);
+      if (detailsNames.length > 9)
+	 detailsNames.removeRange(9, detailsNames.length);
 
       Padding modelTitle = Padding(
 	 padding: const EdgeInsets.all(5.0),
 	 child: RichText(
 	    overflow: TextOverflow.ellipsis,
 	    text: TextSpan(
-	       text: '$modelStr ',
+	       text: '$modelStr\n',
 	       style: TextStyle(
 		  color: stl.colorScheme.primary,
 		  fontSize: stl.mainFontSize,
@@ -4228,16 +4236,17 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
-	 backgroundColor: Colors.blueGrey[50],
-	 textColor: Colors.black,
+	 backgroundColor: Colors.grey,
+	 textColor: Colors.grey[50],
 	 fontSize: stl.mainFontSize,
+	 fontWeight: FontWeight.w400,
       );
 
-      const double spacing = 3.0;
-      const double runSpacing = 3.0;
+      const double spacing = 10;
+      const double runSpacing = 10;
 
       Widget detailsWrap = Padding(
-	 padding: EdgeInsets.only(left: 3.0),
+	 padding: EdgeInsets.only(left: 10.0),
 	 child: Wrap(
 	    children: detailWdgs,
 	    spacing: spacing,
@@ -4333,24 +4342,17 @@ Widget makePostDetailsWdg({
    return putPostElemOnCard(list: rows);
 }
 
-Widget makeDefaultTextWidget({String text})
-{
+Widget makeDefaultTextWidget({
+   String text,
+   Color color = Colors.white,
+   FontWeight fontWeight = FontWeight.normal,
+}) {
    return Text(text,
       textAlign: TextAlign.center,
       style: TextStyle(
 	 fontSize: stl.bigFontSize,
-	 color: Colors.grey[200],
-	 fontWeight: FontWeight.normal,
-      ),
-   );
-}
-
-Widget makeEmptyTabText(String msg)
-{
-   return Center(
-      child: Padding(
-	 padding: EdgeInsets.all(40.0),
-	 child: makeDefaultTextWidget(text: msg),
+	 color: color,
+	 fontWeight: fontWeight,
       ),
    );
 }
@@ -4365,10 +4367,10 @@ Widget makeDefaultWidgetCard({
 {
    Widget text = makeDefaultTextWidget(text: description);
 
-   final double padding = 30;
+   final double padding = 20;
    Widget card = Card(
       color: stl.colorScheme.primary,
-      margin: EdgeInsets.only(top: 30, bottom: 1, left: 30, right: 30),
+      margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
       elevation: 1,
       shape: RoundedRectangleBorder(
 	 borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
@@ -4379,12 +4381,17 @@ Widget makeDefaultWidgetCard({
       ),
    );
 
-   Widget button = createRaisedButton(
-      onPressed: onPressed,
-      text: buttonName,
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
-      minWidth: width,
+   Widget button = ButtonTheme(
+      minWidth: stl.minButtonWidth,
+      child: RaisedButton(
+	 child: makeDefaultTextWidget(
+	    text: buttonName,
+	    color: stl.colorScheme.primary,
+	    fontWeight: FontWeight.w500,
+	 ),
+	 color: stl.colorScheme.secondary,
+	 onPressed: onPressed,
+      ),
    );
 
    final double top = isWide ? 100 : 0;
@@ -4709,9 +4716,9 @@ Widget makeChatListTileTrailingWidget(
             children: <Widget>
       [ Icon(Icons.place)
       , makeUnreadMsgsCircle(
-          nUnreadMsgs,
-          stl.colorScheme.secondary,
-          stl.colorScheme.onSecondary,
+          unread: nUnreadMsgs,
+          backgroundColor: stl.colorScheme.secondary,
+          textColor: stl.colorScheme.onSecondary,
         )
       ]);
       
@@ -4732,9 +4739,9 @@ Widget makeChatListTileTrailingWidget(
          children: <Widget>
          [ dateText
          , makeUnreadMsgsCircle(
-             nUnreadMsgs,
-             stl.colorScheme.secondary,
-             stl.colorScheme.onSecondary,
+             unread: nUnreadMsgs,
+             backgroundColor: stl.colorScheme.secondary,
+             textColor: stl.colorScheme.onSecondary,
            )
          ]);
    }
@@ -7584,9 +7591,9 @@ class OccaseState extends State<Occase>
 	    opacities: cts.newMsgsOpacitiesWeb,
 	 );
 
-	 Widget own;
+	 Widget ownTmp;
 	 if (_isOnOwnChat(cts.ownIdx)) {
-	    own = Column(children: <Widget>
+	    ownTmp = Column(children: <Widget>
 	    [ div
 	    , Expanded(child: _makeChatScreen(ctx, cts.ownIdx))
 	    , div
@@ -7601,7 +7608,7 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.ownIdx),
 		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
-		  backgroundColor: Colors.grey,
+		  backgroundColor: stl.colorScheme.primary,
 		  primary: false,
 		  shape: RoundedRectangleBorder(
 		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -7613,11 +7620,13 @@ class OccaseState extends State<Occase>
             local.add(Expanded(child: bodies[cts.ownIdx]));
             local.add(div);
 
-	    own = imposeWidth(
-	       child: Column(children: local),
-	       width: makeWidgetWidth(ctx),
-	    );
+	    ownTmp = Column(children: local);
 	 }
+
+	 Widget own = imposeWidth(
+	    child: ownTmp,
+	    width: makeWidgetWidth(ctx),
+	 );
 
 	 Widget search = Column(
 	    children: <Widget>
@@ -7627,9 +7636,9 @@ class OccaseState extends State<Occase>
 	    ]
 	 );
 
-         Widget fav;
+         Widget favTmp;
 	 if (_isOnFavChat(cts.favIdx)) {
-	    fav = Column(children: <Widget>
+	    favTmp = Column(children: <Widget>
 	    [ div
 	    , Expanded(child: _makeChatScreen(ctx, cts.favIdx))
 	    , div
@@ -7644,7 +7653,7 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
 		  leading: _makeAppBarLeading(isWide, cts.favIdx),
-		  backgroundColor: Colors.grey,
+		  backgroundColor: stl.colorScheme.primary,
 		  primary: false,
 		  shape: RoundedRectangleBorder(
 		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -7656,11 +7665,13 @@ class OccaseState extends State<Occase>
 	    local.add(Expanded(child: bodies[cts.favIdx]));
             local.add(div);
 
-	    fav = imposeWidth(
-	       child: Column(children: local),
-	       width: makeWidgetWidth(ctx),
-	    );
+	    favTmp = Column(children: local);
 	 }
+
+	 Widget fav = imposeWidth(
+	    child: favTmp,
+	    width: makeWidgetWidth(ctx),
+	 );
 
 	 VerticalDivider vdiv = VerticalDivider(
 	    width: sep,
