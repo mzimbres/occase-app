@@ -2,7 +2,6 @@ import 'dart:async' show Future, Timer;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:collection';
-import 'dart:developer';
 
 import 'dart:io'
        if (dart.library.io)
@@ -28,6 +27,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:occase/post.dart';
@@ -116,7 +116,7 @@ double makeMaxHeight(BuildContext ctx)
 
 Future<void> fcmOnBackgroundMessage(Map<String, dynamic> message) async
 {
-  log("onBackgroundMessage: $message");
+  debugPrint("onBackgroundMessage: $message");
 }
 
 Widget imposeWidth({
@@ -295,7 +295,7 @@ Widget makeImgExpandScreen(Function onWillPopScope, Post post)
       reverse: true,
       //backgroundDecoration: widget.backgroundDecoration,
       //pageController: widget.pageController,
-      onPageChanged: (int i){ log('===> New index: $i');},
+      onPageChanged: (int i){ debugPrint('===> New index: $i');},
       builder: (BuildContext context, int i) {
          // No idea why this is showing in reverse order, I will have
          // to manually reverse the indexes.
@@ -576,7 +576,7 @@ Widget makeNetImgBox({
       fit: boxFit,
       placeholder: (ctx, url) => CircularProgressIndicator(),
       errorWidget: (ctx, url, error) {
-         log('====> $error $url $error');
+         debugPrint('====> $error $url $error');
          Widget w = Text(g.param.unreachableImgError,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -937,14 +937,14 @@ Widget makeNewPostFinalScreen({
       imgFiles: imgFiles,
       onAddImg: onAddImg,
       onDelImg: onDelImg,
-      onExpandImg: (int j){ log('Noop00'); },
-      onAddPostToFavorite: () { log('Noop01'); },
-      onDelPost: () { log('Noop02');},
-      onSharePost: () { log('Noop03');},
-      onReportPost: () { log('Noop05');},
-      onPinPost: () { log('Noop06');},
-      onVisualization: () {log('Noop07');},
-      onClick: () {log('Noop08');},
+      onExpandImg: (int j){ debugPrint('Noop00'); },
+      onAddPostToFavorite: () { debugPrint('Noop01'); },
+      onDelPost: () { debugPrint('Noop02');},
+      onSharePost: () { debugPrint('Noop03');},
+      onReportPost: () { debugPrint('Noop05');},
+      onPinPost: () { debugPrint('Noop06');},
+      onVisualization: () { debugPrint('Noop07');},
+      onClick: () {debugPrint('Noop08');},
    );
 
    Widget cancelButton = createRaisedButton(
@@ -1096,6 +1096,19 @@ Widget makeAppBarWdg({
    return defaultWdg;
 }
 
+Widget makeNewPostCards(Widget child)
+{
+   return Card(
+      margin: const EdgeInsets.all(5),
+      color: stl.newPostCardColor,
+      child: child,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+         borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
+      ),
+   );
+}
+
 Widget makeNewPostLT({
    final String title,
    final String subTitle,
@@ -1120,36 +1133,24 @@ Widget makeNewPostLT({
 	  //style: stl.tsMainBlack,
        ),
        //dense: true,
-       subtitle:
-	  Text(subTitle,
-	     maxLines: 1,
-	     overflow: TextOverflow.ellipsis,
-	     style: stl.newPostSubtitleLT,
-	  ),
+       subtitle: Text(subTitle,
+	  maxLines: 1,
+	  overflow: TextOverflow.ellipsis,
+	  style: stl.newPostSubtitleLT,
+       ),
        onTap: onTap,
        enabled: true,
        isThreeLine: false,
    );
 
-   return Card(
-      margin: const EdgeInsets.all(2),
-      color: Colors.blueGrey[100],
-      child: lt,
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-      ),
-   );
+   return makeNewPostCards(lt);
 }
 
 ListView makeNewPostListView(List<Widget> list)
 {
    return ListView.builder(
       itemCount: list.length,
-      itemBuilder: (BuildContext ctx, int i)
-      {
-	 return list[i];
-      },
+      itemBuilder: (BuildContext ctx, int i) { return list[i]; },
    );
 }
 
@@ -1444,7 +1445,8 @@ Widget makeNewPostScreenWdgs({
 }) {
    List<Widget> list = <Widget>[];
 
-   //list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
+   if (!isWideScreen(ctx))
+      list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
 
    List<Widget> mainWidgets = makeNewPostWdgs(
       ctx: ctx,
@@ -1585,14 +1587,24 @@ List<Widget> makeValueSliders({
 	 onChanged: (double v) {onValueChanged(i, v);},
       );
 
-      final RichText rt = makeSearchTitle(
-	 name: names[i],
-	 value: makeRangeStr(post, i),
-	 separator: ': ',
+      final Padding title =
+	 Padding(
+	    padding: const EdgeInsets.all(stl.leftIndent),
+	    child: makeSearchTitle(
+	       name: names[i],
+	       value: makeRangeStr(post, i),
+	       separator: ': ',
+	    ),
       );
 
-      sliders.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent, left: stl.leftIndent), child: rt));
-      sliders.add(Padding(padding: EdgeInsets.only(left: stl.leftIndent), child: slider));
+      Column col = Column(
+	 mainAxisSize: MainAxisSize.min,
+	 mainAxisAlignment: MainAxisAlignment.center,
+	 crossAxisAlignment: CrossAxisAlignment.start,
+	 children: <Widget>[title, slider],
+      );
+
+      sliders.add(makeNewPostCards(col));
    }
 
    return sliders;
@@ -2753,7 +2765,7 @@ Widget makePayPriceListTile({
 //void cardNonceRequestSuccess(sq.CardDetails result)
 //{
 //   // Use this nonce from your backend to pay via Square API
-//   log(result.nonce);
+//   debugPrint(result.nonce);
 //
 //   final bool invalidZipCode = false;
 //
@@ -3742,26 +3754,27 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
       FlatButton back =  FlatButton(
 	 child: Text(g.param.usefulWords[0],
-	    style: TextStyle(color: stl.colorScheme.primary),
+	    //style: TextStyle(color: stl.colorScheme.primary),
 	 ),
 	 onPressed: () {_onBack(ctx);},
       );
 
       FlatButton cancel =  FlatButton(
 	 child: Text(g.param.cancel,
-	    style: TextStyle(color: stl.colorScheme.primary),
+	    //style: TextStyle(color: stl.colorScheme.primary),
 	 ),
 	 onPressed: () {_onCancel(ctx);},
       );
 
       FlatButton ok =  FlatButton(
 	 child: Text(g.param.ok,
-	    style: TextStyle(color: stl.colorScheme.primary),
+	    //style: TextStyle(color: stl.colorScheme.primary),
 	 ),
 	 onPressed: () {_onOk(ctx);},
       );
 
       return makeNewPostDialogWdg(
+	 backgroundColor: Colors.grey[300],
 	 width: makeWidgetWidth(ctx),
 	 height: makeWidgetWidth(ctx),
 	 title: titleWdg,
@@ -4202,8 +4215,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      if (detailsNames.length > 9)
-	 detailsNames.removeRange(9, detailsNames.length);
+      const int n = 6;
+      if (detailsNames.length > 6)
+	 detailsNames.removeRange(6, detailsNames.length);
 
       Padding modelTitle = Padding(
 	 padding: const EdgeInsets.all(5.0),
@@ -4236,7 +4250,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
-	 backgroundColor: Colors.grey,
+	 backgroundColor: Colors.brown[300],
 	 textColor: Colors.grey[50],
 	 fontSize: stl.mainFontSize,
 	 fontWeight: FontWeight.w400,
@@ -4368,22 +4382,10 @@ Widget makeDefaultWidgetCard({
    Widget text = makeDefaultTextWidget(text: description);
 
    final double padding = 20;
-   Widget card = Card(
-      color: stl.colorScheme.primary,
-      margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-	 borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
-      ),
-      child: Padding(
-	 padding: EdgeInsets.all(padding),
-	 child: text,
-      ),
-   );
 
    Widget button = ButtonTheme(
-      minWidth: stl.minButtonWidth,
-      child: RaisedButton(
+      minWidth: 180,
+      child: FlatButton(
 	 child: makeDefaultTextWidget(
 	    text: buttonName,
 	    color: stl.colorScheme.primary,
@@ -4391,25 +4393,36 @@ Widget makeDefaultWidgetCard({
 	 ),
 	 color: stl.colorScheme.secondary,
 	 onPressed: onPressed,
+	 //padding: const EdgeInsets.all(),
       ),
    );
 
-   final double top = isWide ? 100 : 0;
    Widget col = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>
-      [ card
+      [ text
       , Padding(
-	   padding: EdgeInsets.only(top: top),
+	   padding: EdgeInsets.only(top: padding),
 	   child: button,
 	),
       ],
    );
 
    return Center(
-      child: col,
+      child: Card(
+	 color: stl.colorScheme.primary,
+	 margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
+	 elevation: 2,
+	 shape: RoundedRectangleBorder(
+	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
+	 ),
+	 child: Padding(
+	    padding: EdgeInsets.all(padding),
+	    child: col,
+	 ),
+      ),
    );
 }
 
@@ -4450,12 +4463,9 @@ Widget makeSearchInitTab({
       onPressed: onGoToSearch,
    );
 
-   return Center(
-      child: Column(
-	 mainAxisAlignment: MainAxisAlignment.center,
-	 crossAxisAlignment: CrossAxisAlignment.center,
-	 children: <Widget>[w0, w1, w2],
-      ),
+   return ListView(
+      children: <Widget>[w0, w1, w2],
+      padding: const EdgeInsets.all(0.0),
    );
 }
 
@@ -4507,14 +4517,14 @@ Widget makeSearchResultPosts({
 	    inDetailsRootNode: inDetailsRootNode,
 	    locRootNode: locRootNode,
 	    prodRootNode: prodRootNode,
-	    onAddImg: () {log('Error: Please fix.');},
-	    onDelImg: (int i) {log('Error: Please fix.');},
+	    onAddImg: () {debugPrint('Error: Please fix.');},
+	    onDelImg: (int i) {debugPrint('Error: Please fix.');},
 	    onExpandImg: (int k) {onExpandImg(i, k);},
 	    onAddPostToFavorite: () {onAddPostToFavorite(ctx, i);},
 	    onDelPost: () {onDelPost(ctx, i);},
 	    onSharePost: () {onSharePost(ctx, i);},
 	    onReportPost: () {onReportPost(ctx, i);},
-	    onPinPost: (){log('Noop20');},
+	    onPinPost: (){debugPrint('Noop20');},
 	    onVisualization: () {onPostVisualization(posts[i].id);},
 	    onClick: () {onPostPressed(posts[i].id);},
 	 );
@@ -4998,7 +5008,7 @@ Widget makeChatTab({
          // If the post contains no images, which should not happen,
          // we provide no expand image button.
          if (posts[i].images.isEmpty)
-            onExpandImg2 = (int j){log('Error: post.images is empty.');};
+            onExpandImg2 = (int j){debugPrint('Error: post.images is empty.');};
 
 	 Widget postBox = PostWidget(
 	    tab: tab,
@@ -5008,16 +5018,16 @@ Widget makeChatTab({
 	    exDetailsRootNode: exDetailsRootNode,
 	    inDetailsRootNode: inDetailsRootNode,
 	    imgFiles: null,
-	    onAddImg: () {log('Noop10');},
-	    onDelImg: (int i) {log('Noop10');},
+	    onAddImg: () {debugPrint('Noop10');},
+	    onDelImg: (int i) {debugPrint('Noop10');},
 	    onExpandImg: onExpandImg2,
-	    onAddPostToFavorite:() {log('Noop14');},
+	    onAddPostToFavorite:() {debugPrint('Noop14');},
 	    onDelPost: onDelPost2,
 	    onSharePost: () {onSharePost(i);},
-	    onReportPost:() {log('Noop18');},
+	    onReportPost:() {debugPrint('Noop18');},
 	    onPinPost: onPinPost2,
-	    onVisualization: () {log('Noop19');},
-	    onClick: () {log('Noop20');},
+	    onVisualization: () {debugPrint('Noop19');},
+	    onClick: () {debugPrint('Noop20');},
 	 );
 
 	 Widget chatExp = makeChatsExp(
@@ -5274,14 +5284,14 @@ class OccaseState extends State<Occase>
 
       //_firebaseMessaging.configure(
       //   onMessage: (Map<String, dynamic> message) async {
-      //     log("onMessage: $message");
+      //     debugPrint("onMessage: $message");
       //   },
       //   //onBackgroundMessage: fcmOnBackgroundMessage,
       //   onLaunch: (Map<String, dynamic> message) async {
-      //     log("onLaunch: $message");
+      //     debugPrint("onLaunch: $message");
       //   },
       //   onResume: (Map<String, dynamic> message) async {
-      //     log("onResume: $message");
+      //     debugPrint("onResume: $message");
       //   },
       //);
 
@@ -5289,7 +5299,7 @@ class OccaseState extends State<Occase>
          if (_fcmToken != null)
             _fcmToken = token;
 
-         log('Token: $token');
+         debugPrint('Token: $token');
       });
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
@@ -5321,7 +5331,7 @@ class OccaseState extends State<Occase>
    void _reconnectCallback(Timer timer)
    {
       if (_tryNewWSConnection()) {
-         log('Trying to reconnect.');
+         debugPrint('Trying to reconnect.');
          _stablishNewConnection(_fcmToken);
       }
    }
@@ -5478,12 +5488,12 @@ class OccaseState extends State<Occase>
 	    //_appState.cfg.notifications.getFlag(),
 	 );
 
-	 log(cmd);
+	 debugPrint(cmd);
 
 	 _websocket.sink.add(cmd);
       } catch (e) {
-	 log('Unable to stablish ws connection to server.');
-	 log(e);
+	 debugPrint('Unable to stablish ws connection to server.');
+	 debugPrint(e);
       }
    }
 
@@ -5550,7 +5560,7 @@ class OccaseState extends State<Occase>
 
 	 setState((){_imgFiles.add(img); });
       } catch (e) {
-         log(e);
+         debugPrint(e);
       }
    }
 
@@ -5825,7 +5835,7 @@ class OccaseState extends State<Occase>
       };
 
       final String payload = jsonEncode(subCmd);
-      log(payload);
+      debugPrint(payload);
       _websocket.sink.add(payload);
    }
 
@@ -5834,7 +5844,7 @@ class OccaseState extends State<Occase>
       if (i != _tabIndex()) {
 	 // The control listener seems to be bound to all screens, thats why I
 	 // have to filter it here.
-	 log('Ignoring ---> $i');
+	 debugPrint('Ignoring ---> $i');
 	 return;
       }
 
@@ -5919,7 +5929,7 @@ class OccaseState extends State<Occase>
 
       if (resp.statusCode != 200) {
 	 // TODO: Show dialog.
-	 log('Error on _sendPost:  ${resp.statusCode}');
+	 debugPrint('Error on _sendPost:  ${resp.statusCode}');
 	 setState(() {_newPostErrorCode = 0;});
 	 return;
       }
@@ -5964,7 +5974,7 @@ class OccaseState extends State<Occase>
 
       var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
       if (resp.statusCode != 200)
-	 log('Error on _onRemovePost:  ${resp.statusCode}');
+	 debugPrint('Error on _onRemovePost:  ${resp.statusCode}');
    }
 
    Future<void> _onRemovePost(int tab, int i) async
@@ -6004,11 +6014,11 @@ class OccaseState extends State<Occase>
          //String newname = fnames[i] + '.' + extension;
          final String newname = fnames[i] + '.jpg';
 
-         log('=====> Path $path');
-         log('=====> Image name $basename');
-         log('=====> Image extention $extension');
-         log('=====> New name $newname');
-         log('=====> Http target $newname');
+         debugPrint('=====> Path $path');
+         debugPrint('=====> Image name $basename');
+         debugPrint('=====> Image extention $extension');
+         debugPrint('=====> New name $newname');
+         debugPrint('=====> Http target $newname');
 
          var response = await http.post(newname,
             body: await _imgFiles[i].readAsBytes(),
@@ -6048,14 +6058,14 @@ class OccaseState extends State<Occase>
 	 );
 
 	 if (resp.statusCode != 200) {
-	    log('Error: _requestFilenames ${resp.statusCode}');
+	    debugPrint('Error: _requestFilenames ${resp.statusCode}');
 	    setState(() { _leaveNewPostScreen(); });
 	 }
 
 	 if (resp.body.isEmpty) {
 	    _leaveNewPostScreen();
 	    _newPostErrorCode = 0;
-	    log('Error: _requestFilenames, empty body.');
+	    debugPrint('Error: _requestFilenames, empty body.');
 	    return; // TODO: Perhaps show a dialog with an error message?
 	 }
 
@@ -6341,7 +6351,7 @@ class OccaseState extends State<Occase>
          await _sendAppMsg(payload, 1);
 
       } catch(e) {
-         log(e);
+         debugPrint(e);
       }
    }
 
@@ -6400,7 +6410,7 @@ class OccaseState extends State<Occase>
       final int isRedirected,
    }) async {
       if (to != _appState.cfg.userId) {
-         log("Server bug caught. Please report.");
+         debugPrint("Server bug caught. Please report.");
          return;
       }
 
@@ -6444,7 +6454,7 @@ class OccaseState extends State<Occase>
    }) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
-         log('Ignoring message to postId $postId.');
+         debugPrint('Ignoring message to postId $postId.');
          return;
       }
 
@@ -6561,7 +6571,7 @@ class OccaseState extends State<Occase>
       final String userId,
    }) async {
       if (result == 'fail') {
-         log("register_ack: fail.");
+         debugPrint("register_ack: fail.");
          return;
       }
 
@@ -6578,7 +6588,7 @@ class OccaseState extends State<Occase>
       // Perhaps send a new register command? It can only happen if
       // the server is blocking this user.
       if (result == 'fail') {
-         log("login_ack: fail.");
+         debugPrint("login_ack: fail.");
          return;
       }
 
@@ -6597,7 +6607,7 @@ class OccaseState extends State<Occase>
       final String result,
    }) {
       if (result == 'fail') {
-         log("subscribe_ack: $result");
+         debugPrint("subscribe_ack: $result");
          return;
       }
    }
@@ -6610,7 +6620,7 @@ class OccaseState extends State<Occase>
             post.status = 1;
             _appState.posts.add(post);
          } catch (e) {
-            log("Error: Invalid post detected.");
+            debugPrint("Error: Invalid post detected.");
          }
       }
       
@@ -6705,7 +6715,7 @@ class OccaseState extends State<Occase>
 		  userId: map["user_id"] ?? '',
 	       );
 	    } else {
-	       log('Unhandled message received from the server:\n$payload.');
+	       debugPrint('Unhandled message received from the server:\n$payload.');
 	    }
 	 } catch (e) {
 	    print('Exception on _onWSDataImpl');
@@ -6791,7 +6801,7 @@ class OccaseState extends State<Occase>
 	    _searchBeginDate = 0;
 	 });
       } catch (e) {
-	 log(e);
+	 debugPrint(e);
       }
    }
 
@@ -6806,7 +6816,7 @@ class OccaseState extends State<Occase>
       // This function is meant to change the tab widgets when we
       // switch tab. This is needed to show the number of unread
       // messages.
-      setState(() { log('Tab changed');});
+      setState(() { debugPrint('Tab changed');});
    }
 
    int _getNUnreadFavChats()
@@ -7034,7 +7044,7 @@ class OccaseState extends State<Occase>
          });
 
       } catch (e) {
-         log(e);
+         debugPrint(e);
       }
    }
 
@@ -7086,7 +7096,7 @@ class OccaseState extends State<Occase>
       if (await canLaunch(url)) {
          await launch(url);
       } else {
-         log('Unable to send email.');
+         debugPrint('Unable to send email.');
       }
    }
 
@@ -7106,7 +7116,7 @@ class OccaseState extends State<Occase>
 
          setState(() { });
       } catch (e) {
-         log(e);
+         debugPrint(e);
       }
    }
 

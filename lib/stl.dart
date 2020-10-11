@@ -17,6 +17,7 @@ const Color onPrimaryColor = Colors.white;
 const Color backgroundColor = Color(0xFFEEEEEE);
 const Color secondaryColor = Color(0xFFffa32c);
 const Color onSecondaryColor = primaryColor;
+const Color newPostCardColor = Color(0xFFd7ccc8);
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
