@@ -2964,6 +2964,7 @@ Row makePostRowElem({
    Color valueTextColor = stl.primaryColor,
 }) {
    RichText left = RichText(
+      overflow: TextOverflow.clip,
       text: TextSpan(
          text: key + ': ',
          style: stl.tsMainBlack.copyWith(color: keyTextColor),
@@ -2978,18 +2979,11 @@ Row makePostRowElem({
       ),
    );
 
-   final double width = makeTabWidth(ctx, cts.ownIdx);
    return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: <Widget>
       [ Icon(Icons.arrow_right, color: keyTextColor)
-      , ConstrainedBox(
-           child: left,
-           constraints: BoxConstraints(
-              maxWidth: 0.90 * width,
-              minWidth: 0.90 * width,
-           ),
-	),
+      , Flexible(child: left)
       ]
    );
 }
@@ -3244,21 +3238,13 @@ Card putPostElemOnCard({
 
 Widget makePostDescription(BuildContext ctx, int tab, String desc)
 {
-   final double width = makeWidgetWidth(ctx);
-
    return Padding(
-         padding: EdgeInsets.all(stl.postSectionPadding),
-         child: ConstrainedBox(
-	    constraints: BoxConstraints(
-	       maxWidth: width,
-	       minWidth: width,
-	    ),
-	    child: Text(desc,
-	       //overflow: TextOverflow.ellipsis,
-	       style: stl.tsMainBlack,
-	    ),
-	 ),
-      );
+      padding: EdgeInsets.all(stl.postSectionPadding),
+      child: Text(desc,
+	 //overflow: TextOverflow.ellipsis,
+	 style: stl.tsMainBlack,
+      ),
+   );
 }
 
 List<Widget> assemblePostRows({
@@ -4062,7 +4048,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 context: ctx,
 	 builder: (BuildContext ctx)
 	 {
-	    return PostDetailsWidget(
+	    Widget w = PostDetailsWidget(
 	       tab: widget.tab,
 	       post: widget.post,
 	       locRootNode: widget.locRootNode,
@@ -4080,6 +4066,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		  widget.onClick();
 		  widget.onAddPostToFavorite();
 	       },
+	    );
+
+	    return imposeWidth(
+	       child: w,
+	       width: makeWidgetWidth(ctx),
 	    );
 	 },
       );
@@ -5295,12 +5286,12 @@ class OccaseState extends State<Occase>
       //   },
       //);
 
-      _firebaseMessaging.getToken().then((String token) {
-         if (_fcmToken != null)
-            _fcmToken = token;
+      //_firebaseMessaging.getToken().then((String token) {
+      //   if (_fcmToken != null)
+      //      _fcmToken = token;
 
-         debugPrint('Token: $token');
-      });
+      //   debugPrint('Token: $token');
+      //});
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
    }
@@ -5377,6 +5368,9 @@ class OccaseState extends State<Occase>
       // the webpage. We cannot however await here, we just launch the
       // async operation whithout waiting for it to complete.
       //_searchImpl(Post(rangesMinMax: g.param.rangesMinMax));
+
+      if (_appState.favPosts.isNotEmpty || _appState.ownPosts.isNotEmpty)
+	 await _initTrees();
 
       setState(() { });
    }
@@ -5644,6 +5638,7 @@ class OccaseState extends State<Occase>
    // j = 1: Move to favorite.
    // j = 2: Report inapropriate.
    // j = 3: Share.
+   // j = 4: Admin delete.
    Future<void> _onPostSelection(int i, int j) async
    {
       if (j == 3) {
@@ -5653,9 +5648,10 @@ class OccaseState extends State<Occase>
 
       if (j == 1) {
 	 await _onMovePostToFav(i);
-      } else {
-         await _onRemovePost(cts.searchIdx, i);
-         // TODO: Send command to server to report if j = 2.
+      } else if (j == 2) {
+         // TODO: Send command to server to report.
+      } else if (j == 4) {
+	 await _onRemovePost(cts.searchIdx, i);
       }
 
       setState(() { });
@@ -6970,9 +6966,7 @@ class OccaseState extends State<Occase>
          builder: (BuildContext ctx)
          {
             final FlatButton ok = FlatButton(
-	       child: Text(g.param.delChatTitle,
-		  style: TextStyle(color: stl.colorScheme.secondary),
-	       ),
+	       child: Text(g.param.delChatTitle),
 	       onPressed: () async
 	       {
 		  await _removeLPChats(i);
@@ -6981,9 +6975,7 @@ class OccaseState extends State<Occase>
 	    );
 
             final FlatButton cancel = FlatButton(
-               child: Text(g.param.delChatCancelStr,
-                  style: TextStyle(color: stl.colorScheme.secondary),
-               ),
+               child: Text(g.param.delChatCancelStr),
                onPressed: () { Navigator.of(ctx).pop(); });
 
             List<FlatButton> actions = List<FlatButton>(2);
@@ -7297,7 +7289,7 @@ class OccaseState extends State<Occase>
 	 posts: _appState.posts,
 	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
-	 onDelPost: (var a, int j) {},
+	 onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 4);},
 	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
 	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
 	 onPostVisualization: _onPostVisualization,
@@ -7499,16 +7491,6 @@ class OccaseState extends State<Occase>
    @override
    Widget build(BuildContext ctx)
    {
-      //final bool mustWait =
-      //   (_locRootNode   == null) ||
-      //   (_prodRootNode  == null) ||
-      //   (_exDetailsRoot == null) ||
-      //   (_inDetailsRoot == null) ||
-      //   (g.param == null);
-
-      //if (mustWait)
-      //   return makeWaitLoadTreeScreen();
-
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);
 
@@ -7704,9 +7686,7 @@ class OccaseState extends State<Occase>
 	 return makeWebScaffoldWdg(
 	    body: body,
 	    appBar: AppBar(
-               title: Text(g.param.shareSubject,
-		  //style: TextStyle(color: stl.colorScheme.onPrimary),
-	       ),
+               title: Text(g.param.shareSubject),
 	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
 	    ),
@@ -7727,9 +7707,7 @@ class OccaseState extends State<Occase>
 	 appBarTitle: _makeAppBarTitleWdg(
             isWide,
 	    screenIdx,
-	    Text(g.param.shareSubject,
-	       //style: TextStyle(color: stl.colorScheme.onPrimary),
-	    ),
+	    Text(g.param.shareSubject),
 	 ),
 	 appBarLeading: _makeAppBarLeading(isWide, screenIdx),
 	 floatBut: fltButtons[_tabCtrl.index],
