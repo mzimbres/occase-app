@@ -549,7 +549,10 @@ Widget makeInfoScreen(
 	       ),
 	    ),
 	 ),
-	 makeHiddenButton((){}, stl.backgroundColor),
+	 Padding(
+	    padding: const EdgeInsets.all(5),
+	    child: makeHiddenButton((){}, stl.backgroundColor),
+	 ),
       ],
    );
 
@@ -690,7 +693,7 @@ Widget makeImgListView({
       return makeImgPlaceholder(
 	 width,
 	 height,
-	 makeImgTextPlaceholder(g.param.addImgMsg),
+	 SizedBox.shrink(),
       );
 
    final int l = l1 == 0 ? imgFiles.length : l1;
@@ -1439,6 +1442,7 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF08 onRangeValueChanged,
    final OnPressedF06 onNewPostValueChanged,
    final OnPressedF09 onSetPostDescription,
+   final OnPressedF09 onSetEmail,
    final OnPressedF00 onFreePaymentPressed,
    final OnPressedF00 onStandardPaymentPressed,
    final OnPressedF00 onPremiumPaymentPressed,
@@ -1499,7 +1503,12 @@ Widget makeNewPostScreenWdgs({
 		  context: ctx,
 		  builder: (BuildContext ctx2)
 		  {
-		     return PostDescription(description: post.description);
+		     return PostDescription(
+			title: g.param.postDescTitle,
+			description: post.description,
+			descriptionHint: g.param.newPostTextFieldHist,
+			maxLength: cts.descriptionMaxLength,
+		     );
 		  },
 	       );
 
@@ -1511,6 +1520,33 @@ Widget makeNewPostScreenWdgs({
 	 list.add(descWidget);
       }
 
+      {  // email
+	 Widget emailWdg = makeNewPostLT(
+	    title: 'Email',
+	    subTitle: post.email,
+	    icon: null,
+	    onTap: () async
+	    {
+	       final String email = await showDialog<String>(
+		  context: ctx,
+		  builder: (BuildContext ctx2)
+		  {
+		     return PostDescription(
+			title: 'Email',
+			description: post.email,
+			descriptionHint: 'user@example.de',
+			maxLength: cts.emailMaxLength,
+		     );
+		  },
+	       );
+
+	       if (email != null) 
+		  onSetEmail(email);
+	    },
+	 );
+
+	 list.add(emailWdg);
+      }
       // ---------------------------------------------------
 
       {  // final
@@ -2589,7 +2625,11 @@ Widget makeChatScreen({
        );
    }
 
-   final double boderWidth = isWideScreen(ctx) ? 4 : 0;
+   final double tw = makeTabWidth(ctx, tab);
+   final double ww =  makeWidgetWidth(ctx);
+   final double bw = 4;
+   final double boderWidth = ((tw - bw) > ww) ? bw : 0;
+
    return WillPopScope(
          onWillPop: () async { return onWillPopScope();},
          child: Scaffold(
@@ -3354,28 +3394,14 @@ Widget makeAddOrRemoveWidget({
    );
 }
 
-Widget makeImgTextPlaceholder(final String str)
-{
-   return SizedBox.shrink();
-   //return Text(str,
-   //   overflow: TextOverflow.ellipsis,
-   //   style: TextStyle(
-   //      color: stl.colorScheme.background,
-   //      fontSize: stl.mainFontSize,
-   //   ),
-   //);
-}
-
 Widget makeNewPostDialogWdg({
-   final double width,
-   final double height,
    final Widget title,
    final double contentPadding,
    final List<Widget> list,
    final List<Widget> actions,
    final double diagBorderRadius = stl.cornerRadius,
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: stl.alertDialogInsetPadding, vertical: stl.alertDialogInsetPadding),
-   final Color backgroundColor = stl.backgroundColor,
+   final Color backgroundColor = stl.alertDiagBackgroundColor,
 }) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -3389,10 +3415,6 @@ Widget makeNewPostDialogWdg({
          scrollDirection: Axis.vertical,
          reverse: false,
          child: col,
-      ),
-      constraints: BoxConstraints(
-	 maxHeight: height,
-	 maxWidth: width,
       ),
       decoration: BoxDecoration(
 	 color: stl.colorScheme.background,
@@ -3469,8 +3491,6 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeWidgetWidth(ctx),
-	 height: makeWidgetWidth(ctx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
 	 contentPadding: stl.newPostPadding,
 	 list: list,
@@ -3542,8 +3562,6 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 width: makeWidgetWidth(ctx),
-	 height: makeWidgetWidth(ctx),
 	 title: Text(widget.title, style: stl.tsMainBlack),
 	 contentPadding: stl.newPostPadding,
 	 list: exDetails,
@@ -3555,11 +3573,19 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 //---------------------------------------------------------------
 
 class PostDescription extends StatefulWidget {
+   String title;
    String description;
+   String descriptionHint;
+   int maxLength;
 
    @override
    PostDescriptionState createState() => PostDescriptionState();
-   PostDescription({this.description = ''});
+   PostDescription({
+      this.title = '',
+      this.description = '',
+      this.descriptionHint = '',
+      this.maxLength = 100,
+   });
 }
 
 class PostDescriptionState extends State<PostDescription> with TickerProviderStateMixin {
@@ -3582,13 +3608,15 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
    @override
    Widget build(BuildContext ctx)
    {
-      String hint = widget.description.isEmpty ? g.param.newPostTextFieldHist : widget.description;
+      final String hint = widget.description.isEmpty ?
+	 widget.descriptionHint : widget.description;
+
       TextField tf = TextField(
 	 autofocus: true,
 	 controller: _txtCtrl,
 	 keyboardType: TextInputType.multiline,
 	 maxLines: null,
-	 maxLength: 1000,
+	 maxLength: widget.maxLength,
 	 style: stl.tsMainBlack,
 	 decoration: InputDecoration.collapsed(hintText: hint),
       );
@@ -3602,30 +3630,18 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 child: Text(g.param.ok),
 	 onPressed: () { Navigator.pop(ctx, _txtCtrl.text); });
 
-      EdgeInsets insetPadding;
-
-      if (isWideScreen(ctx)) {
-	 final double width = makeTabWidth(ctx, cts.ownIdx);
-	 insetPadding = EdgeInsets.symmetric(
-	    horizontal: width,
-	    vertical: stl.alertDialogInsetPadding,
-	 );
-      } else {
-	 insetPadding = EdgeInsets.symmetric(
-	    horizontal: stl.alertDialogInsetPadding,
-	    vertical: stl.alertDialogInsetPadding,
-	 );
-      }
-
-      return AlertDialog(
+      Widget w = AlertDialog(
 	 contentPadding: EdgeInsets.all(stl.newPostPadding),
-	 insetPadding: insetPadding,
-	 title: Text(
-            g.param.postDescTitle,
+	 title: Text(widget.title,
 	    style: stl.tsMainBlack,
 	 ),
 	 content: content,
 	 actions: <Widget>[ok],
+      );
+
+      return imposeWidth(
+	 child: w,
+	 width: makeWidgetWidth(ctx),
       );
    }
 }
@@ -3739,30 +3755,21 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       );
 
       FlatButton back =  FlatButton(
-	 child: Text(g.param.usefulWords[0],
-	    //style: TextStyle(color: stl.colorScheme.primary),
-	 ),
+	 child: Text(g.param.usefulWords[0]),
 	 onPressed: () {_onBack(ctx);},
       );
 
       FlatButton cancel =  FlatButton(
-	 child: Text(g.param.cancel,
-	    //style: TextStyle(color: stl.colorScheme.primary),
-	 ),
+	 child: Text(g.param.cancel),
 	 onPressed: () {_onCancel(ctx);},
       );
 
       FlatButton ok =  FlatButton(
-	 child: Text(g.param.ok,
-	    //style: TextStyle(color: stl.colorScheme.primary),
-	 ),
+	 child: Text(g.param.ok),
 	 onPressed: () {_onOk(ctx);},
       );
 
       return makeNewPostDialogWdg(
-	 backgroundColor: Colors.grey[300],
-	 width: makeWidgetWidth(ctx),
-	 height: makeWidgetWidth(ctx),
 	 title: titleWdg,
 	 contentPadding: stl.newPostPadding,
 	 list: locWdgs,
@@ -3912,13 +3919,10 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
       const double margin = 0;
       const double insetPadding = 0.0;
-      final double height = makeMaxHeight(ctx);
       final Color backColor = widget.tab == cts.searchIdx ?
 	    stl.colorScheme.primary : stl.colorScheme.background;
 
       Widget ret = makeNewPostDialogWdg(
-	 width: width,
-	 height: height,
 	 title: null,
 	 contentPadding: margin,
 	 diagBorderRadius: 0.0,
@@ -4147,7 +4151,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    filterQuality: FilterQuality.high,
 	 );
       } else {
-	 Widget w = makeImgTextPlaceholder(g.param.addImgMsg);
+	 Widget w = SizedBox.shrink();
 	 imgWdg = makeImgPlaceholder(
 	    postAvatarWidth,
 	    postAvatarWidth,
@@ -5511,12 +5515,18 @@ class OccaseState extends State<Occase>
          context: ctx,
          builder: (BuildContext ctx)
          {
-            return DialogWithOp(
+            Widget w = DialogWithOp(
                () {return _appState.cfg.dialogPreferences[j];},
                (bool v) async {await _setDialogPref(j, v);},
                () async {await _onPostSelection(i, j);},
                g.param.dialogTitles[j],
-               g.param.dialogBodies[j]);
+               g.param.dialogBodies[j],
+	    );
+
+	    return imposeWidth(
+	       child: w,
+	       width: makeWidgetWidth(ctx),
+	    );
          },
       );
    }
@@ -5598,6 +5608,14 @@ class OccaseState extends State<Occase>
    {
       setState(() {
 	 _posts[cts.ownIdx].description = description;
+      });
+   }
+
+   void _onSetEmail(String email)
+   {
+      print('aaaa $email');
+      setState(() {
+	 _posts[cts.ownIdx].email = email;
       });
    }
 
@@ -5919,6 +5937,7 @@ class OccaseState extends State<Occase>
       , 'post': _appState.outPost
       };
 
+      print(map);
       var resp = await http.post(cts.dbPublishUrl,
 	 body: jsonEncode(map),
       );
@@ -6761,11 +6780,16 @@ class OccaseState extends State<Occase>
             List<FlatButton> actions = List<FlatButton>(1);
             actions[0] = ok;
 
-            return AlertDialog(
+            Widget w = AlertDialog(
                title: Text(title),
                content: content,
                actions: actions,
             );
+
+	    return imposeWidth(
+	       child: w,
+	       width: makeWidgetWidth(ctx),
+	    );
          },
       );
    }
@@ -7250,6 +7274,7 @@ class OccaseState extends State<Occase>
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
 	 onSetPostDescription: _onSetPostDescription,
+	 onSetEmail: _onSetEmail,
 	 onFreePaymentPressed: () { _onSetPostPriority(0);},
 	 onStandardPaymentPressed: () { _onSetPostPriority(1);},
 	 onPremiumPaymentPressed: () { _onSetPostPriority(2);},
@@ -7695,7 +7720,10 @@ class OccaseState extends State<Occase>
       }
 
       if (_isOnFavChat(screenIdx) || _isOnOwnChat(screenIdx))
-         return _makeChatScreen(ctx, screenIdx);
+	 return imposeWidth(
+	    child: _makeChatScreen(ctx, screenIdx),
+	    width: makeWidgetWidth(ctx),
+	 );
 
       List<Widget> actions = _makeTabActions(ctx, screenIdx);
       actions.addAll(_makeGlobalActionsApp(ctx, screenIdx));

@@ -6,6 +6,7 @@ const double bigFontSize = 20.0;
 const double largerFontSize = 18.0;
 const double mainFontSize = 16.0;
 const double smallFontSize = 14.0;
+const double tinyFontSize = 12.0;
 const double delImgWidgOpacity = 0.5;
 
 // The padding of chat messages inside ist box.
@@ -31,6 +32,7 @@ const ColorScheme colorScheme = const ColorScheme.light(
 
 const Color infoKeyColor = Colors.black;
 const Color infoKeyArrowColor = infoKeyColor;
+const Color alertDiagBackgroundColor = Color(0xFFE0E0E0);
 
 const TextTheme tt = TextTheme(
    title: TextStyle(fontSize: bigFontSize),

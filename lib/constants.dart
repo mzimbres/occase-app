@@ -3,11 +3,10 @@
 // Some contants used to calculate widths and heights of widget and
 // tabs.
 
+const double goldenRatio = 1.618033;
 const double widgetMaxWidth = 450.0;
 const double imgWidth = widgetMaxWidth;
-const double imgHeight = widgetMaxWidth / 3.0;
-
-const double goldenRatio = 1.618033;
+const double imgHeight = widgetMaxWidth / goldenRatio;
 
 //-------------------------------------------------------------------------------
 
@@ -19,7 +18,8 @@ const int minImgsPerPost = 0;
 
 const int nickMaxLength = 20;
 const int nickMinLength = 3;
-const int emailMaxLength = 50;
+const int emailMaxLength = 80;
+const int descriptionMaxLength = 500;
 
 // This constant should be set to the maximum number of exclusive
 // details among all pruducts. At the moment this is 6 for cars and I

@@ -470,6 +470,9 @@ class Post {
    // The string *description* inputed when user writes an post.
    String description;
 
+   // The user email
+   String email;
+
    // Location tree code.
    List<int> location = <int>[];
 
@@ -500,6 +503,7 @@ class Post {
    , this.pinDate = 0
    , this.status = -1
    , this.description = ''
+   , this.email = ''
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
@@ -558,6 +562,7 @@ class Post {
       ret.visualizations = this.visualizations;
       ret.clicks = this.clicks;
       ret.description = this.description;
+      ret.email = this.email;
       ret.images = List<String>.from(this.images);
       ret.chats = List<ChatMetadata>.from(this.chats);
       return ret;
@@ -642,6 +647,7 @@ class Post {
 	 visualizations = map['visualizations'] ?? 0;
 	 clicks = map['clicks'] ?? 0;
 	 description = map['description'] ?? '';
+	 email = map['email'] ?? '';
 	 images = decodeList(0, '', map['images']);
 	 chats = decChatMetadataList(map['chats']);
       } catch (e) {
@@ -674,6 +680,7 @@ class Post {
       , 'nick': nick
       , 'avatar': avatar
       , 'description': description
+      , 'email': email
       , 'location': location
       , 'product': product
       , 'ex_details': exDetails
@@ -711,6 +718,7 @@ Map<String, dynamic> postToMap(Post post)
    , 'in_details': jsonEncode(post.inDetails)
    , 'range_values': jsonEncode(post.rangeValues)
    , 'description': post.description
+   , 'email': post.email
    , 'images': post.images
    };
 
