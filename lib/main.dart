@@ -897,10 +897,10 @@ Widget makeNewPostSetionTitle(String title)
 {
    return Center(
       child: Padding(
-	 padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+	 padding: EdgeInsets.only(top: 40.0, bottom: 20.0),
 	 child: Text(title,
 	    style: TextStyle(
-	       fontSize: 18.0,
+	       fontSize: stl.largeFontSize,
 	       color: stl.colorScheme.primary,
 	       fontWeight: FontWeight.w500,
 	    ),
@@ -4355,14 +4355,26 @@ Widget makeDefaultTextWidget({
    String text,
    Color color = Colors.white,
    FontWeight fontWeight = FontWeight.normal,
+   FontStyle fontStyle = FontStyle.normal,
 }) {
    return Text(text,
       textAlign: TextAlign.center,
       style: TextStyle(
-	 fontSize: stl.bigFontSize,
+	 fontSize: stl.hugeFontSize,
 	 color: color,
 	 fontWeight: fontWeight,
+	 fontStyle: fontStyle,
       ),
+   );
+}
+
+Column makeCol(List<Widget> list)
+{
+   return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: list,
    );
 }
 
@@ -4371,6 +4383,7 @@ Widget makeDefaultWidgetCard({
    double width = stl.buttonMinWidth,
    String buttonName,
    String description,
+   String testimonial,
    final OnPressedF00 onPressed,
 })
 {
@@ -4392,32 +4405,49 @@ Widget makeDefaultWidgetCard({
       ),
    );
 
-   Widget col = Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>
-      [ text
-      , Padding(
-	   padding: EdgeInsets.only(top: padding),
-	   child: button,
-	),
-      ],
+   Widget card = ConstrainedBox(
+	 constraints: BoxConstraints(
+	    minHeight: 200,
+	 ),
+	 child: Card(
+            color: stl.colorScheme.primary,
+            margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
+            ),
+            child: Padding(
+               padding: EdgeInsets.all(padding),
+               child: makeCol(<Widget>
+                  [ text
+                  , Padding(
+              	 padding: EdgeInsets.only(top: padding),
+              	 child: button,
+                    ),
+                  ]
+               ),
+            ),
+	 ),
    );
 
+   List<Widget> list = List<Widget>();
+
+   if (isWide) {
+      Widget foo = Padding(
+	    padding: const EdgeInsets.only(bottom: 50),
+	    child: makeDefaultTextWidget(
+	       text: testimonial,
+	       color: stl.colorScheme.primary,
+	       fontStyle: FontStyle.italic,
+	 ),
+      );
+      list.add(foo);
+   }
+
+   list.add(card);
+
    return Center(
-      child: Card(
-	 color: stl.colorScheme.primary,
-	 margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
-	 elevation: 2,
-	 shape: RoundedRectangleBorder(
-	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
-	 ),
-	 child: Padding(
-	    padding: EdgeInsets.all(padding),
-	    child: col,
-	 ),
-      ),
+      child: makeCol(list),
    );
 }
 
@@ -4434,6 +4464,7 @@ Widget makeSearchInitTab({
 	 isWide: isWide,
 	 description: msgs[1],
 	 buttonName: buttonNames[1],
+	 testimonial: '\"I love this website\"',
 	 onPressed: onLastestPostsPressed,
       );
 
@@ -4441,6 +4472,7 @@ Widget makeSearchInitTab({
       isWide: isWide,
       description: msgs[0],
       buttonName: buttonNames[0],
+      testimonial: '\"I love this website\"',
       onPressed: onCreateAd,
    );
 
@@ -4448,6 +4480,7 @@ Widget makeSearchInitTab({
       isWide: isWide,
       description: msgs[1],
       buttonName: buttonNames[1],
+      testimonial: '\"I love this website\"',
       onPressed: onLastestPostsPressed,
    );
 
@@ -4455,6 +4488,7 @@ Widget makeSearchInitTab({
       isWide: isWide,
       description: msgs[2],
       buttonName: buttonNames[2],
+      testimonial: '\"I love this website\"',
       onPressed: onGoToSearch,
    );
 
@@ -4923,6 +4957,7 @@ Widget makeTabDefaultWidget({
 	    isWide: isWide,
 	    description: g.param.onEmptyOwnMsg[0],
 	    buttonName: g.param.onEmptyOwnButtonNames[0],
+	    testimonial: '\"I love this website\"',
 	    onPressed: onCreateAd,
 	 );
 
@@ -4931,6 +4966,7 @@ Widget makeTabDefaultWidget({
 	    isWide: isWide,
 	    description: g.param.onEmptyFavMsg[0],
 	    buttonName: g.param.onEmptyFavButtonNames[0],
+	    testimonial: '\"I love this website\"',
 	    onPressed: onGoToSearch,
 	 );
    } else {
