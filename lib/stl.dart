@@ -20,7 +20,7 @@ const Color onPrimaryColor = Colors.white;
 const Color backgroundColor = Color(0xFFEEEEEE);
 const Color secondaryColor = Color(0xFFffa32c);
 const Color onSecondaryColor = primaryColor;
-const Color newPostCardColor = Color(0xFFd7ccc8);
+final Color newPostCardColor = Colors.orange[50];
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
@@ -59,8 +59,8 @@ const TextStyle tsMainBlackBold = TextStyle(
 
 final TextStyle newPostSubtitleLT = TextStyle(
    fontSize: largerFontSize,
-   color: Colors.deepOrange[900],
-   fontWeight: FontWeight.w300,
+   color: Colors.orange[900],
+   fontWeight: FontWeight.w500,
 );
 
 final TextStyle ltSubtitle = TextStyle(

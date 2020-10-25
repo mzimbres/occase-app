@@ -91,12 +91,9 @@ class Parameters {
    List<List<String>> _paymentValueSubtitles = <List<String>>[<String>['']];
    List<List<String>> _statsTitleAndFields = <List<String>>[<String>['']];
    List<List<String>> _newPostSectionNames = <List<String>>[<String>['']];
-   List<List<String>> _onEmptyOwnMsg = <List<String>>[<String>['']];
-   List<List<String>> _onEmptySeaMsg = <List<String>>[<String>['', '', '', '']];
-   List<List<String>> _onEmptyFavMsg = <List<String>>[<String>['']];
-   List<List<String>> _onEmptyOwnButtonNames = <List<String>>[<String>['']];
-   List<List<String>> _onEmptySeaButtonNames = <List<String>>[<String>['', '', '', '']];
-   List<List<String>> _onEmptyFavButtonNames = <List<String>>[<String>['']];
+   List<List<String>> _msgOnEmptyTab = <List<String>>[<String>['', '', '', '']];
+   List<List<String>> _buttonNamesOnEmptyTab = <List<String>>[<String>['', '', '', '']];
+   List<List<String>> _testimonials = <List<String>>[<String>['', '', '', '']];
 
    List<int> rangesMinMax;
    List<int> rangeDivs;
@@ -199,12 +196,9 @@ class Parameters {
    List<String> get paymentValueSubtitles        => _paymentValueSubtitles[_langIdx];
    List<String> get statsTitleAndFields          => _statsTitleAndFields[_langIdx];
    List<String> get newPostSectionNames          => _newPostSectionNames[_langIdx];
-   List<String> get onEmptyOwnMsg                => _onEmptyOwnMsg[_langIdx];
-   List<String> get onEmptySeaMsg                => _onEmptySeaMsg[_langIdx];
-   List<String> get onEmptyFavMsg                => _onEmptyFavMsg[_langIdx];
-   List<String> get onEmptyOwnButtonNames        => _onEmptyOwnButtonNames[_langIdx];
-   List<String> get onEmptySeaButtonNames        => _onEmptySeaButtonNames[_langIdx];
-   List<String> get onEmptyFavButtonNames        => _onEmptyFavButtonNames[_langIdx];
+   List<String> get msgOnEmptyTab                => _msgOnEmptyTab[_langIdx];
+   List<String> get buttonNamesOnEmptyTab        => _buttonNamesOnEmptyTab[_langIdx];
+   List<String> get testimonials                 => _testimonials[_langIdx];
 
    int get langIdx => _langIdx;
 
@@ -286,12 +280,9 @@ class Parameters {
       _paymentValueSubtitles       = decodeList3(map['paymentValueSubtitles']);
       _statsTitleAndFields         = decodeList3(map['statsTitleAndFields']);
       _newPostSectionNames         = decodeList3(map['newPostSectionNames']);
-      _onEmptyOwnMsg               = decodeList3(map['onEmptyOwnMsg']);
-      _onEmptySeaMsg               = decodeList3(map['onEmptySeaMsg']);
-      _onEmptyFavMsg               = decodeList3(map['onEmptyFavMsg']);
-      _onEmptyOwnButtonNames       = decodeList3(map['onEmptyOwnButtonNames']);
-      _onEmptySeaButtonNames       = decodeList3(map['onEmptySeaButtonNames']);
-      _onEmptyFavButtonNames       = decodeList3(map['onEmptyFavButtonNames']);
+      _msgOnEmptyTab               = decodeList3(map['msgOnEmptyTab']);
+      _buttonNamesOnEmptyTab       = decodeList3(map['buttonNamesOnEmptyTab']);
+      _testimonials                = decodeList3(map['testimonials']);
 
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
@@ -357,12 +348,9 @@ class Parameters {
          'information':                 _information,
          'supportEmail':                _supportEmail,
          'supportEmailSubject':         _supportEmailSubject,
-         'onEmptyOwnMsg':               _onEmptyOwnMsg,
-         'onEmptySeaMsg':               _onEmptySeaMsg,
-         'onEmptyFavMsg':               _onEmptyFavMsg,
-         'onEmptyOwnButtonNames':       _onEmptyOwnButtonNames,
-         'onEmptySeaButtonNames':       _onEmptySeaButtonNames,
-         'onEmptyFavButtonNames':       _onEmptyFavButtonNames,
+         'msgOnEmptyTab':               _msgOnEmptyTab,
+         'buttonNamesOnEmptyTab':       _buttonNamesOnEmptyTab,
+         'testimonials':                _testimonials,
          'adminChatMsg':                _adminChatMsg,
          'paymentValues':               _paymentValues,
          'tabNames':                    _tabNames,

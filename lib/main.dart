@@ -897,7 +897,7 @@ Widget makeNewPostSetionTitle(String title)
 {
    return Center(
       child: Padding(
-	 padding: EdgeInsets.only(top: 40.0, bottom: 20.0),
+	 padding: EdgeInsets.only(top: 60.0, bottom: 20.0),
 	 child: Text(title,
 	    style: TextStyle(
 	       fontSize: stl.largeFontSize,
@@ -4360,7 +4360,7 @@ Widget makeDefaultTextWidget({
    return Text(text,
       textAlign: TextAlign.center,
       style: TextStyle(
-	 fontSize: stl.hugeFontSize,
+	 fontSize: stl.largeFontSize,
 	 color: color,
 	 fontWeight: fontWeight,
 	 fontStyle: fontStyle,
@@ -4389,11 +4389,12 @@ Widget makeDefaultWidgetCard({
 {
    Widget text = makeDefaultTextWidget(text: description);
 
-   final double padding = 20;
+   const double padding = 20;
+   const double sep = 50;
 
    Widget button = ButtonTheme(
-      minWidth: 180,
-      child: FlatButton(
+      //minWidth: 180,
+      child: RaisedButton(
 	 child: makeDefaultTextWidget(
 	    text: buttonName,
 	    color: stl.colorScheme.primary,
@@ -4401,53 +4402,56 @@ Widget makeDefaultWidgetCard({
 	 ),
 	 color: stl.colorScheme.secondary,
 	 onPressed: onPressed,
-	 //padding: const EdgeInsets.all(),
+	 elevation: 2,
+	 //padding: const EdgeInsets.all(10),
+      ),
+   );
+
+   Widget foo = Padding(
+	 padding: const EdgeInsets.only(bottom: sep),
+	 child: makeDefaultTextWidget(
+	    text: testimonial,
+	    color: Colors.amber[500],
+	    fontWeight: FontWeight.w400,
+	    fontStyle: FontStyle.italic,
+      ),
+   );
+
+   List<Widget> list = <Widget>[];
+   double minHeight = 0;
+   if (isWide) {
+      list.add(foo);
+      minHeight = 380;
+   }
+
+   list.add(text);
+
+   list.add(Padding(
+	padding: EdgeInsets.only(top: sep),
+	child: button,
       ),
    );
 
    Widget card = ConstrainedBox(
-	 constraints: BoxConstraints(
-	    minHeight: 200,
+      constraints: BoxConstraints(
+	 minHeight: minHeight,
+      ),
+      child: Card(
+	 color: stl.colorScheme.primary,
+	 margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
+	 elevation: 0,
+	 shape: RoundedRectangleBorder(
+	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
 	 ),
-	 child: Card(
-            color: stl.colorScheme.primary,
-            margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-               borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
-            ),
-            child: Padding(
-               padding: EdgeInsets.all(padding),
-               child: makeCol(<Widget>
-                  [ text
-                  , Padding(
-              	 padding: EdgeInsets.only(top: padding),
-              	 child: button,
-                    ),
-                  ]
-               ),
-            ),
+	 child: Padding(
+	    padding: EdgeInsets.all(padding),
+	    child: makeCol(list),
 	 ),
+      ),
    );
 
-   List<Widget> list = List<Widget>();
-
-   if (isWide) {
-      Widget foo = Padding(
-	    padding: const EdgeInsets.only(bottom: 50),
-	    child: makeDefaultTextWidget(
-	       text: testimonial,
-	       color: stl.colorScheme.primary,
-	       fontStyle: FontStyle.italic,
-	 ),
-      );
-      list.add(foo);
-   }
-
-   list.add(card);
-
    return Center(
-      child: makeCol(list),
+      child: card,
    );
 }
 
@@ -4455,6 +4459,7 @@ Widget makeSearchInitTab({
    final bool isWide,
    final List<String> msgs,
    final List<String> buttonNames,
+   final List<String> testimonials,
    final OnPressedF00 onCreateAd,
    final OnPressedF00 onGoToSearch,
    final OnPressedF00 onLastestPostsPressed,
@@ -4462,33 +4467,33 @@ Widget makeSearchInitTab({
    if (isWide)
       return makeDefaultWidgetCard(
 	 isWide: isWide,
-	 description: msgs[1],
-	 buttonName: buttonNames[1],
-	 testimonial: '\"I love this website\"',
+	 description: msgs[cts.searchIdx],
+	 buttonName: buttonNames[cts.searchIdx],
+	 testimonial: '\"${testimonials[cts.searchIdx]}\"',
 	 onPressed: onLastestPostsPressed,
       );
 
    Widget w0 = makeDefaultWidgetCard(
       isWide: isWide,
-      description: msgs[0],
-      buttonName: buttonNames[0],
-      testimonial: '\"I love this website\"',
+      description: msgs[cts.ownIdx],
+      buttonName: buttonNames[cts.ownIdx],
+      testimonial: '\"${testimonials[cts.ownIdx]}\"',
       onPressed: onCreateAd,
    );
 
    Widget w1 = makeDefaultWidgetCard(
       isWide: isWide,
-      description: msgs[1],
-      buttonName: buttonNames[1],
-      testimonial: '\"I love this website\"',
+      description: msgs[cts.searchIdx],
+      buttonName: buttonNames[cts.searchIdx],
+      testimonial: '\"${testimonials[cts.searchIdx]}\"',
       onPressed: onLastestPostsPressed,
    );
 
    Widget w2 = makeDefaultWidgetCard(
       isWide: isWide,
-      description: msgs[2],
-      buttonName: buttonNames[2],
-      testimonial: '\"I love this website\"',
+      description: msgs[cts.favIdx],
+      buttonName: buttonNames[cts.favIdx],
+      testimonial: '\"${testimonials[cts.favIdx]}\"',
       onPressed: onGoToSearch,
    );
 
@@ -4519,8 +4524,9 @@ Widget makeSearchResultPosts({
    if (posts.isEmpty)
       return makeSearchInitTab(
 	 isWide: isWide,
-	 msgs: g.param.onEmptySeaMsg,
-	 buttonNames: g.param.onEmptySeaButtonNames,
+	 msgs: g.param.msgOnEmptyTab,
+	 buttonNames: g.param.buttonNamesOnEmptyTab,
+	 testimonials: g.param.testimonials,
 	 onCreateAd: isWide ? null : onCreateAd,
 	 onGoToSearch: onGoToSearch,
 	 onLastestPostsPressed: onLatestPostsPressed,
@@ -4955,25 +4961,26 @@ Widget makeTabDefaultWidget({
       if (tab == cts.ownIdx)
 	 return makeDefaultWidgetCard(
 	    isWide: isWide,
-	    description: g.param.onEmptyOwnMsg[0],
-	    buttonName: g.param.onEmptyOwnButtonNames[0],
-	    testimonial: '\"I love this website\"',
+	    description: g.param.msgOnEmptyTab[cts.ownIdx],
+	    buttonName: g.param.buttonNamesOnEmptyTab[cts.ownIdx],
+	    testimonial: '\"${g.param.testimonials[cts.ownIdx]}\"',
 	    onPressed: onCreateAd,
 	 );
 
       if (tab == cts.favIdx)
 	 return makeDefaultWidgetCard(
 	    isWide: isWide,
-	    description: g.param.onEmptyFavMsg[0],
-	    buttonName: g.param.onEmptyFavButtonNames[0],
-	    testimonial: '\"I love this website\"',
+	    description: g.param.msgOnEmptyTab[cts.favIdx],
+	    buttonName: g.param.buttonNamesOnEmptyTab[cts.favIdx],
+	    testimonial: '\"${g.param.testimonials[cts.favIdx]}\"',
 	    onPressed: onGoToSearch,
 	 );
    } else {
       return makeSearchInitTab(
 	 isWide: isWide,
-	 msgs: g.param.onEmptySeaMsg,
-	 buttonNames: g.param.onEmptySeaButtonNames,
+	 msgs: g.param.msgOnEmptyTab,
+	 buttonNames: g.param.buttonNamesOnEmptyTab,
+	 testimonials: g.param.testimonials,
 	 onCreateAd: onCreateAd,
 	 onGoToSearch: onGoToSearch,
 	 onLastestPostsPressed: onLatestPostsPressed,
