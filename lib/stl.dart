@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-final Color chatLongPressendColor = Colors.grey[350]; 
-
 const double hugeFontSize = 24.0;
 const double largeFontSize = 22.0;
 const double bigFontSize = 20.0;
@@ -15,6 +13,7 @@ const double delImgWidgOpacity = 0.5;
 const double chatMsgPadding = 5.0;
 const double postSectionPadding = 5.0;
 
+final Color chatLongPressendColor = Colors.grey[350]; 
 const Color primaryColor = Color(0xFF434b79);
 const Color onPrimaryColor = Colors.white;
 const Color backgroundColor = Color(0xFFEEEEEE);
@@ -95,8 +94,9 @@ final TextStyle appBarLtSubtitle = TextStyle(
 const double postListViewTopPadding = 2.0;
 const double postListViewSidePadding = 0.0;
 const double chatListTilePadding = 6.0;
+const double newPostLVPadding = 4.0;
 
-const double cornerRadius = 8.0;
+const double cornerRadius = 4.0;
 const double buttonMinWidth = 150;
 
 const EdgeInsets postChatPadding = const EdgeInsets.symmetric(vertical: 10.0);
@@ -146,6 +146,7 @@ Divider alertDivider = Divider(
 );
 
 const double leftIndent = 10.0;
+const double newPostSectionTitleTopIndent = 25;
 
 final Divider newPostDivider = Divider(
    color: Colors.grey,

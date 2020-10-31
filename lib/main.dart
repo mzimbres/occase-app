@@ -893,24 +893,25 @@ List<Widget> makeCheckBoxes(
    return ret;
 }
 
-Widget makeNewPostSetionTitle(String title)
-{
-   return Center(
-      child: Padding(
-	 padding: EdgeInsets.only(top: 60.0, bottom: 20.0),
-	 child: Text(title,
-	    style: TextStyle(
-	       fontSize: stl.largeFontSize,
-	       color: stl.colorScheme.primary,
-	       fontWeight: FontWeight.w500,
-	    ),
+Widget makeNewPostSetionTitle({
+   String title,
+   double topPadding = stl.newPostSectionTitleTopIndent,
+   double bottonPadding = stl.newPostLVPadding,
+}) {
+   return Padding(
+      padding: EdgeInsets.only(top: topPadding, bottom: bottonPadding),
+      child: Text(title,
+	 style: TextStyle(
+	    fontSize: stl.bigFontSize,
+	    color: stl.colorScheme.primary,
+	    fontWeight: FontWeight.w500,
 	 ),
       ),
    );
 
 }
 
-Widget makeNewPostFinalScreen({
+List<Widget> makeNewPostFinalScreen({
    BuildContext ctx,
    final Post post,
    final Node locRootNode,
@@ -929,6 +930,10 @@ Widget makeNewPostFinalScreen({
    // NOTE: This ListView is used to provide a new context, so that
    // it is possible to show the snackbar using the scaffold.of on
    // the new context.
+
+   List<Widget> ret = List<Widget>();
+
+   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[1]));
 
    Widget postBox = PostWidget(
       tab: cts.ownIdx,
@@ -950,6 +955,9 @@ Widget makeNewPostFinalScreen({
       onClick: () {debugPrint('Noop08');},
    );
 
+   ret.add(postBox);
+   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[2]));
+
    Widget cancelButton = createRaisedButton(
       onPressed: () {onRemovePost(ctx);},
       text: g.param.cancel,
@@ -964,34 +972,32 @@ Widget makeNewPostFinalScreen({
       textColor: stl.colorScheme.onSecondary,
    );
 
+   Widget payment = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: makePaymentPlanOptions(
+	 post: post,
+	 onFreePaymentPressed: onFreePaymentPressed,
+	 onStandardPaymentPressed: onStandardPaymentPressed,
+	 onPremiumPaymentPressed: onPremiumPaymentPressed,
+      ),
+   );
+
+   ret.add(payment);
+
    Widget buttonsRow = Padding(
-      padding: EdgeInsets.only(top: 30.0, bottom: 30.0),
+      padding: EdgeInsets.only(
+	 top: stl.newPostSectionTitleTopIndent,
+	 bottom: stl.newPostSectionTitleTopIndent,
+      ),
       child: Row(children: <Widget>
       [ Expanded(child: cancelButton)
       , Expanded(child: sendButton)
       ]),
    );
 
-   Widget payment = Padding(
-      padding: EdgeInsets.symmetric(horizontal: stl.paymentPadding),
-      child: Column(
-	 mainAxisSize: MainAxisSize.min,
-	 children: makePaymentPlanOptions(
-	    post: post,
-	    onFreePaymentPressed: onFreePaymentPressed,
-	    onStandardPaymentPressed: onStandardPaymentPressed,
-	    onPremiumPaymentPressed: onPremiumPaymentPressed,
-	 )
-      ),
-   );
+   ret.add(buttonsRow);
 
-   return Column(children: <Widget>
-   [ makeNewPostSetionTitle(g.param.newPostSectionNames[1])
-   , postBox
-   , makeNewPostSetionTitle(g.param.newPostSectionNames[2])
-   , payment
-   , buttonsRow
-   ]);
+   return ret;
 }
 
 List<Widget> makeTabActions({
@@ -1102,7 +1108,7 @@ Widget makeAppBarWdg({
 Widget makeNewPostCards(Widget child)
 {
    return Card(
-      margin: const EdgeInsets.all(5),
+      margin: const EdgeInsets.only(bottom: stl.newPostLVPadding),
       color: stl.newPostCardColor,
       child: child,
       elevation: 2,
@@ -1128,7 +1134,7 @@ Widget makeNewPostLT({
       );
       
    Widget lt = ListTile(
-       contentPadding: EdgeInsets.only(left: stl.leftIndent),
+       //contentPadding: EdgeInsets.only(left: stl.leftIndent),
        leading: leading,
        title: Text(title,
 	  maxLines: 1,
@@ -1139,7 +1145,7 @@ Widget makeNewPostLT({
        subtitle: Text(subTitle,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.newPostSubtitleLT,
+	  //style: stl.newPostSubtitleLT,
        ),
        onTap: onTap,
        enabled: true,
@@ -1152,6 +1158,7 @@ Widget makeNewPostLT({
 ListView makeNewPostListView(List<Widget> list)
 {
    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: stl.newPostLVPadding),
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i) { return list[i]; },
    );
@@ -1226,14 +1233,6 @@ Widget makeNewPostInDetailLT({
 	 if (state2 != null)
 	    onSetInDetail(state2);
       },
-   );
-}
-
-Widget padNewPostWidget(Widget w)
-{
-   return Padding(
-      padding: EdgeInsets.only(left: stl.leftIndent),
-      child: w,
    );
 }
 
@@ -1320,14 +1319,13 @@ List<Widget> makeNewPostWdgs({
 
    {
       //Widget year = makeDropBox();
-      //list.add(padNewPostWidget(Row(
+      //list.add(Row(
       //         children: <Widget>
       //         [ Text('${g.param.postValueTitles[2]}: ', style:
       //         stl.tsMainPrimary)
       //         , year
       //         ],
       //      ),
-      //   ),
       //);
    }
 
@@ -1340,10 +1338,12 @@ List<Widget> makeNewPostWdgs({
 	 onValueChanged: onNewPostValueChanged,
       );
 
+      list.add(makeNewPostSetionTitle(title: 'Values'));
       list.addAll(values);
    }
 
    {  // exDetails
+      list.add(makeNewPostSetionTitle(title: 'Detalhes 1'));
       final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
       for (int i = 0; i < nDetails; ++i) {
 	 final int length = productDetailLength(exDetailsRootNode, productIdx, i);
@@ -1390,6 +1390,7 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // inDetails
+      list.add(makeNewPostSetionTitle(title: 'Detalhes 2'));
       final int nDetails = inDetailsRootNode.children[productIdx].children.length;
       for (int i = 0; i < nDetails; ++i) {
 	 final List<String> details = listAllDetails(
@@ -1448,9 +1449,7 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF00 onPremiumPaymentPressed,
 }) {
    List<Widget> list = <Widget>[];
-
-   if (!isWideScreen(ctx))
-      list.add(makeNewPostSetionTitle(g.param.newPostSectionNames[0]));
+   list.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[0]));
 
    List<Widget> mainWidgets = makeNewPostWdgs(
       ctx: ctx,
@@ -1469,7 +1468,7 @@ Widget makeNewPostScreenWdgs({
    list.addAll(mainWidgets);
 
    if (list.length < 7) {
-      Widget finalScreen = makeNewPostFinalScreen(
+      List<Widget> finalScreen = makeNewPostFinalScreen(
 	 ctx: ctx,
 	 post: post,
 	 locRootNode: locRootNode,
@@ -1486,7 +1485,7 @@ Widget makeNewPostScreenWdgs({
 	 onPremiumPaymentPressed: onPremiumPaymentPressed,
       );
 
-      list.add(finalScreen);
+      list.addAll(finalScreen);
 
       return makeNewPostListView(list);
    }
@@ -1550,7 +1549,7 @@ Widget makeNewPostScreenWdgs({
       // ---------------------------------------------------
 
       {  // final
-         Widget finalScreen = makeNewPostFinalScreen(
+         List<Widget> finalScreen = makeNewPostFinalScreen(
 	    ctx: ctx,
 	    post: post,
 	    locRootNode: locRootNode,
@@ -1567,7 +1566,7 @@ Widget makeNewPostScreenWdgs({
 	    onPremiumPaymentPressed: onPremiumPaymentPressed,
 	 );
 
-	 list.add(finalScreen);
+	 list.addAll(finalScreen);
       }
    }
 
@@ -2767,10 +2766,10 @@ Widget makePayPriceListTile({
    );
 
    IconData icon = selected ? Icons.check_box : Icons.check_box_outline_blank;
-   Color backgroundColor = selected ? Colors.amber[200] : Colors.white;
+   Color backgroundColor = selected ? Colors.amber[100] : Colors.white;
 
    return Card(
-      elevation: 1.0,
+      elevation: 0.0,
       margin: const EdgeInsets.symmetric(vertical: 2),
       color: backgroundColor,
       shape: RoundedRectangleBorder(
@@ -2996,35 +2995,54 @@ Container makeUnreadMsgsCircle({
    );
 }
 
-Row makePostRowElem({
+Widget makeStatsText({
+   String key,
+   String value,
+   String prefix =  ' • ',
+}) {
+
+   return Text(prefix + key + ' ' + value,
+      style: TextStyle(
+	 fontSize: stl.mainFontSize,
+	 color: stl.colorScheme.primary,
+	 fontWeight: FontWeight.normal,
+      ),
+   );
+}
+
+Widget makePostRowElem({
    BuildContext ctx,
    String key,
    String value,
+   String prefix = '• ',
    Color keyTextColor = stl.infoKeyColor,
    Color valueTextColor = stl.primaryColor,
 }) {
-   RichText left = RichText(
-      overflow: TextOverflow.clip,
-      text: TextSpan(
-         text: key + ': ',
-         style: stl.tsMainBlack.copyWith(color: keyTextColor),
-         children: <TextSpan>
-         [ TextSpan(
-              text: value,
-              style: stl.tsMainBlackBold.copyWith(
-                 color: valueTextColor
-              ),
-           ),
-         ],
-      ),
+
+   Text keyWdg = Text(prefix + key,
+      style: stl.tsMainBlack.copyWith(color: keyTextColor),
    );
 
-   return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+   Text valueWdg = Text(value,
+	style: stl.tsMainBlackBold.copyWith(
+	   color: valueTextColor,
+	),
+	overflow: TextOverflow.ellipsis,
+   );
+
+   Row w = Row(
+      //mainAxisSize: MainAxisSize.min,
+      //mainAxisAlignment: MainAxisAlignment.start,
+      //crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>
-      [ Icon(Icons.arrow_right, color: keyTextColor)
-      , Flexible(child: left)
-      ]
+      [ Expanded(child: keyWdg)
+      , Expanded(child: valueWdg)
+      ],
+   );
+
+   return imposeWidth(
+      child: w,
+      width: makeTabWidth(ctx, cts.ownIdx),
    );
 }
 
@@ -3038,34 +3056,16 @@ List<Widget> makePostInRows(
       if ((state & (1 << i)) == 0)
          continue;
 
-      Text text = Text(' ${nodes[i].name(g.param.langIdx)}',
+      Text text = Text('• ${nodes[i].name(g.param.langIdx)}',
          style: stl.tt.subtitle1.copyWith(
             color: stl.primaryColor,
          ),
       );
 
-      Row row = Row(children: <Widget>
-      [ Icon(Icons.check, color: Colors.green[600])
-      , text
-      ]); 
-
-      list.add(row);
+      list.add(text);
    }
 
    return list;
-}
-
-Widget makePostSectionTitle(String str)
-{
-   return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-         padding: EdgeInsets.all(stl.postSectionPadding),
-         child: Text(str,
-            style: stl.tsMainPrimary,
-         ),
-      ),
-   );
 }
 
 // Assembles the menu information.
@@ -3077,7 +3077,7 @@ List<Widget> makeTreeInfo(
    List<String> treeDepthNames,
 ) {
    List<Widget> ret = <Widget>[];
-   ret.add(makePostSectionTitle(title));
+   ret.add(makeNewPostSetionTitle(title: title));
    List<String> names = loadNames(
       rootNode: rootNode,
       code: code,
@@ -3114,7 +3114,7 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
 {
    List<Widget> list = <Widget>[];
 
-   list.add(makePostSectionTitle(g.param.rangesTitle));
+   list.add(makeNewPostSetionTitle(title: g.param.rangesTitle));
 
    List<Widget> items = List.generate(g.param.rangeDivs.length, (int i)
    {
@@ -3137,32 +3137,24 @@ List<Widget> makePostStats({
 }) {
    List<Widget> list = <Widget>[];
 
-   //list.add(makePostSectionTitle(titleAndFields[0]));
+   //list.add(makeNewPostSetionTitle(title: titleAndFields[0]));
 
-   list.add(makePostRowElem(
-	 ctx: ctx,
+   list.add(makeStatsText(
 	 key: titleAndFields[1],
 	 value: '${post.onSearch}',
-	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.primary,
+	 prefix: '',
       ),
    );
 
-   list.add(makePostRowElem(
-	 ctx: ctx,
+   list.add(makeStatsText(
 	 key: titleAndFields[2],
 	 value: '${post.visualizations}',
-	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.primary,
       ),
    );
 
-   list.add(makePostRowElem(
-	 ctx: ctx,
+   list.add(makeStatsText(
 	 key: titleAndFields[3],
 	 value: '${post.clicks}',
-	 keyTextColor: stl.colorScheme.onSecondary,
-	 valueTextColor: stl.colorScheme.primary,
       ),
    );
 
@@ -3178,7 +3170,7 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
       return List<Widget>();
 
    List<Widget> list = List<Widget>();
-   list.add(makePostSectionTitle(g.param.postExDetailsTitle));
+   list.add(makeNewPostSetionTitle(title: g.param.postExDetailsTitle));
 
    final int l1 = exDetailsRootNode.at1(idx).children.length;
    for (int i = 0; i < l1; ++i) {
@@ -3196,7 +3188,7 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
       );
    }
 
-   list.add(makePostSectionTitle(g.param.postRefSectionTitle));
+   list.add(makeNewPostSetionTitle(title: g.param.postRefSectionTitle));
 
    List<String> values = List<String>();
    values.add(post.nick);
@@ -3241,8 +3233,8 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
       );
 
       if (foo.length != 0) {
-         all.add(makePostSectionTitle(
-	       inDetailsRootNode.at(i, j).name(g.param.langIdx),
+         all.add(makeNewPostSetionTitle(
+	       title: inDetailsRootNode.at(i, j).name(g.param.langIdx),
             ),
          );
          all.addAll(foo);
@@ -3255,10 +3247,13 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 Card putPostElemOnCard({
    List<Widget> list,
    Color backgroundColor = stl.backgroundColor, 
+   double margin = stl.newPostPadding,
+   double padding = 0,
 }) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: list,
    );
 
@@ -3266,12 +3261,15 @@ Card putPostElemOnCard({
       elevation: 0.0,
       //color: stl.colorScheme.background,
       color: backgroundColor,
-      margin: EdgeInsets.all(0.0),
-      child: col,
+      margin: EdgeInsets.all(margin),
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
             Radius.circular(0.0)
          ),
+      ),
+      child: Padding(
+	 padding: EdgeInsets.symmetric(vertical: padding),
+	 child: col,
       ),
    );
 }
@@ -3297,7 +3295,6 @@ List<Widget> assemblePostRows({
    final Node inDetailsRootNode,
 }) {
    List<Widget> all = <Widget>[];
-
    all.addAll(makePostValues(ctx, post));
    all.addAll(makeTreeInfo(ctx, locRootNode, post.location, g.param.newPostTabNames[0], g.param.locationTreeDepthNames));
    all.addAll(makeTreeInfo(ctx, prodRootNode, post.product, g.param.newPostTabNames[1], g.param.productTreeDepthNames));
@@ -3305,7 +3302,7 @@ List<Widget> assemblePostRows({
    all.addAll(makePostInDetails(post, inDetailsRootNode));
 
    if (post.description.isNotEmpty) {
-      all.add(makePostSectionTitle(g.param.postDescTitle));
+      all.add(makeNewPostSetionTitle(title: g.param.postDescTitle));
       all.add(makePostDescription(ctx, tab, post.description));
    }
 
@@ -4074,7 +4071,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 	    return imposeWidth(
 	       child: w,
-	       width: makeWidgetWidth(ctx),
+	       width: makeTabWidth(ctx, cts.ownIdx),
 	    );
 	 },
       );
@@ -4319,20 +4316,26 @@ Widget makePostDetailsWdg({
 
    rows.add(listView);
 
-   //--------------------------------------------------------------------------
-
-   List<Widget> stats = makePostStats(
-      ctx: ctx,
-      post: post,
-      titleAndFields: g.param.statsTitleAndFields,
+   Widget stats = putPostElemOnCard(
+      padding: stl.newPostPadding,
+      backgroundColor: stl.colorScheme.secondary,
+      margin: 0,
+      list: <Widget>
+      [ Padding(
+	   padding: const EdgeInsets.all(stl.newPostPadding),
+	   child: Row(
+	      mainAxisAlignment: MainAxisAlignment.start,
+	      children: makePostStats(
+		 ctx: ctx,
+		 post: post,
+		 titleAndFields: g.param.statsTitleAndFields,
+	      ),
+	   ),
+        ),
+      ],
    );
 
-   rows.add(putPostElemOnCard(
-	 list: stats,
-	 backgroundColor: stl.colorScheme.secondary,
-   ));
-
-   //--------------------------------------------------------------------------
+   rows.add(stats);
 
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
@@ -4348,7 +4351,10 @@ Widget makePostDetailsWdg({
 
    //--------------------------------------------------------------------------
 
-   return putPostElemOnCard(list: rows);
+   return putPostElemOnCard(
+      list: rows,
+      margin: 0,
+   );
 }
 
 Widget makeDefaultTextWidget({
@@ -4532,13 +4538,12 @@ Widget makeSearchResultPosts({
 	 onLastestPostsPressed: onLatestPostsPressed,
       );
 
-   final int e = isWide ? 0 : 1;
    // No controller should be assigned to this listview. This will break the
    // automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
       padding: const EdgeInsets.all(0.0),
-      itemCount: posts.length + e,
+      itemCount: posts.length,
       separatorBuilder: (BuildContext context, int index)
       {
 	 return Divider(color: Colors.black, height: 5.0);
