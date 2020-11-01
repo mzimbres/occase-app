@@ -896,7 +896,7 @@ List<Widget> makeCheckBoxes(
 Widget makeNewPostSetionTitle({
    String title,
    double topPadding = stl.newPostSectionTitleTopIndent,
-   double bottonPadding = stl.newPostLVPadding,
+   double bottonPadding = stl.basePadding,
 }) {
    return Padding(
       padding: EdgeInsets.only(top: topPadding, bottom: bottonPadding),
@@ -961,7 +961,7 @@ List<Widget> makeNewPostFinalScreen({
    Widget cancelButton = createRaisedButton(
       onPressed: () {onRemovePost(ctx);},
       text: g.param.cancel,
-      color: stl.expTileCardColor,
+      color: stl.backgroundColor,
       textColor: Colors.black,
    );
 
@@ -1108,10 +1108,10 @@ Widget makeAppBarWdg({
 Widget makeNewPostCards(Widget child)
 {
    return Card(
-      margin: const EdgeInsets.only(bottom: stl.newPostLVPadding),
+      margin: const EdgeInsets.only(bottom: stl.basePadding),
       color: stl.newPostCardColor,
       child: child,
-      elevation: 2,
+      elevation: 1,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
       ),
@@ -1134,7 +1134,7 @@ Widget makeNewPostLT({
       );
       
    Widget lt = ListTile(
-       //contentPadding: EdgeInsets.only(left: stl.leftIndent),
+       //contentPadding: EdgeInsets.only(left: stl.basePadding),
        leading: leading,
        title: Text(title,
 	  maxLines: 1,
@@ -1158,7 +1158,7 @@ Widget makeNewPostLT({
 ListView makeNewPostListView(List<Widget> list)
 {
    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: stl.newPostLVPadding),
+      padding: const EdgeInsets.only(bottom: stl.basePadding),
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i) { return list[i]; },
    );
@@ -1343,7 +1343,7 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // exDetails
-      list.add(makeNewPostSetionTitle(title: 'Detalhes 1'));
+      list.add(makeNewPostSetionTitle(title: exDetailsRootNode.name(g.param.langIdx)));
       final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
       for (int i = 0; i < nDetails; ++i) {
 	 final int length = productDetailLength(exDetailsRootNode, productIdx, i);
@@ -1390,7 +1390,7 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // inDetails
-      list.add(makeNewPostSetionTitle(title: 'Detalhes 2'));
+      list.add(makeNewPostSetionTitle(title: inDetailsRootNode.name(g.param.langIdx)));
       final int nDetails = inDetailsRootNode.children[productIdx].children.length;
       for (int i = 0; i < nDetails; ++i) {
 	 final List<String> details = listAllDetails(
@@ -1490,6 +1490,7 @@ Widget makeNewPostScreenWdgs({
       return makeNewPostListView(list);
    }
 
+   list.add(makeNewPostSetionTitle(title: 'User info'));
    if (list.length > 2) {
       {  // Description
 	 Widget descWidget = makeNewPostLT(
@@ -1624,7 +1625,7 @@ List<Widget> makeValueSliders({
 
       final Padding title =
 	 Padding(
-	    padding: const EdgeInsets.all(stl.leftIndent),
+	    padding: const EdgeInsets.all(stl.basePadding),
 	    child: makeSearchTitle(
 	       name: names[i],
 	       value: makeRangeStr(post, i),
@@ -1740,7 +1741,7 @@ Widget makeSearchScreenWdg({
       //Widget w1 = createRaisedButton(
       //   () {onSearchPressed(0);},
       //   g.param.cancel,
-      //   stl.expTileCardColor,
+      //   stl.backgroundColor,
       //   Colors.black,
       //);
 
@@ -1756,7 +1757,7 @@ Widget makeSearchScreenWdg({
       );
 
       //Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
-      foo.add(Padding(padding: EdgeInsets.only(top: stl.leftIndent), child: w2));
+      foo.add(Padding(padding: EdgeInsets.only(top: stl.basePadding), child: w2));
    }
 
    return ListView.builder(
@@ -2039,7 +2040,7 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
 {
    return Card(
       color: Colors.grey[200],
-      elevation: 0.7,
+      elevation: 1,
       margin: const EdgeInsets.all(4.0),
       //shape: RoundedRectangleBorder(
       //   borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -2103,7 +2104,7 @@ Card makeChatMsgWidget(
          mainAxisAlignment: MainAxisAlignment.end,
          children: <Widget>
       [ Flexible(child: Padding(
-            padding: EdgeInsets.all(stl.chatMsgPadding),
+            padding: EdgeInsets.all(stl.basePadding),
             child: msgAndDate))
       , Padding(
             padding: EdgeInsets.all(2.0),
@@ -2111,7 +2112,7 @@ Card makeChatMsgWidget(
       ]);
    } else {
       msgAndStatus = Padding(
-            padding: EdgeInsets.all(stl.chatMsgPadding),
+            padding: EdgeInsets.all(stl.basePadding),
             child: msgAndDate);
    }
 
@@ -2182,7 +2183,7 @@ Card makeChatMsgWidget(
             top: 2.0,
             right: marginRight,
             bottom: 0.0),
-      elevation: 0.7,
+      elevation: 1,
       color: color,
       child: Center(
          widthFactor: 1.0,
@@ -3035,14 +3036,18 @@ Widget makePostRowElem({
       //mainAxisAlignment: MainAxisAlignment.start,
       //crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>
-      [ Expanded(child: keyWdg)
+      [ Expanded(child: Padding(
+	    padding:  const EdgeInsets.only(left: 0),
+	    child: keyWdg,
+         ),
+      )
       , Expanded(child: valueWdg)
       ],
    );
 
    return imposeWidth(
-      child: w,
       width: makeTabWidth(ctx, cts.ownIdx),
+      child: w,
    );
 }
 
@@ -3247,7 +3252,7 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 Card putPostElemOnCard({
    List<Widget> list,
    Color backgroundColor = stl.backgroundColor, 
-   double margin = stl.newPostPadding,
+   double margin = stl.basePadding,
    double padding = 0,
 }) {
    Column col = Column(
@@ -3277,7 +3282,7 @@ Card putPostElemOnCard({
 Widget makePostDescription(BuildContext ctx, int tab, String desc)
 {
    return Padding(
-      padding: EdgeInsets.all(stl.postSectionPadding),
+      padding: EdgeInsets.all(stl.basePadding),
       child: Text(desc,
 	 //overflow: TextOverflow.ellipsis,
 	 style: stl.tsMainBlack,
@@ -3379,7 +3384,7 @@ Widget makeAddOrRemoveWidget({
    Color color,
 }) {
    return Padding(
-      padding: const EdgeInsets.all(stl.imgInfoWidgetPadding),
+      padding: const EdgeInsets.all(stl.basePadding),
       child: IconButton(
          onPressed: onPressed,
 	 padding: EdgeInsets.all(0.0),
@@ -3397,7 +3402,7 @@ Widget makeNewPostDialogWdg({
    final List<Widget> list,
    final List<Widget> actions,
    final double diagBorderRadius = stl.cornerRadius,
-   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: stl.alertDialogInsetPadding, vertical: stl.alertDialogInsetPadding),
+   final EdgeInsets insetPadding = const EdgeInsets.all(stl.basePadding),
    final Color backgroundColor = stl.alertDiagBackgroundColor,
 }) {
    Column col = Column(
@@ -3489,7 +3494,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
 
       return makeNewPostDialogWdg(
 	 title: Text(widget.title, style: stl.tsMainBlack),
-	 contentPadding: stl.newPostPadding,
+	 contentPadding: stl.basePadding,
 	 list: list,
 	 actions: <FlatButton>[ok],
       );
@@ -3560,7 +3565,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 
       return makeNewPostDialogWdg(
 	 title: Text(widget.title, style: stl.tsMainBlack),
-	 contentPadding: stl.newPostPadding,
+	 contentPadding: stl.basePadding,
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
       );
@@ -3628,7 +3633,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 onPressed: () { Navigator.pop(ctx, _txtCtrl.text); });
 
       Widget w = AlertDialog(
-	 contentPadding: EdgeInsets.all(stl.newPostPadding),
+	 contentPadding: EdgeInsets.all(stl.basePadding),
 	 title: Text(widget.title,
 	    style: stl.tsMainBlack,
 	 ),
@@ -3768,7 +3773,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
       return makeNewPostDialogWdg(
 	 title: titleWdg,
-	 contentPadding: stl.newPostPadding,
+	 contentPadding: stl.basePadding,
 	 list: locWdgs,
 	 actions: <FlatButton>[back, cancel, ok],
       );
@@ -4085,8 +4090,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       final String date = makeDateString3(widget.post.date);
 
       Widget statsWdgs = makeTextWdg(
-	 text: '$name: ${visualizations} - ${date}',
-	 edgeInsets: const EdgeInsets.all(5.0),
+	 text: '$name: ${visualizations} • ${date}',
+	 edgeInsets: const EdgeInsets.all(stl.basePadding),
 	 textColor: stl.colorScheme.primary,
 	 fontSize: stl.smallFontSize,
 	 fontWeight: FontWeight.normal,
@@ -4097,8 +4102,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
 	 Container img = Container(
-	    //margin: const EdgeInsets.only(top: 10.0),
-	    margin: const EdgeInsets.all(0.0),
+	    margin: const EdgeInsets.all(0),
 	    child: makeNetImgBox(
 	       width: postAvatarWidth,
 	       height: postAvatarWidth,
@@ -4207,19 +4211,19 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      const int n = 6;
-      if (detailsNames.length > 6)
-	 detailsNames.removeRange(6, detailsNames.length);
+      const int n = 9;
+      if (detailsNames.length > n)
+	 detailsNames.removeRange(n, detailsNames.length);
 
       Padding modelTitle = Padding(
-	 padding: const EdgeInsets.all(5.0),
+	 padding: const EdgeInsets.all(stl.basePadding),
 	 child: RichText(
 	    overflow: TextOverflow.ellipsis,
 	    text: TextSpan(
 	       text: '$modelStr\n',
 	       style: TextStyle(
 		  color: stl.colorScheme.primary,
-		  fontSize: stl.mainFontSize,
+		  fontSize: stl.largerFontSize,
 		  fontWeight: FontWeight.w600,
 	       ),
 	       children: <TextSpan>
@@ -4243,16 +4247,16 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
 	 backgroundColor: Colors.brown[300],
-	 textColor: Colors.grey[50],
+	 textColor: Colors.brown[50],
 	 fontSize: stl.mainFontSize,
 	 fontWeight: FontWeight.w400,
       );
 
-      const double spacing = 10;
-      const double runSpacing = 10;
+      const double spacing = stl.basePadding;
+      const double runSpacing = stl.basePadding;
 
       Widget detailsWrap = Padding(
-	 padding: EdgeInsets.only(left: 10.0),
+	 padding: const EdgeInsets.all(stl.basePadding),
 	 child: Wrap(
 	    children: detailWdgs,
 	    spacing: spacing,
@@ -4263,25 +4267,33 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       final double postTxtWidth = makePostTextWidth(ctx);
       Column infoWdg = Column(children: <Widget>
       [ SizedBox(width: postTxtWidth, child: modelTitle)
-      , Expanded(child: SizedBox(width: postTxtWidth, child: Align(alignment: Alignment.centerLeft, child: Padding(padding: const EdgeInsets.symmetric(vertical: 10), child:detailsWrap))))
+      , Expanded(
+	   child: SizedBox(
+	      width: postTxtWidth,
+	      child: Align(
+		 alignment: Alignment.centerLeft,
+		 child: detailsWrap,
+	      ),
+	   ),
+	)
       , SizedBox(width: postTxtWidth, child: statsWdgs)
       ]);
 
       row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
 
       return RaisedButton(
-	 color: Colors.white,
+	 color: Colors.brown[50],
 	 onPressed: () {_onShowDetails(ctx);},
-	 elevation: 2.0,
+	 elevation: 1.0,
 	 child: Row(children: row1List),
-	 padding: const EdgeInsets.all(0.0),
+	 padding: const EdgeInsets.all(0),
 	 onLongPress: widget.onDelPost,
 	 shape: RoundedRectangleBorder(
 	    borderRadius: BorderRadius.only(
-	       topLeft: Radius.circular(stl.chatPostCornerRadius),
-	       topRight: Radius.circular(stl.chatPostCornerRadius),
-	       bottomLeft: Radius.circular(0.0),
-	       bottomRight: Radius.circular(0.0),
+	       topLeft: Radius.circular(stl.cornerRadius),
+	       topRight: Radius.circular(stl.cornerRadius),
+	       bottomLeft: Radius.circular(0),
+	       bottomRight: Radius.circular(0),
 	    ),
 	 ),
       );
@@ -4317,12 +4329,12 @@ Widget makePostDetailsWdg({
    rows.add(listView);
 
    Widget stats = putPostElemOnCard(
-      padding: stl.newPostPadding,
+      padding: stl.basePadding,
       backgroundColor: stl.colorScheme.secondary,
       margin: 0,
       list: <Widget>
       [ Padding(
-	   padding: const EdgeInsets.all(stl.newPostPadding),
+	   padding: const EdgeInsets.all(stl.basePadding),
 	   child: Row(
 	      mainAxisAlignment: MainAxisAlignment.start,
 	      children: makePostStats(
@@ -4347,7 +4359,9 @@ Widget makePostDetailsWdg({
       inDetailsRootNode: inDetailsRootNode,
    );
 
-   rows.add(putPostElemOnCard(list: tmp));
+   rows.add(putPostElemOnCard(
+	 list: tmp,
+   ));
 
    //--------------------------------------------------------------------------
 
@@ -4364,7 +4378,7 @@ Widget makeDefaultTextWidget({
    FontStyle fontStyle = FontStyle.normal,
 }) {
    return Text(text,
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.start,
       style: TextStyle(
 	 fontSize: stl.largeFontSize,
 	 color: color,
@@ -4395,8 +4409,8 @@ Widget makeDefaultWidgetCard({
 {
    Widget text = makeDefaultTextWidget(text: description);
 
-   const double padding = 20;
-   const double sep = 50;
+   const double padding = 15;
+   const double sep = 20;
 
    Widget button = ButtonTheme(
       //minWidth: 180,
@@ -4408,7 +4422,7 @@ Widget makeDefaultWidgetCard({
 	 ),
 	 color: stl.colorScheme.secondary,
 	 onPressed: onPressed,
-	 elevation: 2,
+	 elevation: 1,
 	 //padding: const EdgeInsets.all(10),
       ),
    );
@@ -4425,10 +4439,10 @@ Widget makeDefaultWidgetCard({
 
    List<Widget> list = <Widget>[];
    double minHeight = 0;
-   if (isWide) {
+   //if (isWide) {
       list.add(foo);
-      minHeight = 380;
-   }
+      //minHeight = 250;
+   //}
 
    list.add(text);
 
@@ -4828,8 +4842,8 @@ Widget makeChatListTile({
    int now = 0,
    bool isFwdChatMsgs = false,
    String avatar = '',
-   double padding = stl.chatListTilePadding,
-   double elevation = 2.0,
+   double padding = stl.basePadding,
+   double elevation = 1.0,
    OnPressedF00 onChatLeadingPressed,
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
@@ -4874,8 +4888,8 @@ Widget makeChatListTile({
 	 borderRadius: BorderRadius.only(
 	    topLeft: Radius.circular(0.0),
 	    topRight: Radius.circular(0.0),
-	    bottomLeft: Radius.circular(stl.chatPostCornerRadius),
-	    bottomRight: Radius.circular(stl.chatPostCornerRadius),
+	    bottomLeft: Radius.circular(stl.cornerRadius),
+	    bottomRight: Radius.circular(stl.cornerRadius),
 	 ),
       ),
    );
@@ -4901,7 +4915,7 @@ Widget makeChatsExp({
          ++nUnreadChats;
 
       list[i] = Padding(
-         padding: const EdgeInsets.only(top: stl.chatTilePadding),
+         padding: const EdgeInsets.only(top: stl.basePadding),
          child: makeChatListTile(
 	    ctx: ctx,
 	    chatMetadata: chatItem[i],
@@ -4944,7 +4958,7 @@ Widget makeChatsExp({
    return Theme(
       data: makeExpTileThemeData(),
       child: ExpansionTile(
-         backgroundColor: stl.expTileCardColor,
+         backgroundColor: stl.backgroundColor,
          initiallyExpanded: expState,
          leading: stl.favIcon,
          //key: GlobalKey(),
@@ -5026,9 +5040,9 @@ Widget makeChatTab({
    // break the automatic hiding of the tabbar
    return ListView.builder(
       padding: const EdgeInsets.only(
-         left: stl.postListViewSidePadding,
-         right: stl.postListViewSidePadding,
-         top: stl.postListViewTopPadding,
+         left: stl.basePadding,
+         right: stl.basePadding,
+         top: stl.basePadding,
       ),
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
@@ -5086,7 +5100,7 @@ Widget makeChatTab({
 	 );
 
 	 return Padding(
-	    padding: stl.postChatPadding,
+	    padding: const EdgeInsets.symmetric(vertical: stl.basePadding),
 	    child: Column(children: <Widget> [postBox, chatExp])
 	 );
       },

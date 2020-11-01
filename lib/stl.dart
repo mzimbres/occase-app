@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
 
+// Padding
+const double basePadding = 5.0;
+const double newPostSectionTitleTopIndent = 25;
+
+// Width
+const double buttonMinWidth = 150;
+const double infoWidthFactor = 0.94;
+const double minButtonWidth = 100.0;
+
+// Corner
+const double cornerRadius = 4.0;
+
+// Font size
 const double hugeFontSize = 24.0;
 const double largeFontSize = 22.0;
 const double bigFontSize = 20.0;
@@ -9,10 +22,10 @@ const double smallFontSize = 14.0;
 const double tinyFontSize = 12.0;
 const double delImgWidgOpacity = 0.5;
 
-// The padding of chat messages inside ist box.
-const double chatMsgPadding = 5.0;
-const double postSectionPadding = 5.0;
+// Icon size
+const double newPostIconSize = 35.0;
 
+// Colors
 final Color chatLongPressendColor = Colors.grey[350]; 
 const Color primaryColor = Color(0xFF434b79);
 const Color onPrimaryColor = Colors.white;
@@ -20,6 +33,11 @@ const Color backgroundColor = Color(0xFFEEEEEE);
 const Color secondaryColor = Color(0xFFffa32c);
 const Color onSecondaryColor = primaryColor;
 final Color newPostCardColor = Colors.orange[50];
+final Color chatDateColor = Colors.grey[500];
+final Color onPrimarySubtitleColor = Colors.white;
+const Color infoKeyColor = Colors.black;
+const Color infoKeyArrowColor = infoKeyColor;
+const Color alertDiagBackgroundColor = Color(0xFFE0E0E0);
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
@@ -30,10 +48,6 @@ const ColorScheme colorScheme = const ColorScheme.light(
       onPrimary: onPrimaryColor,
       background: backgroundColor,
 );
-
-const Color infoKeyColor = Colors.black;
-const Color infoKeyArrowColor = infoKeyColor;
-const Color alertDiagBackgroundColor = Color(0xFFE0E0E0);
 
 const TextTheme tt = TextTheme(
    title: TextStyle(fontSize: bigFontSize),
@@ -68,8 +82,6 @@ final TextStyle ltSubtitle = TextStyle(
    fontWeight: FontWeight.w300,
 );
 
-final Color onPrimarySubtitleColor = Colors.white;
-
 final TextStyle ltSubtitleOnPrimary = TextStyle(
    fontSize: smallFontSize,
    color: onPrimarySubtitleColor,
@@ -88,23 +100,6 @@ final TextStyle appBarLtSubtitle = TextStyle(
    fontWeight: FontWeight.normal,
 );
 
-//-------------------------------------------------------------------------
-
-// The padding used around the posts and likes screens.
-const double postListViewTopPadding = 2.0;
-const double postListViewSidePadding = 0.0;
-const double chatListTilePadding = 6.0;
-const double newPostLVPadding = 4.0;
-
-const double cornerRadius = 4.0;
-const double buttonMinWidth = 150;
-
-const EdgeInsets postChatPadding = const EdgeInsets.symmetric(vertical: 10.0);
-
-const double chatPostCornerRadius = 2.0;
-
-const chatTilePadding = 2.0;
-
 const Icon unknownPersonIcon = Icon(
    Icons.person,
    color: Colors.white,
@@ -115,26 +110,11 @@ const Icon favIcon = Icon(Icons.chat, color: Colors.lightGreen);
 
 const IconData newPostIcon = Icons.add;
 
-const double imgInfoWidgetPadding = 10.0;
-
-const double imgLvBorderWidth = 2.0;
-
-const double newPostIconSize = 35.0;
-
 List<Color> priceColors = <Color>
 [ Colors.blueGrey[700]
 , Colors.teal[800]
 , Colors.yellow[900]
 ];
-
-// This color is used to show the chat message date both on primary
-// color and white backckground. It is also used for the title and
-// forward arrow in redirected messages.
-final Color chatDateColor = Colors.grey[500];
-
-const double infoWidthFactor = 0.94;
-
-final Color expTileCardColor = Colors.grey[200];
 
 final
 Divider alertDivider = Divider(
@@ -145,19 +125,11 @@ Divider alertDivider = Divider(
    endIndent: 17.0,
 );
 
-const double leftIndent = 10.0;
-const double newPostSectionTitleTopIndent = 25;
-
 final Divider newPostDivider = Divider(
    color: Colors.grey,
    height: 1.0,
-   indent: leftIndent,
-   endIndent: leftIndent,
+   indent: basePadding,
+   endIndent: basePadding,
    thickness: 1.0,
 );
-
-const double newPostPadding = 5.0;
-const double alertDialogInsetPadding = 3.0;
-const double minButtonWidth = 100.0;
-const double paymentPadding = 20.0;
 
