@@ -444,7 +444,9 @@ Widget makeNtfScreen({
 
    CheckboxListTile chat = CheckboxListTile(
       //dense: false,
-      title: Text(titleDescription[0]),
+      title: Text(titleDescription[0],
+	 style: stl.ltTitleSty,
+      ),
       subtitle: Text(titleDescription[1]),
       value: ntfConfig.chat,
       onChanged: (bool v) { onChange(0, v); },
@@ -550,7 +552,7 @@ Widget makeInfoScreen(
 	    ),
 	 ),
 	 Padding(
-	    padding: const EdgeInsets.all(5),
+	    padding: const EdgeInsets.all(stl.basePadding),
 	    child: makeHiddenButton((){}, stl.backgroundColor),
 	 ),
       ],
@@ -646,7 +648,7 @@ Widget makeWdgOverImg(Widget wdg)
       child: Card(child: wdg,
 	    elevation: 0.0,
 	    color: Colors.white.withOpacity(0.7),
-	    margin: EdgeInsets.all(5.0),
+	    margin: EdgeInsets.all(stl.basePadding),
       ),
    );
 }
@@ -701,7 +703,7 @@ Widget makeImgListView({
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      padding: const EdgeInsets.all(0.0),
+      padding: const EdgeInsets.all(0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -880,7 +882,9 @@ List<Widget> makeCheckBoxes(
       final bool v = ((state & (1 << i)) != 0);
       CheckboxListTile tmp = CheckboxListTile(
          //dense: false,
-         title: Text(items[i]),
+         title: Text(items[i],
+	    style: stl.ltTitleSty,
+	 ),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
          activeColor: stl.colorScheme.primary,
@@ -1109,7 +1113,7 @@ Widget makeNewPostCards(Widget child)
 {
    return Card(
       margin: const EdgeInsets.only(bottom: stl.basePadding),
-      color: stl.newPostCardColor,
+      color: stl.postColor,
       child: child,
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -1139,13 +1143,13 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  //style: stl.tsMainBlack,
+	  style: stl.ltTitleSty,
        ),
        //dense: true,
        subtitle: Text(subTitle,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  //style: stl.newPostSubtitleLT,
+	  style: stl.ltSubtitleSty,
        ),
        onTap: onTap,
        enabled: true,
@@ -1158,7 +1162,7 @@ Widget makeNewPostLT({
 ListView makeNewPostListView(List<Widget> list)
 {
    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: stl.basePadding),
+      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i) { return list[i]; },
    );
@@ -1761,7 +1765,7 @@ Widget makeSearchScreenWdg({
    }
 
    return ListView.builder(
-      padding: const EdgeInsets.all(3.0),
+      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: foo.length,
       itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
    );
@@ -1867,7 +1871,7 @@ Widget makeWebScaffoldWdg({
 List<Widget> makeTabWdgs({
    List<int> counters,
    List<double> opacities,
-   Color backgroundColor = stl.secondaryColor,
+   Color backgroundColor = stl.postColor,
    Color textColor = stl.onSecondaryColor,
 }) {
    List<Widget> list = List<Widget>();
@@ -2049,7 +2053,7 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
          widthFactor: 1.0,
          child: Padding(
             child: w,
-            padding: EdgeInsets.all(4.0),
+            padding: EdgeInsets.all(stl.basePadding),
          )
       ),
    );
@@ -2524,7 +2528,7 @@ Widget makeChatScreen({
       // It looks like there is not maxlines option on TextSpan, so
       // for now I wont be able to show the date at the end.
       Widget w2 = Padding(
-         padding: const EdgeInsets.symmetric(horizontal: 5.0),
+         padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
          child: makeRefChatMsgWidget(
             ctx: ctx,
             chatMetadata: chatMetadata,
@@ -2598,13 +2602,13 @@ Widget makeChatScreen({
       }
 
       ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
-         chatMetadata,
-         postSummary,
-         stl.onPrimarySubtitleColor,
+         chatMetaData: chatMetadata,
+         text: postSummary,
+	 color: stl.secondaryVariantColor,
       );
 
       title = ListTile(
-          contentPadding: EdgeInsets.all(0.0),
+          contentPadding: EdgeInsets.all(0),
           leading: CircleAvatar(
               child: child,
               backgroundImage: backgroundImage,
@@ -2638,7 +2642,7 @@ Widget makeChatScreen({
                title: title,
 	       backgroundColor: stl.colorScheme.secondary,
                leading: IconButton(
-                  padding: EdgeInsets.all(0.0),
+                  padding: EdgeInsets.all(0),
                   icon: Icon(Icons.arrow_back, color: stl.colorScheme.onSecondary),
                   onPressed: onWillPopScope,
                ),
@@ -2757,13 +2761,13 @@ Widget makePayPriceListTile({
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      //style: stl.ltSubtitle,
+      style: stl.ltSubtitleSty,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      //style: stl.tsMainBlackBold,
+      style: stl.ltTitleSty,
    );
 
    IconData icon = selected ? Icons.check_box : Icons.check_box_outline_blank;
@@ -2771,7 +2775,7 @@ Widget makePayPriceListTile({
 
    return Card(
       elevation: 0.0,
-      margin: const EdgeInsets.symmetric(vertical: 2),
+      margin: const EdgeInsets.symmetric(vertical: stl.basePadding),
       color: backgroundColor,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
@@ -2784,7 +2788,7 @@ Widget makePayPriceListTile({
          //dense: false,
          subtitle: subtitleW,
          trailing: Text(price),
-         contentPadding: EdgeInsets.symmetric(horizontal: 10),
+         contentPadding: EdgeInsets.symmetric(horizontal: stl.basePadding),
          onTap: onTap,
          enabled: true,
          selected: selected,
@@ -2857,11 +2861,13 @@ Widget makePaymentOptions({
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
+      style: stl.ltSubtitleSty,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
+      style: stl.ltTitleSty,
    );
 
    return Card(
@@ -2877,7 +2883,7 @@ Widget makePaymentOptions({
          //leading: Icon(Icons.check_box),
          title: titleW,
          subtitle: subtitleW,
-         contentPadding: EdgeInsets.symmetric(horizontal: 10),
+         contentPadding: EdgeInsets.symmetric(horizontal: stl.basePadding),
          onTap: onTap,
          enabled: true,
          //selected: selected,
@@ -2894,7 +2900,7 @@ Widget makePaymentChoiceWidget({
    List<Widget> list = <Widget>[];
 
    Widget title = Padding(
-      padding: EdgeInsets.all(10.0),
+      padding: EdgeInsets.all(stl.basePadding),
       child: Text(g.param.paymentTitle,
 	 style: stl.tsMainPrimary,
       ),
@@ -3419,7 +3425,7 @@ Widget makeNewPostDialogWdg({
          child: col,
       ),
       decoration: BoxDecoration(
-	 color: stl.colorScheme.background,
+	 color: stl.postColor,
 	 shape: BoxShape.rectangle,
 	 borderRadius: BorderRadius.all(const Radius.circular(stl.cornerRadius)),
       ),
@@ -3547,7 +3553,9 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       for (int i = 0; i < widget.names.length; ++i) {
 	 CheckboxListTile cb = CheckboxListTile(
 	    //dense: true,
-	    title: Text(widget.names[i]),
+	    title: Text(widget.names[i],
+	       style: stl.ltTitleSty,
+	    ),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
 	    activeColor: stl.colorScheme.primary,
@@ -3624,7 +3632,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
       );
 
       Padding content = Padding(
-	 padding: EdgeInsets.all(10.0),
+	 padding: EdgeInsets.all(stl.basePadding),
 	 child: tf,
       );
 
@@ -3784,9 +3792,9 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 List<Widget> makeDetailsTextWdgs({
    List<String> fields,
-   Color backgroundColor,
-   Color textColor,
-   double fontSize,
+   Color backgroundColor = stl.eColor,
+   Color textColor = stl.postColor,
+   double fontSize = stl.mainFontSize,
    FontWeight fontWeight = FontWeight.w500,
 }) {
    return List<Widget>.generate(fields.length, (int i) {
@@ -3795,7 +3803,7 @@ List<Widget> makeDetailsTextWdgs({
 	    color: backgroundColor,
 	    margin: EdgeInsets.all(0.0),
 	    child: Padding(
-	       padding: const EdgeInsets.symmetric(horizontal: 3.0),
+	       padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
@@ -4092,7 +4100,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       Widget statsWdgs = makeTextWdg(
 	 text: '$name: ${visualizations} • ${date}',
 	 edgeInsets: const EdgeInsets.all(stl.basePadding),
-	 textColor: stl.colorScheme.primary,
+	 textColor: stl.neutralColor,
 	 fontSize: stl.smallFontSize,
 	 fontWeight: FontWeight.normal,
       );
@@ -4113,10 +4121,16 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 	 Widget kmText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 2),
+	    fontWeight: FontWeight.w700,
+	    textColor: stl.dColor,
+	    fontSize: stl.smallFontSize,
 	 );
 
 	 Widget priceText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 0),
+	    fontWeight: FontWeight.w700,
+	    textColor: stl.dColor,
+	    fontSize: stl.smallFontSize,
 	 );
 
 	 imgWdg = Stack(
@@ -4127,18 +4141,18 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 		 left: 0.0,
 		 bottom: 0.0,
 		 child: Card(child: kmText,
-		    elevation: 0.0,
-		    color: Colors.white.withOpacity(0.7),
-		    margin: EdgeInsets.all(5.0),
+		    elevation: 0,
+		    color: stl.postColor,
+		    margin: EdgeInsets.all(stl.basePadding),
 		 ),
 	      )
 	    , Positioned(
 		 left: 0.0,
 		 top: 0.0,
 		 child: Card(child: priceText,
-		    elevation: 0.0,
-		    color: Colors.white.withOpacity(0.7),
-		    margin: EdgeInsets.all(5.0),
+		    elevation: 0,
+		    color: stl.postColor,
+		    margin: EdgeInsets.all(stl.basePadding),
 		 ),
 	      )
 	    ],
@@ -4221,19 +4235,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    overflow: TextOverflow.ellipsis,
 	    text: TextSpan(
 	       text: '$modelStr\n',
-	       style: TextStyle(
-		  color: stl.colorScheme.primary,
-		  fontSize: stl.largerFontSize,
-		  fontWeight: FontWeight.w600,
-	       ),
+	       style: stl.postModelSty,
 	       children: <TextSpan>
 	       [ TextSpan(
 		    text: locationStr,
-		    style: TextStyle(
-		       color: Colors.grey,
-		       fontSize: stl.smallFontSize,
-		       fontWeight: FontWeight.normal,
-		    ),
+		    style: stl.postLocationSty,
 		 ),
 	       ],
 	    ),
@@ -4246,10 +4252,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       List<Widget> detailWdgs = makeDetailsTextWdgs(
 	 fields: detailsNames,
-	 backgroundColor: Colors.brown[300],
-	 textColor: Colors.brown[50],
-	 fontSize: stl.mainFontSize,
-	 fontWeight: FontWeight.w400,
       );
 
       const double spacing = stl.basePadding;
@@ -4282,7 +4284,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
 
       return RaisedButton(
-	 color: Colors.brown[50],
+	 color: stl.postColor,
 	 onPressed: () {_onShowDetails(ctx);},
 	 elevation: 1.0,
 	 child: Row(children: row1List),
@@ -4373,7 +4375,7 @@ Widget makePostDetailsWdg({
 
 Widget makeDefaultTextWidget({
    String text,
-   Color color = Colors.white,
+   Color color = stl.eColor,
    FontWeight fontWeight = FontWeight.normal,
    FontStyle fontStyle = FontStyle.normal,
 }) {
@@ -4417,10 +4419,10 @@ Widget makeDefaultWidgetCard({
       child: RaisedButton(
 	 child: makeDefaultTextWidget(
 	    text: buttonName,
-	    color: stl.colorScheme.primary,
-	    fontWeight: FontWeight.w500,
+	    color: stl.postColor,
+	    fontWeight: FontWeight.normal,
 	 ),
-	 color: stl.colorScheme.secondary,
+	 color: stl.onSecondaryColor,
 	 onPressed: onPressed,
 	 elevation: 1,
 	 //padding: const EdgeInsets.all(10),
@@ -4431,8 +4433,8 @@ Widget makeDefaultWidgetCard({
 	 padding: const EdgeInsets.only(bottom: sep),
 	 child: makeDefaultTextWidget(
 	    text: testimonial,
-	    color: Colors.amber[500],
-	    fontWeight: FontWeight.w400,
+	    color: stl.testimonialColor,
+	    fontWeight: FontWeight.w500,
 	    fontStyle: FontStyle.italic,
       ),
    );
@@ -4556,11 +4558,11 @@ Widget makeSearchResultPosts({
    // automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
-      padding: const EdgeInsets.all(0.0),
+      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: posts.length,
       separatorBuilder: (BuildContext context, int index)
       {
-	 return Divider(color: Colors.black, height: 5.0);
+	 return Divider(color: Colors.black, height: stl.basePadding);
       },
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -4593,7 +4595,10 @@ ListTile makeNewPostTreeWdg({
 }) {
    if (child.isLeaf()) {
       return ListTile(
-	 title: Text(child.name(g.param.langIdx)),
+	 title: Text(
+	    child.name(g.param.langIdx),
+	    style: stl.ltTitleSty,
+	 ),
 	 onTap: onLeafPressed,
 	 enabled: true,
 	 onLongPress: (){},
@@ -4601,12 +4606,15 @@ ListTile makeNewPostTreeWdg({
    }
    
    return ListTile(
-      title: Text(child.name(g.param.langIdx)),
+      title: Text(
+	 child.name(g.param.langIdx),
+	 style: stl.ltTitleSty,
+      ),
       subtitle: Text(
 	 child.getChildrenNames(g.param.langIdx, 4),
 	 maxLines: 1,
 	 overflow: TextOverflow.ellipsis,
-	 style: stl.newPostSubtitleLT.copyWith(fontSize: stl.mainFontSize),
+	 style: stl.ltSubtitleSty,
       ),
       trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
       onTap: onNodePressed,
@@ -4659,18 +4667,22 @@ Widget chooseMsgStatusIcon(int status)
 class ChatPresenceSubtitle {
    String subtitle;
    Color color;
-   ChatPresenceSubtitle({this.subtitle = '', this.color = Colors.white});
+   ChatPresenceSubtitle(
+   { this.subtitle = ''
+   , this.color = stl.secondaryVariantColor,
+   });
 }
 
-ChatPresenceSubtitle makeLTPresenceSubtitle(
-   final ChatMetadata cm,
-   String str,
+ChatPresenceSubtitle makeLTPresenceSubtitle({
+   final ChatMetadata chatMetaData,
+   String text,
    Color color,
-) {
+}) {
    final int now = DateTime.now().millisecondsSinceEpoch;
-   final int last = cm.lastPresenceReceived + cts.presenceInterval;
+   final int last = chatMetaData.lastPresenceReceived + cts.presenceInterval;
 
-   final bool moreRecent = cm.lastPresenceReceived > cm.getLastChatMsgDate();
+   final bool moreRecent = chatMetaData.lastPresenceReceived >
+	 chatMetaData.getLastChatMsgDate();
 
    if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
@@ -4680,7 +4692,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle(
    }
 
    return ChatPresenceSubtitle(
-      subtitle: str,
+      subtitle: text,
       color: color,
    );
 }
@@ -4695,27 +4707,22 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
          g.param.msgOnEmptyChat,
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-         style: Theme.of(ctx).textTheme.subtitle.copyWith(
-            color: stl.colorScheme.secondary,
-            //fontWeight: FontWeight.w500,
+         style: stl.ltSubtitleSty.copyWith(
             fontStyle: FontStyle.italic,
          ),
       );
    }
 
    ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
-      ch,
-      str,
-      Colors.grey,
+      chatMetaData: ch,
+      text: str,
+      color: stl.secondaryVariantColor,
    );
 
    if (ch.nUnreadMsgs > 0 || !ch.isLastChatMsgFromThisApp())
       return Text(
          cps.subtitle,
-         style: Theme.of(ctx).textTheme.subtitle.copyWith(
-	    fontWeight: FontWeight.normal,
-	    color: cps.color,
-	 ),
+	 style: stl.ltSubtitleSty,
          maxLines: 1,
          overflow: TextOverflow.ellipsis
       );
@@ -4726,10 +4733,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
         child: Text(cps.subtitle,
            maxLines: 1,
            overflow: TextOverflow.ellipsis,
-           style: Theme.of(ctx).textTheme.subtitle.copyWith(
-              fontWeight: FontWeight.normal,
-              color: cps.color,
-           ),
+	   style: stl.ltSubtitleSty,
         ),
      ),
    ]);
@@ -4848,9 +4852,9 @@ Widget makeChatListTile({
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
 }) {
-   Color bgColor = stl.colorScheme.surface;
+   Color bgColor = stl.postColor;
    if (chatMetadata.isLongPressed)
-      bgColor = stl.chatLongPressendColor;
+      bgColor = stl.chatLongPressedColor;
 
    Widget trailing = makeChatListTileTrailingWidget(
       ctx,
@@ -4876,6 +4880,7 @@ Widget makeChatListTile({
       title: Text(chatMetadata.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
+	 style: stl.ltTitleSty,
       ),
    );
 
@@ -5165,7 +5170,9 @@ class DialogWithOpState extends State<DialogWithOp> {
       //);
 
       CheckboxListTile tile = CheckboxListTile(
-         title: Text(g.param.doNotShowAgain),
+         title: Text(g.param.doNotShowAgain,
+	    style: stl.ltTitleSty,
+	 ),
          value: !widget.getValueFunc(),
          onChanged: (bool v) { setState(() {widget.setValueFunc(!v);}); },
          controlAffinity: ListTileControlAffinity.leading,

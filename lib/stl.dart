@@ -25,28 +25,66 @@ const double delImgWidgOpacity = 0.5;
 // Icon size
 const double newPostIconSize = 35.0;
 
+const Color aColor = Color(0xff36688d);
+const Color bColor = Color(0xfff3cd05);
+const Color cColor = Color(0xfff49f05);
+const Color dColor = Color(0xfff18904);
+const Color eColor = Color(0xffbda589);
+
 // Colors
-final Color chatLongPressendColor = Colors.grey[350]; 
-const Color primaryColor = Color(0xFF434b79);
-const Color onPrimaryColor = Colors.white;
+final Color chatLongPressedColor = Colors.grey[350]; 
+final Color neutralColor = Colors.grey; 
+
+const Color primaryColor = aColor;
+const Color primaryVariantColor = eColor;
+const Color onPrimaryColor = cColor;
+
 const Color backgroundColor = Color(0xFFEEEEEE);
-const Color secondaryColor = Color(0xFFffa32c);
-const Color onSecondaryColor = primaryColor;
-final Color newPostCardColor = Colors.orange[50];
+
+const Color secondaryColor = bColor;
+const Color secondaryVariantColor = cColor;
+const Color onSecondaryColor = eColor;
+
+const Color postColor = Color(0xfff5f5f5);
 final Color chatDateColor = Colors.grey[500];
 final Color onPrimarySubtitleColor = Colors.white;
 const Color infoKeyColor = Colors.black;
 const Color infoKeyArrowColor = infoKeyColor;
-const Color alertDiagBackgroundColor = Color(0xFFE0E0E0);
+const Color alertDiagBackgroundColor = cColor;
+final Color testimonialColor = eColor;
 
 const ColorScheme colorScheme = const ColorScheme.light(
       primary: primaryColor,
       primaryVariant: Color(0xFF434b79),
-      secondary: Color(0xFFffa32c),
+      secondary: secondaryColor,
       secondaryVariant: Color(0xFFff5635),
-      onSecondary: Color(0xFF434b79),
+      onSecondary: onSecondaryColor,
       onPrimary: onPrimaryColor,
       background: backgroundColor,
+);
+
+final TextStyle postModelSty = TextStyle(
+   fontSize: bigFontSize,
+   color: dColor,
+   fontWeight: FontWeight.w700,
+);
+
+final TextStyle postLocationSty = TextStyle(
+   fontSize: smallFontSize,
+   color: neutralColor,
+   fontWeight: FontWeight.normal,
+);
+
+final TextStyle ltTitleSty = TextStyle(
+   fontSize: mainFontSize,
+   color: primaryColor,
+   fontWeight: FontWeight.w500,
+);
+
+final TextStyle ltSubtitleSty = TextStyle(
+   fontSize: smallFontSize,
+   color: dColor,
+   fontWeight: FontWeight.normal,
 );
 
 const TextTheme tt = TextTheme(
