@@ -39,6 +39,7 @@ const Color primaryTextColor = Color(0xffffffff);
 const Color secondaryTextColor = Color(0xff000000);
 
 // Colors
+final Color chatScreenBgColor = Colors.grey[200]; 
 final Color chatLongPressedColor = Colors.grey[350]; 
 final Color neutralColor = Colors.grey[600]; 
 final Color textColor = Colors.grey[800]; 
@@ -57,7 +58,7 @@ const ColorScheme cs = const ColorScheme.light(
    secondary: secondaryColor,
    secondaryVariant: secondaryDarkColor,
    surface: postColor,
-   background: Colors.white,
+   background: Color(0xfff5f5f5),
    error: const Color(0xffb00020),
    onPrimary: primaryTextColor,
    onSecondary: secondaryTextColor,
@@ -104,12 +105,6 @@ const TextStyle tsMainBlack = TextStyle(
 const TextStyle tsMainBlackBold = TextStyle(
    fontSize: mainFontSize,
    color: Colors.black,
-   fontWeight: FontWeight.w500,
-);
-
-final TextStyle newPostSubtitleLT = TextStyle(
-   fontSize: largerFontSize,
-   color: Colors.orange[900],
    fontWeight: FontWeight.w500,
 );
 

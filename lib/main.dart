@@ -804,11 +804,11 @@ RichText makeSearchTitle({
    return RichText(
       text: TextSpan(
          text: '$name$separator',
-         style: stl.tsMainBlack,
+         style: stl.ltTitleSty,
          children: <TextSpan>
          [ TextSpan(
               text: value,
-              style: stl.newPostSubtitleLT,
+              style: stl.ltTitleSty.copyWith(color: stl.cs.secondaryVariant),
            ),
          ],
       ),
@@ -1629,7 +1629,10 @@ List<Widget> makeValueSliders({
 
       final Padding title =
 	 Padding(
-	    padding: const EdgeInsets.all(stl.basePadding),
+	    padding: const EdgeInsets.only(
+	       top: stl.basePadding,
+	       left: 15,
+	    ),
 	    child: makeSearchTitle(
 	       name: names[i],
 	       value: makeRangeStr(post, i),
@@ -2069,7 +2072,7 @@ Card makeChatMsgWidget(
    String ownNick,
 ) {
    Color color = Color(0xFFFFFFFF);
-   Color onSelectedMsgColor = stl.cs.background;
+   Color onSelectedMsgColor = stl.chatScreenBgColor;
    if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
@@ -2332,7 +2335,8 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
    return Card(
       elevation: 0.0,
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0))),
+         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+      ),
       margin: EdgeInsets.all(0.0),
       color: Colors.white,
       child: Padding(
@@ -2557,7 +2561,7 @@ Widget makeChatScreen({
 
       Card c1 = makeChatScreenBotCard(w1, null, w2, null, w4);
       cols.add(c1);
-      cols.add(Divider(color: Colors.deepOrange, height: 0.0));
+      cols.add(Divider(color: Colors.grey, height: 0.0));
    }
 
    cols.add(card);
@@ -2650,7 +2654,7 @@ Widget makeChatScreen({
          body: Container(
             child: mainCol,
 	    decoration: BoxDecoration(
-	       color: stl.cs.background,
+	       color: stl.chatScreenBgColor,
 	       shape: BoxShape.rectangle,
 	       border: Border.all(width: boderWidth, color: stl.cs.secondary),
 	    ),
@@ -3755,7 +3759,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 	    children: <TextSpan>
 	    [ TextSpan(
 		 text: titleStr,
-		 style: stl.newPostSubtitleLT,
+		 style: stl.ltTitleSty.copyWith(color: stl.cs.secondaryVariant),
 	      ),
 	    ],
 	 ),
@@ -4846,7 +4850,7 @@ Widget makeChatListTile({
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
 }) {
-   Color bgColor = stl.cs.background;
+   Color bgColor = stl.cs.surface;
    if (chatMetadata.isLongPressed)
       bgColor = stl.chatLongPressedColor;
 
@@ -5171,7 +5175,7 @@ class DialogWithOpState extends State<DialogWithOp> {
 
       CheckboxListTile tile = CheckboxListTile(
          title: Text(g.param.doNotShowAgain,
-	    style: stl.ltTitleSty,
+	    //style: stl.ltTitleSty,
 	 ),
          value: !widget.getValueFunc(),
          onChanged: (bool v) { setState(() {widget.setValueFunc(!v);}); },
