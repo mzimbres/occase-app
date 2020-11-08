@@ -25,47 +25,51 @@ const double delImgWidgOpacity = 0.5;
 // Icon size
 const double newPostIconSize = 35.0;
 
-const Color aColor = Color(0xff36688d);
-const Color bColor = Color(0xfff3cd05);
-const Color cColor = Color(0xfff49f05);
-const Color dColor = Color(0xfff18904);
-const Color eColor = Color(0xffbda589);
+// These are the main colors we will use. Taken from material palette tool.
+// Idea taken from https://visme.co/blog/color-combinations/
+// See ../android/app/src/main/res/values/colors.xml
+// Tool: https://material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=36688d
+const Color primaryColor = Color(0xff36688d);
+const Color primaryLightColor = Color(0xff6796bd);
+const Color primaryDarkColor = Color(0xff003e5f);
+const Color secondaryColor = Color(0xfff49f05);
+const Color secondaryLightColor = Color(0xffffd04a);
+const Color secondaryDarkColor = Color(0xffbc7000);
+const Color primaryTextColor = Color(0xffffffff);
+const Color secondaryTextColor = Color(0xff000000);
 
 // Colors
 final Color chatLongPressedColor = Colors.grey[350]; 
-final Color neutralColor = Colors.grey; 
+final Color neutralColor = Colors.grey[600]; 
+final Color textColor = Colors.grey[800]; 
 
-const Color primaryColor = aColor;
-const Color primaryVariantColor = eColor;
-const Color onPrimaryColor = cColor;
-
-const Color backgroundColor = Color(0xFFEEEEEE);
-
-const Color secondaryColor = bColor;
-const Color secondaryVariantColor = cColor;
-const Color onSecondaryColor = eColor;
-
-const Color postColor = Color(0xfff5f5f5);
+//const Color postColor = Color(0xfff5f5f5);
+const Color postColor = Colors.white;
 final Color chatDateColor = Colors.grey[500];
 final Color onPrimarySubtitleColor = Colors.white;
 const Color infoKeyColor = Colors.black;
 const Color infoKeyArrowColor = infoKeyColor;
-const Color alertDiagBackgroundColor = cColor;
-final Color testimonialColor = eColor;
+final Color testimonialColor = secondaryColor;
 
-const ColorScheme colorScheme = const ColorScheme.light(
-      primary: primaryColor,
-      primaryVariant: Color(0xFF434b79),
-      secondary: secondaryColor,
-      secondaryVariant: Color(0xFFff5635),
-      onSecondary: onSecondaryColor,
-      onPrimary: onPrimaryColor,
-      background: backgroundColor,
+const ColorScheme cs = const ColorScheme.light(
+   primary: primaryColor,
+   primaryVariant: primaryDarkColor,
+   secondary: secondaryColor,
+   secondaryVariant: secondaryDarkColor,
+   surface: postColor,
+   background: Colors.white,
+   error: const Color(0xffb00020),
+   onPrimary: primaryTextColor,
+   onSecondary: secondaryTextColor,
+   onSurface: Colors.black,
+   onBackground: Colors.black,
+   onError: Colors.white,
+   brightness: Brightness.light
 );
 
 final TextStyle postModelSty = TextStyle(
    fontSize: bigFontSize,
-   color: dColor,
+   color: secondaryDarkColor,
    fontWeight: FontWeight.w700,
 );
 
@@ -77,19 +81,14 @@ final TextStyle postLocationSty = TextStyle(
 
 final TextStyle ltTitleSty = TextStyle(
    fontSize: mainFontSize,
-   color: primaryColor,
+   color: textColor,
    fontWeight: FontWeight.w500,
 );
 
 final TextStyle ltSubtitleSty = TextStyle(
    fontSize: smallFontSize,
-   color: dColor,
+   color: secondaryDarkColor,
    fontWeight: FontWeight.normal,
-);
-
-const TextTheme tt = TextTheme(
-   title: TextStyle(fontSize: bigFontSize),
-   subhead: TextStyle(fontSize: mainFontSize),
 );
 
 const TextStyle tsMainPrimary = TextStyle(
@@ -114,21 +113,9 @@ final TextStyle newPostSubtitleLT = TextStyle(
    fontWeight: FontWeight.w500,
 );
 
-final TextStyle ltSubtitle = TextStyle(
-   fontSize: smallFontSize,
-   color: Colors.grey[700],
-   fontWeight: FontWeight.w300,
-);
-
-final TextStyle ltSubtitleOnPrimary = TextStyle(
-   fontSize: smallFontSize,
-   color: onPrimarySubtitleColor,
-   fontWeight: FontWeight.normal,
-);
-
 const TextStyle appBarLtTitle = TextStyle(
    fontSize: largerFontSize,
-   color: onPrimaryColor,
+   color: primaryTextColor,
    fontWeight: FontWeight.w500,
 );
 

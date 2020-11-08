@@ -270,11 +270,11 @@ Scaffold makeWaitLoadTreeScreen()
    return Scaffold(
       appBar: AppBar(
          title: Text(g.param.shareSubject,
-            style: TextStyle(color: stl.colorScheme.onPrimary),
+            style: TextStyle(color: stl.cs.onPrimary),
          ),
       ),
       body: Center(child: CircularProgressIndicator()),
-      backgroundColor: stl.colorScheme.background,
+      backgroundColor: stl.cs.background,
    );
 }
 
@@ -316,7 +316,7 @@ Widget makeImgExpandScreen(Function onWillPopScope, Post post)
       child: Scaffold(
          //appBar: AppBar(title: Text(g.param.appName)),
          body: Center(child: foo),
-	 backgroundColor: stl.colorScheme.background,
+	 backgroundColor: stl.cs.background,
       ),
    );
 }
@@ -327,7 +327,7 @@ TextField makeNickTxtField(
    int fieldMaxLength,
    String hint,
 ) {
-   Color focusedColor = stl.colorScheme.primary;
+   Color focusedColor = stl.cs.primary;
 
    Color enabledColor = focusedColor;
 
@@ -394,8 +394,8 @@ Widget makeRegisterScreen({
    Widget button = createRaisedButton(
       onPressed: onContinue,
       text: g.param.next,
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
+      color: stl.cs.secondary,
+      textColor: stl.cs.onSecondary,
    );
 
    Column col = Column(
@@ -445,12 +445,12 @@ Widget makeNtfScreen({
    CheckboxListTile chat = CheckboxListTile(
       //dense: false,
       title: Text(titleDescription[0],
-	 style: stl.ltTitleSty,
+	 //style: stl.ltTitleSty,
       ),
       subtitle: Text(titleDescription[1]),
       value: ntfConfig.chat,
       onChanged: (bool v) { onChange(0, v); },
-      activeColor: stl.colorScheme.primary,
+      activeColor: stl.cs.primary,
       isThreeLine: true,
    );
 
@@ -466,8 +466,8 @@ Widget makeNtfScreen({
         createRaisedButton(
            onPressed: () {onChange(-1, false);},
            text: g.param.ok,
-	   color: stl.colorScheme.secondary,
-	   textColor: stl.colorScheme.onSecondary,
+	   color: stl.cs.secondary,
+	   textColor: stl.cs.onSecondary,
         ),
       ]
    );
@@ -513,14 +513,14 @@ Widget makeConfigScaffold({
    return WillPopScope(
       onWillPop: () async { return onWillPopScope();},
       child: Scaffold(
-	 backgroundColor: stl.colorScheme.background,
+	 backgroundColor: stl.cs.background,
 	 appBar: AppBar(
 	    title: Text(title,
-	       style: TextStyle(color: stl.colorScheme.onPrimary),
+	       style: TextStyle(color: stl.cs.onPrimary),
 	    ),
 	    leading: IconButton(
 	       padding: EdgeInsets.all(0.0),
-	       icon: Icon(Icons.arrow_back, color: stl.colorScheme.onPrimary),
+	       icon: Icon(Icons.arrow_back, color: stl.cs.onPrimary),
 	       onPressed: onWillPopScope,
 	    ),
 	 ),
@@ -540,20 +540,20 @@ Widget makeInfoScreen(
    Column col = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>
-      [ makeHiddenButton(onHiddenButtonLP, stl.backgroundColor),
+      [ makeHiddenButton(onHiddenButtonLP, stl.cs.background),
         RaisedButton(
 	    onPressed: onSendEmail,
 	    child: Text(g.param.supportEmail,
 	       style: TextStyle(
 		  fontSize: 20.0,
-		  color: stl.colorScheme.primary,
+		  color: stl.cs.primary,
 		  fontWeight: FontWeight.normal,
 	       ),
 	    ),
 	 ),
 	 Padding(
 	    padding: const EdgeInsets.all(stl.basePadding),
-	    child: makeHiddenButton((){}, stl.backgroundColor),
+	    child: makeHiddenButton((){}, stl.cs.background),
 	 ),
       ],
    );
@@ -585,7 +585,7 @@ Widget makeNetImgBox({
          Widget w = Text(g.param.unreachableImgError,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-               color: stl.colorScheme.background,
+               color: stl.cs.background,
                fontSize: stl.mainFontSize,
             ),
          );
@@ -617,7 +617,7 @@ Widget makeImgPlaceholder(
             borderRadius: BorderRadius.all(Radius.circular(0.0)),
             //side: BorderSide(
             //   width: stl.imgLvBorderWidth,
-            //   color: stl.colorScheme.background,
+            //   color: stl.cs.background,
             //),
          ),
       ),
@@ -733,7 +733,7 @@ Widget makeImgListView({
 
 	    IconButton delIcon = IconButton(
 	       onPressed: (){onDelImg(i);},
-	       icon: Icon(Icons.cancel, color: stl.colorScheme.primary),
+	       icon: Icon(Icons.cancel, color: stl.cs.primary),
 	    );
 
 	    wdgs.add(Positioned(
@@ -779,8 +779,8 @@ RichText makeExpTileTitle(
    bool changeColor,
 ) {
    Color color = changeColor
-               ? stl.colorScheme.secondaryVariant
-               : stl.colorScheme.secondary;
+               ? stl.cs.secondaryVariant
+               : stl.cs.secondary;
 
    return RichText(
       text: TextSpan(
@@ -789,7 +789,7 @@ RichText makeExpTileTitle(
          children: <TextSpan>
          [ TextSpan(
               text: second,
-              style: stl.tt.subtitle1.copyWith(color: color),
+              //style: stl.ltTitleSty.copyWith(color: color),
            ),
          ],
       ),
@@ -883,11 +883,11 @@ List<Widget> makeCheckBoxes(
       CheckboxListTile tmp = CheckboxListTile(
          //dense: false,
          title: Text(items[i],
-	    style: stl.ltTitleSty,
+	    //style: stl.ltTitleSty,
 	 ),
          value: v,
          onChanged: (bool v) { onChanged(v, i); },
-         activeColor: stl.colorScheme.primary,
+         activeColor: stl.cs.primary,
 	 isThreeLine: false,
       );
 
@@ -907,7 +907,7 @@ Widget makeNewPostSetionTitle({
       child: Text(title,
 	 style: TextStyle(
 	    fontSize: stl.bigFontSize,
-	    color: stl.colorScheme.primary,
+	    color: stl.cs.primary,
 	    fontWeight: FontWeight.w500,
 	 ),
       ),
@@ -965,15 +965,15 @@ List<Widget> makeNewPostFinalScreen({
    Widget cancelButton = createRaisedButton(
       onPressed: () {onRemovePost(ctx);},
       text: g.param.cancel,
-      color: stl.backgroundColor,
-      textColor: Colors.black,
+      color: stl.cs.surface,
+      textColor: stl.cs.onSurface,
    );
 
    Widget sendButton = createRaisedButton(
       onPressed: onPublishPost,
       text: g.param.newPostAppBarTitle,
-      color: stl.colorScheme.secondary,
-      textColor: stl.colorScheme.onSecondary,
+      color: stl.cs.secondary,
+      textColor: stl.cs.onSecondary,
    );
 
    Widget payment = Column(
@@ -1025,7 +1025,7 @@ List<Widget> makeTabActions({
 	 IconButton delChatBut = IconButton(
 	    icon: Icon(
 	       Icons.delete_forever,
-	       color: stl.colorScheme.onPrimary,
+	       color: stl.cs.onPrimary,
 	    ),
 	    tooltip: g.param.deleteChat,
 	    onPressed: deleteChatDialog,
@@ -1113,7 +1113,7 @@ Widget makeNewPostCards(Widget child)
 {
    return Card(
       margin: const EdgeInsets.only(bottom: stl.basePadding),
-      color: stl.postColor,
+      //color: stl.cs.surface,
       child: child,
       elevation: 1,
       shape: RoundedRectangleBorder(
@@ -1132,7 +1132,7 @@ Widget makeNewPostLT({
    if (icon != null)
       leading = CircleAvatar(
 	  child: Icon(icon,
-	     color: stl.colorScheme.primary,
+	     color: stl.cs.primary,
 	  ),
           backgroundColor: Colors.white,
       );
@@ -1143,13 +1143,13 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.ltTitleSty,
+	  //style: stl.ltTitleSty,
        ),
        //dense: true,
        subtitle: Text(subTitle,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.ltSubtitleSty,
+	  //style: stl.ltSubtitleSty,
        ),
        onTap: onTap,
        enabled: true,
@@ -1244,7 +1244,7 @@ Widget makeDropBox()
 {
    return DropdownButton<int>(
       value: 500,
-      //icon: Icon(Icons.arrow_downward, color: stl.colorScheme.onSecondary),
+      //icon: Icon(Icons.arrow_downward, color: stl.cs.onSecondary),
       icon: null,
       iconSize: 24,
       elevation: 16,
@@ -1252,7 +1252,7 @@ Widget makeDropBox()
       underline: null,
       //underline: Container(
       //   height: 2,
-      //   color: stl.colorScheme.secondary,
+      //   color: stl.cs.secondary,
       //),
       onChanged: (int newValue) {
 	 //setState(() { dropdownValue = newValue; });
@@ -1756,8 +1756,8 @@ Widget makeSearchScreenWdg({
       Widget w2 = createRaisedButton(
          onPressed: () {onSearchPressed(2);},
          text: buttonTitle,
-         color: stl.colorScheme.secondary,
-         textColor: stl.colorScheme.onSecondary,
+         color: stl.cs.secondary,
+         textColor: stl.cs.onSecondary,
       );
 
       //Row r = Row(children: <Widget>[Expanded(child: w1), Expanded(child: w2)]);
@@ -1777,7 +1777,7 @@ Widget wrapDetailRowOnCard(Widget body)
       margin: const EdgeInsets.only(
        left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
       ),
-      color: stl.colorScheme.background,
+      color: stl.cs.surface,
       child: body,
       elevation: 0.0,
       shape: RoundedRectangleBorder(
@@ -1792,10 +1792,10 @@ class MyApp extends StatelessWidget {
       return MaterialApp(
          title: g.param.appName,
          theme: ThemeData(
-            colorScheme: stl.colorScheme,
-            brightness: stl.colorScheme.brightness,
-            primaryColor: stl.colorScheme.primary,
-            accentColor: stl.colorScheme.secondary,
+            colorScheme: stl.cs,
+            brightness: stl.cs.brightness,
+            primaryColor: stl.cs.primary,
+            accentColor: stl.cs.secondary,
          ),
          debugShowCheckedModeBanner: false,
          home: Occase(),
@@ -1847,7 +1847,7 @@ Widget makeAppScaffoldWdg({
 	       ];
 	    },
 	 ),
-	 backgroundColor: stl.colorScheme.background,
+	 backgroundColor: stl.cs.background,
 	 floatingActionButton: floatBut,
       ),
    );
@@ -1863,7 +1863,7 @@ Widget makeWebScaffoldWdg({
          child: Scaffold(
             appBar : appBar,
             body: body,
-	    backgroundColor: stl.colorScheme.background,
+	    backgroundColor: stl.cs.background,
       ),
    );
 }
@@ -1871,8 +1871,7 @@ Widget makeWebScaffoldWdg({
 List<Widget> makeTabWdgs({
    List<int> counters,
    List<double> opacities,
-   Color backgroundColor = stl.postColor,
-   Color textColor = stl.onSecondaryColor,
+   Color textColor = stl.secondaryTextColor,
 }) {
    List<Widget> list = List<Widget>();
 
@@ -1881,7 +1880,7 @@ List<Widget> makeTabWdgs({
 	 nUnread: counters[i],
 	 title: g.param.tabNames[i],
 	 opacity: opacities[i],
-	 backgroundColor: backgroundColor,
+	 backgroundColor: stl.cs.surface,
 	 textColor: textColor,
       );
 
@@ -1933,11 +1932,11 @@ Widget makeFaButton(
    IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
-         backgroundColor: stl.colorScheme.secondary,
+         backgroundColor: stl.cs.secondary,
 	 mini: false,
          child: Icon(
             Icons.send,
-            color: stl.colorScheme.onSecondary,
+            color: stl.cs.onSecondary,
          ),
          onPressed: onFwdChatMsg,
       );
@@ -1950,10 +1949,10 @@ Widget makeFaButton(
       return SizedBox.shrink();
 
    return FloatingActionButton(
-      backgroundColor: stl.colorScheme.secondary,
+      backgroundColor: stl.cs.secondary,
       mini: false,
       child: Icon(id,
-         color: stl.colorScheme.onSecondary,
+         color: stl.cs.onSecondary,
       ),
       onPressed: onNewPost,
    );
@@ -2023,11 +2022,11 @@ Widget makeFAButtonMiddleScreen({
 
    return FloatingActionButton(
       onPressed: onGoToSearch,
-      backgroundColor: stl.colorScheme.secondary,
+      backgroundColor: stl.cs.secondary,
       mini: false,
       child: Icon(
 	 Icons.search,
-	 color: stl.colorScheme.onSecondary,
+	 color: stl.cs.onSecondary,
       ),
    );
 }
@@ -2070,7 +2069,7 @@ Card makeChatMsgWidget(
    String ownNick,
 ) {
    Color color = Color(0xFFFFFFFF);
-   Color onSelectedMsgColor = stl.colorScheme.background;
+   Color onSelectedMsgColor = stl.cs.background;
    if (chatMetadata.msgs[i].isFromThisApp()) {
       color = Colors.lime[100];
    } else if (isNewMsg) {
@@ -2123,7 +2122,7 @@ Card makeChatMsgWidget(
    Widget ww = msgAndStatus;
    if (chatMetadata.msgs[i].redirected()) {
       final Color redirTitleColor =
-         isNewMsg ? stl.colorScheme.secondary : Colors.blueGrey;
+         isNewMsg ? stl.cs.secondary : Colors.blueGrey;
 
       Row redirWidget = Row(
          mainAxisSize: MainAxisSize.min,
@@ -2256,7 +2255,7 @@ ListView makeChatMsgListView(
                             style: TextStyle(
                                fontSize: stl.largerFontSize,
                                fontWeight: FontWeight.normal,
-                               color: stl.colorScheme.primary,
+                               color: stl.cs.primary,
                             ),
                          )
                       ),
@@ -2354,7 +2353,7 @@ Widget makeRefChatMsgWidget({
    Color titleColor,
 }) {
    if (isNewMsg)
-      titleColor = stl.colorScheme.secondary;
+      titleColor = stl.cs.secondary;
 
    Text body = Text(chatMetadata.msgs[dragedIdx].body,
       maxLines: 3,
@@ -2402,13 +2401,13 @@ Widget makeChatSecondLayer(
    IconButton sendButton = IconButton(
       icon: Icon(Icons.send),
       onPressed: onChatSend,
-      color: stl.colorScheme.primary,
+      color: stl.cs.primary,
    );
 
    //IconButton attachmentButton = IconButton(
    //   icon: Icon(Icons.add_a_photo),
    //   onPressed: onAttachment,
-   //   color: stl.colorScheme.primary,
+   //   color: stl.cs.primary,
    //);
 
    // At the moment we do not support sending of multimedia files
@@ -2493,9 +2492,9 @@ Widget makeChatScreen({
          child: FloatingActionButton(
             mini: false,
             onPressed: onChatJumpDown,
-            backgroundColor: stl.colorScheme.secondary,
+            backgroundColor: stl.cs.secondary,
             child: Icon(Icons.expand_more,
-               color: stl.colorScheme.onSecondary,
+               color: stl.cs.onSecondary,
             ),
          ),
       );
@@ -2508,8 +2507,8 @@ Widget makeChatScreen({
             right: 23.0,
             child: makeUnreadMsgsCircle(
                unread: chatMetadata.nUnreadMsgs,
-               backgroundColor: stl.colorScheme.secondaryVariant,
-               textColor: stl.colorScheme.onSecondary,
+               backgroundColor: stl.cs.secondaryVariant,
+               textColor: stl.cs.onSecondary,
             ),
          );
 
@@ -2604,7 +2603,7 @@ Widget makeChatScreen({
       ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
          chatMetaData: chatMetadata,
          text: postSummary,
-	 color: stl.secondaryVariantColor,
+	 color: stl.secondaryDarkColor,
       );
 
       title = ListTile(
@@ -2617,7 +2616,7 @@ Widget makeChatScreen({
           title: Text(chatMetadata.getChatDisplayName(),
              maxLines: 1,
              overflow: TextOverflow.ellipsis,
-             style: stl.appBarLtTitle.copyWith(color: stl.colorScheme.onSecondary),
+             style: stl.appBarLtTitle.copyWith(color: stl.cs.onSecondary),
           ),
           //dense: true,
           subtitle:
@@ -2640,20 +2639,20 @@ Widget makeChatScreen({
             appBar : AppBar(
                actions: actions,
                title: title,
-	       backgroundColor: stl.colorScheme.secondary,
+	       backgroundColor: stl.cs.secondary,
                leading: IconButton(
                   padding: EdgeInsets.all(0),
-                  icon: Icon(Icons.arrow_back, color: stl.colorScheme.onSecondary),
+                  icon: Icon(Icons.arrow_back, color: stl.cs.onSecondary),
                   onPressed: onWillPopScope,
                ),
             ),
-	 backgroundColor: stl.colorScheme.background,
+	 backgroundColor: stl.cs.background,
          body: Container(
             child: mainCol,
 	    decoration: BoxDecoration(
-	       color: stl.colorScheme.background,
+	       color: stl.cs.background,
 	       shape: BoxShape.rectangle,
-	       border: Border.all(width: boderWidth, color: stl.colorScheme.secondary),
+	       border: Border.all(width: boderWidth, color: stl.cs.secondary),
 	    ),
 	 ),
       )
@@ -2761,13 +2760,13 @@ Widget makePayPriceListTile({
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltSubtitleSty,
+      //style: stl.ltSubtitleSty,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltTitleSty,
+      //style: stl.ltTitleSty,
    );
 
    IconData icon = selected ? Icons.check_box : Icons.check_box_outline_blank;
@@ -2861,19 +2860,19 @@ Widget makePaymentOptions({
    Text subtitleW = Text(subtitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltSubtitleSty,
+      //style: stl.ltSubtitleSty,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: stl.ltTitleSty,
+      //style: stl.ltTitleSty,
    );
 
    return Card(
       elevation: 1.0,
       margin: const EdgeInsets.symmetric(vertical: 2),
-      color: stl.colorScheme.background,
+      color: stl.cs.background,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
             Radius.circular(stl.cornerRadius),
@@ -2926,7 +2925,7 @@ Widget makePaymentChoiceWidget({
 
    return Card(
       margin: const EdgeInsets.all(2),
-      color: stl.colorScheme.background,
+      color: stl.cs.background,
       elevation: 1.0,
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.only(
@@ -3011,7 +3010,7 @@ Widget makeStatsText({
    return Text(prefix + key + ' ' + value,
       style: TextStyle(
 	 fontSize: stl.mainFontSize,
-	 color: stl.colorScheme.primary,
+	 color: stl.cs.primary,
 	 fontWeight: FontWeight.normal,
       ),
    );
@@ -3022,8 +3021,8 @@ Widget makePostRowElem({
    String key,
    String value,
    String prefix = '• ',
-   Color keyTextColor = stl.infoKeyColor,
-   Color valueTextColor = stl.primaryColor,
+   Color keyTextColor = stl.secondaryTextColor,
+   Color valueTextColor = stl.secondaryDarkColor,
 }) {
 
    Text keyWdg = Text(prefix + key,
@@ -3068,9 +3067,7 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text('• ${nodes[i].name(g.param.langIdx)}',
-         style: stl.tt.subtitle1.copyWith(
-            color: stl.primaryColor,
-         ),
+         //style: stl.ltTitleSty,
       );
 
       list.add(text);
@@ -3257,7 +3254,7 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
 
 Card putPostElemOnCard({
    List<Widget> list,
-   Color backgroundColor = stl.backgroundColor, 
+   Color backgroundColor = stl.postColor, 
    double margin = stl.basePadding,
    double padding = 0,
 }) {
@@ -3270,7 +3267,7 @@ Card putPostElemOnCard({
 
    return Card(
       elevation: 0.0,
-      //color: stl.colorScheme.background,
+      //color: stl.cs.background,
       color: backgroundColor,
       margin: EdgeInsets.all(margin),
       shape: RoundedRectangleBorder(
@@ -3346,7 +3343,7 @@ ThemeData makeExpTileThemeData()
 {
    return ThemeData(
       accentColor: Colors.black,
-      unselectedWidgetColor: stl.colorScheme.primary,
+      unselectedWidgetColor: stl.cs.primary,
       textTheme: TextTheme(
          subtitle1: TextStyle(
             color: Colors.black,
@@ -3409,7 +3406,7 @@ Widget makeNewPostDialogWdg({
    final List<Widget> actions,
    final double diagBorderRadius = stl.cornerRadius,
    final EdgeInsets insetPadding = const EdgeInsets.all(stl.basePadding),
-   final Color backgroundColor = stl.alertDiagBackgroundColor,
+   final Color backgroundColor = Colors.white,
 }) {
    Column col = Column(
       mainAxisSize: MainAxisSize.min,
@@ -3425,7 +3422,7 @@ Widget makeNewPostDialogWdg({
          child: col,
       ),
       decoration: BoxDecoration(
-	 color: stl.postColor,
+	 //color: stl.cs.surface,
 	 shape: BoxShape.rectangle,
 	 borderRadius: BorderRadius.all(const Radius.circular(stl.cornerRadius)),
       ),
@@ -3488,7 +3485,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
    Widget build(BuildContext ctx)
    {
       final FlatButton ok = FlatButton(
-	 child: Text(g.param.ok, style: TextStyle(color: stl.colorScheme.primary)),
+	 child: Text(g.param.ok, style: TextStyle(color: stl.cs.primary)),
 	 onPressed: () {_onOkPressed(ctx);},
       );
 
@@ -3554,11 +3551,11 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
 	 CheckboxListTile cb = CheckboxListTile(
 	    //dense: true,
 	    title: Text(widget.names[i],
-	       style: stl.ltTitleSty,
+	       //style: stl.ltTitleSty,
 	    ),
 	    value: i == widget.onIdx,
 	    onChanged: (bool v) { _onPressed(ctx, v, i); },
-	    activeColor: stl.colorScheme.primary,
+	    activeColor: stl.cs.primary,
 	    isThreeLine: false,
 	 );
 
@@ -3567,7 +3564,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       }
 
       final FlatButton ok = FlatButton(
-	 child: Text(g.param.ok, style: TextStyle(color: stl.colorScheme.primary)),
+	 child: Text(g.param.ok, style: TextStyle(color: stl.cs.primary)),
 	 onPressed: () {_onOkPressed(ctx);},
       );
 
@@ -3792,7 +3789,6 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
 List<Widget> makeDetailsTextWdgs({
    List<String> fields,
-   Color backgroundColor = stl.eColor,
    Color textColor = stl.postColor,
    double fontSize = stl.mainFontSize,
    FontWeight fontWeight = FontWeight.w500,
@@ -3800,7 +3796,7 @@ List<Widget> makeDetailsTextWdgs({
    return List<Widget>.generate(fields.length, (int i) {
       return Card(
 	    elevation: 0.0,
-	    color: backgroundColor,
+	    color: stl.cs.secondary,
 	    margin: EdgeInsets.all(0.0),
 	    child: Padding(
 	       padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
@@ -3808,7 +3804,7 @@ List<Widget> makeDetailsTextWdgs({
 	          style: TextStyle(
 	             fontSize: fontSize,
 	             fontWeight: fontWeight,
-	             color: textColor,
+	             color: stl.cs.surface,
 	          ),
 	       ),
 	    ),
@@ -3929,8 +3925,6 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
       const double margin = 0;
       const double insetPadding = 0.0;
-      final Color backColor = widget.tab == cts.searchIdx ?
-	    stl.colorScheme.primary : stl.colorScheme.background;
 
       Widget ret = makeNewPostDialogWdg(
 	 title: null,
@@ -3938,7 +3932,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 diagBorderRadius: 0.0,
 	 list: <Widget>[detailsWdg],
 	 actions: actions,
-	 backgroundColor: backColor,
+	 backgroundColor: stl.cs.primary,
 	 insetPadding: const EdgeInsets.only(
 	    left: 0.0,
 	    right: 0.0,
@@ -3956,11 +3950,11 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       if (widget.imgFiles != null)
 	 icon = IconButton(
 	    onPressed: _onAddImg,
-	    icon: Icon(Icons.add_a_photo, color: stl.colorScheme.primary),
+	    icon: Icon(Icons.add_a_photo, color: stl.cs.primary),
 	 );
       else {
 	 icon = IconButton(
-	    icon: Icon(Icons.share, color: stl.colorScheme.primary),
+	    icon: Icon(Icons.share, color: stl.cs.primary),
 	    onPressed: (){print('aaaaaaaaaaa');},
             //() {
             //  Navigator.of(ctx).pop();
@@ -4122,14 +4116,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 Widget kmText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 2),
 	    fontWeight: FontWeight.w700,
-	    textColor: stl.dColor,
+	    textColor: stl.secondaryDarkColor,
 	    fontSize: stl.smallFontSize,
 	 );
 
 	 Widget priceText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 0),
 	    fontWeight: FontWeight.w700,
-	    textColor: stl.dColor,
+	    textColor: stl.secondaryDarkColor,
 	    fontSize: stl.smallFontSize,
 	 );
 
@@ -4138,20 +4132,20 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    children: <Widget>
 	    [ img
 	    , Positioned(
-		 left: 0.0,
-		 bottom: 0.0,
+		 left: 0,
+		 bottom: 0,
 		 child: Card(child: kmText,
 		    elevation: 0,
-		    color: stl.postColor,
+		    color: stl.cs.surface,
 		    margin: EdgeInsets.all(stl.basePadding),
 		 ),
 	      )
 	    , Positioned(
-		 left: 0.0,
-		 top: 0.0,
+		 left: 0,
+		 top: 0,
 		 child: Card(child: priceText,
 		    elevation: 0,
-		    color: stl.postColor,
+		    color: stl.cs.surface,
 		    margin: EdgeInsets.all(stl.basePadding),
 		 ),
 	      )
@@ -4183,17 +4177,17 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
 	    onPressed: widget.onAddImg,
 	    icon: Icons.add_a_photo,
-	    color: stl.colorScheme.primary,
+	    color: stl.cs.primary,
 	 );
 
 	 Stack st = Stack(
-	    alignment: Alignment(0.0, 0.0),
+	    alignment: Alignment(0, 0),
 	    children: <Widget>
 	    [ imgWdg
 	    , Card(child: addImgWidget,
-		    elevation: 0.0,
+		    elevation: 0,
 		    color: Colors.white.withOpacity(0.7),
-		    margin: EdgeInsets.all(0.0),
+		    margin: EdgeInsets.all(0),
 	      ),
 	    ],
 	 );
@@ -4225,7 +4219,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      const int n = 9;
+      const int n = 7;
       if (detailsNames.length > n)
 	 detailsNames.removeRange(n, detailsNames.length);
 
@@ -4284,7 +4278,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
 
       return RaisedButton(
-	 color: stl.postColor,
+	 color: stl.cs.surface,
 	 onPressed: () {_onShowDetails(ctx);},
 	 elevation: 1.0,
 	 child: Row(children: row1List),
@@ -4332,7 +4326,7 @@ Widget makePostDetailsWdg({
 
    Widget stats = putPostElemOnCard(
       padding: stl.basePadding,
-      backgroundColor: stl.colorScheme.secondary,
+      backgroundColor: stl.cs.secondary,
       margin: 0,
       list: <Widget>
       [ Padding(
@@ -4375,7 +4369,7 @@ Widget makePostDetailsWdg({
 
 Widget makeDefaultTextWidget({
    String text,
-   Color color = stl.eColor,
+   Color color = stl.primaryTextColor,
    FontWeight fontWeight = FontWeight.normal,
    FontStyle fontStyle = FontStyle.normal,
 }) {
@@ -4419,10 +4413,10 @@ Widget makeDefaultWidgetCard({
       child: RaisedButton(
 	 child: makeDefaultTextWidget(
 	    text: buttonName,
-	    color: stl.postColor,
+	    color: stl.secondaryTextColor,
 	    fontWeight: FontWeight.normal,
 	 ),
-	 color: stl.onSecondaryColor,
+	 color: stl.secondaryColor,
 	 onPressed: onPressed,
 	 elevation: 1,
 	 //padding: const EdgeInsets.all(10),
@@ -4459,7 +4453,7 @@ Widget makeDefaultWidgetCard({
 	 minHeight: minHeight,
       ),
       child: Card(
-	 color: stl.colorScheme.primary,
+	 color: stl.cs.primary,
 	 margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
 	 elevation: 0,
 	 shape: RoundedRectangleBorder(
@@ -4597,7 +4591,7 @@ ListTile makeNewPostTreeWdg({
       return ListTile(
 	 title: Text(
 	    child.name(g.param.langIdx),
-	    style: stl.ltTitleSty,
+	    //style: stl.ltTitleSty,
 	 ),
 	 onTap: onLeafPressed,
 	 enabled: true,
@@ -4608,15 +4602,15 @@ ListTile makeNewPostTreeWdg({
    return ListTile(
       title: Text(
 	 child.name(g.param.langIdx),
-	 style: stl.ltTitleSty,
+	 //style: stl.ltTitleSty,
       ),
       subtitle: Text(
 	 child.getChildrenNames(g.param.langIdx, 4),
 	 maxLines: 1,
 	 overflow: TextOverflow.ellipsis,
-	 style: stl.ltSubtitleSty,
+	 //style: stl.ltSubtitleSty,
       ),
-      trailing: Icon(Icons.keyboard_arrow_right, color: stl.colorScheme.primary),
+      trailing: Icon(Icons.keyboard_arrow_right, color: stl.cs.primary),
       onTap: onNodePressed,
       enabled: true,
       isThreeLine: false,
@@ -4669,7 +4663,7 @@ class ChatPresenceSubtitle {
    Color color;
    ChatPresenceSubtitle(
    { this.subtitle = ''
-   , this.color = stl.secondaryVariantColor,
+   , this.color = stl.secondaryDarkColor,
    });
 }
 
@@ -4687,7 +4681,7 @@ ChatPresenceSubtitle makeLTPresenceSubtitle({
    if (moreRecent && now < last) {
       return ChatPresenceSubtitle(
          subtitle: g.param.typing,
-         color: stl.colorScheme.onSecondary,
+         color: stl.cs.onSecondary,
       );
    }
 
@@ -4716,13 +4710,13 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
    ChatPresenceSubtitle cps = makeLTPresenceSubtitle(
       chatMetaData: ch,
       text: str,
-      color: stl.secondaryVariantColor,
+      color: stl.secondaryDarkColor,
    );
 
    if (ch.nUnreadMsgs > 0 || !ch.isLastChatMsgFromThisApp())
       return Text(
          cps.subtitle,
-	 style: stl.ltSubtitleSty,
+	 //style: stl.ltSubtitleSty,
          maxLines: 1,
          overflow: TextOverflow.ellipsis
       );
@@ -4733,7 +4727,7 @@ Widget makeChatTileSubtitle(BuildContext ctx, final ChatMetadata ch)
         child: Text(cps.subtitle,
            maxLines: 1,
            overflow: TextOverflow.ellipsis,
-	   style: stl.ltSubtitleSty,
+	   //style: stl.ltSubtitleSty,
         ),
      ),
    ]);
@@ -4785,8 +4779,8 @@ Widget makeChatListTileTrailingWidget(
       [ Icon(Icons.place)
       , makeUnreadMsgsCircle(
           unread: nUnreadMsgs,
-          backgroundColor: stl.colorScheme.secondary,
-          textColor: stl.colorScheme.onSecondary,
+          backgroundColor: stl.cs.secondary,
+          textColor: stl.cs.onSecondary,
         )
       ]);
       
@@ -4808,8 +4802,8 @@ Widget makeChatListTileTrailingWidget(
          [ dateText
          , makeUnreadMsgsCircle(
              unread: nUnreadMsgs,
-             backgroundColor: stl.colorScheme.secondary,
-             textColor: stl.colorScheme.onSecondary,
+             backgroundColor: stl.cs.secondary,
+             textColor: stl.cs.onSecondary,
            )
          ]);
    }
@@ -4852,7 +4846,7 @@ Widget makeChatListTile({
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
 }) {
-   Color bgColor = stl.postColor;
+   Color bgColor = stl.cs.background;
    if (chatMetadata.isLongPressed)
       bgColor = stl.chatLongPressedColor;
 
@@ -4880,7 +4874,7 @@ Widget makeChatListTile({
       title: Text(chatMetadata.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-	 style: stl.ltTitleSty,
+	 //style: stl.ltTitleSty,
       ),
    );
 
@@ -4963,7 +4957,7 @@ Widget makeChatsExp({
    return Theme(
       data: makeExpTileThemeData(),
       child: ExpansionTile(
-         backgroundColor: stl.backgroundColor,
+         //backgroundColor: stl.backgroundColor,
          initiallyExpanded: expState,
          leading: stl.favIcon,
          //key: GlobalKey(),
@@ -5145,7 +5139,10 @@ class DialogWithOpState extends State<DialogWithOp> {
    {
       final SimpleDialogOption ok = SimpleDialogOption(
          child: Text(g.param.ok,
-            style: TextStyle(color: Colors.blue, fontSize: 16.0),
+            style: TextStyle(
+	       color: stl.cs.primary,
+	       fontSize: stl.mainFontSize,
+	    ),
          ),
          onPressed: () async
          {
@@ -5156,7 +5153,10 @@ class DialogWithOpState extends State<DialogWithOp> {
 
       final SimpleDialogOption cancel = SimpleDialogOption(
          child: Text(g.param.cancel,
-            style: TextStyle(color: Colors.blue, fontSize: 16.0),
+            style: TextStyle(
+	       color: stl.cs.primary,
+	       fontSize: stl.mainFontSize,
+	    ),
          ),
          onPressed: () { Navigator.of(ctx).pop(); },
       );
@@ -5185,13 +5185,15 @@ class DialogWithOpState extends State<DialogWithOp> {
               padding: EdgeInsets.all(25.0),
               child: Center(
                  child: Text(widget.body,
-                    style: TextStyle(fontSize: 16.0),
+                    //style: TextStyle(fontSize: 16.0),
                  ),
               ),
            )
          , tile
-         , Padding( child: Row(children: actions)
-                  , padding: EdgeInsets.only(left: 70.0))
+         , Padding(
+	       child: Row(children: actions),
+	       padding: EdgeInsets.only(left: 70.0),
+	   )
          ]);
    }
 }
@@ -6307,10 +6309,11 @@ class OccaseState extends State<Occase>
          await _onChatPressedImpl(_appState.ownPosts, j, k, tab);
    }
 
-   void _onUserInfoPressed(BuildContext ctx, String postId, int j)
+   void _onUserInfoPressed(BuildContext ctx, String postId, int j, int tab)
    {
       List<Post> posts;
-      if (_isOnFav()) {
+      bool isOnFav = tab == cts.favIdx;
+      if (isOnFav) {
          posts = _appState.favPosts;
       } else {
          posts = _appState.ownPosts;
@@ -6325,7 +6328,7 @@ class OccaseState extends State<Occase>
       final String title = nick;
 
       final String avatar =
-         _isOnFav() ? posts[i].avatar : posts[i].chats[j].avatar;
+         isOnFav ? posts[i].avatar : posts[i].chats[j].avatar;
 
       final String url = cts.gravatarUrl + avatar + '.jpg';
 
@@ -7445,7 +7448,7 @@ class OccaseState extends State<Occase>
 	 onChatLongPressed: (int j, int k) {_onChatLongPressed(tab, j, k);},
 	 onDelPost: (int j) { _removePostDialog(ctx, tab, j);},
 	 onPinPost: (int j) {_onPinPost(tab, j);},
-	 onUserInfoPressed: _onUserInfoPressed,
+	 onUserInfoPressed: (var ctx, var str, int j) {_onUserInfoPressed(ctx, str, j, tab);},
 	 onExpandImg: (int i, int j) {_onExpandImg(i, j, tab);},
 	 onSharePost: (int tab) {_onClickOnPost(tab, 1);},
 	 onCreateAd: _onCreateAd,
@@ -7669,7 +7672,7 @@ class OccaseState extends State<Occase>
 	    height: sep,
 	    thickness: sep,
 	    indent: 0.0,
-	    color: stl.colorScheme.background,
+	    color: stl.cs.background,
 	 );
 
 	 List<Widget> tabWdgs = makeTabWdgs(
@@ -7694,7 +7697,7 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.ownIdx),
 		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
-		  backgroundColor: stl.colorScheme.primary,
+		  backgroundColor: stl.cs.primary,
 		  primary: false,
 		  shape: RoundedRectangleBorder(
 		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -7739,7 +7742,7 @@ class OccaseState extends State<Occase>
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
 		  leading: _makeAppBarLeading(isWide, cts.favIdx),
-		  backgroundColor: stl.colorScheme.primary,
+		  backgroundColor: stl.cs.primary,
 		  primary: false,
 		  shape: RoundedRectangleBorder(
 		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
@@ -7763,7 +7766,7 @@ class OccaseState extends State<Occase>
 	    width: sep,
 	    thickness: sep,
 	    indent: 0.0,
-	    color: stl.colorScheme.background,
+	    color: stl.cs.background,
 	 );
 
 	 Widget body = Row(children: <Widget>
