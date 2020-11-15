@@ -14,7 +14,7 @@ const double imgHeight = widgetMaxWidth / goldenRatio;
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
 const int imgQuality = 75;
 const int maxImgsPerPost = 6;
-const int minImgsPerPost = 0;
+const int minImgsPerPost = 1;
 
 const int nickMaxLength = 20;
 const int nickMinLength = 3;

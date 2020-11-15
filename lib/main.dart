@@ -55,6 +55,7 @@ typedef OnPressedF13 = void Function(bool, int);
 typedef OnPressedF14 = void Function(List<int>);
 typedef OnPressedF15 = void Function(ConfigActions);
 typedef OnPressedF16 = void Function(String, int);
+typedef OnPressedF17 = void Function(DateTime);
 
 bool isWideScreenImpl(double w)
 {
@@ -785,7 +786,7 @@ RichText makeExpTileTitle(
    return RichText(
       text: TextSpan(
          text: '$first$sep ',
-         style: stl.tsMainBlack,
+         //style: stl.tsMainBlack,
          children: <TextSpan>
          [ TextSpan(
               text: second,
@@ -1240,30 +1241,64 @@ Widget makeNewPostInDetailLT({
    );
 }
 
-Widget makeDropBox()
-{
-   return DropdownButton<int>(
-      value: 500,
-      //icon: Icon(Icons.arrow_downward, color: stl.cs.onSecondary),
+Widget makeNewPostProdDateWdg({
+   BuildContext ctx,
+   final String title,
+   final String date,
+   final DateTime initialDate,
+   final OnPressedF17 onSetProdDate,
+}) {
+   return makeNewPostLT(
+      title: title,
+      subTitle: date,
       icon: null,
-      iconSize: 24,
-      elevation: 16,
-      style: stl.tsMainPrimary,
-      underline: null,
-      //underline: Container(
-      //   height: 2,
-      //   color: stl.cs.secondary,
-      //),
-      onChanged: (int newValue) {
-	 //setState(() { dropdownValue = newValue; });
-      },
-      items: <int>[500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12500, 15000, 17500, 20000, 25000, 30000, 40000, 50000, 75000, 100000]
-	 .map<DropdownMenuItem<int>>((int value) {
-	       return DropdownMenuItem<int>(
-		  value: value,
-		  child: Text('$value'),
+      onTap: () async
+      {
+	 final DateTime picked = await showDatePicker(
+	    context: ctx,
+	    initialDate: initialDate,
+	    firstDate: DateTime(1900),
+	    lastDate: DateTime(2030)
 	 );
-      }).toList(),
+
+	 if (picked != null && picked != initialDate)
+	    onSetProdDate(picked);
+      },
+   );
+}
+
+Widget makeNewPostStrInput({
+   BuildContext ctx,
+   final String title,
+   final String subtitle,
+   final String diagTitle,
+   final String diagContent,
+   final String diagHint,
+   final int diagMaxLength,
+   final OnPressedF09 onOk,
+}) {
+   return makeNewPostLT(
+      title: title,
+      subTitle: subtitle,
+      icon: null,
+      onTap: () async
+      {
+	 final String result = await showDialog<String>(
+	    context: ctx,
+	    builder: (BuildContext ctx2)
+	    {
+	       return PostDescription(
+		  title: diagTitle,
+		  description: diagContent,
+		  descriptionHint: diagHint,
+		  maxLength: diagMaxLength,
+	       );
+	    },
+	 );
+
+	 if (result != null)
+	    onOk(result);
+      },
    );
 }
 
@@ -1279,6 +1314,9 @@ List<Widget> makeNewPostWdgs({
    final OnPressedF03 onSetExDetail,
    final OnPressedF03 onSetInDetail,
    final OnPressedF06 onNewPostValueChanged,
+   final OnPressedF17 onProdDateChanged,
+   final OnPressedF09 onPriceChanged,
+   final OnPressedF09 onKmChanged,
 }) {
    List<Widget> list = List<Widget>();
 
@@ -1312,8 +1350,6 @@ List<Widget> makeNewPostWdgs({
       list.add(product);
    }
 
-   // ---------------------------------------------------
-
    if (post.product.isEmpty)
       return list;
 
@@ -1321,29 +1357,47 @@ List<Widget> makeNewPostWdgs({
    if (productIdx == -1)
       return list;
 
-   {
-      //Widget year = makeDropBox();
-      //list.add(Row(
-      //         children: <Widget>
-      //         [ Text('${g.param.postValueTitles[2]}: ', style:
-      //         stl.tsMainPrimary)
-      //         , year
-      //         ],
-      //      ),
-      //);
-   }
-
-   {  // Price, kilometer, year
-      final List<Widget> values = makeValueSliders(
-         post: post,
-	 ranges: g.param.rangesMinMax,
-	 divisions: g.param.rangeDivs,
-	 names: g.param.postValueTitles,
-	 onValueChanged: onNewPostValueChanged,
+   { // Price
+      Widget priceWdg = makeNewPostStrInput(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[0],
+	 subtitle: makeRangeStr(post, 0),
+	 diagTitle: g.param.postValueTitles[0],
+	 diagContent: '',
+	 diagHint: '3000',
+	 diagMaxLength: 10,
+	 onOk: onPriceChanged,
       );
 
-      list.add(makeNewPostSetionTitle(title: 'Values'));
-      list.addAll(values);
+      list.add(priceWdg);
+   }
+
+   {  // Date
+
+      Widget prodDate = makeNewPostProdDateWdg(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[1],
+	 date: makeDateString3(post.date),
+	 initialDate: DateTime.now(),
+	 onSetProdDate: onProdDateChanged,
+      );
+
+      list.add(prodDate);
+   }
+
+   {  // Km
+      Widget kmWdg = makeNewPostStrInput(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[2],
+	 subtitle: makeRangeStr(post, 2),
+	 diagTitle: g.param.postValueTitles[2],
+	 diagContent: '',
+	 diagHint: '100000',
+	 diagMaxLength: 10,
+	 onOk: onKmChanged,
+      );
+
+      list.add(kmWdg);
    }
 
    {  // exDetails
@@ -1446,6 +1500,9 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF04 onRemovePost,
    final OnPressedF08 onRangeValueChanged,
    final OnPressedF06 onNewPostValueChanged,
+   final OnPressedF17 onProdDateChanged,
+   final OnPressedF09 onPriceChanged,
+   final OnPressedF09 onKmChanged,
    final OnPressedF09 onSetPostDescription,
    final OnPressedF09 onSetEmail,
    final OnPressedF00 onFreePaymentPressed,
@@ -1467,6 +1524,9 @@ Widget makeNewPostScreenWdgs({
       onSetExDetail: onSetExDetail,
       onSetInDetail: onSetInDetail,
       onNewPostValueChanged: onNewPostValueChanged,
+      onProdDateChanged: onProdDateChanged,
+      onPriceChanged: onPriceChanged,
+      onKmChanged: onKmChanged,
    );
 
    list.addAll(mainWidgets);
@@ -1497,61 +1557,34 @@ Widget makeNewPostScreenWdgs({
    list.add(makeNewPostSetionTitle(title: 'User info'));
    if (list.length > 2) {
       {  // Description
-	 Widget descWidget = makeNewPostLT(
+	 Widget descWidget = makeNewPostStrInput(
+	    ctx: ctx,
 	    title: g.param.postDescTitle,
-	    subTitle: post.description,
-	    icon: null,
-	    onTap: () async
-	    {
-	       final String description = await showDialog<String>(
-		  context: ctx,
-		  builder: (BuildContext ctx2)
-		  {
-		     return PostDescription(
-			title: g.param.postDescTitle,
-			description: post.description,
-			descriptionHint: g.param.newPostTextFieldHist,
-			maxLength: cts.descriptionMaxLength,
-		     );
-		  },
-	       );
-
-	       if (description != null)
-		  onSetPostDescription(description);
-	    },
+	    subtitle: post.description,
+	    diagTitle: g.param.postDescTitle,
+	    diagContent: post.description,
+	    diagHint: g.param.newPostTextFieldHist,
+	    diagMaxLength: cts.descriptionMaxLength,
+	    onOk: onSetPostDescription,
 	 );
 
 	 list.add(descWidget);
       }
 
       {  // email
-	 Widget emailWdg = makeNewPostLT(
+	 Widget emailWdg = makeNewPostStrInput(
+	    ctx: ctx,
 	    title: 'Email',
-	    subTitle: post.email,
-	    icon: null,
-	    onTap: () async
-	    {
-	       final String email = await showDialog<String>(
-		  context: ctx,
-		  builder: (BuildContext ctx2)
-		  {
-		     return PostDescription(
-			title: 'Email',
-			description: post.email,
-			descriptionHint: 'user@example.de',
-			maxLength: cts.emailMaxLength,
-		     );
-		  },
-	       );
-
-	       if (email != null) 
-		  onSetEmail(email);
-	    },
+	    subtitle: post.email,
+	    diagTitle: 'Email',
+	    diagContent: post.email,
+	    diagHint: 'user@example.de',
+	    diagMaxLength: cts.descriptionMaxLength,
+	    onOk: onSetEmail,
 	 );
 
 	 list.add(emailWdg);
       }
-      // ---------------------------------------------------
 
       {  // final
          List<Widget> finalScreen = makeNewPostFinalScreen(
@@ -1668,6 +1701,9 @@ Widget makeSearchScreenWdg({
    final OnPressedF06 onValueChanged,
    final OnPressedF14 onSetLocationCode,
    final OnPressedF14 onSetProductCode,
+   final OnPressedF17 onSetProdDate,
+   final OnPressedF09 onPriceChanged,
+   final OnPressedF09 onKmChanged,
 }) {
    List<Widget> foo = List<Widget>();
 
@@ -1732,16 +1768,46 @@ Widget makeSearchScreenWdg({
       foo.add(detail);
    }
 
-   {  // Values
-      final List<Widget> values = makeValueSliders(
-         post: post,
-	 ranges: ranges,
-	 divisions: divisions,
-	 names: g.param.postSearchValueTitles,
-	 onValueChanged: onValueChanged,
+   { // Price
+      Widget priceWdg = makeNewPostStrInput(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[0],
+	 subtitle: makeRangeStr(post, 0),
+	 diagTitle: g.param.postValueTitles[0],
+	 diagContent: '100000',
+	 diagHint: '100000',
+	 diagMaxLength: 10,
+	 onOk: onPriceChanged,
       );
 
-      foo.addAll(values);
+      foo.add(priceWdg);
+   }
+
+   {  // Date
+      Widget prodDate = makeNewPostProdDateWdg(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[1],
+	 date: makeDateString3(post.date),
+	 initialDate: DateTime.now(),
+	 onSetProdDate: onSetProdDate,
+      );
+
+      foo.add(prodDate);
+   }
+
+   {  // Km
+      Widget kmWdg = makeNewPostStrInput(
+	 ctx: ctx,
+	 title: g.param.postValueTitles[2],
+	 subtitle: makeRangeStr(post, 2),
+	 diagTitle: g.param.postValueTitles[2],
+	 diagContent: '',
+	 diagHint: '100000',
+	 diagMaxLength: 10,
+	 onOk: onKmChanged,
+      );
+
+      foo.add(kmWdg);
    }
 
    { // Send cancel
@@ -2456,7 +2522,6 @@ Widget makeChatScreen({
    );
 
    TextField tf = TextField(
-       style: stl.tsMainBlack,
        controller: editCtrl,
        keyboardType: TextInputType.multiline,
        maxLines: null,
@@ -2620,14 +2685,14 @@ Widget makeChatScreen({
           title: Text(chatMetadata.getChatDisplayName(),
              maxLines: 1,
              overflow: TextOverflow.ellipsis,
-             style: stl.appBarLtTitle.copyWith(color: stl.cs.onSecondary),
+             style: stl.appBarLtTitle,
           ),
           //dense: true,
           subtitle:
              Text(cps.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: stl.appBarLtSubtitle.copyWith(color: cps.color),
+                style: stl.appBarLtTitle.copyWith(fontSize: stl.tinyFontSize),
              ),
        );
    }
@@ -2643,10 +2708,10 @@ Widget makeChatScreen({
             appBar : AppBar(
                actions: actions,
                title: title,
-	       backgroundColor: stl.cs.secondary,
+	       //backgroundColor: stl.cs.secondary,
                leading: IconButton(
                   padding: EdgeInsets.all(0),
-                  icon: Icon(Icons.arrow_back, color: stl.cs.onSecondary),
+                  icon: Icon(Icons.arrow_back, color: stl.primaryTextColor),
                   onPressed: onWillPopScope,
                ),
             ),
@@ -2656,7 +2721,7 @@ Widget makeChatScreen({
 	    decoration: BoxDecoration(
 	       color: stl.chatScreenBgColor,
 	       shape: BoxShape.rectangle,
-	       border: Border.all(width: boderWidth, color: stl.cs.secondary),
+	       border: Border.all(width: boderWidth, color: stl.primaryColor),
 	    ),
 	 ),
       )
@@ -2905,7 +2970,7 @@ Widget makePaymentChoiceWidget({
    Widget title = Padding(
       padding: EdgeInsets.all(stl.basePadding),
       child: Text(g.param.paymentTitle,
-	 style: stl.tsMainPrimary,
+	 //style: stl.tsMainPrimary,
       ),
    );
 
@@ -2953,11 +3018,7 @@ Widget createRaisedButton({
 }) {
    RaisedButton but = RaisedButton(
       child: Text(text,
-	 style: TextStyle(
-	    fontWeight: FontWeight.bold,
-	    fontSize: stl.mainFontSize,
-	    color: textColor,
-	 ),
+	 //style: TextStyle(color: textColor),
 	 //textAlign: TextAlign.center,
       ),
       color: color,
@@ -3290,10 +3351,7 @@ Widget makePostDescription(BuildContext ctx, int tab, String desc)
 {
    return Padding(
       padding: EdgeInsets.all(stl.basePadding),
-      child: Text(desc,
-	 //overflow: TextOverflow.ellipsis,
-	 style: stl.tsMainBlack,
-      ),
+      child: Text(desc),
    );
 }
 
@@ -3405,11 +3463,11 @@ Widget makeAddOrRemoveWidget({
 
 Widget makeNewPostDialogWdg({
    final Widget title,
-   final double contentPadding,
+   final EdgeInsets contentPadding = const EdgeInsets.only(left: 24, right: 24, top: 20),
    final List<Widget> list,
    final List<Widget> actions,
    final double diagBorderRadius = stl.cornerRadius,
-   final EdgeInsets insetPadding = const EdgeInsets.all(stl.basePadding),
+   final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
    final Color backgroundColor = Colors.white,
 }) {
    Column col = Column(
@@ -3434,7 +3492,7 @@ Widget makeNewPostDialogWdg({
 
    return AlertDialog(
       title: title,
-      contentPadding: EdgeInsets.all(contentPadding),
+      contentPadding: contentPadding,
       actions: actions,
       insetPadding: insetPadding,
       backgroundColor: backgroundColor,
@@ -3489,7 +3547,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
    Widget build(BuildContext ctx)
    {
       final FlatButton ok = FlatButton(
-	 child: Text(g.param.ok, style: TextStyle(color: stl.cs.primary)),
+	 child: Text(g.param.ok),
 	 onPressed: () {_onOkPressed(ctx);},
       );
 
@@ -3500,8 +3558,7 @@ class InDetailsViewState extends State<InDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 title: Text(widget.title, style: stl.tsMainBlack),
-	 contentPadding: stl.basePadding,
+	 title: Text(widget.title),
 	 list: list,
 	 actions: <FlatButton>[ok],
       );
@@ -3573,8 +3630,7 @@ class ExDetailsViewState extends State<ExDetailsView> with TickerProviderStateMi
       );
 
       return makeNewPostDialogWdg(
-	 title: Text(widget.title, style: stl.tsMainBlack),
-	 contentPadding: stl.basePadding,
+	 title: Text(widget.title),
 	 list: exDetails,
 	 actions: <FlatButton>[ok],
       );
@@ -3628,7 +3684,7 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 keyboardType: TextInputType.multiline,
 	 maxLines: null,
 	 maxLength: widget.maxLength,
-	 style: stl.tsMainBlack,
+	 //style: stl.tsMainBlack,
 	 decoration: InputDecoration.collapsed(hintText: hint),
       );
 
@@ -3642,11 +3698,8 @@ class PostDescriptionState extends State<PostDescription> with TickerProviderSta
 	 onPressed: () { Navigator.pop(ctx, _txtCtrl.text); });
 
       Widget w = AlertDialog(
-	 contentPadding: EdgeInsets.all(stl.basePadding),
-	 title: Text(widget.title,
-	    style: stl.tsMainBlack,
-	 ),
-	 content: content,
+	 title: Text(widget.title),
+	 content: tf,
 	 actions: <Widget>[ok],
       );
 
@@ -3752,19 +3805,6 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 
       final String titleStr = _stack.join(', ');
 
-      Widget titleWdg = RichText(
-	 text: TextSpan(
-	    text: '${g.param.newPostTabNames[0]}: ',
-	    style: stl.tsMainBlack,
-	    children: <TextSpan>
-	    [ TextSpan(
-		 text: titleStr,
-		 style: stl.ltTitleSty.copyWith(color: stl.cs.secondaryVariant),
-	      ),
-	    ],
-	 ),
-      );
-
       FlatButton back =  FlatButton(
 	 child: Text(g.param.usefulWords[0]),
 	 onPressed: () {_onBack(ctx);},
@@ -3781,8 +3821,7 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
       );
 
       return makeNewPostDialogWdg(
-	 title: titleWdg,
-	 contentPadding: stl.basePadding,
+	 title: Text(widget.root.name(g.param.langIdx)),
 	 list: locWdgs,
 	 actions: <FlatButton>[back, cancel, ok],
       );
@@ -3932,7 +3971,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
       Widget ret = makeNewPostDialogWdg(
 	 title: null,
-	 contentPadding: margin,
+	 contentPadding: const EdgeInsets.all(margin),
 	 diagBorderRadius: 0.0,
 	 list: <Widget>[detailsWdg],
 	 actions: actions,
@@ -4757,6 +4796,14 @@ String makeDateString3(int date)
    date *= 1000;
    DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
    DateFormat format = Intl(g.param.localeName).date().add_yMEd();
+   return format.format(dateObj);
+}
+
+String makeDateString4(int date)
+{
+   date *= 1000;
+   DateTime dateObj = DateTime.fromMillisecondsSinceEpoch(date);
+   DateFormat format = Intl(g.param.localeName).date().add_m().add_y();
    return format.format(dateObj);
 }
 
@@ -5679,6 +5726,29 @@ class OccaseState extends State<Occase>
       });
    }
 
+   void _onSetPrice(String v, int tab, int i)
+   {
+      int value = _posts[tab].rangeValues[i];
+      try {
+	 value = int.parse(v);
+
+	 setState(() {
+	    _posts[tab].rangeValues[i] = value;
+	 });
+      } catch (e) {
+	 print(e);
+      }
+   }
+
+   Future<void> _onSetProdDate(DateTime picked, int tab) async
+   {
+      assert(picked != null);
+
+      setState(() {
+	 _posts[tab].date = (picked.toUtc().millisecondsSinceEpoch / 1000).round();
+      });
+   }
+
    void _onSetPostDescription(String description)
    {
       setState(() {
@@ -5754,6 +5824,15 @@ class OccaseState extends State<Occase>
    {
       _posts[i] = Post(rangesMinMax: g.param.rangesMinMax);
       _posts[i].reset();
+      if (i == cts.searchIdx) {
+	 _posts[i].date = 0;
+	 _posts[i].rangeValues[0] = 100000;
+      }
+
+      if (i == cts.ownIdx) {
+	 _posts[i].date = 0;
+	 _posts[i].rangeValues[0] = 3000;
+      }
    }
 
    Future<void> _onCreateAd() async
@@ -7082,11 +7161,12 @@ class OccaseState extends State<Occase>
             actions[0] = cancel;
             actions[1] = ok;
 
-            Text text = Text(g.param.delChatTitle, style: TextStyle(color: Colors.black));
+            Text text = Text(g.param.delChatTitle);
             return AlertDialog(
-                  title: text,
-                  content: Text(""),
-                  actions: actions);
+	       title: text,
+	       content: Text(""),
+	       actions: actions,
+	    );
          },
       );
    }
@@ -7349,6 +7429,9 @@ class OccaseState extends State<Occase>
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
 	 onRemovePost: (var a) { _onSendNewPost(a, 0); },
 	 onNewPostValueChanged: _onNewPostValueChanged,
+	 onProdDateChanged: (var v) {_onSetProdDate(v, cts.ownIdx);},
+	 onPriceChanged: (var price) {_onSetPrice(price, cts.ownIdx, 0);},
+	 onKmChanged: (var km) {_onSetPrice(km, cts.ownIdx, 2);},
 	 onSetPostDescription: _onSetPostDescription,
 	 onSetEmail: _onSetEmail,
 	 onFreePaymentPressed: () { _onSetPostPriority(0);},
@@ -7375,6 +7458,9 @@ class OccaseState extends State<Occase>
 	 onValueChanged: _onSearchValueChanged,
 	 onSetLocationCode: _onSetSearchLocationCode,
 	 onSetProductCode: _onSetSearchProductCode,
+	 onSetProdDate: (var v) {_onSetProdDate(v, cts.searchIdx);},
+	 onPriceChanged: (var price) {_onSetPrice(price, cts.searchIdx, 0);},
+	 onKmChanged: (var km) {_onSetPrice(km, cts.searchIdx, 2);},
       );
    }
 

@@ -47,7 +47,6 @@ final Color textColor = Colors.grey[800];
 //const Color postColor = Color(0xfff5f5f5);
 const Color postColor = Colors.white;
 final Color chatDateColor = Colors.grey[500];
-final Color onPrimarySubtitleColor = Colors.white;
 const Color infoKeyColor = Colors.black;
 const Color infoKeyArrowColor = infoKeyColor;
 final Color testimonialColor = secondaryColor;
@@ -92,11 +91,6 @@ final TextStyle ltSubtitleSty = TextStyle(
    fontWeight: FontWeight.normal,
 );
 
-const TextStyle tsMainPrimary = TextStyle(
-   fontSize: mainFontSize,
-   color: primaryColor,
-);
-
 const TextStyle tsMainBlack = TextStyle(
    fontSize: mainFontSize,
    color: Colors.black,
@@ -109,15 +103,9 @@ const TextStyle tsMainBlackBold = TextStyle(
 );
 
 const TextStyle appBarLtTitle = TextStyle(
-   fontSize: largerFontSize,
+   fontSize: mainFontSize,
    color: primaryTextColor,
    fontWeight: FontWeight.w500,
-);
-
-final TextStyle appBarLtSubtitle = TextStyle(
-   fontSize: smallFontSize,
-   color: onPrimarySubtitleColor,
-   fontWeight: FontWeight.normal,
 );
 
 const Icon unknownPersonIcon = Icon(
