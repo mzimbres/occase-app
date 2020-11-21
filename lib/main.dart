@@ -546,7 +546,7 @@ Widget makeInfoScreen(
 	    onPressed: onSendEmail,
 	    child: Text(g.param.supportEmail,
 	       style: TextStyle(
-		  fontSize: 20.0,
+		  fontSize: stl.bigFontSize,
 		  color: stl.cs.primary,
 		  fontWeight: FontWeight.normal,
 	       ),
@@ -1144,13 +1144,13 @@ Widget makeNewPostLT({
        title: Text(title,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  //style: stl.ltTitleSty,
+	  style: stl.ltTitleSty,
        ),
        //dense: true,
        subtitle: Text(subTitle,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  //style: stl.ltSubtitleSty,
+	  style: stl.ltSubtitleSty,
        ),
        onTap: onTap,
        enabled: true,
@@ -2692,7 +2692,10 @@ Widget makeChatScreen({
              Text(cps.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: stl.appBarLtTitle.copyWith(fontSize: stl.tinyFontSize),
+                style: stl.appBarLtTitle.copyWith(
+		   fontSize: stl.smallFontSize,
+		   fontWeight: FontWeight.normal,
+		),
              ),
        );
    }
@@ -3075,7 +3078,7 @@ Widget makeStatsText({
    return Text(prefix + key + ' ' + value,
       style: TextStyle(
 	 fontSize: stl.mainFontSize,
-	 color: stl.cs.primary,
+	 color: stl.primaryDarkColor,
 	 fontWeight: FontWeight.normal,
       ),
    );
@@ -3087,7 +3090,7 @@ Widget makePostRowElem({
    String value,
    String prefix = '• ',
    Color keyTextColor = stl.secondaryTextColor,
-   Color valueTextColor = stl.secondaryDarkColor,
+   Color valueTextColor = stl.secondaryColor,
 }) {
 
    Text keyWdg = Text(prefix + key,
@@ -4369,7 +4372,7 @@ Widget makePostDetailsWdg({
 
    Widget stats = putPostElemOnCard(
       padding: stl.basePadding,
-      backgroundColor: stl.cs.secondary,
+      backgroundColor: stl.secondaryLightColor,
       margin: 0,
       list: <Widget>
       [ Padding(
@@ -4645,13 +4648,13 @@ ListTile makeNewPostTreeWdg({
    return ListTile(
       title: Text(
 	 child.name(g.param.langIdx),
-	 //style: stl.ltTitleSty,
+	 style: stl.ltTitleSty,
       ),
       subtitle: Text(
 	 child.getChildrenNames(g.param.langIdx, 4),
 	 maxLines: 1,
 	 overflow: TextOverflow.ellipsis,
-	 //style: stl.ltSubtitleSty,
+	 style: stl.ltSubtitleSty,
       ),
       trailing: Icon(Icons.keyboard_arrow_right, color: stl.cs.primary),
       onTap: onNodePressed,
@@ -5236,7 +5239,7 @@ class DialogWithOpState extends State<DialogWithOp> {
               padding: EdgeInsets.all(25.0),
               child: Center(
                  child: Text(widget.body,
-                    //style: TextStyle(fontSize: 16.0),
+                    style: TextStyle(fontSize: stl.mainFontSize),
                  ),
               ),
            )

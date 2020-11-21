@@ -47,9 +47,7 @@ final Color textColor = Colors.grey[800];
 //const Color postColor = Color(0xfff5f5f5);
 const Color postColor = Colors.white;
 final Color chatDateColor = Colors.grey[500];
-const Color infoKeyColor = Colors.black;
-const Color infoKeyArrowColor = infoKeyColor;
-final Color testimonialColor = secondaryColor;
+final Color testimonialColor = secondaryLightColor;
 
 const ColorScheme cs = const ColorScheme.light(
    primary: primaryColor,
@@ -86,7 +84,7 @@ final TextStyle ltTitleSty = TextStyle(
 );
 
 final TextStyle ltSubtitleSty = TextStyle(
-   fontSize: smallFontSize,
+   fontSize: mainFontSize,
    color: secondaryDarkColor,
    fontWeight: FontWeight.normal,
 );
