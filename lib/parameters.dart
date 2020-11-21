@@ -97,16 +97,10 @@ class Parameters {
 
    List<int> rangesMinMax;
    List<int> rangeDivs;
-   List<List<int>> discreteRanges;
 
    Parameters(
    { this.rangesMinMax = const <int>[0, 256000, 0, 2030, 0, 100000]
    , this.rangeDivs = const <int>[100, 100, 100]
-   , this.discreteRanges = const <List<int>>
-   [ <int>[0, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000]
-   , <int>[0, 1990, 2000, 2010, 2015, 2018, 2030]
-   , <int>[0, 5000, 10000, 20000, 40000, 80000, 100000]
-   ]
    });
 
    void setLang(String s)
@@ -286,7 +280,6 @@ class Parameters {
 
       rangesMinMax                = decodeList2(map['rangesMinMax']);
       rangeDivs                   = decodeList2(map['rangeDivs']);
-      discreteRanges              = decodeList3(map['discreteRanges']);
    }
 
    Map<String, dynamic> toJson()
@@ -373,7 +366,6 @@ class Parameters {
          'newPostSectionNames':         _newPostSectionNames,
          'rangesMinMax':                rangesMinMax,
          'rangeDivs':                   rangeDivs,
-         'discreteRanges':              discreteRanges,
       };
    }
 }

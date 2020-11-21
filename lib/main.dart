@@ -938,7 +938,7 @@ List<Widget> makeNewPostFinalScreen({
 
    List<Widget> ret = List<Widget>();
 
-   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[1]));
+   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[4]));
 
    Widget postBox = PostWidget(
       tab: cts.ownIdx,
@@ -961,7 +961,7 @@ List<Widget> makeNewPostFinalScreen({
    );
 
    ret.add(postBox);
-   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[2]));
+   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[5]));
 
    Widget cancelButton = createRaisedButton(
       onPressed: () {onRemovePost(ctx);},
@@ -1401,7 +1401,7 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // exDetails
-      list.add(makeNewPostSetionTitle(title: exDetailsRootNode.name(g.param.langIdx)));
+      list.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[1]));
       final int nDetails = getNumberOfProductDetails(exDetailsRootNode, productIdx);
       for (int i = 0; i < nDetails; ++i) {
 	 final int length = productDetailLength(exDetailsRootNode, productIdx, i);
@@ -1448,7 +1448,7 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // inDetails
-      list.add(makeNewPostSetionTitle(title: inDetailsRootNode.name(g.param.langIdx)));
+      list.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[2]));
       final int nDetails = inDetailsRootNode.children[productIdx].children.length;
       for (int i = 0; i < nDetails; ++i) {
 	 final List<String> details = listAllDetails(
@@ -1554,7 +1554,8 @@ Widget makeNewPostScreenWdgs({
       return makeNewPostListView(list);
    }
 
-   list.add(makeNewPostSetionTitle(title: 'User info'));
+   list.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[3]));
+
    if (list.length > 2) {
       {  // Description
 	 Widget descWidget = makeNewPostStrInput(
@@ -1694,8 +1695,6 @@ Widget makeSearchScreenWdg({
    final Node prodRootNode,
    final Node exDetailsRootNode,
    final Post post,
-   final List<int> ranges,
-   final List<int> divisions,
    final OnPressedF01 onSearchPressed,
    final OnPressedF01 onSearchDetail,
    final OnPressedF06 onValueChanged,
@@ -1771,9 +1770,9 @@ Widget makeSearchScreenWdg({
    { // Price
       Widget priceWdg = makeNewPostStrInput(
 	 ctx: ctx,
-	 title: g.param.postValueTitles[0],
+	 title: g.param.postSearchValueTitles[0],
 	 subtitle: makeRangeStr(post, 0),
-	 diagTitle: g.param.postValueTitles[0],
+	 diagTitle: g.param.postSearchValueTitles[0],
 	 diagContent: '100000',
 	 diagHint: '100000',
 	 diagMaxLength: 10,
@@ -1786,7 +1785,7 @@ Widget makeSearchScreenWdg({
    {  // Date
       Widget prodDate = makeNewPostProdDateWdg(
 	 ctx: ctx,
-	 title: g.param.postValueTitles[1],
+	 title: g.param.postSearchValueTitles[1],
 	 date: makeDateString3(post.date),
 	 initialDate: DateTime.now(),
 	 onSetProdDate: onSetProdDate,
@@ -1798,9 +1797,9 @@ Widget makeSearchScreenWdg({
    {  // Km
       Widget kmWdg = makeNewPostStrInput(
 	 ctx: ctx,
-	 title: g.param.postValueTitles[2],
+	 title: g.param.postSearchValueTitles[2],
 	 subtitle: makeRangeStr(post, 2),
-	 diagTitle: g.param.postValueTitles[2],
+	 diagTitle: g.param.postSearchValueTitles[2],
 	 diagContent: '',
 	 diagHint: '100000',
 	 diagMaxLength: 10,
@@ -7454,8 +7453,6 @@ class OccaseState extends State<Occase>
 	 prodRootNode: _prodRootNode,
 	 exDetailsRootNode: _exDetailsRoot,
 	 post: _posts[cts.searchIdx],
-	 ranges: g.param.rangesMinMax,
-	 divisions: g.param.rangeDivs,
 	 onSearchPressed: (int i) {_onSearch(isWide, i);},
 	 onSearchDetail: (int j) {_onSearchDetail(0, j);},
 	 onValueChanged: _onSearchValueChanged,
