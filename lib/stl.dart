@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 
 // Padding
-const double basePadding = 5.0;
+const double basePadding = 4.0;
 const double newPostSectionTitleTopIndent = 25;
 
 // Width
 const double buttonMinWidth = 150;
 const double infoWidthFactor = 0.94;
 const double minButtonWidth = 100.0;
-
-// Corner
-const double cornerRadius = 4.0;
 
 // Font size
 const double hugeFontSize = 24.0;

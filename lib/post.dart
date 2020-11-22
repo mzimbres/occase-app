@@ -493,6 +493,9 @@ class Post {
    // The chats that belongs to this post.
    List<ChatMetadata> chats = List<ChatMetadata>();
 
+   static List<int> initExDetails = <int>[1, 1, 2, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+   static List<int> initInDetails = <int>[1, 1, 1, 1, 2049, 1, 4, 15, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0];
+
    Post(
    { this.rowid = -1
    , this.id = ''
@@ -504,27 +507,27 @@ class Post {
    , this.status = -1
    , this.description = ''
    , this.email = ''
+   , this.images = const <String>[]
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
       final int rangeDivsLength = rangesMinMax.length >> 1;
-      exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
-      inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
+      exDetails = initExDetails;
+      inDetails = initExDetails;
       rangeValues = List.generate(rangeDivsLength, (int i) {
          return rangesMinMax[2 * i];
       });
 
       location = <int>[3, 1, 0, 0];
       product = <int>[0, 0, 0];
-      images = <String>[];
       chats = List<ChatMetadata>();
    }
 
    void reset()
    {
       images = List<String>();
-      exDetails = List.generate(cts.maxExDetailSize, (_) => 1);
-      inDetails = List.generate(cts.maxInDetailSize, (_) => 0);
+      exDetails = initExDetails;
+      inDetails = initInDetails;
 
       final int l = g.param.rangesMinMax.length >> 1;
       rangeValues = List.generate(l, (int i) { return g.param.rangesMinMax[2 * i]; });

@@ -340,18 +340,12 @@ TextField makeNickTxtField(
       decoration: InputDecoration(
          hintText: hint,
          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-               Radius.circular(stl.cornerRadius),
-            ),
             borderSide: BorderSide(
                color: focusedColor,
                width: 2.5
             ),
          ),
          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
-               Radius.circular(stl.cornerRadius),
-            ),
             borderSide: BorderSide(
                color: enabledColor,
                width: 2.5,
@@ -605,7 +599,6 @@ Widget makeImgPlaceholder(
       width: width,
       height: height,
       child: Card(
-         elevation: 0.0,
          margin: EdgeInsets.all(0.0),
          color: Colors.grey,
          child: Center(
@@ -646,10 +639,11 @@ Widget makeWdgOverImg(Widget wdg)
 {
    return Padding(
       padding: const EdgeInsets.all(2.0),
-      child: Card(child: wdg,
-	    elevation: 0.0,
-	    color: Colors.white.withOpacity(0.7),
-	    margin: EdgeInsets.all(stl.basePadding),
+      child: Card(
+	 child: wdg,
+	 elevation: 0,
+	 color: Colors.white.withOpacity(0.7),
+	 margin: EdgeInsets.all(stl.basePadding),
       ),
    );
 }
@@ -738,10 +732,10 @@ Widget makeImgListView({
 	    );
 
 	    wdgs.add(Positioned(
-		  bottom: 0.0,
-		  right: 0.0,
+		  bottom: 0,
+		  right: 0,
                   child: Card(
-		     elevation: 0.0,
+		     elevation: 0,
 		     color: Colors.white.withOpacity(stl.delImgWidgOpacity),
 		     margin: EdgeInsets.zero,
 		     child: delIcon,
@@ -749,7 +743,12 @@ Widget makeImgListView({
 	       ),
 	    );
 
-	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0, left: 4.0));
+	    wdgs.add(Positioned(
+		  child: makeWdgOverImg(imgCounter),
+		  top: stl.basePadding,
+		  left: stl.basePadding,
+	       ),
+	    );
 	 } else {
 	    assert(false);
 	 }
@@ -1112,21 +1111,14 @@ Widget makeAppBarWdg({
 
 Widget makeNewPostCards(Widget child)
 {
-   return Card(
-      margin: const EdgeInsets.only(bottom: stl.basePadding),
-      //color: stl.cs.surface,
-      child: child,
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-      ),
-   );
+   return Card(child: child);
 }
 
 Widget makeNewPostLT({
    final String title,
    final String subTitle,
    final IconData icon,
+   final bool missingSubtitle = false,
    OnPressedF00 onTap,
 }) {
    Widget leading;
@@ -1138,6 +1130,10 @@ Widget makeNewPostLT({
           backgroundColor: Colors.white,
       );
       
+   TextStyle subtitleTs = stl.ltSubtitleSty;
+   if (missingSubtitle)
+      subtitleTs = stl.ltSubtitleSty.copyWith(color: Colors.grey);
+
    Widget lt = ListTile(
        //contentPadding: EdgeInsets.only(left: stl.basePadding),
        leading: leading,
@@ -1150,7 +1146,7 @@ Widget makeNewPostLT({
        subtitle: Text(subTitle,
 	  maxLines: 1,
 	  overflow: TextOverflow.ellipsis,
-	  style: stl.ltSubtitleSty,
+	  style: subtitleTs,
        ),
        onTap: onTap,
        enabled: true,
@@ -1279,7 +1275,8 @@ Widget makeNewPostStrInput({
 }) {
    return makeNewPostLT(
       title: title,
-      subTitle: subtitle,
+      subTitle: subtitle.isEmpty ? diagHint : subtitle,
+      missingSubtitle: subtitle.isEmpty,
       icon: null,
       onTap: () async
       {
@@ -1373,7 +1370,6 @@ List<Widget> makeNewPostWdgs({
    }
 
    {  // Date
-
       Widget prodDate = makeNewPostProdDateWdg(
 	 ctx: ctx,
 	 title: g.param.postValueTitles[1],
@@ -1642,51 +1638,6 @@ Widget makeSearchAppBar({final String title})
    );
 }
 
-List<Widget> makeValueSliders({
-   final Post post,
-   final List<int> ranges,
-   final List<int> divisions,
-   final List<String> names,
-   final OnPressedF06 onValueChanged,
-}) {
-   List<Widget> sliders = List<Widget>();
-
-   for (int i = 0; i < divisions.length; ++i) {
-      final int value = post.rangeValues[i];
-      Slider slider = Slider(
-	 value: value.toDouble(),
-	 min: ranges[2 * i + 0].toDouble(),
-	 max: ranges[2 * i + 1].toDouble(),
-	 divisions: divisions[i],
-	 onChanged: (double v) {onValueChanged(i, v);},
-      );
-
-      final Padding title =
-	 Padding(
-	    padding: const EdgeInsets.only(
-	       top: stl.basePadding,
-	       left: 15,
-	    ),
-	    child: makeSearchTitle(
-	       name: names[i],
-	       value: makeRangeStr(post, i),
-	       separator: ': ',
-	    ),
-      );
-
-      Column col = Column(
-	 mainAxisSize: MainAxisSize.min,
-	 mainAxisAlignment: MainAxisAlignment.center,
-	 crossAxisAlignment: CrossAxisAlignment.start,
-	 children: <Widget>[title, slider],
-      );
-
-      sliders.add(makeNewPostCards(col));
-   }
-
-   return sliders;
-}
-
 Widget makeSearchScreenWdg({
    BuildContext ctx,
    final int state,
@@ -1843,13 +1794,16 @@ Widget wrapDetailRowOnCard(Widget body)
 {
    return Card(
       margin: const EdgeInsets.only(
-       left: 1.5, right: 1.5, top: 0.0, bottom: 0.0
+	 left: 1.5,
+	 right: 1.5,
+	 top: 0.0,
+	 bottom: 0.0,
       ),
       color: stl.cs.surface,
       child: body,
-      elevation: 0.0,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+         borderRadius: BorderRadius.all(Radius.circular(0)),
       ),
    );
 }
@@ -2110,14 +2064,10 @@ int postIndexHelper(int i)
 Widget putRefMsgInBorder(Widget w, Color borderColor)
 {
    return Card(
-      color: Colors.grey[200],
-      elevation: 1,
-      margin: const EdgeInsets.all(4.0),
-      //shape: RoundedRectangleBorder(
-      //   borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-      //),
+      color: stl.chatScreenBgColor,
+      margin: const EdgeInsets.all(stl.basePadding),
       child: Center(
-         widthFactor: 1.0,
+         widthFactor: 1,
          child: Padding(
             child: w,
             padding: EdgeInsets.all(stl.basePadding),
@@ -2254,10 +2204,9 @@ Card makeChatMsgWidget(
             top: 2.0,
             right: marginRight,
             bottom: 0.0),
-      elevation: 1,
       color: color,
       child: Center(
-         widthFactor: 1.0,
+         widthFactor: 1,
          child: ConstrainedBox(
             constraints: BoxConstraints(
                maxWidth: 0.75 * screenWidth,
@@ -2281,10 +2230,10 @@ Card makeChatMsgWidget(
    return Card(
       child: r,
       color: onSelectedMsgColor,
-      elevation: 0.0,
-      margin: const EdgeInsets.all(0.0),
+      elevation: 0,
+      margin: const EdgeInsets.all(0),
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+         borderRadius: BorderRadius.all(Radius.circular(0)),
       ),
    );
 }
@@ -2398,19 +2347,23 @@ Card makeChatScreenBotCard(Widget w1, Widget w1a, Widget w2,
    Row rr = Row(children: widgets);
 
    return Card(
-      elevation: 0.0,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(Radius.circular(0.0)),
+         borderRadius: BorderRadius.all(Radius.circular(0)),
       ),
-      margin: EdgeInsets.all(0.0),
+      margin: EdgeInsets.all(0),
       color: Colors.white,
       child: Padding(
-         padding: EdgeInsets.all(4.0),
-         child: ConstrainedBox(
-            constraints: BoxConstraints(
-            maxHeight: 140.0,
-            minHeight: 45.0),
-            child: rr)));
+         padding: EdgeInsets.all(stl.basePadding),
+	    child: ConstrainedBox(
+	       constraints: BoxConstraints(
+		  maxHeight: 140.0,
+		  minHeight: 45.0,
+	       ),
+	       child: rr,
+	    ),
+	 ),
+      );
 }
 
 Widget makeRefChatMsgWidget({
@@ -2760,20 +2713,20 @@ Widget makeTabWidget({
    );
 }
 
-CircleAvatar makeChatListTileLeading(
+CircleAvatar makeChatListTileLeading({
    bool isLongPressed,
-   String avatar,
+   String avatarUrl,
    Color bgcolor,
-   Function onLeadingPressed)
+   OnPressedF00 onLeadingPressed,
+})
 {
    List<Widget> l = List<Widget>();
 
    ImageProvider bgImg;
-   if (avatar.isEmpty) {
+   if (avatarUrl.isEmpty) {
       l.add(Center(child: stl.unknownPersonIcon));
    } else {
-      final String url = cts.gravatarUrl + avatar + '.jpg';
-      bgImg = CachedNetworkImageProvider(url);
+      bgImg = CachedNetworkImageProvider(avatarUrl);
    }
 
    l.add(OutlineButton(
@@ -2829,29 +2782,21 @@ Widget makePayPriceListTile({
    OnPressedF00 onTap,
 }) {
    Text subtitleW = Text(subtitle,
-      maxLines: 2,
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      //style: stl.ltSubtitleSty,
    );
 
    Text titleW = Text(title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      //style: stl.ltTitleSty,
    );
 
    IconData icon = selected ? Icons.check_box : Icons.check_box_outline_blank;
-   Color backgroundColor = selected ? Colors.amber[100] : Colors.white;
+   Color backgroundColor = selected ? Colors.amber[100] : null;
 
    return Card(
-      elevation: 0.0,
       margin: const EdgeInsets.symmetric(vertical: stl.basePadding),
       color: backgroundColor,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(
-            Radius.circular(stl.cornerRadius),
-         ),
-      ),
       child: ListTile(
          leading: Icon(icon),
          title: titleW,
@@ -2941,22 +2886,14 @@ Widget makePaymentOptions({
    );
 
    return Card(
-      elevation: 1.0,
-      margin: const EdgeInsets.symmetric(vertical: 2),
+      margin: const EdgeInsets.symmetric(vertical: stl.basePadding),
       color: stl.cs.background,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.all(
-            Radius.circular(stl.cornerRadius),
-         ),
-      ),
       child: ListTile(
-         //leading: Icon(Icons.check_box),
          title: titleW,
          subtitle: subtitleW,
          contentPadding: EdgeInsets.symmetric(horizontal: stl.basePadding),
          onTap: onTap,
          enabled: true,
-         //selected: selected,
          isThreeLine: false,
       ),
    );
@@ -2995,15 +2932,6 @@ Widget makePaymentChoiceWidget({
    list.add(creditCard);
 
    return Card(
-      margin: const EdgeInsets.all(2),
-      color: stl.cs.background,
-      elevation: 1.0,
-      shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.only(
-           topLeft: Radius.circular(stl.cornerRadius),
-           topRight: Radius.circular(stl.cornerRadius),
-         ),
-      ),
       child: Column(
          mainAxisSize: MainAxisSize.min,
          children: list
@@ -3089,7 +3017,7 @@ Widget makePostRowElem({
    String value,
    String prefix = '• ',
    Color keyTextColor = stl.secondaryTextColor,
-   Color valueTextColor = stl.secondaryColor,
+   Color valueTextColor = stl.secondaryDarkColor,
 }) {
 
    Text keyWdg = Text(prefix + key,
@@ -3134,7 +3062,7 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text('• ${nodes[i].name(g.param.langIdx)}',
-         //style: stl.ltTitleSty,
+         style: stl.tsMainBlack,
       );
 
       list.add(text);
@@ -3333,13 +3261,13 @@ Card putPostElemOnCard({
    );
 
    return Card(
-      elevation: 0.0,
+      elevation: 0,
       //color: stl.cs.background,
       color: backgroundColor,
       margin: EdgeInsets.all(margin),
       shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.all(
-            Radius.circular(0.0)
+            Radius.circular(0)
          ),
       ),
       child: Padding(
@@ -3468,7 +3396,6 @@ Widget makeNewPostDialogWdg({
    final EdgeInsets contentPadding = const EdgeInsets.only(left: 24, right: 24, top: 20),
    final List<Widget> list,
    final List<Widget> actions,
-   final double diagBorderRadius = stl.cornerRadius,
    final EdgeInsets insetPadding = const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
    final Color backgroundColor = Colors.white,
 }) {
@@ -3485,11 +3412,6 @@ Widget makeNewPostDialogWdg({
          reverse: false,
          child: col,
       ),
-      decoration: BoxDecoration(
-	 //color: stl.cs.surface,
-	 shape: BoxShape.rectangle,
-	 borderRadius: BorderRadius.all(const Radius.circular(stl.cornerRadius)),
-      ),
    );
 
    return AlertDialog(
@@ -3499,10 +3421,6 @@ Widget makeNewPostDialogWdg({
       insetPadding: insetPadding,
       backgroundColor: backgroundColor,
       content: content,
-      shape: RoundedRectangleBorder(
-	 borderRadius: BorderRadius.all(Radius.circular(diagBorderRadius)),
-	 //side: BorderSide(width: 1.0, color: Colors.grey),
-      ),
    );
 }
 
@@ -3840,9 +3758,9 @@ List<Widget> makeDetailsTextWdgs({
 }) {
    return List<Widget>.generate(fields.length, (int i) {
       return Card(
-	    elevation: 0.0,
+	    elevation: 0,
 	    color: stl.cs.secondary,
-	    margin: EdgeInsets.all(0.0),
+	    margin: EdgeInsets.all(0),
 	    child: Padding(
 	       padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
                child: Text(fields[i],
@@ -3947,16 +3865,21 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
       final double width = makeTabWidth(ctx, tab);
       if (widget.tab == cts.searchIdx) {
+
+	 final
+	 String avatar = widget.post.images.isNotEmpty ? widget.post.images.first : '';
+
 	 ChatMetadata cm = ChatMetadata(
 	   peer: widget.post.from,
-	   nick: widget.post.nick,
-	   avatar: widget.post.avatar,
+	   nick: g.param.advertiser,
+	   avatar: avatar,
 	   date: DateTime.now().millisecondsSinceEpoch,
 	 );
 
 	 Widget tmp = makeChatListTile(
 	    ctx: ctx,
 	    chatMetadata: cm,
+	    avatar: avatar,
 	    onChatLeadingPressed: () {},
 	    onChatLongPressed: () {},
 	    onStartChatPressed: () {
@@ -3974,7 +3897,6 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       Widget ret = makeNewPostDialogWdg(
 	 title: null,
 	 contentPadding: const EdgeInsets.all(margin),
-	 diagBorderRadius: 0.0,
 	 list: <Widget>[detailsWdg],
 	 actions: actions,
 	 backgroundColor: stl.cs.primary,
@@ -4325,18 +4247,9 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       return RaisedButton(
 	 color: stl.cs.surface,
 	 onPressed: () {_onShowDetails(ctx);},
-	 elevation: 1.0,
 	 child: Row(children: row1List),
 	 padding: const EdgeInsets.all(0),
 	 onLongPress: widget.onDelPost,
-	 shape: RoundedRectangleBorder(
-	    borderRadius: BorderRadius.only(
-	       topLeft: Radius.circular(stl.cornerRadius),
-	       topRight: Radius.circular(stl.cornerRadius),
-	       bottomLeft: Radius.circular(0),
-	       bottomRight: Radius.circular(0),
-	    ),
-	 ),
       );
    }
 }
@@ -4454,7 +4367,6 @@ Widget makeDefaultWidgetCard({
    const double sep = 20;
 
    Widget button = ButtonTheme(
-      //minWidth: 180,
       child: RaisedButton(
 	 child: makeDefaultTextWidget(
 	    text: buttonName,
@@ -4463,8 +4375,6 @@ Widget makeDefaultWidgetCard({
 	 ),
 	 color: stl.secondaryColor,
 	 onPressed: onPressed,
-	 elevation: 1,
-	 //padding: const EdgeInsets.all(10),
       ),
    );
 
@@ -4501,9 +4411,6 @@ Widget makeDefaultWidgetCard({
 	 color: stl.cs.primary,
 	 margin: EdgeInsets.only(top: padding, bottom: 0, left: padding, right: padding),
 	 elevation: 0,
-	 shape: RoundedRectangleBorder(
-	    borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius))
-	 ),
 	 child: Padding(
 	    padding: EdgeInsets.all(padding),
 	    child: makeCol(list),
@@ -4894,7 +4801,6 @@ Widget makeChatListTile({
    bool isFwdChatMsgs = false,
    String avatar = '',
    double padding = stl.basePadding,
-   double elevation = 1.0,
    OnPressedF00 onChatLeadingPressed,
    OnPressedF00 onChatLongPressed,
    OnPressedF00 onStartChatPressed,
@@ -4919,31 +4825,21 @@ Widget makeChatListTile({
       onLongPress: onChatLongPressed,
       subtitle: makeChatTileSubtitle(ctx, chatMetadata),
       leading: makeChatListTileLeading(
-         chatMetadata.isLongPressed,
-         avatar,
-         selectColor(chatMetadata.peer),
-         onChatLeadingPressed,
+         isLongPressed: chatMetadata.isLongPressed,
+         avatarUrl: avatar,
+         bgcolor: selectColor(chatMetadata.peer),
+         onLeadingPressed: onChatLeadingPressed,
       ),
       title: Text(chatMetadata.getChatDisplayName(),
          maxLines: 1,
          overflow: TextOverflow.ellipsis,
-	 //style: stl.ltTitleSty,
       ),
    );
 
    return  Card(
       child: lt,
       color: bgColor,
-      margin: EdgeInsets.all(0.0),
-      elevation: elevation,
-      shape: RoundedRectangleBorder(
-	 borderRadius: BorderRadius.only(
-	    topLeft: Radius.circular(0.0),
-	    topRight: Radius.circular(0.0),
-	    bottomLeft: Radius.circular(stl.cornerRadius),
-	    bottomRight: Radius.circular(stl.cornerRadius),
-	 ),
-      ),
+      margin: EdgeInsets.all(0),
    );
 }
 
@@ -4966,6 +4862,12 @@ Widget makeChatsExp({
       if (n > 0)
          ++nUnreadChats;
 
+      final
+      String avatar = isFav ? post.avatar : chatItem[i].avatar;
+
+      final
+      String url = cts.gravatarUrl + avatar + '.jpg';
+
       list[i] = Padding(
          padding: const EdgeInsets.only(top: stl.basePadding),
          child: makeChatListTile(
@@ -4973,8 +4875,8 @@ Widget makeChatsExp({
 	    chatMetadata: chatItem[i],
 	    now: now,
 	    isFwdChatMsgs: isFwdChatMsgs,
-	    avatar: isFav ? post.avatar : chatItem[i].avatar,
-	    padding: 0.0,
+	    avatar: url,
+	    padding: 0,
 	    onChatLeadingPressed: (){onLeadingPressed(post.id, i);},
 	    onChatLongPressed: () { onLongPressed(i); },
 	    onStartChatPressed: () { onPressed(i); },
@@ -5630,6 +5532,12 @@ class OccaseState extends State<Occase>
 
    Future<void> _alertUserOnPressed(BuildContext ctx, int i, int j) async
    {
+      // Added to stop showing the dialog when the user clicks to
+      // start a chat with the car owner. This is the easy way of
+      // doing it.
+      if (j == 1)
+	 _appState.cfg.dialogPreferences[j] = false;
+
       if (!_appState.cfg.dialogPreferences[j]) {
          await _onPostSelection(i, j);
          return;
@@ -6301,10 +6209,6 @@ class OccaseState extends State<Occase>
 	 await showModalBottomSheet<void>(
 	    context: ctx,
 	    backgroundColor: Colors.white,
-	    elevation: 1.0,
-	    shape: RoundedRectangleBorder(
-	       borderRadius: BorderRadius.all(Radius.circular(20.0)),
-	    ),
 	    builder: (BuildContext ctx)
 	    {
 	       return makePaymentChoiceWidget(
@@ -7783,15 +7687,11 @@ class OccaseState extends State<Occase>
 
 	    if (_newPostPressed || _appState.ownPosts.isNotEmpty) {
 	       Widget ownTopBar = AppBar(
-		  elevation: 1,
 		  actions: _makeTabActions(ctx, cts.ownIdx),
 		  leading: _makeAppBarLeading(isWide, cts.ownIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.ownIdx, tabWdgs[cts.ownIdx]),
 		  backgroundColor: stl.cs.primary,
 		  primary: false,
-		  shape: RoundedRectangleBorder(
-		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-		  ),
 	       );
 	       local.add(ownTopBar);
 	    }
@@ -7828,15 +7728,11 @@ class OccaseState extends State<Occase>
 
 	    if (_newSearchPressed || _appState.favPosts.isNotEmpty) {
 	       Widget favTopBar = AppBar(
-		  elevation: 1,
 		  actions: _makeTabActions(ctx, cts.favIdx),
 		  title: _makeAppBarTitleWdg(isWide, cts.favIdx, tabWdgs[cts.favIdx]),
 		  leading: _makeAppBarLeading(isWide, cts.favIdx),
 		  backgroundColor: stl.cs.primary,
 		  primary: false,
-		  shape: RoundedRectangleBorder(
-		     borderRadius: BorderRadius.all(Radius.circular(stl.cornerRadius)),
-		  ),
 	       );
 	       local.add(favTopBar);
 	    }
@@ -7874,7 +7770,6 @@ class OccaseState extends State<Occase>
 	    body: body,
 	    appBar: AppBar(
                title: Text(g.param.shareSubject),
-	       elevation: 0.0,
 	       actions: _makeGlobalActionsWeb(ctx),
 	    ),
 	    onWillPopScope: () {return true;},

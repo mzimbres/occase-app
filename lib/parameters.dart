@@ -1,4 +1,3 @@
-import 'package:occase/constants.dart' as cts;
 import 'dart:convert';
 
 List<T> decodeList2<T>(List<dynamic> l)
@@ -19,6 +18,7 @@ class Parameters {
    String _adminId = 'admin-id';
    String _adminNick = 'Louis';
    List<String> _delChatTitle = <String>[''];
+   List<String> _advertiser = <String>[''];
    List<String> _delChatCancelStr = <String>[''];
    List<String> _newPostAppBarTitle = <String>[''];
    List<String> _searchAppBarTitle = <String>[''];
@@ -118,6 +118,7 @@ class Parameters {
    String get adminId                   => _adminId;
    String get adminNick                 => _adminNick;
    String get delChatTitle              => _delChatTitle[_langIdx];
+   String get advertiser                => _advertiser[_langIdx];
    String get delChatCancelStr          => _delChatCancelStr[_langIdx];
    String get newPostAppBarTitle        => _newPostAppBarTitle[_langIdx];
    String get searchAppBarTitle         => _searchAppBarTitle[_langIdx];
@@ -202,6 +203,7 @@ class Parameters {
       _adminId                     = map['adminId'];
       _adminNick                   = map['adminNick'];
       _delChatTitle                = decodeList2(map['delChatTitle']);
+      _advertiser                  = decodeList2(map['advertiser']);
       _delChatCancelStr            = decodeList2(map['delChatCancelStr']);
       _newPostAppBarTitle          = decodeList2(map['newPostAppBarTitle']);
       _searchAppBarTitle           = decodeList2(map['searchAppBarTitle']);
@@ -290,6 +292,7 @@ class Parameters {
          'adminId':                     _adminId,
          'adminNick':                   _adminNick,
          'delChatTitle':                _delChatTitle,
+         'advertiser':                  _advertiser,
          'delChatCancelStr':            _delChatCancelStr,
          'newPostAppBarTitle':          _newPostAppBarTitle,
          'searchAppBarTitle':           _searchAppBarTitle,
