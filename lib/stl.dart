@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 // Padding
+// This is the same as the padding of Card widget. We need it to align
+// some widgets in the new posts tab.
 const double basePadding = 4.0;
 const double newPostSectionTitleTopIndent = 25;
 

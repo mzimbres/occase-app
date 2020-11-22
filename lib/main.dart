@@ -106,7 +106,7 @@ double makePostTextWidth(BuildContext ctx)
 {
    final double w = makeWidgetWidth(ctx);
    final double A = makePostAvatarWidth(ctx);
-   return w - A - 10;
+   return w - A - 12 - stl.basePadding;
 }
 // ------------------
 
@@ -903,7 +903,7 @@ Widget makeNewPostSetionTitle({
    double bottonPadding = stl.basePadding,
 }) {
    return Padding(
-      padding: EdgeInsets.only(top: topPadding, bottom: bottonPadding),
+      padding: EdgeInsets.only(left: stl.basePadding, top: topPadding, bottom: bottonPadding),
       child: Text(title,
 	 style: TextStyle(
 	    fontSize: stl.bigFontSize,
@@ -2795,7 +2795,6 @@ Widget makePayPriceListTile({
    Color backgroundColor = selected ? Colors.amber[100] : null;
 
    return Card(
-      margin: const EdgeInsets.symmetric(vertical: stl.basePadding),
       color: backgroundColor,
       child: ListTile(
          leading: Icon(icon),
@@ -2803,7 +2802,6 @@ Widget makePayPriceListTile({
          //dense: false,
          subtitle: subtitleW,
          trailing: Text(price),
-         contentPadding: EdgeInsets.symmetric(horizontal: stl.basePadding),
          onTap: onTap,
          enabled: true,
          selected: selected,
@@ -4244,12 +4242,15 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
 
-      return RaisedButton(
-	 color: stl.cs.surface,
-	 onPressed: () {_onShowDetails(ctx);},
-	 child: Row(children: row1List),
-	 padding: const EdgeInsets.all(0),
-	 onLongPress: widget.onDelPost,
+      return Padding(
+	 padding: EdgeInsets.all(stl.basePadding),
+         child: RaisedButton(
+	    color: stl.cs.surface,
+	    onPressed: () {_onShowDetails(ctx);},
+	    child: Row(children: row1List),
+	    padding: const EdgeInsets.all(0),
+	    onLongPress: widget.onDelPost,
+	 ),
       );
    }
 }
