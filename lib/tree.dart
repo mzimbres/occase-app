@@ -211,7 +211,8 @@ NodeInfo parseFields(String line)
 Node parseTree(List<String> lines)
 {
    // Make sure cts.maxTreeDepth is enough.
-   List<int> codes = List.filled(cts.maxTreeDepth, -1);
+   const int maxTreeDepth = 8;
+   List<int> codes = List.filled(maxTreeDepth, -1);
 
    List<Node> st = <Node>[];
    int lastDepth = 0;

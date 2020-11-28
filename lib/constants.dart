@@ -1,18 +1,10 @@
 
-//-------------------------------------------------------------------------------
-// Some contants used to calculate widths and heights of widget and
-// tabs.
-
 const double goldenRatio = 1.618033;
-const double widgetMaxWidth = 450.0;
-const double imgWidth = widgetMaxWidth;
-const double imgHeight = widgetMaxWidth / goldenRatio;
 
 //-------------------------------------------------------------------------------
 
 // Quality of the image, see
 // https://pub.dev/documentation/image_picker/latest/image_picker/ImagePicker/pickImage.html
-const int imgQuality = 75;
 const int maxImgsPerPost = 6;
 const int minImgsPerPost = 1;
 
@@ -76,7 +68,4 @@ const int searchIdx = 1;
 const int favIdx = 2;
 
 const List<double> tabWidthRates = const <double>[0.33333, 0.33333, 0.33333];
-const List<double> newMsgsOpacitiesWeb = const <double>[1.0, 1.0, 1.0];
-
-const int maxTreeDepth = 8;
 

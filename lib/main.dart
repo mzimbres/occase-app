@@ -4,10 +4,10 @@ import 'dart:io';
 import 'dart:collection';
 
 import 'dart:io'
-       if (dart.library.io)
-          'package:web_socket_channel/io.dart'
-       if (dart.library.html)
-          'package:web_socket_channel/html.dart';
+   if (dart.library.io)
+      'package:web_socket_channel/io.dart'
+   if (dart.library.html)
+      'package:web_socket_channel/html.dart';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -57,30 +57,37 @@ typedef OnPressedF15 = void Function(ConfigActions);
 typedef OnPressedF16 = void Function(String, int);
 typedef OnPressedF17 = void Function(DateTime);
 
-bool isWideScreenImpl(double w)
+double makeMaxWidgetWidth(double screenWidth)
 {
-   return (w - 14) > (3 * cts.widgetMaxWidth);
+   final double max = 550;
+   final double ret = screenWidth / 3 - 20;
+   return ret > max ? max : ret;
 }
 
-double makeTabWidthImpl(double w, int tab)
+bool isWideScreenImpl(double w)
+{
+   return (w - 14) > (3 * 400);
+}
+
+double makeTabWidthImpl(double w)
 {
    if (isWideScreenImpl(w))
-      return cts.tabWidthRates[tab] * w;
+      return 0.333333 * w;
 
    return w;
 }
 
-double makeTabWidth(BuildContext ctx, int tab)
+double makeTabWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
-   return makeTabWidthImpl(w, tab);
+   return makeTabWidthImpl(w);
 }
 
 double makeWidgetWidth(BuildContext ctx)
 {
    final double w = MediaQuery.of(ctx).size.width;
 
-   return  w > cts.widgetMaxWidth ? cts.widgetMaxWidth : w;
+   return  w > makeMaxWidgetWidth(w) ? makeMaxWidgetWidth(w) : w;
 }
 
 double makeImgHeight(BuildContext ctx)
@@ -467,10 +474,8 @@ Widget makeNtfScreen({
       ]
    );
 
-   final double width = makeTabWidth(ctx, cts.ownIdx);
-
    Widget tmp = ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: width),
+      constraints: BoxConstraints(maxWidth: makeTabWidth(ctx)),
       child: col,
    );
 
@@ -530,8 +535,6 @@ Widget makeInfoScreen(
    OnPressedF00 onSendEmail,
    OnPressedF00 onHiddenButtonLP,
 ) {
-   final double width = makeTabWidth(ctx, cts.ownIdx);
-
    Column col = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>
@@ -2652,7 +2655,7 @@ Widget makeChatScreen({
        );
    }
 
-   final double tw = makeTabWidth(ctx, tab);
+   final double tw = makeTabWidth(ctx);
    final double ww =  makeWidgetWidth(ctx);
    final double bw = 4;
    final double boderWidth = ((tw - bw) > ww) ? bw : 0;
@@ -2946,7 +2949,10 @@ Widget createRaisedButton({
 }) {
    RaisedButton but = RaisedButton(
       child: Text(text,
-	 //style: TextStyle(color: textColor),
+	 style: TextStyle(
+	    color: textColor,
+	    fontSize: stl.largerFontSize,
+	 ),
 	 //textAlign: TextAlign.center,
       ),
       color: color,
@@ -2999,7 +3005,6 @@ Widget makeStatsText({
    String value,
    String prefix =  ' • ',
 }) {
-
    return Text(prefix + key + ' ' + value,
       style: TextStyle(
 	 fontSize: stl.mainFontSize,
@@ -3044,7 +3049,7 @@ Widget makePostRowElem({
    );
 
    return imposeWidth(
-      width: makeTabWidth(ctx, cts.ownIdx),
+      width: makeTabWidth(ctx),
       child: w,
    );
 }
@@ -3757,7 +3762,7 @@ List<Widget> makeDetailsTextWdgs({
    return List<Widget>.generate(fields.length, (int i) {
       return Card(
 	    elevation: 0,
-	    color: stl.cs.secondary,
+	    color: stl.primaryLightColor,
 	    margin: EdgeInsets.all(0),
 	    child: Padding(
 	       padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
@@ -3861,7 +3866,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
       List<Widget> actions = List<Widget>();
 
-      final double width = makeTabWidth(ctx, tab);
+      final double width = makeTabWidth(ctx);
       if (widget.tab == cts.searchIdx) {
 
 	 final
@@ -4043,7 +4048,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 	    return imposeWidth(
 	       child: w,
-	       width: makeTabWidth(ctx, cts.ownIdx),
+	       width: makeWidgetWidth(ctx),
 	    );
 	 },
       );
@@ -4272,7 +4277,7 @@ Widget makePostDetailsWdg({
 
    Widget listView = makeImgListView(
       ctx: ctx,
-      width: makeTabWidth(ctx, tab),
+      width: makeTabWidth(ctx),
       height: makeImgHeight(ctx),
       post: post,
       boxFit: BoxFit.cover,
@@ -5583,13 +5588,10 @@ class OccaseState extends State<Occase>
    Future<void> _onAddImg() async
    {
       try {
-         // It looks like we do not need to show any dialog here to
-         // inform the maximum number of photos has been reached.
+	 // It looks like we don't need to show any dialog here to
+	 // inform the maximum number of photos has been reached.
 	 PickedFile img = await _picker.getImage(
 	    source: ImageSource.gallery,
-	    maxWidth: cts.imgWidth,
-	    maxHeight: cts.imgHeight,
-	    imageQuality: cts.imgQuality,
 	 );
 
 	 if (img == null)
@@ -7672,7 +7674,7 @@ class OccaseState extends State<Occase>
 
 	 List<Widget> tabWdgs = makeTabWdgs(
 	    counters: newMsgCounters,
-	    opacities: cts.newMsgsOpacitiesWeb,
+	    opacities: const <double>[1, 1, 1],
 	 );
 
 	 Widget ownTmp;
