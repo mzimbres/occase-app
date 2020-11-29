@@ -706,7 +706,6 @@ Widget makeImgListView({
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
-      padding: const EdgeInsets.all(0),
       itemCount: l,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -1167,7 +1166,6 @@ Widget makeNewPostLT({
 ListView makeNewPostListView(List<Widget> list)
 {
    return ListView.builder(
-      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: list.length,
       itemBuilder: (BuildContext ctx, int i) { return list[i]; },
    );
@@ -1792,7 +1790,6 @@ Widget makeSearchScreenWdg({
    }
 
    return ListView.builder(
-      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: foo.length,
       itemBuilder: (BuildContext ctx, int i) { return foo[i]; },
    );
@@ -2260,7 +2257,7 @@ ListView makeChatMsgListView(
    return ListView.builder(
       controller: scrollCtrl,
       reverse: false,
-      padding: const EdgeInsets.only(bottom: 3.0, top: 3.0),
+      padding: const EdgeInsets.only(bottom: stl.basePadding, top: stl.basePadding),
       itemCount: nMsgs + shift,
       itemBuilder: (BuildContext ctx, int i)
       {
@@ -2274,7 +2271,7 @@ ListView makeChatMsgListView(
                   ),
                   child: Center(
                       child: Padding(
-                         padding: EdgeInsets.all(3.0),
+                         padding: EdgeInsets.all(stl.basePadding),
                          child: Text(
                             '${chatMetadata.divisorUnreadMsgs}',
                             style: TextStyle(
@@ -4478,7 +4475,6 @@ Widget makeSearchInitTab({
 
    return ListView(
       children: <Widget>[w0, w1, w2],
-      padding: const EdgeInsets.all(0.0),
    );
 }
 
@@ -4515,7 +4511,6 @@ Widget makeSearchResultPosts({
    // automatic hiding of the tabbar
    return ListView.separated(
       //key: PageStorageKey<String>('aaaaaaa'),
-      padding: const EdgeInsets.all(stl.basePadding),
       itemCount: posts.length,
       separatorBuilder: (BuildContext context, int index)
       {
@@ -4880,7 +4875,7 @@ Widget makeChatsExp({
       String url = cts.gravatarUrl + avatar + '.jpg';
 
       list[i] = Padding(
-         padding: const EdgeInsets.only(top: stl.basePadding),
+         padding: const EdgeInsets.all(stl.basePadding),
          child: makeChatListTile(
 	    ctx: ctx,
 	    chatMetadata: chatItem[i],
@@ -5004,11 +4999,6 @@ Widget makeChatTab({
    // No controller should be assigned to this listview. This will
    // break the automatic hiding of the tabbar
    return ListView.builder(
-      padding: const EdgeInsets.only(
-         left: stl.basePadding,
-         right: stl.basePadding,
-         top: stl.basePadding,
-      ),
       itemCount: posts.length,
       itemBuilder: (BuildContext ctx, int i)
       {
