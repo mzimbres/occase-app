@@ -59,14 +59,19 @@ typedef OnPressedF17 = void Function(DateTime);
 
 double makeMaxWidgetWidth(double screenWidth)
 {
-   final double max = 550;
    final double ret = screenWidth / 3 - 20;
-   return ret > max ? max : ret;
+   if (ret > cts.maxWidgetWidth)
+      return cts.maxWidgetWidth;
+
+   if (ret < cts.minWidgetWidth)
+      return cts.minWidgetWidth;
+
+   return ret;
 }
 
 bool isWideScreenImpl(double w)
 {
-   return (w - 14) > (3 * 400);
+   return (w - 14) > (3 * cts.minWidgetWidth);
 }
 
 double makeTabWidthImpl(double w)
