@@ -1,7 +1,7 @@
 
 const double goldenRatio = 1.618033;
 const double maxWidgetWidth = 550;
-const double minWidgetWidth = 400;
+const double minWidgetWidth = 430;
 
 //-------------------------------------------------------------------------------
 
