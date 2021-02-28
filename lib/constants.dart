@@ -56,6 +56,7 @@ const String dbPostUrl =          dbHttpUrl + '/posts/publish';
 const String dbVisualizationUrl = dbHttpUrl + '/posts/visualizations';
 const String dbClickUrl =         dbHttpUrl + '/posts/click';
 const String dbPublishUrl =       dbHttpUrl + '/posts/publish';
+const String dbGetIdUrl =         dbHttpUrl + '/get-user-id';
 
 // The pong timeout used by the server.
 const int pongTimeoutSeconds = 30;

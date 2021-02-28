@@ -36,25 +36,6 @@ class AppMsgQueueElem {
    }
 }
 
-String makeConnCmd({
-   final String user,
-   final String key,
-   final String fcmToken,
-}) {
-   if (user.isEmpty)
-      return jsonEncode(
-      { 'cmd': 'register'
-      , 'token': fcmToken
-      });
-
-   return jsonEncode(
-   { 'cmd': 'login'
-   , 'user': user
-   , 'key': key
-   , 'token': fcmToken
-   });
-}
-
 class ChatItem {
    // This field is -1 if the message belongs to this app or the peer id
    // if it belongs to the peer.

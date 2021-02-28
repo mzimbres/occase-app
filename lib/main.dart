@@ -5389,7 +5389,32 @@ class OccaseState extends State<Occase>
       _goToRegScreen = _appState.cfg.nick.isEmpty;
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
-      _stablishNewConnection(_fcmToken);
+
+      if (_appState.cfg.user.isEmpty) {
+	 final response = await http.post(cts.dbGetIdUrl);
+	 if (response.statusCode == 200) {
+	    assert(response.body != null);
+	    Map<String, dynamic> map = jsonDecode(response.body);
+
+	    final String result = map["result"] ?? 'fail';
+	    if (result == 'ok') {
+	       await _appState.setCredentials(
+		  map["user"] ?? '',
+		  map["key"] ?? '',
+		  map["user_id"] ?? '',
+	       );
+	    } else {
+	       // We have to deal with this error.
+	       debugPrint('_init(): result != ok');
+	    }
+	 } else {
+	    // We have to deal with this error.
+	    debugPrint('_init(): /get-user-id:  ${response.statusCode}');
+	 }
+      }
+
+      if (_appState.cfg.user.isNotEmpty)
+	 _stablishNewConnection(_fcmToken);
 
       // Do not await for the async op to complete to avoid blocking
       // the init and consequently the page loading time.
@@ -5506,12 +5531,12 @@ class OccaseState extends State<Occase>
 	    onDone: _onWSDone,
 	 );
 
-	 final String cmd = makeConnCmd(
-	    user: _appState.cfg.user,
-	    key: _appState.cfg.key,
-	    fcmToken: fcmToken,
-	    //_appState.cfg.notifications.getFlag(),
-	 );
+	 final String cmd = jsonEncode(
+	 { 'cmd': 'login'
+	 , 'user': _appState.cfg.user
+	 , 'key': _appState.cfg.key
+	 , 'token': fcmToken
+	 });
 
 	 debugPrint(cmd);
 
@@ -6638,23 +6663,6 @@ class OccaseState extends State<Occase>
       setState((){});
    }
 
-   Future<void> _onRegisterAck({
-      final String result,
-      final String user,
-      final String key,
-      final String userId,
-   }) async {
-      if (result == 'fail') {
-         debugPrint("register_ack: fail.");
-         return;
-      }
-
-      await _appState.setCredentials(user, key, userId);
-
-      // Retrieves some posts for the newly registered user.
-      _subscribeToPosts();
-   }
-
    void _onLoginAck({
       final String result,
    }) {
@@ -6667,10 +6675,6 @@ class OccaseState extends State<Occase>
       }
 
       _lastDisconnect = -1;
-
-      // We are loggen in and can subscribe to receive posts sent while we were
-      // offline.
-      _subscribeToPosts();
 
       // Sends any chat messages that may have been written while
       // the app were offline.
@@ -6781,13 +6785,6 @@ class OccaseState extends State<Occase>
 	       );
 	    } else if (cmd == "post") {
 	       _onPosts(map);
-	    } else if (cmd == "register_ack") {
-	       await _onRegisterAck(
-		  result: map["result"] ?? 'fail',
-		  user: map["user"] ?? '',
-		  key: map["key"] ?? '',
-		  userId: map["user_id"] ?? '',
-	       );
 	    } else {
 	       debugPrint('Unhandled message received from the server:\n$payload.');
 	    }
@@ -6882,11 +6879,6 @@ class OccaseState extends State<Occase>
       } catch (e) {
 	 debugPrint(e);
       }
-   }
-
-   void _subscribeToPosts()
-   {
-      _websocket.sink.add(jsonEncode({ 'cmd': 'subscribe' }));
    }
 
    // Called when the main tab changes.
