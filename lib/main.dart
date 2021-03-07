@@ -17,11 +17,12 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+//import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:share/share.dart';
@@ -217,8 +218,27 @@ Future<void> removeLpChat(Coord c, AppState appState) async
    assert(n == 1);
 }
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async
+{
+   print('Handling a background message ${message.messageId}');
+}
+
 Future<Null> main() async
 {
+   WidgetsFlutterBinding.ensureInitialized();
+
+   await Firebase.initializeApp();
+
+   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+   // Update the iOS foreground notification presentation options to
+   // allow heads up notifications.
+   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+   );
+
   runApp(MyApp());
 }
 
@@ -291,48 +311,48 @@ Scaffold makeWaitLoadTreeScreen()
    );
 }
 
-Widget makeImgExpandScreen(Function onWillPopScope, Post post)
-{
-   //final double width = makeWidgetWidth(ctx, tab);
-   //final double height = makeMaxHeight(ctx);
-
-   final int l = post.images.length;
-
-   Widget foo = PhotoViewGallery.builder(
-      scrollPhysics: const BouncingScrollPhysics(),
-      itemCount: post.images.length,
-      //loadingChild: Container(
-      //         width: 30.0,
-      //         height: 30.0,
-      //),
-      reverse: true,
-      //backgroundDecoration: widget.backgroundDecoration,
-      //pageController: widget.pageController,
-      onPageChanged: (int i){ debugPrint('===> New index: $i');},
-      builder: (BuildContext context, int i) {
-         // No idea why this is showing in reverse order, I will have
-         // to manually reverse the indexes.
-         final int idx = l - i - 1;
-         return PhotoViewGalleryPageOptions(
-            //imageProvider: AssetImage(widget.galleryItems[idx].image),
-            imageProvider: CachedNetworkImageProvider(post.images[idx]),
-            //initialScale: PhotoViewComputedScale.contained * 0.8,
-            //minScale: PhotoViewComputedScale.contained * 0.8,
-            //maxScale: PhotoViewComputedScale.covered * 1.1,
-            //heroAttributes: HeroAttributes(tag: galleryItems[idx].id),
-         );
-      },
-   );
-
-   return WillPopScope(
-      onWillPop: () async { return onWillPopScope();},
-      child: Scaffold(
-         //appBar: AppBar(title: Text(g.param.appName)),
-         body: Center(child: foo),
-	 backgroundColor: stl.cs.background,
-      ),
-   );
-}
+//Widget makeImgExpandScreen(Function onWillPopScope, Post post)
+//{
+//   //final double width = makeWidgetWidth(ctx, tab);
+//   //final double height = makeMaxHeight(ctx);
+//
+//   final int l = post.images.length;
+//
+//   Widget foo = PhotoViewGallery.builder(
+//      scrollPhysics: const BouncingScrollPhysics(),
+//      itemCount: post.images.length,
+//      //loadingChild: Container(
+//      //         width: 30.0,
+//      //         height: 30.0,
+//      //),
+//      reverse: true,
+//      //backgroundDecoration: widget.backgroundDecoration,
+//      //pageController: widget.pageController,
+//      onPageChanged: (int i){ debugPrint('===> New index: $i');},
+//      builder: (BuildContext context, int i) {
+//         // No idea why this is showing in reverse order, I will have
+//         // to manually reverse the indexes.
+//         final int idx = l - i - 1;
+//         return PhotoViewGalleryPageOptions(
+//            //imageProvider: AssetImage(widget.galleryItems[idx].image),
+//            imageProvider: CachedNetworkImageProvider(post.images[idx]),
+//            //initialScale: PhotoViewComputedScale.contained * 0.8,
+//            //minScale: PhotoViewComputedScale.contained * 0.8,
+//            //maxScale: PhotoViewComputedScale.covered * 1.1,
+//            //heroAttributes: HeroAttributes(tag: galleryItems[idx].id),
+//         );
+//      },
+//   );
+//
+//   return WillPopScope(
+//      onWillPop: () async { return onWillPopScope();},
+//      child: Scaffold(
+//         //appBar: AppBar(title: Text(g.param.appName)),
+//         body: Center(child: foo),
+//	 backgroundColor: stl.cs.background,
+//      ),
+//   );
+//}
 
 TextField makeNickTxtField(
    TextEditingController txtCtrl,
@@ -577,25 +597,36 @@ Widget makeNetImgBox({
    String url,
    BoxFit boxFit,
 }) {
-   return CachedNetworkImage(
-      imageUrl: url,
+   return Image.network(url,
       width: width,
       height: height,
       fit: boxFit,
-      placeholder: (ctx, url) => CircularProgressIndicator(),
-      errorWidget: (ctx, url, error) {
-         debugPrint('====> $error $url $error');
-         Widget w = Text(g.param.unreachableImgError,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-               color: stl.cs.background,
-               fontSize: stl.mainFontSize,
-            ),
-         );
-
-         return makeImgPlaceholder(width, height, w);
+      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress)
+      {
+        if (loadingProgress == null)
+	   return child;
+	return Center(child: CircularProgressIndicator());
       },
    );
+   //return CachedNetworkImage(
+   //   imageUrl: url,
+   //   width: width,
+   //   height: height,
+   //   fit: boxFit,
+   //   placeholder: (ctx, url) => CircularProgressIndicator(),
+   //   errorWidget: (ctx, url, error) {
+   //      debugPrint('====> $error $url $error');
+   //      Widget w = Text(g.param.unreachableImgError,
+   //         overflow: TextOverflow.ellipsis,
+   //         style: TextStyle(
+   //            color: stl.cs.background,
+   //            fontSize: stl.mainFontSize,
+   //         ),
+   //      );
+
+   //      return makeImgPlaceholder(width, height, w);
+   //   },
+   //);
 }
 
 Widget makeImgPlaceholder(
@@ -2621,7 +2652,8 @@ Widget makeChatScreen({
       ImageProvider backgroundImage;
       if (avatar.isNotEmpty) {
          final String url = cts.gravatarUrl + avatar + '.jpg';
-         backgroundImage = CachedNetworkImageProvider(url);
+         //backgroundImage = CachedNetworkImageProvider(url);
+         backgroundImage = NetworkImage(url);
       } else {
          child = stl.unknownPersonIcon;
       }
@@ -2731,7 +2763,8 @@ CircleAvatar makeChatListTileLeading({
    if (avatarUrl.isEmpty) {
       l.add(Center(child: stl.unknownPersonIcon));
    } else {
-      bgImg = CachedNetworkImageProvider(avatarUrl);
+      //bgImg = CachedNetworkImageProvider(avatarUrl);
+      bgImg = NetworkImage(avatarUrl);
    }
 
    l.add(OutlineButton(
@@ -5274,8 +5307,6 @@ class OccaseState extends State<Occase>
    // Used to cache the fcm token.
    String _fcmToken = '';
 
-   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-
    final ImagePicker _picker = ImagePicker();
 
    @override
@@ -5304,25 +5335,43 @@ class OccaseState extends State<Occase>
 
       _appState = AppState(_onCrossTabWrite);
 
-      //_firebaseMessaging.configure(
-      //   onMessage: (Map<String, dynamic> message) async {
-      //     debugPrint("onMessage: $message");
-      //   },
-      //   //onBackgroundMessage: fcmOnBackgroundMessage,
-      //   onLaunch: (Map<String, dynamic> message) async {
-      //     debugPrint("onLaunch: $message");
-      //   },
-      //   onResume: (Map<String, dynamic> message) async {
-      //     debugPrint("onResume: $message");
-      //   },
-      //);
+      FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage message)
+      {
+	  if (message != null)
+	     print('aaaaaaaaaaa');
+      });
 
-      //_firebaseMessaging.getToken().then((String token) {
-      //   if (_fcmToken != null)
-      //      _fcmToken = token;
+      FirebaseMessaging.instance.getToken().then((String token) {
+         if (_fcmToken != null)
+            _fcmToken = token;
 
-      //   debugPrint('Token: $token');
-      //});
+         debugPrint('Token: $token');
+      });
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message)
+      {
+	 RemoteNotification notification = message.notification;
+         print('Message ID ${message.messageId}');
+         print('Sender ID ${message.senderId}');
+         print('Category ${message.category}');
+         print('Collapse Key ${message.collapseKey}');
+         print('Content Available ${message.contentAvailable.toString()}');
+         print('Data ${message.data.toString()}');
+         print('From ${message.from}');
+         print('Message ID ${message.messageId}');
+         print('Sent Time ${message.sentTime?.toString()}');
+         print('Thread ID ${message.threadId}');
+         print('Time to Live (TTL) ${message.ttl?.toString()}');
+
+         if (notification != null) {
+	    print('Title ${notification.title}');
+	    print('Body ${notification.body}');
+	 }
+      });
+
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+	 print('A new onMessageOpenedApp event was published!');
+      });
 
       WidgetsBinding.instance.addPostFrameCallback((_) async { _init(); });
    }
@@ -5391,7 +5440,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.searchIdx);
 
       if (_appState.cfg.user.isEmpty) {
-	 final response = await http.post(cts.dbGetIdUrl);
+	 final response = await http.post(Uri.parse(cts.dbGetIdUrl));
 	 if (response.statusCode == 200) {
 	    assert(response.body != null);
 	    Map<String, dynamic> map = jsonDecode(response.body);
@@ -6025,7 +6074,7 @@ class OccaseState extends State<Occase>
       };
 
       print(map);
-      var resp = await http.post(cts.dbPublishUrl,
+      var resp = await http.post(Uri.parse(cts.dbPublishUrl),
 	 body: jsonEncode(map),
       );
 
@@ -6074,7 +6123,7 @@ class OccaseState extends State<Occase>
       , 'admin_delete_key': _deletePostPwd
       };
 
-      var resp = await http.post(cts.dbDeletePostUrl, body: jsonEncode(map));
+      var resp = await http.post(Uri.parse(cts.dbDeletePostUrl), body: jsonEncode(map));
       if (resp.statusCode != 200)
 	 debugPrint('Error on _onRemovePost:  ${resp.statusCode}');
    }
@@ -6122,7 +6171,7 @@ class OccaseState extends State<Occase>
          debugPrint('=====> New name $newname');
          debugPrint('=====> Http target $newname');
 
-         var response = await http.post(newname,
+         var response = await http.post(Uri.parse(newname),
             body: await _imgFiles[i].readAsBytes(),
          );
 
@@ -6155,7 +6204,7 @@ class OccaseState extends State<Occase>
 	 , 'key': _appState.cfg.key
 	 };
 
-	 var resp = await http.post(cts.dbUploadCreditUrl,
+	 var resp = await http.post(Uri.parse(cts.dbUploadCreditUrl),
 	    body: jsonEncode(body),
 	 );
 
@@ -6465,7 +6514,8 @@ class OccaseState extends State<Occase>
 	 };
 
 	 print(map);
-	 var response = await http.post(cts.dbVisualizationUrl,
+	 var response = await
+	       http.post(Uri.parse(cts.dbVisualizationUrl),
 	    body: jsonEncode(map),
 	 );
 
@@ -6485,7 +6535,7 @@ class OccaseState extends State<Occase>
 	 , 'post_id': postId
 	 };
 
-	 var response = await http.post(cts.dbClickUrl,
+	 var response = await http.post(Uri.parse(cts.dbClickUrl),
 	    body: jsonEncode(map),
 	 );
 
@@ -7210,7 +7260,7 @@ class OccaseState extends State<Occase>
    Future<String> _searchPosts(String url, Post post) async
    {
       try {
-	 var response = await http.post(url, body: jsonEncode(post.toJson()));
+	 var response = await http.post(Uri.parse(url), body: jsonEncode(post.toJson()));
 	 if (response.statusCode == 200)
 	    return response.body;
 	 return '';
@@ -7639,10 +7689,10 @@ class OccaseState extends State<Occase>
          else
             assert(false);
 
-         return makeImgExpandScreen(
-	    () { _onExpandImg(-1, -1, _tabIndex()); return false;},
-	    post,
-	 );
+         //return makeImgExpandScreen(
+	 //   () { _onExpandImg(-1, -1, _tabIndex()); return false;},
+	 //   post,
+	 //);
       }
 
       List<Widget> fltButtons = _makeFaButtons(ctx);
