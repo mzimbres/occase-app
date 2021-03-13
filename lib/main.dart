@@ -5337,31 +5337,24 @@ class OccaseState extends State<Occase>
 
       FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage message)
       {
-	  if (message != null)
-	     print('aaaaaaaaaaa');
-      });
-
-      FirebaseMessaging.instance.getToken().then((String token) {
-         if (_fcmToken != null)
-            _fcmToken = token;
-
-         debugPrint('Token: $token');
+	 if (message != null)
+	    debugPrint('Firebase: Initial message received');
       });
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message)
       {
 	 RemoteNotification notification = message.notification;
-         print('Message ID ${message.messageId}');
-         print('Sender ID ${message.senderId}');
-         print('Category ${message.category}');
-         print('Collapse Key ${message.collapseKey}');
-         print('Content Available ${message.contentAvailable.toString()}');
-         print('Data ${message.data.toString()}');
-         print('From ${message.from}');
-         print('Message ID ${message.messageId}');
-         print('Sent Time ${message.sentTime?.toString()}');
-         print('Thread ID ${message.threadId}');
-         print('Time to Live (TTL) ${message.ttl?.toString()}');
+         //print('Message ID ${message.messageId}');
+         //print('Sender ID ${message.senderId}');
+         //print('Category ${message.category}');
+         //print('Collapse Key ${message.collapseKey}');
+         //print('Content Available ${message.contentAvailable.toString()}');
+         //print('Data ${message.data.toString()}');
+         //print('From ${message.from}');
+         //print('Message ID ${message.messageId}');
+         //print('Sent Time ${message.sentTime?.toString()}');
+         //print('Thread ID ${message.threadId}');
+         //print('Time to Live (TTL) ${message.ttl?.toString()}');
 
          if (notification != null) {
 	    print('Title ${notification.title}');
@@ -5439,6 +5432,9 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
 
+      _fcmToken = await FirebaseMessaging.instance.getToken();
+      debugPrint('FB token: $_fcmToken');
+
       if (_appState.cfg.user.isEmpty) {
 	 final response = await http.post(Uri.parse(cts.dbGetIdUrl));
 	 if (response.statusCode == 200) {
@@ -5462,8 +5458,8 @@ class OccaseState extends State<Occase>
 	 }
       }
 
-      if (_appState.cfg.user.isNotEmpty)
-	 _stablishNewConnection(_fcmToken);
+      if (_appState.cfg.user.isNotEmpty && (_fcmToken != null) && _fcmToken.isNotEmpty)
+         _stablishNewConnection(_fcmToken);
 
       // Do not await for the async op to complete to avoid blocking
       // the init and consequently the page loading time.
