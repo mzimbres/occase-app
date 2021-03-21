@@ -597,6 +597,18 @@ Widget makeNetImgBox({
    String url,
    BoxFit boxFit,
 }) {
+   if (url.isEmpty) {
+      Widget w = Text(g.param.unreachableImgError,
+         overflow: TextOverflow.ellipsis,
+         style: TextStyle(
+            color: stl.cs.background,
+            fontSize: stl.mainFontSize,
+         ),
+      );
+
+      return makeImgPlaceholder(width, height, w);
+   }
+
    return Image.network(url,
       width: width,
       height: height,
@@ -608,6 +620,7 @@ Widget makeNetImgBox({
 	return Center(child: CircularProgressIndicator());
       },
    );
+
    //return CachedNetworkImage(
    //   imageUrl: url,
    //   width: width,
@@ -3214,7 +3227,9 @@ List<Widget> makePostExDetails(BuildContext ctx, Post post, Node exDetailsRootNo
    list.add(makeNewPostSetionTitle(title: g.param.postExDetailsTitle));
 
    final int l1 = exDetailsRootNode.at1(idx).children.length;
-   for (int i = 0; i < l1; ++i) {
+   final int l2 = post.exDetails.length;
+   final int l = l1 > l2 ? l2 : l1;
+   for (int i = 0; i < l; ++i) {
       final int n = exDetailsRootNode.children[idx].children[i].children.length;
       final int k = post.exDetails[i];
       if (k == -1 || k >= n)
@@ -3267,7 +3282,9 @@ List<Widget> makePostInDetails(Post post, Node inDetailsRootNode)
       return List<Widget>();
 
    final int l1 = inDetailsRootNode.at1(i).children.length;
-   for (int j = 0; j < l1; ++j) {
+   final int l2 = post.inDetails.length;
+   final int l = l1 > l2 ? l2 : l1;
+   for (int j = 0; j < l; ++j) {
       List<Widget> foo = makePostInRows(
          inDetailsRootNode.at(i, j).children,
          post.inDetails[j],

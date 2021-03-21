@@ -563,14 +563,16 @@ makeMenuElems(final Node root, int index, int maxDepth)
    return elems;
 }
 
-// Return a list of all ex details for the given product i.
+// Returns a list of all ex details for the given product i.
 List<String> makeExDetailsNamesAll(Node root, List<int> exDetails, int i, int lang)
 {
    if (i == -1 || i >= root.children.length)
       return List<String>();
 
    List<String> list = List<String>();
-   final int l = root.children[i].children.length;
+   final int l1 = root.children[i].children.length;
+   final int l2 = exDetails.length;
+   final int l = l1 > l2 ? l2 : l1;
    for (int j = 0; j < l; ++j) {
       final int n = root.children[i].children[j].children.length;
       final int k = exDetails[j];
