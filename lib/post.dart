@@ -260,9 +260,9 @@ class ChatMetadata {
    String getChatDisplayName()
    {
       if (nick.isEmpty)
-         return '$peer';
+         return peer;
 
-      return '$nick';
+      return nick;
    }
 
    String getChatAbbrevStr()
@@ -430,11 +430,8 @@ class Post {
    // The number of times this post appeared on searches.
    int onSearch = 0;
 
-   // The number of visualizations this post had so far.
-   int visualizations = 0;
-
    // The number of detailed visualizations this post had.
-   int clicks = 0;
+   int visualizations = 0;
 
    // Post id received from on publish ack from the server.
    String id;
@@ -544,7 +541,6 @@ class Post {
       ret.priority = this.priority;
       ret.onSearch = this.onSearch;
       ret.visualizations = this.visualizations;
-      ret.clicks = this.clicks;
       ret.description = this.description;
       ret.email = this.email;
       ret.images = List<String>.from(this.images);
@@ -629,7 +625,6 @@ class Post {
 	 priority = map['priority'] ?? 0;
 	 onSearch = map['on_search'] ?? 0;
 	 visualizations = map['visualizations'] ?? 0;
-	 clicks = map['clicks'] ?? 0;
 	 description = map['description'] ?? '';
 	 email = map['email'] ?? '';
 	 images = decodeList(0, '', map['images']);
@@ -678,7 +673,6 @@ class Post {
       , 'priority': priority
       , 'on_search': onSearch
       , 'visualizations': visualizations
-      , 'clicks': clicks
       };
    }
 }

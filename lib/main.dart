@@ -1007,7 +1007,6 @@ List<Widget> makeNewPostFinalScreen({
       onReportPost: () { debugPrint('Noop05');},
       onPinPost: () { debugPrint('Noop06');},
       onVisualization: () { debugPrint('Noop07');},
-      onClick: () {debugPrint('Noop08');},
    );
 
    ret.add(postBox);
@@ -1551,6 +1550,7 @@ Widget makeNewPostScreenWdgs({
    final OnPressedF09 onKmChanged,
    final OnPressedF09 onSetPostDescription,
    final OnPressedF09 onSetEmail,
+   final OnPressedF09 onSetNick,
    final OnPressedF00 onFreePaymentPressed,
    final OnPressedF00 onStandardPaymentPressed,
    final OnPressedF00 onPremiumPaymentPressed,
@@ -1631,6 +1631,21 @@ Widget makeNewPostScreenWdgs({
 	 );
 
 	 list.add(emailWdg);
+      }
+
+      {  // Nick
+	 Widget nickWdg = makeNewPostStrInput(
+	    ctx: ctx,
+	    title: g.param.changeNickHint,
+	    subtitle: post.nick,
+	    diagTitle: g.param.changeNickHint,
+	    diagContent: post.nick,
+	    diagHint: g.param.advertiser,
+	    diagMaxLength: 20,
+	    onOk: onSetNick,
+	 );
+
+	 list.add(nickWdg);
       }
 
       {  // final
@@ -3193,22 +3208,16 @@ List<Widget> makePostStats({
 
    //list.add(makeNewPostSetionTitle(title: titleAndFields[0]));
 
-   list.add(makeStatsText(
-	 key: titleAndFields[1],
-	 value: '${post.onSearch}',
-	 prefix: '',
-      ),
-   );
+   //list.add(makeStatsText(
+   //      key: titleAndFields[1],
+   //      value: '${post.onSearch}',
+   //      prefix: '',
+   //   ),
+   //);
 
    list.add(makeStatsText(
 	 key: titleAndFields[2],
 	 value: '${post.visualizations}',
-      ),
-   );
-
-   list.add(makeStatsText(
-	 key: titleAndFields[3],
-	 value: '${post.clicks}',
       ),
    );
 
@@ -3924,9 +3933,13 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 final
 	 String avatar = widget.post.images.isNotEmpty ? widget.post.images.first : '';
 
+	 String nick = widget.post.nick;
+	 if (widget.post.nick.isEmpty)
+	    nick = g.param.advertiser;
+
 	 ChatMetadata cm = ChatMetadata(
 	   peer: widget.post.from,
-	   nick: g.param.advertiser,
+	   nick: nick,
 	   avatar: avatar,
 	   date: DateTime.now().millisecondsSinceEpoch,
 	 );
@@ -4030,7 +4043,6 @@ class PostWidget extends StatefulWidget {
    OnPressedF00 onReportPost;
    OnPressedF00 onPinPost;
    OnPressedF00 onVisualization;
-   OnPressedF00 onClick;
 
    @override
    PostWidgetState createState() => PostWidgetState();
@@ -4052,7 +4064,6 @@ class PostWidget extends StatefulWidget {
    , @required this.onReportPost
    , @required this.onPinPost
    , @required this.onVisualization
-   , @required this.onClick
    });
 }
 
@@ -4093,7 +4104,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       onSharePost: widget.onSharePost,
 	       onReportPost: widget.onReportPost,
 	       onAddPostToFavorite: () {
-		  widget.onClick();
 		  widget.onAddPostToFavorite();
 	       },
 	    );
@@ -4540,7 +4550,6 @@ Widget makeSearchResultPosts({
    final OnPressedF02 onDelPost,
    final OnPressedF02 onSharePost,
    final OnPressedF02 onReportPost,
-   final OnPressedF09 onPostVisualization,
    final OnPressedF09 onPostPressed,
    final OnPressedF00 onCreateAd,
    final OnPressedF00 onGoToSearch,
@@ -4583,8 +4592,7 @@ Widget makeSearchResultPosts({
 	    onSharePost: () {onSharePost(ctx, i);},
 	    onReportPost: () {onReportPost(ctx, i);},
 	    onPinPost: (){debugPrint('Noop20');},
-	    onVisualization: () {onPostVisualization(posts[i].id);},
-	    onClick: () {onPostPressed(posts[i].id);},
+	    onVisualization: () {onPostPressed(posts[i].id);},
 	 );
       },
    );
@@ -4892,7 +4900,7 @@ Widget makeChatListTile({
       ),
    );
 
-   return  Card(
+   return Card(
       child: lt,
       color: bgColor,
       margin: EdgeInsets.all(0),
@@ -5089,7 +5097,6 @@ Widget makeChatTab({
 	    onReportPost:() {debugPrint('Noop18');},
 	    onPinPost: onPinPost2,
 	    onVisualization: () {debugPrint('Noop19');},
-	    onClick: () {debugPrint('Noop20');},
 	 );
 
 	 Widget chatExp = makeChatsExp(
@@ -5753,9 +5760,17 @@ class OccaseState extends State<Occase>
 
    void _onSetEmail(String email)
    {
-      print('aaaa $email');
       setState(() {
 	 _posts[cts.ownIdx].email = email;
+      });
+   }
+
+   void _onSetNick(String nick)
+   {
+      setState(() async {
+	 _posts[cts.ownIdx].nick = nick;
+	 _appState.cfg.nick = nick;
+         await _appState.updateConfig();
       });
    }
 
@@ -6070,7 +6085,9 @@ class OccaseState extends State<Occase>
    Future<void> _sendPost() async
    {
       _posts[cts.ownIdx].from = '';
-      _posts[cts.ownIdx].nick = _appState.cfg.nick;
+      if (_posts[cts.ownIdx].nick.isEmpty)
+	 _posts[cts.ownIdx].nick = g.param.advertiser;
+
       _posts[cts.ownIdx].avatar = emailToGravatarHash(_appState.cfg.email);
       _posts[cts.ownIdx].status = 3;
       _appState.outPost = _posts[cts.ownIdx].clone();
@@ -6518,42 +6535,18 @@ class OccaseState extends State<Occase>
 
    Future<void> _onPostVisualization(String postId) async
    {
-      // Visualizations that occurr while the user is offline will be
-      // lost. This can be fixes later.
       try {
 	 var map =
-	 { 'cmd': 'visualizations'
-	 , 'post_ids': <String>[postId]
+	 { 'cmd': 'visualization'
+	 , 'post_id': postId
 	 };
 
-	 print(map);
-	 var response = await
-	       http.post(Uri.parse(cts.dbVisualizationUrl),
+	 var response = await http.post(Uri.parse(cts.dbVisualizationUrl),
 	    body: jsonEncode(map),
 	 );
 
 	 if (response.statusCode != 200)
 	    print('Error: Unable to post visualization.');
-
-      } catch (e) {
-	 print(e);
-      }
-   }
-
-   Future<void> _onPostClick(String postId) async
-   {
-      try {
-	 var map =
-	 { 'cmd': 'click'
-	 , 'post_id': postId
-	 };
-
-	 var response = await http.post(Uri.parse(cts.dbClickUrl),
-	    body: jsonEncode(map),
-	 );
-
-	 if (response.statusCode != 200)
-	    print('Error: Unable to post click.');
 
       } catch (e) {
 	 print(e);
@@ -7393,6 +7386,7 @@ class OccaseState extends State<Occase>
 	 onKmChanged: (var km) {_onSetPrice(km, cts.ownIdx, 2);},
 	 onSetPostDescription: _onSetPostDescription,
 	 onSetEmail: _onSetEmail,
+	 onSetNick: _onSetNick,
 	 onFreePaymentPressed: () { _onSetPostPriority(0);},
 	 onStandardPaymentPressed: () { _onSetPostPriority(1);},
 	 onPremiumPaymentPressed: () { _onSetPostPriority(2);},
@@ -7436,8 +7430,7 @@ class OccaseState extends State<Occase>
 	 onDelPost: (var a, int j) {_alertUserOnPressed(a, j, 4);},
 	 onSharePost: (var a, int j) {_alertUserOnPressed(a, j, 3);},
 	 onReportPost: (var a, int j) {_alertUserOnPressed(a, j, 2);},
-	 onPostVisualization: _onPostVisualization,
-	 onPostPressed: _onPostClick,
+	 onPostPressed: _onPostVisualization,
 	 onCreateAd: _onCreateAd,
 	 onGoToSearch: _onGoToSearch,
 	 onLatestPostsPressed: () {_onLatestPostsPressed(isWide);},
