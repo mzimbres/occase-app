@@ -243,7 +243,8 @@ Future<Null> main() async
 }
 
 enum ConfigActions
-{ Notifications
+{ ChangeNick
+, Notifications
 , Information
 }
 
@@ -256,6 +257,10 @@ Widget makeAppBarVertAction(OnPressedF15 onSelected)
       {
          return <PopupMenuEntry<ConfigActions>>
          [ PopupMenuItem<ConfigActions>(
+              value: ConfigActions.ChangeNick,
+              child: Text(g.param.changeNickHint),
+           ),
+	   PopupMenuItem<ConfigActions>(
               value: ConfigActions.Notifications,
               child: Text(g.param.changeNotifications),
            ),
@@ -265,6 +270,61 @@ Widget makeAppBarVertAction(OnPressedF15 onSelected)
            ),
          ];
       }
+   );
+}
+
+Widget makeRegisterScreen({
+   TextEditingController nickCtrl,
+   Function onContinue,
+   String title,
+   String previousNick,
+   double maxWidth,
+   OnPressedF07 onWillPopScope,
+}) {
+   if (previousNick.isNotEmpty)
+      nickCtrl.text = previousNick;
+
+   TextField nickTf = makeNickTxtField(
+      nickCtrl,
+      Icon(Icons.person),
+      cts.nickMaxLength,
+      g.param.nickHint,
+   );
+
+   Widget button = createRaisedButton(
+      onPressed: onContinue,
+      text: g.param.next,
+      color: stl.cs.secondary,
+      textColor: stl.cs.onSecondary,
+   );
+
+   Column col = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>
+      [ Padding(
+           child: nickTf,
+           padding: EdgeInsets.only(bottom: 30.0),
+        )
+      , button
+      ]
+   );
+
+   // TODO: Use ConstrainedBox
+   Widget body = col;
+   if (!isWideScreenImpl(maxWidth))
+      body = SizedBox(width: maxWidth, child: col);
+
+   return makeConfigScaffold(
+      title: title,
+      onWillPopScope: onWillPopScope,
+      body: Center(
+         child: Padding(
+            child: body,
+            padding: EdgeInsets.symmetric(horizontal: 20.0),
+         ),
+      ),
    );
 }
 
@@ -3601,12 +3661,14 @@ class PostDescriptionState extends State<TextInput> with TickerProviderStateMixi
 	 child: tf,
       );
 
-      final FlatButton ok = FlatButton(
-	 child: Text(g.param.ok),
-	 onPressed: ()
-	 {
-	    Navigator.pop(ctx, _txtCtrl.text);
-	 });
+      final TextButton ok = TextButton(
+	 autofocus: true,
+         child: Text(g.param.ok),
+         onPressed: ()
+         {
+	    if (_txtCtrl.text.isNotEmpty)
+	       Navigator.pop(ctx, _txtCtrl.text);
+         });
 
       Widget w = AlertDialog(
 	 title: Text(widget.title),
@@ -5161,6 +5223,10 @@ class OccaseState extends State<Occase>
    // the jump down button can be used
    List<bool> _showChatJumpDownButtons = List<bool>.filled(3, true);
 
+   // Set to true when the user wants to change his email or nick or on
+   // the first time the user opens the app.
+   bool _goToRegScreen = false;
+
    // Set to true when the user wants to change his notification
    // settings.
    bool _goToNtfScreen = false;
@@ -5228,8 +5294,6 @@ class OccaseState extends State<Occase>
    // Used for every screen that offers text input.
    TextEditingController _txtCtrl;
 
-   // Used in some cases where two text fields are required.
-   TextEditingController _txtCtrl2;
    List<FocusNode> _chatFocusNodes = List<FocusNode>.filled(3, FocusNode());
 
    HtmlWebSocketChannel _websocket;
@@ -5263,7 +5327,6 @@ class OccaseState extends State<Occase>
 
       _tabCtrl = TabController(vsync: this, initialIndex: 1, length: 3);
       _txtCtrl = TextEditingController();
-      _txtCtrl2 = TextEditingController();
       _tabCtrl.addListener(_tabCtrlChangeHandler);
 
       _chatScrollCtrl[cts.ownIdx].addListener(() {_chatScrollListener(cts.ownIdx);});
@@ -5426,7 +5489,6 @@ class OccaseState extends State<Occase>
    void dispose()
    {
       _txtCtrl.dispose();
-      _txtCtrl2.dispose();
       _tabCtrl.dispose();
       _scrollCtrl[0].dispose();
       _scrollCtrl[1].dispose();
@@ -5703,8 +5765,10 @@ class OccaseState extends State<Occase>
 
    void _onSetEmail(String email)
    {
-      setState(() {
+      setState(() async {
 	 _posts[cts.ownIdx].email = email;
+	 _appState.cfg.email = email;
+         await _appState.updateConfig();
       });
    }
 
@@ -6949,6 +7013,12 @@ class OccaseState extends State<Occase>
 
    void _onAppBarVertPressed(ConfigActions c)
    {
+      if (c == ConfigActions.ChangeNick) {
+         setState(() {
+            _goToRegScreen = true;
+         });
+      }
+
       if (c == ConfigActions.Notifications) {
          setState(() {
             _goToNtfScreen = true;
@@ -7089,18 +7159,13 @@ class OccaseState extends State<Occase>
             return;
          }
 
-         if (_txtCtrl2.text.isNotEmpty) {
-            _appState.cfg.email = _txtCtrl2.text;
-	    await _appState.updateConfig();
-         }
-
          _appState.cfg.nick = _txtCtrl.text;
          await _appState.updateConfig();
 
          setState(()
          {
-            _txtCtrl2.clear();
             _txtCtrl.clear();
+            _goToRegScreen = false;
          });
 
       } catch (e) {
@@ -7567,6 +7632,17 @@ class OccaseState extends State<Occase>
    {
       Locale locale = Localizations.localeOf(ctx);
       g.param.setLang(locale.languageCode);
+
+      if (_goToRegScreen) {
+         return makeRegisterScreen(
+            nickCtrl: _txtCtrl,
+            onContinue: (){_onRegisterContinue(ctx);},
+            title: g.param.changeNickAppBarTitle,
+            previousNick: _appState.cfg.nick,
+	    maxWidth: makeWidgetWidth(ctx),
+	    onWillPopScope: () {setState(() {_goToRegScreen = false;});},
+         );
+      }
 
       if (_goToNtfScreen) {
          return makeNtfScreen(
