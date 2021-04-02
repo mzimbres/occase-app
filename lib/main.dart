@@ -390,7 +390,7 @@ Scaffold makeWaitLoadTreeScreen()
 //         final int idx = l - i - 1;
 //         return PhotoViewGalleryPageOptions(
 //            //imageProvider: AssetImage(widget.galleryItems[idx].image),
-//            imageProvider: CachedNetworkImageProvider(post.images[idx]),
+//	      backgroundImage = NetworkImage(url);
 //            //initialScale: PhotoViewComputedScale.contained * 0.8,
 //            //minScale: PhotoViewComputedScale.contained * 0.8,
 //            //maxScale: PhotoViewComputedScale.covered * 1.1,
@@ -579,7 +579,6 @@ Widget makeNetImgBox({
    double width,
    double height,
    String url,
-   BoxFit boxFit,
 }) {
    if (url.isEmpty) {
       Widget w = Text(g.param.unreachableImgError,
@@ -593,37 +592,28 @@ Widget makeNetImgBox({
       return makeImgPlaceholder(width, height, w);
    }
 
-   return Image.network(url,
-      width: width,
-      height: height,
-      fit: boxFit,
-      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress)
-      {
-        if (loadingProgress == null)
-	   return child;
-	return Center(child: CircularProgressIndicator());
-      },
-   );
-
-   //return CachedNetworkImage(
-   //   imageUrl: url,
+   //return Image.network(url,
    //   width: width,
    //   height: height,
    //   fit: boxFit,
-   //   placeholder: (ctx, url) => CircularProgressIndicator(),
-   //   errorWidget: (ctx, url, error) {
-   //      debugPrint('====> $error $url $error');
-   //      Widget w = Text(g.param.unreachableImgError,
-   //         overflow: TextOverflow.ellipsis,
-   //         style: TextStyle(
-   //            color: stl.cs.background,
-   //            fontSize: stl.mainFontSize,
-   //         ),
-   //      );
-
-   //      return makeImgPlaceholder(width, height, w);
+   //   loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress)
+   //   {
+   //     if (loadingProgress == null)
+   //        return child;
+   //     return Center(child: CircularProgressIndicator());
    //   },
    //);
+   return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+	 image: DecorationImage(
+	    fit: BoxFit.fitHeight,
+	    alignment: FractionalOffset.center,
+	    image: NetworkImage(url),
+	 ),
+      ),
+   );
 }
 
 Widget makeImgPlaceholder(
@@ -746,7 +736,6 @@ Widget makeImgListView({
 	       width: width,
 	       height: height,
 	       url: post.images[l - i - 1],
-	       boxFit: boxFit,
 	    );
 	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
@@ -2664,7 +2653,6 @@ Widget makeChatScreen({
       ImageProvider backgroundImage;
       if (avatar.isNotEmpty) {
          final String url = cts.gravatarUrl + avatar + '.jpg';
-         //backgroundImage = CachedNetworkImageProvider(url);
          backgroundImage = NetworkImage(url);
       } else {
          child = stl.unknownPersonIcon;
@@ -2775,7 +2763,6 @@ CircleAvatar makeChatListTileLeading({
    if (avatarUrl.isEmpty) {
       l.add(Center(child: stl.unknownPersonIcon));
    } else {
-      //bgImg = CachedNetworkImageProvider(avatarUrl);
       bgImg = NetworkImage(avatarUrl);
    }
 
@@ -4124,14 +4111,10 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
-	 Container img = Container(
-	    margin: const EdgeInsets.all(0),
-	    child: makeNetImgBox(
-	       width: postAvatarWidth,
-	       height: postAvatarWidth,
-	       url: widget.post.images.first,
-	       boxFit: BoxFit.cover,
-	    ),
+	 Widget img = makeNetImgBox(
+	    width: postAvatarWidth,
+	    height: postAvatarWidth,
+	    url: widget.post.images.first,
 	 );
 
 	 Widget kmText = makeTextWdg(
@@ -6438,7 +6421,6 @@ class OccaseState extends State<Occase>
             width: cts.onClickAvatarWidth,
             height: cts.onClickAvatarWidth,
             url: url,
-            boxFit: BoxFit.contain,
          ),
       );
    }
