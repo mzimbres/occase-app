@@ -1975,28 +1975,25 @@ TabBar makeTabBar(
    );
 }
 
-Widget makeFaButton(
-   int nOwnPosts,
-   OnPressedF00 onNewPost,
-   OnPressedF00 onFwdChatMsg,
-   int lpChats,
-   int lpChatMsgs,
-) {
+Widget makeFaButton({
+   final int nOwnPosts,
+   final int lpChats,
+   final int lpChatMsgs,
+   final IconData icon,
+   final OnPressedF00 onNewPostPressed,
+   final OnPressedF00 onFwdChatMsg,
+}) {
    if (nOwnPosts != -1 && nOwnPosts == 0)
       return SizedBox.shrink();
 
    if (lpChats == 0 && lpChatMsgs != 0)
       return SizedBox.shrink();
 
-   IconData id = stl.newPostIcon;
    if (lpChats != 0 && lpChatMsgs != 0) {
       return FloatingActionButton(
          backgroundColor: stl.cs.secondary,
 	 mini: false,
-         child: Icon(
-            Icons.send,
-            color: stl.cs.onSecondary,
-         ),
+         child: Icon(Icons.send, color: stl.cs.onSecondary),
          onPressed: onFwdChatMsg,
       );
    }
@@ -2004,16 +2001,14 @@ Widget makeFaButton(
    if (lpChats != 0)
       return SizedBox.shrink();
 
-   if (onNewPost == null)
+   if (onNewPostPressed == null)
       return SizedBox.shrink();
 
    return FloatingActionButton(
       backgroundColor: stl.cs.secondary,
       mini: false,
-      child: Icon(id,
-         color: stl.cs.onSecondary,
-      ),
-      onPressed: onNewPost,
+      child: Icon(icon, color: stl.cs.onSecondary),
+      onPressed: onNewPostPressed,
    );
 }
 
@@ -2033,18 +2028,19 @@ List<Widget> makeFaButtons({
    List<Widget> ret = List<Widget>(g.param.tabNames.length);
 
    if (isOnOwnChat) {
-      ret[0] = SizedBox.shrink();
+      ret[cts.ownIdx] = SizedBox.shrink();
    } else {
       ret[cts.ownIdx] = makeFaButton(
-	 nOwnPosts,
-	 onNewPost,
-	 () {onFwdSendButton(0);},
-	 lpChats[0].length,
-	 lpChatMsgs[0].length
+	 nOwnPosts: nOwnPosts,
+	 onNewPostPressed: onNewPost,
+	 onFwdChatMsg: () {onFwdSendButton(0);},
+	 lpChats: lpChats[0].length,
+	 lpChatMsgs: lpChatMsgs[0].length,
+	 icon: stl.newPostIcon,
       );
    }
 
-   ret[cts.searchIdx] = makeFAButtonMiddleScreen(
+   ret[cts.searchIdx] = makeFaButtonFav(
       newSearchPressed: newSearchPressed,
       isWide: isWide,
       hasFavPosts: hasFavPosts,
@@ -2053,17 +2049,18 @@ List<Widget> makeFaButtons({
    );
 
    ret[cts.favIdx] = makeFaButton(
-      -1,
-      null,
-      () {onFwdSendButton(2);},
-      lpChats[2].length,
-      lpChatMsgs[2].length,
+      nOwnPosts: -1,
+      onNewPostPressed: isWide ? null : onGoToSearch,
+      onFwdChatMsg: () {onFwdSendButton(2);},
+      lpChats: lpChats[2].length,
+      lpChatMsgs: lpChatMsgs[2].length,
+      icon: Icons.search,
    );
 
    return ret;
 }
 
-Widget makeFAButtonMiddleScreen({
+Widget makeFaButtonFav({
    final bool newSearchPressed,
    final bool isWide,
    final bool hasFavPosts,
@@ -2753,6 +2750,7 @@ Widget makeTabWidget({
 CircleAvatar makeChatListTileLeading({
    bool isLongPressed,
    String avatarUrl,
+   String nick,
    Color bgcolor,
    OnPressedF00 onLeadingPressed,
 })
@@ -2761,18 +2759,18 @@ CircleAvatar makeChatListTileLeading({
 
    ImageProvider bgImg;
    if (avatarUrl.isEmpty) {
-      l.add(Center(child: stl.unknownPersonIcon));
+      //l.add(Center(child: stl.unknownPersonIcon));
+      Widget outlineW = OutlineButton(
+	 child: Text(makeStrAbbrev(nick)),
+	 borderSide: BorderSide(style: BorderStyle.none),
+	 onPressed: onLeadingPressed,
+	 shape: CircleBorder()
+      );
+
+      l.add(outlineW);
    } else {
       bgImg = NetworkImage(avatarUrl);
    }
-
-   l.add(OutlineButton(
-         child: Text(''),
-         borderSide: BorderSide(style: BorderStyle.none),
-         onPressed: onLeadingPressed,
-         shape: CircleBorder()
-      ),
-   );
 
    if (isLongPressed) {
       Positioned p = Positioned(
@@ -3166,31 +3164,6 @@ List<Widget> makePostValues(BuildContext ctx, Post post)
    });
 
    list.addAll(items); // The tree info.
-
-   return list;
-}
-
-List<Widget> makePostStats({
-   BuildContext ctx,
-   final Post post,
-   final List<String> titleAndFields,
-}) {
-   List<Widget> list = <Widget>[];
-
-   //list.add(makeNewPostSetionTitle(title: titleAndFields[0]));
-
-   //list.add(makeStatsText(
-   //      key: titleAndFields[1],
-   //      value: '${post.onSearch}',
-   //      prefix: '',
-   //   ),
-   //);
-
-   list.add(makeStatsText(
-	 key: titleAndFields[2],
-	 value: '${post.visualizations}',
-      ),
-   );
 
    return list;
 }
@@ -3907,7 +3880,8 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       if (widget.tab == cts.searchIdx) {
 
 	 final
-	 String avatar = widget.post.images.isNotEmpty ? widget.post.images.first : '';
+	 String avatar =
+	    widget.post.images.isNotEmpty ? widget.post.images.first : '';
 
 	 String nick = widget.post.nick;
 	 if (widget.post.nick.isEmpty)
@@ -3923,7 +3897,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 Widget tmp = makeChatListTile(
 	    ctx: ctx,
 	    chatMetadata: cm,
-	    avatar: avatar,
+	    avatarUrl: avatar,
 	    onChatLeadingPressed: () {},
 	    onChatLongPressed: () {},
 	    onStartChatPressed: () {
@@ -4322,6 +4296,11 @@ Widget makePostDetailsWdg({
 
    rows.add(listView);
 
+   Widget statW = makeStatsText(
+      key: g.param.statsTitleAndFields[2],
+      value: '${post.visualizations}',
+   );
+
    Widget stats = putPostElemOnCard(
       padding: stl.basePadding,
       backgroundColor: stl.secondaryLightColor,
@@ -4331,11 +4310,7 @@ Widget makePostDetailsWdg({
 	   padding: const EdgeInsets.all(stl.basePadding),
 	   child: Row(
 	      mainAxisAlignment: MainAxisAlignment.start,
-	      children: makePostStats(
-		 ctx: ctx,
-		 post: post,
-		 titleAndFields: g.param.statsTitleAndFields,
-	      ),
+	      children: <Widget>[statW],
 	   ),
         ),
       ],
@@ -4472,7 +4447,7 @@ Widget makeSearchInitTab({
    final OnPressedF00 onGoToSearch,
    final OnPressedF00 onLastestPostsPressed,
 }) {
-   if (isWide)
+   if (isWide) {
       return makeDefaultWidgetCard(
 	 isWide: isWide,
 	 description: msgs[cts.searchIdx],
@@ -4480,6 +4455,7 @@ Widget makeSearchInitTab({
 	 testimonial: '\"${testimonials[cts.searchIdx]}\"',
 	 onPressed: onLastestPostsPressed,
       );
+   }
 
    Widget w0 = makeDefaultWidgetCard(
       isWide: isWide,
@@ -4489,13 +4465,14 @@ Widget makeSearchInitTab({
       onPressed: onCreateAd,
    );
 
-   Widget w1 = makeDefaultWidgetCard(
-      isWide: isWide,
-      description: msgs[cts.searchIdx],
-      buttonName: buttonNames[cts.searchIdx],
-      testimonial: '\"${testimonials[cts.searchIdx]}\"',
-      onPressed: onLastestPostsPressed,
-   );
+   // Removes this to make less text.
+   //Widget w1 = makeDefaultWidgetCard(
+   //   isWide: isWide,
+   //   description: msgs[cts.searchIdx],
+   //   buttonName: buttonNames[cts.searchIdx],
+   //   testimonial: '\"${testimonials[cts.searchIdx]}\"',
+   //   onPressed: onLastestPostsPressed,
+   //);
 
    Widget w2 = makeDefaultWidgetCard(
       isWide: isWide,
@@ -4506,7 +4483,7 @@ Widget makeSearchInitTab({
    );
 
    return ListView(
-      children: <Widget>[w0, w1, w2],
+      children: <Widget>[w0, w2],
    );
 }
 
@@ -4809,7 +4786,7 @@ Widget makeChatListTileTrailingWidget(
 
 Color selectColor(String peer)
 {
-   final int v = peer.length % 14;
+   final int v = peer.hashCode % 14;
    switch (v) {
       case 0: return Colors.yellow[500];
       case 1: return Colors.pink;
@@ -4835,7 +4812,7 @@ Widget makeChatListTile({
    ChatMetadata chatMetadata,
    int now = 0,
    bool isFwdChatMsgs = false,
-   String avatar = '',
+   String avatarUrl = '',
    double padding = stl.basePadding,
    OnPressedF00 onChatLeadingPressed,
    OnPressedF00 onChatLongPressed,
@@ -4862,7 +4839,8 @@ Widget makeChatListTile({
       subtitle: makeChatTileSubtitle(ctx, chatMetadata),
       leading: makeChatListTileLeading(
          isLongPressed: chatMetadata.isLongPressed,
-         avatarUrl: avatar,
+         avatarUrl: avatarUrl,
+         nick: chatMetadata.nick,
          bgcolor: selectColor(chatMetadata.peer),
          onLeadingPressed: onChatLeadingPressed,
       ),
@@ -4898,11 +4876,23 @@ Widget makeChatsExp({
       if (n > 0)
          ++nUnreadChats;
 
-      final
-      String avatar = isFav ? post.avatar : chatItem[i].avatar;
-
-      final
-      String url = cts.gravatarUrl + avatar + '.jpg';
+      String avatarUrl;
+      if (isFav) {
+	 if (post.images.isEmpty) {
+	    // Shouldn't happen in production as all posts will be
+	    // required to have an image. In the tests we have to
+	    // handle it.
+	    avatarUrl = '';
+	 } else {
+	    // There is only one chat in the ListTile in the fav
+	    // screen. To avoid using the same image as the post
+	    // avatar we use here the last post image.
+	    avatarUrl = post.images.last;
+	    //avatarUrl = '';
+	 }
+      } else {
+	 avatarUrl = '';
+      }
 
       list[i] = Padding(
          padding: const EdgeInsets.all(stl.basePadding),
@@ -4911,7 +4901,7 @@ Widget makeChatsExp({
 	    chatMetadata: chatItem[i],
 	    now: now,
 	    isFwdChatMsgs: isFwdChatMsgs,
-	    avatar: url,
+	    avatarUrl: avatarUrl,
 	    padding: 0,
 	    onChatLeadingPressed: (){onLeadingPressed(post.id, i);},
 	    onChatLongPressed: () { onLongPressed(i); },
@@ -4936,7 +4926,8 @@ Widget makeChatsExp({
       );
    }
 
-   bool expState = (chatItem.length < 6 && chatItem.length > 0) || nUnreadChats != 0;
+   bool expState =
+      (chatItem.length < 6 && chatItem.length > 0) || nUnreadChats != 0;
 
    // I have observed that if the post has no chats and a chat
    // arrives, the chat expansion will continue collapsed independent

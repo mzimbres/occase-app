@@ -427,9 +427,6 @@ class Post {
    // The post priority. Paid posts get higher priority.
    int priority = 0;
 
-   // The number of times this post appeared on searches.
-   int onSearch = 0;
-
    // The number of detailed visualizations this post had.
    int visualizations = 0;
 
@@ -539,7 +536,6 @@ class Post {
       ret.rangeValues = List<int>.from(this.rangeValues);
       ret.status = this.status;
       ret.priority = this.priority;
-      ret.onSearch = this.onSearch;
       ret.visualizations = this.visualizations;
       ret.description = this.description;
       ret.email = this.email;
@@ -623,7 +619,6 @@ class Post {
 	 rangeValues = decodeList(rangeDivsLength, 0, map['range_values']);
 	 status = map['status'] ?? -1;
 	 priority = map['priority'] ?? 0;
-	 onSearch = map['on_search'] ?? 0;
 	 visualizations = map['visualizations'] ?? 0;
 	 description = map['description'] ?? '';
 	 email = map['email'] ?? '';
@@ -671,7 +666,6 @@ class Post {
       , 'images': images
       , 'chats': chats
       , 'priority': priority
-      , 'on_search': onSearch
       , 'visualizations': visualizations
       };
    }
