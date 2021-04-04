@@ -4518,13 +4518,13 @@ Widget makeSearchResultPosts({
 
    // No controller should be assigned to this listview. This will break the
    // automatic hiding of the tabbar
-   return ListView.separated(
+   return ListView.builder(
       //key: PageStorageKey<String>('aaaaaaa'),
       itemCount: posts.length,
-      separatorBuilder: (BuildContext context, int index)
-      {
-	 return Divider(color: Colors.black, height: stl.basePadding);
-      },
+      //separatorBuilder: (BuildContext context, int index)
+      //{
+      //   return Divider(color: Colors.black, height: stl.basePadding);
+      //},
       itemBuilder: (BuildContext ctx, int i)
       {
 	 return PostWidget(
@@ -5405,6 +5405,52 @@ class OccaseState extends State<Occase>
       _inDetailsRoot = node.children[3];
    }
 
+   void _onFcmToken(final String token)
+   {
+      if (token != null)
+	 _fcmToken = token; 
+
+      debugPrint('FB token: $_fcmToken');
+
+      if (_appState.cfg.user.isEmpty) {
+	 // This condition will hold only once.
+	 http.post(Uri.parse(cts.dbGetIdUrl)).then(_setCred);
+      } else {
+	 // Stablishes the web socket connection regardless of whether
+	 // a token is available. In the future we may want to delay
+	 // the connection until the user clicks on the chat. This is
+	 // important to avoid battery and bandwidth consumption.
+         _stablishNewConnection(_fcmToken);
+      }
+
+   }
+
+   Future<void> _setCred(final http.Response resp) async
+   {
+      if (resp.statusCode == 200) {
+	 assert(resp.body != null);
+	 Map<String, dynamic> map = jsonDecode(resp.body);
+
+	 final String result = map["result"] ?? 'fail';
+	 if (result == 'ok') {
+	    await _appState.setCredentials(
+	       map["user"] ?? '',
+	       map["key"] ?? '',
+	       map["user_id"] ?? '',
+	    );
+
+	    _stablishNewConnection(_fcmToken);
+
+	 } else {
+	    // We have to deal with this error.
+	    debugPrint('_init(): result != ok');
+	 }
+      } else {
+	 // We have to deal with this error.
+	 debugPrint('_init(): /get-user-id:  ${resp.statusCode}');
+      }
+   }
+
    Future<void> _init() async
    {
       final String text = await rootBundle.loadString('data/parameters.txt');
@@ -5416,37 +5462,7 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
 
-      FirebaseMessaging.instance.getToken().then(
-      (final String token) {
-	 _fcmToken = token; 
-	 debugPrint('FB token: $_fcmToken');
-      });
-
-      if (_appState.cfg.user.isEmpty) {
-	 final response = await http.post(Uri.parse(cts.dbGetIdUrl));
-	 if (response.statusCode == 200) {
-	    assert(response.body != null);
-	    Map<String, dynamic> map = jsonDecode(response.body);
-
-	    final String result = map["result"] ?? 'fail';
-	    if (result == 'ok') {
-	       await _appState.setCredentials(
-		  map["user"] ?? '',
-		  map["key"] ?? '',
-		  map["user_id"] ?? '',
-	       );
-	    } else {
-	       // We have to deal with this error.
-	       debugPrint('_init(): result != ok');
-	    }
-	 } else {
-	    // We have to deal with this error.
-	    debugPrint('_init(): /get-user-id:  ${response.statusCode}');
-	 }
-      }
-
-      if (_appState.cfg.user.isNotEmpty && (_fcmToken != null) && _fcmToken.isNotEmpty)
-         _stablishNewConnection(_fcmToken);
+      FirebaseMessaging.instance.getToken().then(_onFcmToken);
 
       // Do not await for the async op to complete to avoid blocking
       // the init and consequently the page loading time.
@@ -6289,6 +6305,10 @@ class OccaseState extends State<Occase>
          );
          return;
       }
+
+      // Remove the two lines to add payment options again.
+      await _requestFilenames();
+      return;
 
       if (_posts[cts.ownIdx].priority == 0) {
 	 await _requestFilenames();
@@ -7277,7 +7297,8 @@ class OccaseState extends State<Occase>
 
    Future<void> _loadMatchingPostsCounter() async
    {
-      final String n = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
+      final String n =
+	 await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
       setState((){_numberOfMatchingPosts = n;});
    }
 
