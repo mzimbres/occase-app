@@ -493,8 +493,8 @@ class Post {
          return rangesMinMax[2 * i];
       });
 
-      location = <int>[3, 1, 0, 0];
-      product = <int>[0, 0, 0];
+      location = <int>[];
+      product = <int>[];
       chats = List<ChatMetadata>();
    }
 

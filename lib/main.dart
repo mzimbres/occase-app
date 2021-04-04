@@ -1197,14 +1197,17 @@ Widget makeChooseTreeNodeDialog({
    final IconData iconData,
    final OnPressedF14 onSetTreeCode,
 }) {
-   String subtitle = root.name(g.param.langIdx);
-   if (defaultCode.isNotEmpty)
+   String subtitle = '';
+   if (defaultCode.isNotEmpty) {
       subtitle = loadNames(
 	 rootNode: root,
 	 code: defaultCode,
 	 languageIndex: g.param.langIdx,
 	 fromDepth: fromDepth,
       ).join(', ');
+   } else {
+      subtitle = root.getChildrenNames(g.param.langIdx, 100);
+   }
 
    return makeNewPostLT(
       title: title,
@@ -1343,7 +1346,7 @@ List<Widget> makeNewPostWdgs({
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: tab,
-	 fromDepth: 1,
+	 fromDepth: 0,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
@@ -1699,7 +1702,7 @@ Widget makeSearchScreenWdg({
       Widget location = makeChooseTreeNodeDialog(
 	 ctx: ctx,
 	 tab: cts.searchIdx,
-	 fromDepth: 1,
+	 fromDepth: 0,
 	 title: g.param.newPostTabNames[0],
 	 defaultCode: post.location,
 	 root: locRootNode,
@@ -4361,7 +4364,7 @@ Column makeCol(List<Widget> list)
 {
    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: list,
    );
@@ -4376,10 +4379,20 @@ Widget makeDefaultWidgetCard({
    final OnPressedF00 onPressed,
 })
 {
-   Widget text = makeDefaultTextWidget(text: description);
-
    const double padding = 15;
    const double sep = 20;
+
+   Widget testmonialW = Padding(
+	 padding: const EdgeInsets.only(bottom: sep),
+	 child: makeDefaultTextWidget(
+	    text: testimonial,
+	    color: stl.testimonialColor,
+	    fontWeight: FontWeight.w500,
+	    fontStyle: FontStyle.italic,
+      ),
+   );
+
+   Widget descriptionW = makeDefaultTextWidget(text: description);
 
    Widget button = ButtonTheme(
       child: RaisedButton(
@@ -4393,34 +4406,17 @@ Widget makeDefaultWidgetCard({
       ),
    );
 
-   Widget foo = Padding(
-	 padding: const EdgeInsets.only(bottom: sep),
-	 child: makeDefaultTextWidget(
-	    text: testimonial,
-	    color: stl.testimonialColor,
-	    fontWeight: FontWeight.w500,
-	    fontStyle: FontStyle.italic,
-      ),
-   );
+   Widget a = makeCol(<Widget>[testmonialW, descriptionW]);
 
-   List<Widget> list = <Widget>[];
-   double minHeight = 0;
-   //if (isWide) {
-      list.add(foo);
-      //minHeight = 250;
-   //}
-
-   list.add(text);
-
-   list.add(Padding(
-	padding: EdgeInsets.only(top: sep),
-	child: button,
-      ),
+   Widget b = Padding(
+      padding: EdgeInsets.only(top: sep),
+      child: button,
    );
 
    Widget card = ConstrainedBox(
       constraints: BoxConstraints(
-	 minHeight: minHeight,
+	 //minHeight: 0,
+	 maxWidth: 350,
       ),
       child: Card(
 	 color: stl.cs.primary,
@@ -4428,7 +4424,12 @@ Widget makeDefaultWidgetCard({
 	 elevation: 0,
 	 child: Padding(
 	    padding: EdgeInsets.all(padding),
-	    child: makeCol(list),
+	    child: Column(
+	       mainAxisAlignment: MainAxisAlignment.center,
+	       crossAxisAlignment: CrossAxisAlignment.center,
+	       mainAxisSize: MainAxisSize.min,
+	       children: <Widget>[a, b],
+	    ),
 	 ),
       ),
    );
@@ -5415,8 +5416,11 @@ class OccaseState extends State<Occase>
       prepareNewPost(cts.ownIdx);
       prepareNewPost(cts.searchIdx);
 
-      _fcmToken = await FirebaseMessaging.instance.getToken();
-      debugPrint('FB token: $_fcmToken');
+      FirebaseMessaging.instance.getToken().then(
+      (final String token) {
+	 _fcmToken = token; 
+	 debugPrint('FB token: $_fcmToken');
+      });
 
       if (_appState.cfg.user.isEmpty) {
 	 final response = await http.post(Uri.parse(cts.dbGetIdUrl));
