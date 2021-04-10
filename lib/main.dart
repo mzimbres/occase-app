@@ -61,6 +61,7 @@ typedef OnPressedF17 = void Function(DateTime);
 double makeMaxWidgetWidth(double screenWidth)
 {
    final double ret = screenWidth / 3 - 20;
+
    if (ret > cts.maxWidgetWidth)
       return cts.maxWidgetWidth;
 
@@ -91,9 +92,10 @@ double makeTabWidth(BuildContext ctx)
 
 double makeWidgetWidth(BuildContext ctx)
 {
-   final double w = MediaQuery.of(ctx).size.width;
+   final double width = MediaQuery.of(ctx).size.width;
+   final double max = makeMaxWidgetWidth(width);
 
-   return  w > makeMaxWidgetWidth(w) ? makeMaxWidgetWidth(w) : w;
+   return width > max ?  max : width;
 }
 
 double makeImgHeight(BuildContext ctx)
@@ -3912,21 +3914,13 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 actions.add(SizedBox(width: width, child: tmp));
       }
 
-      const double margin = 0;
-      const double insetPadding = 0.0;
-
       Widget ret = makeNewPostDialogWdg(
 	 title: null,
-	 contentPadding: const EdgeInsets.all(margin),
+	 contentPadding: const EdgeInsets.all(0),
 	 list: <Widget>[detailsWdg],
 	 actions: actions,
 	 backgroundColor: stl.cs.primary,
-	 insetPadding: const EdgeInsets.only(
-	    left: 0.0,
-	    right: 0.0,
-	    top: insetPadding,
-	    bottom: insetPadding,
-	 ),
+	 insetPadding: const EdgeInsets.all(0),
       );
 
       Widget leaveDetails = IconButton(
@@ -3959,10 +3953,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
           child: Card(
              elevation: 0,
              color: Colors.white.withOpacity(stl.delImgWidgOpacity),
-             margin: EdgeInsets.only(
-                top: margin + insetPadding,
-                right: insetPadding,
-             ),
+             margin: EdgeInsets.all(0),
              child: Column(children: <Widget>[leaveDetails, icon]),
           ),
        ),
@@ -3972,8 +3963,8 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 
 int compStringForPostWdg(String a, String b)
 {
-   final bool c1 = a.length > 4 && a.length < 10;
-   final bool c2 = b.length > 4 && b.length < 10;
+   final bool c1 = a.length > 4 && a.length < 9;
+   final bool c2 = b.length > 4 && b.length < 9;
 
    return ( c1 && !c2) ? -1
 	: (!c1 &&  c2) ? 1 : 0;
@@ -4200,7 +4191,19 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      const int n = 7;
+      final double postTxtWidth = makePostTextWidth(ctx);
+      print('-------> $postTxtWidth');
+
+      int n = 8;
+      if (postTxtWidth < 160)
+	 n = 3;
+      else if (postTxtWidth < 210)
+	 n = 4;
+      else if (postTxtWidth < 230)
+	 n = 6;
+      else if (postTxtWidth < 260)
+	 n = 7;
+
       if (detailsNames.length > n)
 	 detailsNames.removeRange(n, detailsNames.length);
 
@@ -4241,7 +4244,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 ),
       );
 
-      final double postTxtWidth = makePostTextWidth(ctx);
       Column infoWdg = Column(children: <Widget>
       [ SizedBox(width: postTxtWidth, child: modelTitle)
       , Expanded(
@@ -4286,10 +4288,12 @@ Widget makePostDetailsWdg({
 }) {
    List<Widget> rows = <Widget>[];
 
+   final double imgWidth = makeWidgetWidth(ctx);
    Widget listView = makeImgListView(
       ctx: ctx,
-      width: makeTabWidth(ctx),
-      height: makeImgHeight(ctx),
+      width: imgWidth,
+      height: imgWidth,
+      //height: makeImgHeight(ctx),
       post: post,
       boxFit: BoxFit.cover,
       imgFiles: imgFiles,
