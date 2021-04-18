@@ -37,12 +37,12 @@ class AppMsgQueueElem {
 }
 
 class ChatItem {
-   // This field is -1 if the message belongs to this app or the peer id
-   // if it belongs to the peer.
+   // This field is -1 if the message belongs to this app or the peer
+   // id if it belongs to the peer.
    int peerId = -1;
 
-   // If the message is redirected, be it from this app or from the peer, this
-   // field will be set to 1.
+   // If the message is redirected, be it from this app or from the
+   // peer, this field will be set to 1.
    int isRedirected = 0;
 
    // A value different from -1 means this message refers to another
@@ -783,8 +783,8 @@ IdxPair findChat(final List<Post> posts, String peer, String postId)
       return IdxPair(i: -1, j: -1);
 
    final int j = posts[i].chats.indexWhere((e) {return e.peer == peer;});
-   if (i == -1)
-      return IdxPair(i: -1, j: -1);
+   if (j == -1)
+      return IdxPair(i: i, j: -1);
 
    return IdxPair(i: i, j: j);
 }

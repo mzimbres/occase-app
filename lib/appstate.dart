@@ -174,7 +174,7 @@ class AppState {
       }
 
       if (IsInvalidPair(p)) {
-	 log('Chat not found: from = $from, postId = $postId');
+	 print('Chat not found: from = $from, postId = $postId');
 	 return;
       }
 

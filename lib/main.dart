@@ -58,6 +58,34 @@ typedef OnPressedF15 = void Function(ConfigActions);
 typedef OnPressedF16 = void Function(String, int);
 typedef OnPressedF17 = void Function(DateTime);
 
+String makeChatMsg({
+   String to,
+   String body,
+   String postId,
+   String nick = '',
+   String type = 'chat',
+   String avatar = '',
+   int id,
+   int isRedirected = 0,
+   int refersTo = -1,
+})
+{
+   var msgMap =
+   { 'cmd': 'message'
+   , 'type': type
+   , 'is_redirected': isRedirected
+   , 'to': to
+   , 'body': body
+   , 'refers_to': refersTo
+   , 'post_id': postId
+   , 'nick': nick
+   , 'id': id
+   , 'avatar': avatar
+   };
+
+   return jsonEncode(msgMap);
+}
+
 double makeMaxWidgetWidth(double screenWidth)
 {
    final double ret = screenWidth / 3 - 20;
@@ -4192,7 +4220,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.sort(compStringForPostWdg);
 
       final double postTxtWidth = makePostTextWidth(ctx);
-      print('-------> $postTxtWidth');
 
       int n = 8;
       if (postTxtWidth < 160)
@@ -6143,6 +6170,15 @@ class OccaseState extends State<Occase>
 	    isFav: false,
 	 );
 
+         final String payload = makeChatMsg(
+	    to: adminId,
+	    body: 'New post',
+	    postId: postId,
+	    id: -1,
+	 );
+
+         await _sendAppMsg(payload, 1);
+
 	 errorCode = 1;
       }
 
@@ -6467,6 +6503,7 @@ class OccaseState extends State<Occase>
 
    Future<void> _sendAppMsg(String payload, int isChat) async
    {
+      print(payload);
       final String msg =
 	 await _appState.addAppMsgToQueueAndGetNext(payload, isChat);
       if (msg.isNotEmpty)
@@ -6520,20 +6557,17 @@ class OccaseState extends State<Occase>
 	    isFav: tab == cts.favIdx,
 	 );
 
-         var msgMap =
-         { 'cmd': 'message'
-         , 'type': 'chat'
-         , 'is_redirected': chatItem.isRedirected
-         , 'to': to
-         , 'body': chatItem.body
-         , 'refers_to': chatItem.refersTo
-         , 'post_id': postId
-         , 'nick': _appState.cfg.nick
-         , 'id': id
-         , 'avatar': emailToGravatarHash(_appState.cfg.email)
-         };
+         final String payload = makeChatMsg(
+	    isRedirected: chatItem.isRedirected,
+	    to: to,
+	    body: chatItem.body,
+	    refersTo: chatItem.refersTo,
+	    postId: postId,
+	    nick: _appState.cfg.nick,
+	    id: id,
+	    avatar: emailToGravatarHash(_appState.cfg.email),
+	 );
 
-         final String payload = jsonEncode(msgMap);
          await _sendAppMsg(payload, 1);
 
       } catch(e) {
@@ -6617,6 +6651,7 @@ class OccaseState extends State<Occase>
    }) async {
       final int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
+	 // FIXME
          debugPrint('Ignoring message to postId $postId.');
          return;
       }
