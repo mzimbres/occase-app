@@ -6135,7 +6135,7 @@ class OccaseState extends State<Occase>
       , 'post': _appState.outPost
       };
 
-      print(map);
+      //print(map);
       var resp = await http.post(Uri.parse(cts.dbPublishUrl),
 	 body: jsonEncode(map),
       );
@@ -7304,7 +7304,11 @@ class OccaseState extends State<Occase>
    Future<String> _searchPosts(String url, Post post) async
    {
       try {
-	 var response = await http.post(Uri.parse(url), body: jsonEncode(post.toJson()));
+	 var response = await http.post(
+	    Uri.parse(url),
+	    body: jsonEncode({'post': post}),
+	 );
+
 	 if (response.statusCode == 200)
 	    return response.body;
 	 return '';
