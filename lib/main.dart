@@ -5825,9 +5825,10 @@ class OccaseState extends State<Occase>
    {
       final int h = await _appState.movePostToFav(i);
 
-      // We should be using the animate function below, but there is no way
-      // one can wait until the animation is ready. The is needed to be able to call
-      // _onChatPressed(i, 0) correctly. I will let it commented out for now.
+      // We should be using the animate function below, but there is
+      // no way one can wait until the animation is ready. The is
+      // needed to be able to call _onChatPressed(i, 0) correctly. I
+      // will let it commented out for now.
 
       // Use _tabCtrlChangeHandler() as listener
       //_tabCtrl.animateTo(2, duration: Duration(seconds: 2));
@@ -6424,7 +6425,9 @@ class OccaseState extends State<Occase>
       setState(() {
          SchedulerBinding.instance.addPostFrameCallback((_)
          {
-            _chatScrollCtrl[tab].jumpTo(_chatScrollCtrl[tab].position.maxScrollExtent);
+            _chatScrollCtrl[tab]
+		  .jumpTo(_chatScrollCtrl[tab]
+			.position.maxScrollExtent);
          });
       });
    }
@@ -6649,11 +6652,36 @@ class OccaseState extends State<Occase>
       String avatar,
       List<Post> posts,
    }) async {
-      final int i = posts.indexWhere((e) { return e.id == postId;});
+      int i = posts.indexWhere((e) { return e.id == postId;});
       if (i == -1) {
-	 // FIXME
-         debugPrint('Ignoring message to postId $postId.');
-         return;
+	 // We are receiving a message to a post we don't have. This
+	 // can happen in the following situations
+	 // 
+	 //   1. this is an admin app, in which case the posts
+	 //      parameter must be the fav posts.
+	 //
+	 //   2. a user deleter a post and receives a message for it.
+	 //
+	 // We want to deal only with 1. and will use that are
+	 // available.
+
+	 if (!isFav) {
+	    debugPrint('Ignoring message to postId $postId.');
+	    return;
+	 }
+
+	 // Later we may want to send a request to retrieve this post
+	 // from the server. For now lets create an empty post with
+	 // the right id.
+	 Post post = Post(
+	    id: postId,
+	    from: peer,
+	    rangesMinMax: g.param.rangesMinMax,
+	 );
+
+	 final int l = _appState.posts.length;
+	 _appState.posts.add(post);
+	 i = await _appState.movePostToFav(l);
       }
 
       final int j = posts[i].getChatHistIdxOrCreate(peer, nick, avatar);
@@ -6888,7 +6916,7 @@ class OccaseState extends State<Occase>
 	       debugPrint('Unhandled message received from the server:\n$payload.');
 	    }
 	 } catch (e) {
-	    print('Exception on _onWSDataImpl');
+	    print('Exception on _onWSDataImpl $e');
 	 }
       }
    }
@@ -7072,7 +7100,9 @@ class OccaseState extends State<Occase>
    {
       await _initTrees();
 
-      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
+      _tabCtrl.animateTo(
+	 cts.searchIdx,
+	 duration: Duration(milliseconds: 700));
 
       setState(() {
 	 prepareNewPost(cts.searchIdx);
@@ -7084,7 +7114,9 @@ class OccaseState extends State<Occase>
    {
       await _initTrees();
 
-      _tabCtrl.animateTo(cts.searchIdx, duration: Duration(milliseconds: 700));
+      _tabCtrl.animateTo(
+	 cts.searchIdx,
+	 duration: Duration(milliseconds: 700));
 
       if (isWide)
 	 _newSearchPressed = true;
