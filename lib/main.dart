@@ -1013,7 +1013,10 @@ List<Widget> makeNewPostFinalScreen({
    );
 
    ret.add(postBox);
-   ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[5]));
+
+   // 24.04.2021: I will remove payment until there is a clear plan.
+   // See PAYMENT below also.
+   //ret.add(makeNewPostSetionTitle(title: g.param.newPostSectionNames[5]));
 
    Widget cancelButton = createRaisedButton(
       onPressed: () {onRemovePost(ctx);},
@@ -1029,17 +1032,18 @@ List<Widget> makeNewPostFinalScreen({
       textColor: stl.cs.onSecondary,
    );
 
-   Widget payment = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: makePaymentPlanOptions(
-	 post: post,
-	 onFreePaymentPressed: onFreePaymentPressed,
-	 onStandardPaymentPressed: onStandardPaymentPressed,
-	 onPremiumPaymentPressed: onPremiumPaymentPressed,
-      ),
-   );
+   // PAYMENT.
+   //Widget payment = Column(
+   //   mainAxisSize: MainAxisSize.min,
+   //   children: makePaymentPlanOptions(
+   //      post: post,
+   //      onFreePaymentPressed: onFreePaymentPressed,
+   //      onStandardPaymentPressed: onStandardPaymentPressed,
+   //      onPremiumPaymentPressed: onPremiumPaymentPressed,
+   //   ),
+   //);
 
-   ret.add(payment);
+   //ret.add(payment);
 
    Widget buttonsRow = Padding(
       padding: EdgeInsets.only(
