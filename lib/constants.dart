@@ -52,7 +52,6 @@ const String dbCountPostsUrl =    dbHttpUrl + '/posts/count';
 const String dbSearchPostsUrl =   dbHttpUrl + '/posts/search';
 const String dbUploadCreditUrl =  dbHttpUrl + '/posts/upload-credit';
 const String dbDeletePostUrl =    dbHttpUrl + '/posts/delete';
-const String dbPostUrl =          dbHttpUrl + '/posts/publish';
 const String dbVisualizationUrl = dbHttpUrl + '/posts/visualization';
 const String dbPublishUrl =       dbHttpUrl + '/posts/publish';
 const String dbGetIdUrl =         dbHttpUrl + '/get-user-id';

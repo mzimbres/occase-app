@@ -6199,7 +6199,10 @@ class OccaseState extends State<Occase>
       , 'admin_delete_key': _deletePostPwd
       };
 
-      var resp = await http.post(Uri.parse(cts.dbDeletePostUrl), body: jsonEncode(map));
+      var resp = await http.post(Uri.parse(cts.dbDeletePostUrl),
+	 body: jsonEncode(map),
+      );
+
       if (resp.statusCode != 200)
 	 debugPrint('Error on _onRemovePost:  ${resp.statusCode}');
    }
@@ -6309,7 +6312,7 @@ class OccaseState extends State<Occase>
 
       } catch (e) {
          //print(e);
-         print('Error: _requestFilenames');
+         print('Error: _requestFilenames $e');
       }
 
       setState(() {
@@ -6582,7 +6585,7 @@ class OccaseState extends State<Occase>
       }
    }
 
-   Future<void> _onPostVisualization(String postId) async
+   void _onPostVisualization(String postId)
    {
       try {
 	 var map =
@@ -6590,13 +6593,12 @@ class OccaseState extends State<Occase>
 	 , 'post_id': postId
 	 };
 
-	 var response = await http.post(Uri.parse(cts.dbVisualizationUrl),
+	 http.post(Uri.parse(cts.dbVisualizationUrl),
 	    body: jsonEncode(map),
-	 );
-
-	 if (response.statusCode != 200)
-	    print('Error: Unable to post visualization.');
-
+	 ).then((var response){
+	    if (response.statusCode != 200)
+	       print('Error: Unable to post visualization.');
+	 });
       } catch (e) {
 	 print(e);
       }
@@ -7359,48 +7361,44 @@ class OccaseState extends State<Occase>
    {
       try {
 	 final String body = await _searchPosts(cts.dbSearchPostsUrl, post);
-	 print(body);
 	 if (body.isEmpty) {
-	    return 0; // Perhaps show a dialog with an error message?
-	    print('Error');
+	    print('Error: _searchImpl.');
+	    return 0;
 	 }
 
 	 await _appState.clearPosts();
 	 return _onPosts(jsonDecode(body));
       } catch (e) {
-	 print('Error');
+	 print('Error $e');
       }
 
       return 0;
    }
 
-   Future<void> _loadMatchingPostsCounter() async
+   void _loadMatchingPostsCounter()
    {
-      final String n =
-	 await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
-      setState((){_numberOfMatchingPosts = n;});
+      _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx])
+      .then((String n){
+	 setState((){_numberOfMatchingPosts = n;});
+      });
    }
 
-   Future<void> _onSetSearchLocationCode(List<int> code) async
+   void _onSetSearchLocationCode(List<int> code)
    {
       if (code.isEmpty)
 	 return;
 
       _posts[cts.searchIdx].location = code;
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
-
-      setState(() { });
+      _loadMatchingPostsCounter();
    }
 
-   Future<void> _onSetSearchProductCode(List<int> code) async
+   void _onSetSearchProductCode(List<int> code)
    {
       if (code.isEmpty)
 	 return;
 
       _posts[cts.searchIdx].product = code;
-      _numberOfMatchingPosts = await _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx]);
-
-      setState(() {});
+      _loadMatchingPostsCounter();
    }
 
    void _onSetExDetail(int detailIdx, int index)
