@@ -17,10 +17,11 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as imglib;
 //import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
-import 'package:photo_view/photo_view_gallery.dart';
+//import 'package:photo_view/photo_view_gallery.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -622,17 +623,6 @@ Widget makeNetImgBox({
       return makeImgPlaceholder(width, height, w);
    }
 
-   //return Image.network(url,
-   //   width: width,
-   //   height: height,
-   //   fit: boxFit,
-   //   loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress)
-   //   {
-   //     if (loadingProgress == null)
-   //        return child;
-   //     return Center(child: CircularProgressIndicator());
-   //   },
-   //);
    return Container(
       width: width,
       height: height,
@@ -736,20 +726,20 @@ Widget makeImgListView({
    final double height,
    Post post,
    BoxFit boxFit,
-   List<PickedFile> imgFiles = null,
+   List<List<int>> images = null,
    OnPressedF01 onExpandImg,
    OnPressedF01 onDelImg,
 }) {
    final int l1 = post.images.length;
 
-   if (l1 == 0 && imgFiles == null)
+   if (l1 == 0 && images == null)
       return makeImgPlaceholder(
 	 width,
 	 height,
 	 SizedBox.shrink(),
       );
 
-   final int l = l1 == 0 ? imgFiles.length : l1;
+   final int l = l1 == 0 ? images.length : l1;
 
    ListView lv = ListView.builder(
       scrollDirection: Axis.horizontal,
@@ -769,12 +759,12 @@ Widget makeImgListView({
 	    );
 	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
-	 } else if (imgFiles != null && imgFiles.isNotEmpty) {
-	    Widget tmp = getImage(
-	       path: imgFiles[i].path,
+	 } else if (images != null && images.isNotEmpty) {
+	    Widget tmp = Image.memory(
+	       images[i],
 	       width: width,
 	       height: height,
-	       fit: BoxFit.cover,
+	       fit: boxFit,
 	       filterQuality: FilterQuality.high,
 	    );
 
@@ -976,7 +966,7 @@ List<Widget> makeNewPostFinalScreen({
    final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<PickedFile> imgFiles,
+   final List<List<int>> images,
    final OnPressedF00 onAddImg,
    final OnPressedF01 onDelImg,
    final OnPressedF00 onPublishPost,
@@ -1000,7 +990,7 @@ List<Widget> makeNewPostFinalScreen({
       inDetailsRootNode: inDetailsRootNode,
       locRootNode: locRootNode,
       prodRootNode: prodRootNode,
-      imgFiles: imgFiles,
+      images: images,
       onAddImg: onAddImg,
       onDelImg: onDelImg,
       onExpandImg: (int j){ debugPrint('Noop00'); },
@@ -1545,7 +1535,7 @@ Widget makeNewPostScreenWdgs({
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
    final Post post,
-   final List<PickedFile> imgFiles,
+   final List<List<int>> images,
    final OnPressedF12 onSetTreeCode,
    final OnPressedF03 onSetExDetail,
    final OnPressedF03 onSetInDetail,
@@ -1595,7 +1585,7 @@ Widget makeNewPostScreenWdgs({
 	 prodRootNode: prodRootNode,
 	 exDetailsRootNode: exDetailsRootNode,
 	 inDetailsRootNode: inDetailsRootNode,
-	 imgFiles: imgFiles,
+	 images: images,
 	 onAddImg: onAddImg,
 	 onDelImg: onDelImg,
 	 onPublishPost: null,
@@ -1666,7 +1656,7 @@ Widget makeNewPostScreenWdgs({
 	    prodRootNode: prodRootNode,
 	    exDetailsRootNode: exDetailsRootNode,
 	    inDetailsRootNode: inDetailsRootNode,
-	    imgFiles: imgFiles,
+	    images: images,
 	    onAddImg: onAddImg,
 	    onDelImg: onDelImg,
 	    onPublishPost: () {onPublishPost(ctx);},
@@ -3833,7 +3823,7 @@ class PostDetailsWidget extends StatefulWidget {
    Node prodRootNode;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
-   List<PickedFile> imgFiles;
+   List<List<int>> images;
    OnPressedF00 onAddImg;
    OnPressedF01 onDelImg;
    OnPressedF01 onExpandImg;
@@ -3852,7 +3842,7 @@ class PostDetailsWidget extends StatefulWidget {
    , @required this.prodRootNode
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
-   , this.imgFiles = null
+   , this.images = null
    , @required this.onAddImg
    , @required this.onDelImg
    , @required this.onExpandImg
@@ -3895,7 +3885,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
 	 prodRootNode: widget.prodRootNode,
 	 exDetailsRootNode: widget.exDetailsRootNode,
 	 inDetailsRootNode: widget.inDetailsRootNode,
-	 imgFiles: widget.imgFiles,
+	 images: widget.images,
 	 onDelImg: _onDelImg,
 	 onExpandImg: widget.onExpandImg,
 	 onReportPost: () 
@@ -3961,7 +3951,7 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       );
 
       IconButton icon;
-      if (widget.imgFiles != null)
+      if (widget.images != null)
 	 icon = IconButton(
 	    onPressed: _onAddImg,
 	    icon: Icon(Icons.add_a_photo, color: stl.cs.primary),
@@ -4009,7 +3999,7 @@ class PostWidget extends StatefulWidget {
    Node prodRootNode;
    Node exDetailsRootNode;
    Node inDetailsRootNode;
-   List<PickedFile> imgFiles;
+   List<List<int>> images;
    OnPressedF00 onAddImg;
    OnPressedF01 onDelImg;
    OnPressedF01 onExpandImg;
@@ -4030,7 +4020,7 @@ class PostWidget extends StatefulWidget {
    , @required this.prodRootNode
    , @required this.exDetailsRootNode
    , @required this.inDetailsRootNode
-   , this.imgFiles = null
+   , this.images = null
    , @required this.onAddImg
    , @required this.onDelImg
    , @required this.onExpandImg
@@ -4072,7 +4062,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	       prodRootNode: widget.prodRootNode,
 	       exDetailsRootNode: widget.exDetailsRootNode,
 	       inDetailsRootNode: widget.inDetailsRootNode,
-	       imgFiles: widget.imgFiles,
+	       images: widget.images,
 	       onAddImg: widget.onAddImg,
 	       onDelImg: widget.onDelImg,
 	       onExpandImg: widget.onExpandImg,
@@ -4155,14 +4145,15 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	      )
 	    ],
 	 );
-      } else if (widget.imgFiles != null && widget.imgFiles.isNotEmpty) {
-	 imgWdg = getImage(
-	    path: widget.imgFiles.last.path,
+      } else if (widget.images != null && widget.images.isNotEmpty) {
+	 imgWdg = Image.memory(
+	    widget.images.last,
 	    width: postAvatarWidth,
 	    height: postAvatarWidth,
 	    fit: BoxFit.cover,
 	    filterQuality: FilterQuality.high,
 	 );
+	 assert(imgWdg != null);
       } else {
 	 Widget w = SizedBox.shrink();
 	 imgWdg = makeImgPlaceholder(
@@ -4177,21 +4168,24 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       // The add a photo button should appear only when this function is
       // called on the new posts tab. We determine that in the
       // following way.
-      if (widget.imgFiles != null) {
+      if (widget.images != null) {
 	 Widget addImgWidget = makeAddOrRemoveWidget(
 	    onPressed: widget.onAddImg,
 	    icon: Icons.add_a_photo,
 	    color: stl.cs.primary,
 	 );
 
+	 assert(addImgWidget != null);
+	 assert(imgWdg != null);
+
 	 Stack st = Stack(
 	    alignment: Alignment(0, 0),
 	    children: <Widget>
 	    [ imgWdg
 	    , Card(child: addImgWidget,
-		    elevation: 0,
-		    color: Colors.white.withOpacity(0.7),
-		    margin: EdgeInsets.all(0),
+		 elevation: 0,
+		 color: Colors.white.withOpacity(0.7),
+		 margin: EdgeInsets.all(0),
 	      ),
 	    ],
 	 );
@@ -4312,7 +4306,7 @@ Widget makePostDetailsWdg({
    final Node prodRootNode,
    final Node exDetailsRootNode,
    final Node inDetailsRootNode,
-   final List<PickedFile> imgFiles,
+   final List<List<int>> images,
    final OnPressedF01 onDelImg,
    final OnPressedF01 onExpandImg,
    final OnPressedF00 onReportPost,
@@ -4327,7 +4321,7 @@ Widget makePostDetailsWdg({
       //height: makeImgHeight(ctx),
       post: post,
       boxFit: BoxFit.cover,
-      imgFiles: imgFiles,
+      images: images,
       onExpandImg: (int j){ onExpandImg(j); },
       onDelImg: onDelImg,
    );
@@ -5086,7 +5080,7 @@ Widget makeChatTab({
 	    prodRootNode: prodRootNode,
 	    exDetailsRootNode: exDetailsRootNode,
 	    inDetailsRootNode: inDetailsRootNode,
-	    imgFiles: null,
+	    images: null,
 	    onAddImg: () {debugPrint('Noop10');},
 	    onDelImg: (int i) {debugPrint('Noop10');},
 	    onExpandImg: onExpandImg2,
@@ -5318,7 +5312,7 @@ class OccaseState extends State<Occase>
 
    // Used in the final new post screen to store the files while the
    // user chooses the images.
-   List<PickedFile> _imgFiles = List<PickedFile>();
+   List<List<int>> _images = List<List<int>>();
 
    // These indexes will be set to values different from -1 when the
    // user clics on an image to expand it.
@@ -5720,7 +5714,16 @@ class OccaseState extends State<Occase>
 	 if (img == null)
 	    return;
 
-	 setState((){_imgFiles.add(img); });
+	 imglib.Image rawImg = imglib.decodeImage(await img.readAsBytes());
+	 assert(rawImg != null);
+
+	 imglib.Image thumbnail = imglib.copyResize(
+	    rawImg,
+	    width: cts.minWidgetWidth.round(),
+	 );
+	 assert(thumbnail != null);
+
+	 setState((){_images.add(imglib.encodeJpg(thumbnail)); });
       } catch (e) {
          debugPrint(e);
       }
@@ -5728,7 +5731,7 @@ class OccaseState extends State<Occase>
 
    void _onDelImg(int i)
    {
-      setState((){_imgFiles.removeAt(i); });
+      setState((){_images.removeAt(i); });
    }
 
    // i = index in _appState.posts, _appState.favPosts, _own_posts.
@@ -6233,37 +6236,29 @@ class OccaseState extends State<Occase>
       // TODO: Add timeouts.
 
       final int l1 = fnames.length;
-      final int l2 = _imgFiles.length;
+      final int l2 = _images.length;
 
       final int l = l1 < l2 ? l1 : l2; // min
 
       for (int i = 0; i < l; ++i) {
-         final String path = _imgFiles[i].path;
-         final String basename = p.basename(path);
-         final String extension = p.extension(basename);
-         //String newname = fnames[i] + '.' + extension;
-         final String newname = fnames[i] + '.jpg';
-
-         debugPrint('=====> Path $path');
-         debugPrint('=====> Image name $basename');
-         debugPrint('=====> Image extention $extension');
-         debugPrint('=====> New name $newname');
+	 // TODO: How to get the image extension.
+         final String newname = fnames[i] + '.jpeg';
          debugPrint('=====> Http target $newname');
 
          var response = await http.post(Uri.parse(newname),
-            body: await _imgFiles[i].readAsBytes(),
+            body: _images[i],
          );
 
          final int stCode = response.statusCode;
          if (stCode != 200) {
-            _imgFiles = List<PickedFile>();
+            _images = List<List<int>>();
             return 0;
          }
 
          _posts[cts.ownIdx].images.add(newname);
       }
 
-      _imgFiles = List<PickedFile>();
+      _images = List<List<int>>();
       return -1;
    }
 
@@ -6344,7 +6339,7 @@ class OccaseState extends State<Occase>
          return;
       }
 
-      if (_imgFiles.length < cts.minImgsPerPost) {
+      if (_images.length < cts.minImgsPerPost) {
          _showSimpleDialog(
             ctx: ctx,
             onOk: (){ },
@@ -7452,7 +7447,7 @@ class OccaseState extends State<Occase>
 	 onSetTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
 	 onSetInDetail: _onSetInDetail,
-	 imgFiles: _imgFiles,
+	 images: _images,
 	 onAddImg: _onAddImg,
 	 onDelImg: _onDelImg,
 	 onPublishPost: (var a) { _onSendNewPost(a, 1); },
