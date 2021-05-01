@@ -31,7 +31,7 @@
   <link rel="manifest" href="/manifest.json">
 
   <link rel="preload" as="script" href="main.dart.js">
-  <link rel="preload" as="fetch" href="assets/data/parameters.txt=v1" crossorigin>
+  <link rel="preload" as="fetch" href="assets/data/parameters.txt" crossorigin>
   <link rel="preload" as="font" href="assets/fonts/MaterialIcons-Regular.otf" crossorigin="anonymous">
 </head>
 
@@ -62,7 +62,7 @@
       }
       scriptLoaded = true;
       var scriptTag = document.createElement('script');
-      scriptTag.src = 'main.dart.js?v=2';
+      scriptTag.src = 'main.dart.js?v=3';
       scriptTag.type = 'application/javascript';
       document.body.append(scriptTag);
     }
