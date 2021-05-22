@@ -628,7 +628,7 @@ Widget makeNetImgBox({
       height: height,
       decoration: BoxDecoration(
 	 image: DecorationImage(
-	    fit: BoxFit.fitWidth,
+	    fit: BoxFit.cover,
 	    alignment: FractionalOffset.center,
 	    image: NetworkImage(url),
 	 ),
