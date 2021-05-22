@@ -65,9 +65,9 @@ const ColorScheme cs = const ColorScheme.light(
 );
 
 final TextStyle postModelSty = TextStyle(
-   fontSize: bigFontSize,
-   color: secondaryDarkColor,
-   fontWeight: FontWeight.w700,
+   fontSize: largerFontSize,
+   color: Colors.black,
+   fontWeight: FontWeight.w500,
 );
 
 final TextStyle postLocationSty = TextStyle(

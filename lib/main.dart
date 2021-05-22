@@ -146,7 +146,7 @@ double makePostAvatarWidth(BuildContext ctx)
    return w / (1 + cts.goldenRatio);
 }
 
-double makePostTextWidth(BuildContext ctx)
+double makePostInfoWidth(BuildContext ctx)
 {
    final double w = makeWidgetWidth(ctx);
    final double A = makePostAvatarWidth(ctx);
@@ -628,7 +628,7 @@ Widget makeNetImgBox({
       height: height,
       decoration: BoxDecoration(
 	 image: DecorationImage(
-	    fit: BoxFit.fitHeight,
+	    fit: BoxFit.fitWidth,
 	    alignment: FractionalOffset.center,
 	    image: NetworkImage(url),
 	 ),
@@ -4082,42 +4082,27 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       );
    }
 
-   @override
-   Widget build(BuildContext ctx)
+   Widget makeImgWdg(double postImgWidth, double postImgHeight)
    {
-      final int visualizations = widget.post.visualizations;
-      final String name = g.param.statsTitleAndFields[2];
-      final String date = makeDateString3(widget.post.date);
-
-      Widget statsWdgs = makeTextWdg(
-	 text: '$name: ${visualizations} • ${date}',
-	 edgeInsets: const EdgeInsets.all(stl.basePadding),
-	 textColor: stl.neutralColor,
-	 fontSize: stl.smallFontSize,
-	 fontWeight: FontWeight.normal,
-      );
-
-      final double postAvatarWidth = makePostAvatarWidth(ctx);
-
       Widget imgWdg;
       if (widget.post.images.isNotEmpty) {
 	 Widget img = makeNetImgBox(
-	    width: postAvatarWidth,
-	    height: postAvatarWidth,
+	    width: postImgWidth,
+	    height: postImgHeight,
 	    url: widget.post.images.first,
 	 );
 
 	 Widget kmText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 2),
 	    fontWeight: FontWeight.w700,
-	    textColor: stl.secondaryDarkColor,
+	    textColor: Colors.black,
 	    fontSize: stl.smallFontSize,
 	 );
 
 	 Widget priceText = makeTextWdg(
 	    text: makeRangeStr(widget.post, 0),
 	    fontWeight: FontWeight.w700,
-	    textColor: stl.secondaryDarkColor,
+	    textColor: Colors.black,
 	    fontSize: stl.smallFontSize,
 	 );
 
@@ -4126,8 +4111,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    children: <Widget>
 	    [ img
 	    , Positioned(
-		 left: 0,
-		 bottom: 0,
+		 right: 0,
+		 top: 0,
 		 child: Card(child: kmText,
 		    elevation: 0,
 		    color: stl.cs.surface,
@@ -4148,8 +4133,8 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       } else if (widget.images != null && widget.images.isNotEmpty) {
 	 imgWdg = Image.memory(
 	    widget.images.last,
-	    width: postAvatarWidth,
-	    height: postAvatarWidth,
+	    width: postImgWidth,
+	    height: postImgHeight,
 	    fit: BoxFit.cover,
 	    filterQuality: FilterQuality.high,
 	 );
@@ -4157,13 +4142,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       } else {
 	 Widget w = SizedBox.shrink();
 	 imgWdg = makeImgPlaceholder(
-	    postAvatarWidth,
-	    postAvatarWidth,
+	    postImgWidth,
+	    postImgHeight,
 	    w,
 	 );
       }
-
-      List<Widget> row1List = List<Widget>();
 
       // The add a photo button should appear only when this function is
       // called on the new posts tab. We determine that in the
@@ -4190,11 +4173,14 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	    ],
 	 );
 
-	 row1List.add(st);
+	 return st;
       } else {
-	 row1List.add(imgWdg);
+	 return imgWdg;
       }
+   }
 
+   Widget makeInfoWdg(double postInfoWidth)
+   {
       final String locationStr =
          makeTreeItemStr(widget.locRootNode, widget.post.location);
       final String modelStr =
@@ -4217,17 +4203,17 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      final double postTxtWidth = makePostTextWidth(ctx);
-
-      int n = 8;
-      if (postTxtWidth < 160)
+      int n = 15;
+      if (postInfoWidth < 160)
 	 n = 3;
-      else if (postTxtWidth < 210)
+      else if (postInfoWidth < 210)
 	 n = 4;
-      else if (postTxtWidth < 230)
+      else if (postInfoWidth < 230)
 	 n = 6;
-      else if (postTxtWidth < 260)
+      else if (postInfoWidth < 260)
 	 n = 7;
+      else if (postInfoWidth < 300)
+	 n = 8;
 
       if (detailsNames.length > n)
 	 detailsNames.removeRange(n, detailsNames.length);
@@ -4269,28 +4255,73 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 	 ),
       );
 
-      Column infoWdg = Column(children: <Widget>
-      [ SizedBox(width: postTxtWidth, child: modelTitle)
+      final int visualizations = widget.post.visualizations;
+      final String name = g.param.statsTitleAndFields[2];
+      final String date = makeDateString3(widget.post.date);
+
+      Widget statsWdgs = makeTextWdg(
+	 text: '$name: ${visualizations} • ${date}',
+	 edgeInsets: const EdgeInsets.all(stl.basePadding),
+	 textColor: stl.neutralColor,
+	 fontSize: stl.smallFontSize,
+	 fontWeight: FontWeight.normal,
+      );
+
+      return Column(children: <Widget>
+      [ SizedBox(width: postInfoWidth, child: modelTitle)
       , Expanded(
 	   child: SizedBox(
-	      width: postTxtWidth,
+	      width: postInfoWidth,
 	      child: Align(
 		 alignment: Alignment.centerLeft,
 		 child: detailsWrap,
 	      ),
 	   ),
 	)
-      , SizedBox(width: postTxtWidth, child: statsWdgs)
+      , SizedBox(width: postInfoWidth, child: statsWdgs)
       ]);
+   }
 
-      row1List.add(SizedBox(height: postAvatarWidth, child: infoWdg));
+   @override
+   Widget build(BuildContext ctx)
+   {
+      final double postAvatarImgWidth = makePostAvatarWidth(ctx);
+      final double postAvatarImgHeight = postAvatarImgWidth;
+      final double postAvatarInfoWidth = makePostInfoWidth(ctx);
+      final double postAvatarInfoHeight = postAvatarImgHeight;
+
+      double postImgWidth = postAvatarImgWidth;
+      double postImgHeight = postAvatarImgHeight;
+      double postInfoWidth = postAvatarInfoWidth;
+      double postInfoHeight = postAvatarInfoHeight;
+
+      if (widget.tab == cts.searchIdx) {
+	 postImgWidth = makeWidgetWidth(ctx);
+	 postImgHeight = postImgWidth / cts.goldenRatio;
+	 postInfoWidth = postImgWidth;
+      }
+
+      List<Widget> row1List = List<Widget>();
+
+      Widget imgWdg = makeImgWdg(postImgWidth, postImgHeight);
+      row1List.add(imgWdg);
+
+      Widget infoWdg = makeInfoWdg(postInfoWidth);
+      row1List.add(SizedBox(height: postInfoHeight, child: infoWdg));
+
+      Widget child;
+      if (widget.tab == cts.searchIdx) {
+	 child = Column(children: row1List);
+      } else {
+	 child = Row(children: row1List);
+      }
 
       return Padding(
 	 padding: EdgeInsets.all(stl.basePadding),
          child: RaisedButton(
 	    color: stl.cs.surface,
 	    onPressed: () {_onShowDetails(ctx);},
-	    child: Row(children: row1List),
+	    child: child,
 	    padding: const EdgeInsets.all(0),
 	    onLongPress: widget.onDelPost,
 	 ),
