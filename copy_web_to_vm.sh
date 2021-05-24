@@ -1,5 +1,7 @@
 #!/bin/bash
 
+occasede="95.217.219.210"
+
 root=build/web
 
 a=$root/index.html
@@ -19,5 +21,5 @@ gzip < $e > $e.gz
 tar cf web.tar $root
 
 gzip web.tar
-scp web.tar.gz occase.de:~/
+scp web.tar.gz ${occasede}:~/
 rm web.tar.gz

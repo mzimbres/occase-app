@@ -17,7 +17,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as imglib;
+//import 'package:image/image.dart' as imglib;
 //import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
@@ -5745,16 +5745,19 @@ class OccaseState extends State<Occase>
 	 if (img == null)
 	    return;
 
-	 imglib.Image rawImg = imglib.decodeImage(await img.readAsBytes());
-	 assert(rawImg != null);
+	 final List<int> bytes = await img.readAsBytes();
 
-	 imglib.Image thumbnail = imglib.copyResize(
-	    rawImg,
-	    width: cts.minWidgetWidth.round(),
-	 );
-	 assert(thumbnail != null);
+	 //imglib.Image rawImg = imglib.decodeImage(bytes);
+	 //assert(rawImg != null);
 
-	 setState((){_images.add(imglib.encodeJpg(thumbnail)); });
+	 //imglib.Image thumbnail = imglib.copyResize(
+	 //   rawImg,
+	 //   width: cts.minWidgetWidth.round(),
+	 //);
+	 //assert(thumbnail != null);
+
+	 //setState((){_images.add(imglib.encodeJpg(thumbnail)); });
+	 setState((){_images.add(bytes);});
       } catch (e) {
          debugPrint(e);
       }
