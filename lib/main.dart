@@ -6182,6 +6182,7 @@ class OccaseState extends State<Occase>
 	 body: jsonEncode(map),
       );
 
+      debugPrint('Publish response status: ${resp.statusCode}');
       if (resp.statusCode != 200) {
 	 // TODO: Show dialog.
 	 debugPrint('Error on _sendPost:  ${resp.statusCode}');
@@ -6189,6 +6190,7 @@ class OccaseState extends State<Occase>
 	 return;
       }
 
+      debugPrint('Publish response body:  ${resp.body}');
       Map<String, dynamic> respMap = jsonDecode(resp.body);
       final String result = respMap['result'] ?? 'fail';
       final String postId = respMap['id'] ?? '';
@@ -6224,7 +6226,10 @@ class OccaseState extends State<Occase>
 	 errorCode = 1;
       }
 
-      setState(() {_newPostErrorCode = errorCode;});
+      setState(() {
+	 debugPrint('Setting error code:  ${errorCode}');
+	 _newPostErrorCode = errorCode;
+      });
    }
 
    Future<void> _deletePostFromServer(Post post) async
@@ -6275,15 +6280,13 @@ class OccaseState extends State<Occase>
       final int l = l1 < l2 ? l1 : l2; // min
 
       for (int i = 0; i < l; ++i) {
-	 // TODO: How to get the image extension.
-         final String newname = fnames[i] + '.jpeg';
-         debugPrint('=====> Http target $newname');
-
+         final String newname = fnames[i];
+         debugPrint('Upload image target: $newname');
          var response = await http.post(Uri.parse(newname),
             body: _images[i],
          );
-
          final int stCode = response.statusCode;
+         debugPrint('Upload response status: ${stCode}');
          if (stCode != 200) {
             _images = List<List<int>>();
             return 0;
@@ -6341,7 +6344,7 @@ class OccaseState extends State<Occase>
 
       } catch (e) {
          //print(e);
-         print('Error: _requestFilenames $e');
+         debugPrint('Error: _requestFilenames $e');
       }
 
       setState(() {
