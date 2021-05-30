@@ -609,7 +609,7 @@ Widget makeInfoScreen(
 Widget makeNetImgBox({
    double width,
    double height,
-   String url,
+   final String url,
 }) {
    if (url.isEmpty) {
       Widget w = Text(g.param.unreachableImgError,
@@ -623,6 +623,10 @@ Widget makeNetImgBox({
       return makeImgPlaceholder(width, height, w);
    }
 
+   String urlAndQuery = '$url';
+   final int w = width.round();
+   final int h = width.round();
+   urlAndQuery += "?width=$w&height=$h";
    return Container(
       width: width,
       height: height,
@@ -630,7 +634,7 @@ Widget makeNetImgBox({
 	 image: DecorationImage(
 	    fit: BoxFit.cover,
 	    alignment: FractionalOffset.center,
-	    image: NetworkImage(url),
+	    image: NetworkImage(urlAndQuery),
 	 ),
       ),
    );
@@ -2676,7 +2680,7 @@ Widget makeChatScreen({
       Widget child;
       ImageProvider backgroundImage;
       if (avatar.isNotEmpty) {
-         final String url = cts.gravatarUrl + avatar + '.jpg';
+         final String url = cts.gravatarUrl + avatar + '.jpeg';
          backgroundImage = NetworkImage(url);
       } else {
          child = stl.unknownPersonIcon;
@@ -6292,7 +6296,10 @@ class OccaseState extends State<Occase>
             return 0;
          }
 
-         _posts[cts.ownIdx].images.add(newname);
+	 final int index = newname.indexOf('?');
+	 final String url = newname.substring(0, index);
+         debugPrint('Post url: ${url}');
+         _posts[cts.ownIdx].images.add(url);
       }
 
       _images = List<List<int>>();
