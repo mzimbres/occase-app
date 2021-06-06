@@ -3797,21 +3797,20 @@ class TreeViewState extends State<TreeView> with TickerProviderStateMixin {
 List<Widget> makeDetailsTextWdgs({
    List<String> fields,
    Color textColor = stl.postColor,
-   double fontSize = stl.mainFontSize,
+   double fontSize = stl.smallFontSize,
    FontWeight fontWeight = FontWeight.w500,
 }) {
    return List<Widget>.generate(fields.length, (int i) {
       return Card(
 	    elevation: 0,
-	    color: stl.primaryLightColor,
+	    color: Colors.grey[300],
 	    margin: EdgeInsets.all(0),
 	    child: Padding(
 	       padding: const EdgeInsets.symmetric(horizontal: stl.basePadding),
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
-	             fontWeight: fontWeight,
-	             color: stl.cs.surface,
+	             color: Colors.grey[900],
 	          ),
 	       ),
 	    ),
@@ -4207,7 +4206,7 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       detailsNames.addAll(inDetailsNames);
       detailsNames.sort(compStringForPostWdg);
 
-      int n = 15;
+      int n = 17;
       if (postInfoWidth < 160)
 	 n = 3;
       else if (postInfoWidth < 210)
@@ -4300,9 +4299,11 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
       double postInfoHeight = postAvatarInfoHeight;
 
       if (widget.tab == cts.searchIdx) {
-	 postImgWidth = makeWidgetWidth(ctx);
-	 postImgHeight = postImgWidth / cts.goldenRatio;
-	 postInfoWidth = postImgWidth;
+	 final double maxWidth = makeWidgetWidth(ctx);
+	 postImgWidth = maxWidth;
+	 postImgHeight = maxWidth / cts.goldenRatio;
+	 postInfoWidth = maxWidth;
+	 postInfoHeight = postImgHeight / cts.goldenRatio;
       }
 
       List<Widget> row1List = List<Widget>();
