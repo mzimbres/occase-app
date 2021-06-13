@@ -59,6 +59,30 @@ typedef OnPressedF15 = void Function(ConfigActions);
 typedef OnPressedF16 = void Function(String, int);
 typedef OnPressedF17 = void Function(DateTime);
 
+//--------------------------------------------
+// HTTP
+
+Future<String> searchPosts(String url, Post post) async
+{
+   try {
+      var response = await http.post(
+	 Uri.parse(url),
+	 body: jsonEncode({'post': post}),
+      );
+
+      if (response.statusCode == 200)
+	 return response.body;
+      return '';
+   } catch (e) {
+      print(e);
+   }
+
+   return '';
+}
+
+//--------------------------------------------
+
+
 String makeChatMsg({
    String to,
    String body,
@@ -1876,6 +1900,65 @@ Widget wrapDetailRowOnCard(Widget body)
    );
 }
 
+//---------------------------------------------
+
+class ScreenArguments {
+   final String title;
+   final String message;
+   ScreenArguments(this.title, this.message);
+}
+
+class SomeAnonymousRouteWidget extends StatelessWidget {
+   final String title;
+   final String message;
+
+   // This Widget accepts the arguments as constructor
+   // parameters. It does not extract the arguments from
+   // the ModalRoute.
+   //
+   // The arguments are extracted by the onGenerateRoute
+   // function provided to the MaterialApp widget.
+   const SomeAnonymousRouteWidget({
+      Key key,
+      @required this.title,
+      @required this.message,
+   }) : super(key: key);
+
+   @override
+   Widget build(BuildContext context) {
+      return Scaffold(
+	 appBar: AppBar(
+	    title: Text(title),
+	 ),
+	 body: Center(
+	    child:
+	    Text(message),
+	 ),
+      );
+   }
+}
+
+class SomeNamedRouteWidget extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+      // Extract the arguments from the current ModalRoute
+      // settings and cast them as ScreenArguments.
+      final args =
+	 ModalRoute.of(context).settings.arguments as ScreenArguments;
+      return Scaffold(
+	 appBar: AppBar(
+	    title: Text('Title'),
+	 ),
+	 body: Center(
+	    child:
+	    Text('Message'),
+	 ),
+      );
+   }
+}
+
+//---------------------------------------------
+
 class MyApp extends StatelessWidget {
    @override
    Widget build(BuildContext ctx) {
@@ -1902,6 +1985,39 @@ class MyApp extends StatelessWidget {
             const Locale('fr'),
             const Locale('en'),
          ],
+	 routes: { '/test': (context) => SomeNamedRouteWidget(), },
+	 onGenerateRoute: (settings) {
+	    print('--------> $settings');
+	    // If you push the PassArguments route
+	    if (settings.name == '/posts') {
+	       print('-------->');
+	       // Cast the arguments to the correct
+	       // type: ScreenArguments.
+	       //final args = settings.arguments as ScreenArguments;
+
+	       // Then, extract the required data from
+	       // the arguments and pass the data to the
+	       // correct screen.
+	       return MaterialPageRoute(
+	          builder: (context)
+	          {
+	             return SomeAnonymousRouteWidget(
+	        	title: 'title',
+	        	message: 'message',
+	             );
+	          },
+	       );
+	    }
+	    // The code only supports
+	    // SomeAnonymousRouteWidget.routeName right now.
+	    // Other values need to be implemented if we
+	    // add them. The assertion here will help remind
+	    // us of that higher up in the call stack, since
+	    // this assertion would otherwise fire somewhere
+	    // in the framework.
+	    assert(false, 'Need to implement ${settings.name}');
+	    return null;
+	 },
       );
    }
 }
@@ -2143,7 +2259,6 @@ Widget putRefMsgInBorder(Widget w, Color borderColor)
 
 Card makeChatMsgWidget(
    BuildContext ctx,
-   int tab,
    ChatMetadata chatMetadata,
    int i,
    Function onChatMsgLongPressed,
@@ -2304,7 +2419,6 @@ Card makeChatMsgWidget(
 }
 
 ListView makeChatMsgListView(
-   int tab,
    ScrollController scrollCtrl,
    ChatMetadata chatMetadata,
    Function onChatMsgLongPressed,
@@ -2357,7 +2471,6 @@ ListView makeChatMsgListView(
                                
          Card chatMsgWidget = makeChatMsgWidget(
             ctx,
-	    tab,
             chatMetadata,
             i,
             onChatMsgLongPressed,
@@ -2511,7 +2624,6 @@ Widget makeChatSecondLayer(
 Widget makeChatScreen({
    BuildContext ctx,
    bool showChatJumpDownButton,
-   int tab,
    int nLongPressed,
    int dragedIdx,
    String postSummary,
@@ -2558,7 +2670,6 @@ Widget makeChatScreen({
    Card card = makeChatScreenBotCard(null, null, sb, null, null);
 
    ListView list = makeChatMsgListView(
-      tab,
       scrollCtrl,
       chatMetadata,
       onChatMsgLongPressed,
@@ -3316,7 +3427,7 @@ Card putPostElemOnCard({
    );
 }
 
-Widget makePostDescription(BuildContext ctx, int tab, String desc)
+Widget makePostDescription(BuildContext ctx, String desc)
 {
    return Padding(
       padding: EdgeInsets.all(stl.basePadding),
@@ -3326,7 +3437,6 @@ Widget makePostDescription(BuildContext ctx, int tab, String desc)
 
 List<Widget> assemblePostRows({
    BuildContext ctx,
-   final int tab,
    final Post post,
    final Node locRootNode,
    final Node prodRootNode,
@@ -3342,7 +3452,7 @@ List<Widget> assemblePostRows({
 
    if (post.description.isNotEmpty) {
       all.add(makeNewPostSetionTitle(title: g.param.postDescTitle));
-      all.add(makePostDescription(ctx, tab, post.description));
+      all.add(makePostDescription(ctx, post.description));
    }
 
    return all;
@@ -3882,7 +3992,6 @@ class PostDetailsWidgetState extends State<PostDetailsWidget> with TickerProvide
       final int tab = cts.searchIdx;
       Widget detailsWdg = makePostDetailsWdg(
 	 ctx: ctx,
-	 tab: widget.tab,
 	 post: widget.post,
 	 locRootNode: widget.locRootNode,
 	 prodRootNode: widget.prodRootNode,
@@ -4054,34 +4163,50 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
    {
       widget.onVisualization();
 
-      return await showDialog<int>(
-	 context: ctx,
-	 builder: (BuildContext ctx)
-	 {
-	    Widget w = PostDetailsWidget(
-	       tab: widget.tab,
-	       post: widget.post,
-	       locRootNode: widget.locRootNode,
-	       prodRootNode: widget.prodRootNode,
-	       exDetailsRootNode: widget.exDetailsRootNode,
-	       inDetailsRootNode: widget.inDetailsRootNode,
-	       images: widget.images,
-	       onAddImg: widget.onAddImg,
-	       onDelImg: widget.onDelImg,
-	       onExpandImg: widget.onExpandImg,
-	       onDelPost: widget.onDelPost,
-	       onSharePost: widget.onSharePost,
-	       onReportPost: widget.onReportPost,
-	       onAddPostToFavorite: () {
-		  widget.onAddPostToFavorite();
-	       },
-	    );
+      Navigator.of(ctx).push(
+	 PageRouteBuilder(
+	    opaque: false,
+	    pageBuilder: (context, __, ___)
+	    {
+	       Widget w = PostDetailsWidget(
+		  tab: widget.tab,
+		  post: widget.post,
+		  locRootNode: widget.locRootNode,
+		  prodRootNode: widget.prodRootNode,
+		  exDetailsRootNode: widget.exDetailsRootNode,
+		  inDetailsRootNode: widget.inDetailsRootNode,
+		  images: widget.images,
+		  onAddImg: widget.onAddImg,
+		  onDelImg: widget.onDelImg,
+		  onExpandImg: widget.onExpandImg,
+		  onDelPost: widget.onDelPost,
+		  onSharePost: widget.onSharePost,
+		  onReportPost: widget.onReportPost,
+		  onAddPostToFavorite: () {
+		     widget.onAddPostToFavorite();
+		  },
+	       );
 
-	    return imposeWidth(
-	       child: w,
-	       width: makeWidgetWidth(ctx),
-	    );
-	 },
+	       return imposeWidth(
+		  child: w,
+		  width: makeWidgetWidth(context),
+	       );
+	    },
+            transitionsBuilder:
+	       (context, animation, secondaryAnimation, child)
+	       {
+		  var begin = Offset(0.0, 1.0);
+		  var end = Offset.zero;
+		  var curve = Curves.easeOut;
+		  var tween = Tween(begin: begin, end: end)
+			.chain(CurveTween(curve: curve));
+
+		  return SlideTransition(
+		     position: animation.drive(tween),
+                     child: child,
+		  );
+	       },
+	 ),
       );
    }
 
@@ -4336,7 +4461,6 @@ class PostWidgetState extends State<PostWidget> with TickerProviderStateMixin {
 
 Widget makePostDetailsWdg({
    BuildContext ctx,
-   final int tab,
    final Post post,
    final Node locRootNode,
    final Node prodRootNode,
@@ -4388,7 +4512,6 @@ Widget makePostDetailsWdg({
 
    List<Widget> tmp = assemblePostRows(
       ctx: ctx,
-      tab: tab,
       post: post,
       locRootNode: locRootNode,
       prodRootNode: prodRootNode,
@@ -7379,28 +7502,10 @@ class OccaseState extends State<Occase>
       setState(() {});
    }
 
-   Future<String> _searchPosts(String url, Post post) async
-   {
-      try {
-	 var response = await http.post(
-	    Uri.parse(url),
-	    body: jsonEncode({'post': post}),
-	 );
-
-	 if (response.statusCode == 200)
-	    return response.body;
-	 return '';
-      } catch (e) {
-	 print(e);
-      }
-
-      return '';
-   }
-
    Future<int> _searchImpl(Post post) async
    {
       try {
-	 final String body = await _searchPosts(cts.dbSearchPostsUrl, post);
+	 final String body = await searchPosts(cts.dbSearchPostsUrl, post);
 	 if (body.isEmpty) {
 	    print('Error: _searchImpl.');
 	    return 0;
@@ -7417,7 +7522,7 @@ class OccaseState extends State<Occase>
 
    void _loadMatchingPostsCounter()
    {
-      _searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx])
+      searchPosts(cts.dbCountPostsUrl, _posts[cts.searchIdx])
       .then((String n){
 	 setState((){_numberOfMatchingPosts = n;});
       });
@@ -7455,7 +7560,6 @@ class OccaseState extends State<Occase>
    {
       return makeChatScreen(
 	 ctx: ctx,
-	 tab: tab,
 	 chatMetadata: _chats[tab],
 	 editCtrl: _txtCtrl,
 	 scrollCtrl: _chatScrollCtrl[tab],
