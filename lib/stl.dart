@@ -36,6 +36,7 @@ const Color secondaryLightColor = Color(0xffffd04a);
 const Color secondaryDarkColor = Color(0xffbc7000);
 const Color primaryTextColor = Color(0xffffffff);
 const Color secondaryTextColor = Color(0xff000000);
+const Color postDetailColor = const Color(0xff616161);
 
 // Colors
 final Color chatScreenBgColor = Colors.grey[200]; 

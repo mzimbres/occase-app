@@ -975,12 +975,16 @@ Widget makeNewPostSetionTitle({
    double bottonPadding = stl.basePadding,
 }) {
    return Padding(
-      padding: EdgeInsets.only(left: stl.basePadding, top: topPadding, bottom: bottonPadding),
+      padding: EdgeInsets.only(
+	 left: stl.basePadding,
+	 top: topPadding,
+	 bottom: bottonPadding,
+      ),
       child: Text(title,
 	 style: TextStyle(
 	    fontSize: stl.bigFontSize,
 	    color: stl.cs.primary,
-	    fontWeight: FontWeight.w500,
+	    fontWeight: FontWeight.w300,
 	 ),
       ),
    );
@@ -3193,7 +3197,7 @@ Widget makePostRowElem({
    String key,
    String value,
    String prefix = '• ',
-   Color keyTextColor = stl.secondaryTextColor,
+   Color keyTextColor = stl.postDetailColor,
    Color valueTextColor = stl.secondaryDarkColor,
 }) {
 
@@ -3239,7 +3243,7 @@ List<Widget> makePostInRows(
          continue;
 
       Text text = Text('• ${nodes[i].name(g.param.langIdx)}',
-         style: stl.tsMainBlack,
+	 style: stl.tsMainBlack.copyWith(color: stl.postDetailColor),
       );
 
       list.add(text);
@@ -3920,7 +3924,8 @@ List<Widget> makeDetailsTextWdgs({
                child: Text(fields[i],
 	          style: TextStyle(
 	             fontSize: fontSize,
-	             color: Colors.grey[900],
+	             color: Colors.grey[800],
+		     fontWeight: FontWeight.w200,
 	          ),
 	       ),
 	    ),
@@ -4519,9 +4524,7 @@ Widget makePostDetailsWdg({
       inDetailsRootNode: inDetailsRootNode,
    );
 
-   rows.add(putPostElemOnCard(
-	 list: tmp,
-   ));
+   rows.add(putPostElemOnCard(list: tmp));
 
    //--------------------------------------------------------------------------
 
