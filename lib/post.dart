@@ -483,6 +483,8 @@ class Post {
    , this.description = ''
    , this.email = ''
    , this.images = const <String>[]
+   , this.location = const <int>[]
+   , this.product = const <int>[]
    , @required List<int> rangesMinMax // g.param.rangesMinMax
    })
    {
@@ -493,8 +495,8 @@ class Post {
          return rangesMinMax[2 * i];
       });
 
-      location = <int>[];
-      product = <int>[];
+      //location = <int>[];
+      //product = <int>[];
       chats = List<ChatMetadata>();
    }
 

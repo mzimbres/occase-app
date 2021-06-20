@@ -785,7 +785,8 @@ Widget makeImgListView({
 	       height: height,
 	       url: post.images[l - i - 1],
 	    );
-	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
+	    //wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
+	    wdgs.add(tmp);
 	    wdgs.add(Positioned(child: makeWdgOverImg(imgCounter), top: 4.0));
 	 } else if (images != null && images.isNotEmpty) {
 	    Widget tmp = Image.memory(
@@ -796,7 +797,8 @@ Widget makeImgListView({
 	       filterQuality: FilterQuality.high,
 	    );
 
-	    wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
+	    //wdgs.add(InteractiveViewer(minScale: 1, child: tmp));
+	    wdgs.add(tmp);
 
 	    IconButton delIcon = IconButton(
 	       onPressed: (){onDelImg(i);},
@@ -1912,36 +1914,6 @@ class ScreenArguments {
    ScreenArguments(this.title, this.message);
 }
 
-class SomeAnonymousRouteWidget extends StatelessWidget {
-   final String title;
-   final String message;
-
-   // This Widget accepts the arguments as constructor
-   // parameters. It does not extract the arguments from
-   // the ModalRoute.
-   //
-   // The arguments are extracted by the onGenerateRoute
-   // function provided to the MaterialApp widget.
-   const SomeAnonymousRouteWidget({
-      Key key,
-      @required this.title,
-      @required this.message,
-   }) : super(key: key);
-
-   @override
-   Widget build(BuildContext context) {
-      return Scaffold(
-	 appBar: AppBar(
-	    title: Text(title),
-	 ),
-	 body: Center(
-	    child:
-	    Text(message),
-	 ),
-      );
-   }
-}
-
 class SomeNamedRouteWidget extends StatelessWidget {
    @override
    Widget build(BuildContext context) {
@@ -1964,6 +1936,11 @@ class SomeNamedRouteWidget extends StatelessWidget {
 //---------------------------------------------
 
 class MyApp extends StatelessWidget {
+   Node _locRootNode = Node('');
+   Node _prodRootNode = Node('');
+   Node _exDetailsRoot = Node('');
+   Node _inDetailsRoot = Node('');
+
    @override
    Widget build(BuildContext ctx) {
       return MaterialApp(
@@ -1975,12 +1952,17 @@ class MyApp extends StatelessWidget {
             accentColor: stl.cs.secondary,
          ),
          debugShowCheckedModeBanner: false,
-         home: Occase(),
-            localizationsDelegates: [
-               GlobalMaterialLocalizations.delegate,
-               GlobalWidgetsLocalizations.delegate,
-               GlobalCupertinoLocalizations.delegate,
-            ],
+         home: Occase(
+	    locRootNode: _locRootNode,
+	    prodRootNode: _prodRootNode,
+	    exDetailsRoot: _exDetailsRoot,
+	    inDetailsRoot: _inDetailsRoot,
+	 ),
+	 localizationsDelegates: [
+	    GlobalMaterialLocalizations.delegate,
+	    GlobalWidgetsLocalizations.delegate,
+	    GlobalCupertinoLocalizations.delegate,
+	 ],
          supportedLocales:
 	 [
             const Locale('de'),
@@ -2005,15 +1987,17 @@ class MyApp extends StatelessWidget {
 	       return MaterialPageRoute(
 	          builder: (context)
 	          {
-	             return SomeAnonymousRouteWidget(
-	        	title: 'title',
-	        	message: 'message',
-	             );
+		     return Occase(
+			locRootNode: _locRootNode,
+			prodRootNode: _prodRootNode,
+			exDetailsRoot: _exDetailsRoot,
+			inDetailsRoot: _inDetailsRoot,
+		     );
 	          },
 	       );
 	    }
 	    // The code only supports
-	    // SomeAnonymousRouteWidget.routeName right now.
+	    // /posts right now.
 	    // Other values need to be implemented if we
 	    // add them. The assertion here will help remind
 	    // us of that higher up in the call stack, since
@@ -3196,7 +3180,7 @@ Widget makePostRowElem({
    BuildContext ctx,
    String key,
    String value,
-   String prefix = '• ',
+   String prefix = ' • ',
    Color keyTextColor = stl.postDetailColor,
    Color valueTextColor = stl.secondaryDarkColor,
 }) {
@@ -3242,7 +3226,7 @@ List<Widget> makePostInRows(
       if ((state & (1 << i)) == 0)
          continue;
 
-      Text text = Text('• ${nodes[i].name(g.param.langIdx)}',
+      Text text = Text(' • ${nodes[i].name(g.param.langIdx)}',
 	 style: stl.tsMainBlack.copyWith(color: stl.postDetailColor),
       );
 
@@ -5369,7 +5353,17 @@ class DialogWithOpState extends State<DialogWithOp> {
 //_____________________________________________________________________
 
 class Occase extends StatefulWidget {
-  Occase();
+   Node locRootNode = Node('');
+   Node prodRootNode = Node('');
+   Node exDetailsRoot = Node('');
+   Node inDetailsRoot = Node('');
+
+  Occase({
+     @required this.locRootNode,
+     @required this.prodRootNode,
+     @required this.exDetailsRoot,
+     @required this.inDetailsRoot,
+  });
 
   @override
   OccaseState createState() => OccaseState();
@@ -5378,11 +5372,6 @@ class Occase extends StatefulWidget {
 class OccaseState extends State<Occase>
    with SingleTickerProviderStateMixin, WidgetsBindingObserver
 {
-   Node _locRootNode = Node('');
-   Node _prodRootNode = Node('');
-   Node _exDetailsRoot = Node('');
-   Node _inDetailsRoot = Node('');
-
    AppState _appState;
 
    // Will be set to true if the user scrolls up a chat screen so that
@@ -5578,10 +5567,10 @@ class OccaseState extends State<Occase>
 
    Future<void> _initTrees() async
    {
-      final bool a = _locRootNode.children.isNotEmpty;
-      final bool b = _prodRootNode.children.isNotEmpty;
-      final bool c = _exDetailsRoot.children.isNotEmpty;
-      final bool d = _inDetailsRoot.children.isNotEmpty;
+      final bool a = widget.locRootNode.children.isNotEmpty;
+      final bool b = widget.prodRootNode.children.isNotEmpty;
+      final bool c = widget.exDetailsRoot.children.isNotEmpty;
+      final bool d = widget.inDetailsRoot.children.isNotEmpty;
 
       if (a || b || c || d)
 	 return;
@@ -5590,10 +5579,10 @@ class OccaseState extends State<Occase>
       Node node = parseTree(configTree.split('\n'));
       assert(node.children.length == 4);
 
-      _locRootNode = node.children[0];
-      _prodRootNode = node.children[1];
-      _exDetailsRoot = node.children[2];
-      _inDetailsRoot = node.children[3];
+      widget.locRootNode = node.children[0];
+      widget.prodRootNode = node.children[1];
+      widget.exDetailsRoot = node.children[2];
+      widget.inDetailsRoot = node.children[3];
    }
 
    void _onFcmToken(final String token)
@@ -7568,7 +7557,7 @@ class OccaseState extends State<Occase>
 	 scrollCtrl: _chatScrollCtrl[tab],
 	 nLongPressed: _lpChatMsgs[tab].length,
 	 chatFocusNode: _chatFocusNodes[tab],
-	 postSummary: makeTreeItemStr(_locRootNode, _posts[tab].product),
+	 postSummary: makeTreeItemStr(widget.locRootNode, _posts[tab].product),
 	 dragedIdx: _dragedIdxs[tab],
 	 showChatJumpDownButton: _showChatJumpDownButtons[tab],
 	 avatar: _isOnFavChat(tab) ? _posts[tab].avatar : _chats[tab].avatar,
@@ -7591,10 +7580,10 @@ class OccaseState extends State<Occase>
       return makeNewPostScreenWdgs(
 	 ctx: ctx,
 	 sendingPost: _sendingPost,
-	 locRootNode: _locRootNode,
-	 prodRootNode: _prodRootNode,
-	 exDetailsRootNode: _exDetailsRoot,
-	 inDetailsRootNode: _inDetailsRoot,
+	 locRootNode: widget.locRootNode,
+	 prodRootNode: widget.prodRootNode,
+	 exDetailsRootNode: widget.exDetailsRoot,
+	 inDetailsRootNode: widget.inDetailsRoot,
 	 post: _posts[cts.ownIdx],
 	 onSetTreeCode: _onNewPostSetTreeCode,
 	 onSetExDetail: _onSetExDetail,
@@ -7624,9 +7613,9 @@ class OccaseState extends State<Occase>
 	 ctx: ctx,
 	 state: _posts[cts.searchIdx].exDetails[0],
 	 numberOfMatchingPosts: _numberOfMatchingPosts,
-	 locRootNode: _locRootNode,
-	 prodRootNode: _prodRootNode,
-	 exDetailsRootNode: _exDetailsRoot,
+	 locRootNode: widget.locRootNode,
+	 prodRootNode: widget.prodRootNode,
+	 exDetailsRootNode: widget.exDetailsRoot,
 	 post: _posts[cts.searchIdx],
 	 onSearchPressed: (int i) {_onSearch(isWide, i);},
 	 onSearchDetail: (int j) {_onSearchDetail(0, j);},
@@ -7644,10 +7633,10 @@ class OccaseState extends State<Occase>
       final bool isWide = isWideScreen(ctx);
       Widget sb = makeSearchResultPosts(
 	 isWide: isWide,
-	 locRootNode: _locRootNode,
-	 prodRootNode: _prodRootNode,
-	 exDetailsRootNode: _exDetailsRoot,
-	 inDetailsRootNode: _inDetailsRoot,
+	 locRootNode: widget.locRootNode,
+	 prodRootNode: widget.prodRootNode,
+	 exDetailsRootNode: widget.exDetailsRoot,
+	 inDetailsRootNode: widget.inDetailsRoot,
 	 posts: _appState.posts,
 	 onExpandImg: (int i, int j) {_onExpandImg(i, j, cts.searchIdx);},
 	 onAddPostToFavorite: (var a, int j) {_alertUserOnPressed(a, j, 1);},
@@ -7703,10 +7692,10 @@ class OccaseState extends State<Occase>
 	 isWide: isWide,
 	 isFwdChatMsgs: _lpChatMsgs[tab].isNotEmpty,
 	 tab: tab,
-	 locRootNode: _locRootNode,
-	 prodRootNode: _prodRootNode,
-	 exDetailsRootNode: _exDetailsRoot,
-	 inDetailsRootNode: _inDetailsRoot,
+	 locRootNode: widget.locRootNode,
+	 prodRootNode: widget.prodRootNode,
+	 exDetailsRootNode: widget.exDetailsRoot,
+	 inDetailsRootNode: widget.inDetailsRoot,
 	 posts: posts,
 	 onChatPressed: (int j, int k) {_onChatPressed(tab, j, k);},
 	 onChatLongPressed: (int j, int k) {_onChatLongPressed(tab, j, k);},

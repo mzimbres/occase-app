@@ -55,7 +55,7 @@ class Parameters {
    List<String> _unreachableImgError = <String>[''];
    List<String> _clearPostsTitle = <String>[''];
    List<String> _clearPostsContent = <String>[''];
-   List<String> _localeName = <String>[''];
+   List<String> _localeName = <String>['de', 'pt', 'es', 'fr', 'en'];
    List<String> _typing = <String>[''];
    List<String> _cancelPost = <String>[''];
    List<String> _cancelPostContent = <String>[''];
@@ -89,7 +89,7 @@ class Parameters {
    List<List<String>> _productTreeDepthNames = <List<String>>[<String>['', '', '', '', '', '', '']];
    List<List<String>> _paymentValueTitles = <List<String>>[<String>['']];
    List<List<String>> _paymentValueSubtitles = <List<String>>[<String>['']];
-   List<List<String>> _statsTitleAndFields = <List<String>>[<String>['']];
+   List<List<String>> _statsTitleAndFields = <List<String>>[<String>['', '', ''], <String>['', '', ''], <String>['', '', ''], <String>['', '', ''], <String>['', '', '']];
    List<List<String>> _newPostSectionNames = <List<String>>[<String>['']];
    List<List<String>> _msgOnEmptyTab = <List<String>>[<String>['', '', '', '']];
    List<List<String>> _buttonNamesOnEmptyTab = <List<String>>[<String>['', '', '', '']];
