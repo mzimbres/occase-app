@@ -1,0 +1,383 @@
+{ "appName":                      "Occase"
+, "adminId":                      "admin-id"
+, "adminNick":                    "Louis"
+, "localeName":                   [ "de", "pt", "fr", "en"]
+, "delChatTitle":                 [ "Chats löschen?"
+                                  , "Apagar conversas?"
+                                  , "Supprimer la conversation?"
+                                  , "Delete char?"
+                                  ]
+, "advertiser":                   [ "Inserent"
+                                  , "Anunciante"
+                                  , "Annonceur"
+                                  , "Advertiser"
+                                  ]
+, "delChatCancelStr":             [ "Abbrechen"
+                                  , "Cancelar"
+                                  , "Annuler"
+                                  , "Cancel"
+                                  ]
+, "advertizer":                   [ "Inserent"
+                                  , "Anunciante"
+                                  , "Annonceur"
+                                  , "Advertiser"
+                                  ]
+, "newPostAppBarTitle":           [ "Anzeige erstellen"
+                                  , "Publicar"
+                                  , "Poster"
+                                  , "Publish"
+                                  ]
+, "searchAppBarTitle":            [ "Suchen"
+                                  , "Buscar"
+                                  , "Rechercher"
+                                  , "Search"
+                                  ]
+, "postRefSectionTitle":          [ "Weitere Details"
+                                  , "Detalhes adicionais"
+                                  , "Détails supplémentaires"
+                                  , "Additional details"
+                                  ]
+, "postExDetailsTitle":           [ "Details"
+                                  , "Detalhes"
+                                  , "Détails"
+                                  , "Details"
+                                  ]
+, "postDescTitle":                [ "Beschreibung"
+                                  , "Descrição"
+                                  , "Description"
+                                  , "Description"
+                                  ]
+, "newPostTextFieldHist":         [ "Füge hier weitere Informationen hinzu"
+                                  , "Clique para adicionar uma descrição"
+                                  , "Cliquez pour ajouter une description"
+                                  , "Click to add a description"
+                                  ]
+, "chatTextFieldHint":            [ "Nachricht"
+                                  , "Mensagem"
+                                  , "Message"
+                                  , "Message"
+                                  ]
+, "nickHint":                     [ "Name oder Nick"
+                                  , "Nome ou apelido"
+                                  , "Nom d'utilisateur"
+                                  , "Name or nick"
+                                  ]
+, "emailHint":                    [ "Email von Gravatar (optional)"
+                                  , "Email do Gravatar (opcional)"
+                                  , "Email du Gravatar (en option)"
+                                  , "Email from Gravatar (optional)"
+                                  ]
+, "msgOnRedirectingChat":         [ "Weiterleiten an ..."
+                                  , "Encaminhar para ..."
+                                  , "Transférer à ..."
+                                  , "Forward to ..."
+                                  ]
+, "msgOnRedirectedChat":          [ "Weitergeleitet"
+                                  , "Encaminhada"
+                                  , "Transféré"
+                                  , "Forwarded"
+                                  ]
+, "msgOnEmptyChat":               [ "Klick um das Chat zu starten"
+                                  , "Clique para iniciar a conversa"
+                                  , "Cliquez pour démarrer la conversation"
+                                  , "Click to start a chat"
+                                  ]
+, "deleteChat":                   [ "Chat löschen"
+                                  , "Deletar conversa"
+                                  , "Supprimer la conversation"
+                                  , "Delete chat"
+                                  ]
+, "pinChat":                      [ "Chat anheften"
+                                  , "Fixar conversa"
+                                  , "Épingler la conversation"
+                                  , "Pin chat"
+                                  ]
+, "clearPosts":                   [ "Posts löschen"
+                                  , "Apagar os posts"
+                                  , "Supprimer des posts"
+                                  , "Delete posts"
+                                  ]
+, "notificationsButton":          [ "Suche"
+                                  , "Busca"
+                                  , "Recherche"
+                                  , "Search"
+                                  ]
+, "unknownNick":                  [ "Unbekannt"
+                                  , "Desconhecido"
+                                  , "Inconnu"
+                                  , "Unknown"
+                                  ]
+, "selectAll":                    [ "Alle auswählen"
+                                  , "Selecinar todos"
+                                  , "Tout sélectionner"
+                                  , "Select all"
+                                  ]
+, "changeNickHint":               [ "Benutzername"
+                                  , "Nome de usuário"
+                                  , "Nom d'utilisateur"
+                                  , "User name"
+                                  ]
+, "changeNotifications":          [ "Benachrichtigungen"
+                                  , "Notificações"
+                                  , "Notifications"
+                                  , "Notifications"
+                                  ]
+, "information":                  [ "Info"
+                                  , "Informação"
+                                  , "Information"
+                                  , "Information"
+                                  ]
+, "supportEmail":                 [ "support@occase.de"
+                                  , "support@occase.de"
+                                  , "support@occase.de"
+                                  , "support@occase.de"
+                                  ]
+, "supportEmailSubject":          [ "Benutzer Feedback"
+                                  , "Feedback do usuário"
+                                  , "Commentaires sur l'application Occase"
+                                  ]
+, "dissmissedPost":               [ "Post gelöscht"
+                                  , "Post apagado"
+                                  , "Post supprimé"
+                                  , "Post removed"
+                                  ]
+, "dismissedChat":                [ "Chat gelöscht"
+                                  , "Conversa removida"
+                                  , "Conversation supprimée"
+                                  , "Chat removed"
+                                  ]
+, "ok":                           [ "Fertig"
+                                  , "Concluído"
+                                  , "Terminé"
+                                  , "Ok"
+                                  ]
+, "cancel":                       [ "Abbrechen"
+                                  , "Cancelar"
+                                  , "Annuler"
+                                  , "Cancel"
+                                  ]
+, "cancelNewPost":                [ "Abgebrochen"
+                                  , "Cancelado"
+                                  , "Annulé"
+                                  , "Cancel"
+                                  ]
+, "doNotShowAgain":               [ "Nicht mehr zeigen"
+                                  , "Não mostrar novamente"
+                                  , "Ne plus montrer"
+                                  , "Don't show again"
+                                  ]
+, "next":                         [ "Weiter"
+                                  , "Continuar"
+                                  , "Continuer"
+                                  , "Continue"
+                                  ]
+, "rangesTitle":                  [ "Daten"
+                                  , "Dados"
+                                  , "Données du véhicule"
+                                  , "Data"
+                                  ]
+, "paymentTitle":                 [ "Bezahlen"
+                                  , "Pagamento"
+                                  , "Paiement"
+                                  , "Payment"
+                                  ]
+, "onEmptyNickTitle":             [ "Fehler"
+                                  , "Error"
+                                  , "Erreur"
+                                  , "Error"
+                                  ]
+, "onEmptyNickContent":           [ "Der Name muss mindesten Drei Zeichen lang sein."
+                                  , "O apelido precisa ter no mínimo três letras."
+                                  , "Le nom doit comporter au moins trois caractères."
+                                  , "A nick must have at least three characters."
+                                  ]
+, "addImgMsg":                    [ "Füge hier Fotos hinzu."
+                                  , "Insira suas fotos aqui."
+                                  , "Insérez vos photos."
+                                  , "Insert photos here."
+                                  ]
+, "unreachableImgError":          [ "Foto nicht verfügbar."
+                                  , "Foto não disponível."
+                                  , "Photo indisponible."
+                                  , "Photo not available."
+                                  ]
+, "clearPostsTitle":              [ "Posts löschen?"
+                                  , "Apagar posts?"
+                                  , "Supprimer des posts?"
+                                  , "Delete posts?"
+                                  ]
+, "clearPostsContent":            [ "Alle posts werden dadurch gelöscht."
+                                  , "Todos os posts serão apagados."
+                                  , "Tous les posts seront supprimés."
+                                  , "All posts will be removed."
+                                  ]
+, "typing":                       [ "Schreibt ..."
+                                  , "Escrevendo ..."
+                                  , "Écrit ..."
+                                  , "Writing ..."
+                                  ]
+, "cancelPost":                   [ "Abbrechen?"
+                                  , "Cancelar?"
+                                  , "Annuler?"
+                                  , "Cancel?"
+                                  ]
+, "cancelPostContent":            [ "Das Post wird nicht gesendet und Sie kommen zum Posts Bildschirm zurück."
+                                  , "Seu post não será enviado e você retornará a tela Posts."
+                                  , "Votre message ne sera pas envoyé et vous reviendrez à la fenêtre de postes."
+				  , "Your post won't be sent and you will return to the Posts screen."
+                                  ]
+, "numberOfChatsSuffix":          [ "Chats"
+                                  , "Conversas"
+                                  , "Conversations"
+                                  , "Chats"
+                                  ]
+, "numberOfUnreadChatsSuffix":    [ "ungelesen"
+                                  , "não lidas"
+                                  , "non lues"
+                                  , "unread"
+                                  ]
+, "postMinImgs":                  [ "Füge Fotos hinzu"
+                                  , "Adicione fotos"
+                                  , "Ajouter des photos"
+                                  , "Add photos"
+                                  ]
+, "postMinImgsContent":           [ "Füge bitte zumindest ein Foto hinzu."
+                                  , "Adicione pelo menos uma imagem."
+                                  , "Ajoutez au moins une image."
+                                  , "Add at least one image."
+                                  ]
+, "changeNickAppBarTitle":        [ "Benutzername ändern"
+                                  , "Alterar nome de usuário"
+                                  , "Changer de nom d'utilisateur"
+                                  , "Change user name"
+                                  ]
+, "changeNtfAppBarTitle":         [ "Benachrichtigungen"
+                                  , "Notificações"
+                                  , "Notifications"
+                                  , "Notifications"
+                                  ]
+, "share":                        [ "https://play.google.com/store/apps/details?id=occase.car.de"
+                                  , "https://play.google.com/store/apps/details?id=occase.car.de"
+                                  , "https://play.google.com/store/apps/details?id=occase.car.de"
+                                  , "https://play.google.com/store/apps/details?id=occase.car.de"
+                                  ]
+, "msgOnEmptyTab":                [ [ "Kostenlose, Standard- und Premium-Pläne."  , "Schauen Sie sich neuesten an, um loszulegen" , "Suchen, klicken und chatten. Einfach!"  ]
+                                  , [ "Temos planos grátis, padrão e premium."    , "Veja os últimos para começar."               , "Pesquise, clique e comece a conversar." ]
+                                  , [ "Plans gratuits, standard et premium."      , "Voir les dernières pour commencer."          , "Rechercher, cliquer et discuter."       ]
+                                  , [ "Free, standard and premium plans."         , "See latest to get a feeling."                , "Search, click and chat. Simple!"        ]
+                                  ]
+, "buttonNamesOnEmptyTab":        [ [ "Auto verkaufen"      , "Neueste ansehen"   , "Auto suchen"  ]
+                                  , [ "Vender um carro"     , "Ver mais recentes" , "Buscar"       ]
+                                  , [ "Vendre une voiture"  , "Voir le dernier"   , "Rechercher"   ]
+                                  , [ "Sell a car"          , "See latest"        , "Search"       ]
+                                  ]
+, "testimonials":                 [ [ "Keine Registrierung!"                , "Sehr einfache Schnittstelle." , "Kontaktaufnahme über chat." ]
+                                  , [ "Sem registro e e-mails!"             , "Interface muito simples."     , "Contato via chat"           ]
+                                  , [ "Aucune inscription!"                 , "Interface trés simple."       , "Contact via le chat"        ]
+                                  , [ "No registration or emails!"          , "Very simple interface."       , "Contact via chat"           ]
+                                  ]
+, "adminChatMsg":                 [ "Hallo, dein Beitrag wurde erfolgreich veröffentlicht. Bleiben Sie auf dem Laufenden, um Nachrichten von Interessenten zu chatten. Dies kann jederzeit geschehen. Im Zweifelsfall schreiben Sie uns gleich hier."
+                                  , "Olá, seu post foi publicado com sucesso. Fique atento as mesagens de chat dos interessados, isso pode ocorrer a qualquer momento. Em caso de dúvidas escreva-nos aqui mesmo."
+                                  , "Bonjour, votre message a été publié avec succès. Restez à l'écoute des messages de chat des parties intéressées, cela peut arriver à tout moment. En cas de doute, écrivez-nous ici."
+                                  , "Hello, your post has been published successfully. Stay tuned to chat messages from interested parties, this can happen at any time. In case of doubts write to us right here."
+                                  ]
+, "shareSubject":                 [ "Occase: Autos und Gebrauchtwagen"
+                                  , "Occase: Carros e veículos usados"
+                                  , "Occase: Voitures et véhicules d'occasion"
+                                  , "Occase: New and used cars"
+                                  ]
+, "newPostSectionNames":          [ [ "Hauptinformationen"      , "Details (Gruppe 1)"  , "Details (Gruppe 2)"  , "Zusätzliche Information"   , "Überprüfen" , "Zahlung und Versand"       ]
+                                  , [ "Informações principais"  , "Detalhes (Gruppe 1)" , "Detalhes (Gruppe 2)" , "Informações adicionais"    , "Vericação"  , "Pagamento e publicação"    ]
+                                  , [ "Donnée principale"       , "Détails (groupe 1)"  , "Détails (groupe 2)"  , "Information additionnelle" , "Cérifier"   , "Details"                   ]
+                                  , [ "Main data"               , "Details (group 1)"   , "Details (group 2)"   , "Aditional information"     , "Review"     , "Payment and publication"   ]
+                                  ]
+, "tabNames":                     [ [ "POSTS" , "SUCHE"   , "CHATS"]
+                                  , [ "POSTS" , "BUSCAS"  , "CHATS"]
+                                  , [ "POSTS" , "NOUVEAU" , "CHATS"]
+                                  , [ "POSTS" , "SEARCH"  , "CHATS"]
+                                  ]
+, "newPostTabNames":              [ [ "Ort"          , "Modell" , "Details"  , "Veröffentlichen" ]
+                                  , [ "Localização"  , "Modelo" , "Detalhes" , "Publicar"        ]
+                                  , [ "Localisation" , "Modèle" , "Details"  , "Poster"          ]
+                                  , [ "Location"     , "Model"  , "Details"  , "Post"            ]
+                                  ]
+, "descList":                     [ [ "Benutzer"    , "Benutzer-Id."        , "Post-Id."   , "Datum" , "Beschreibung" ]
+                                  , [ "Usuário"     , "ID do usuário"       , "ID do post" , "Data"  , "Descrição"    ]
+                                  , [ "Utilisateur" , "ID de l'utilisateur" , "ID du post" , "Date"  , "Description"  ]
+                                  , [ "User"        , "User id"             , "Post id"    , "Date"  , "Description"  ]
+                                  ]
+, "dialogTitles":                 [ [ "Post löschen?"      , "Zu CHATS schieben?" , "Ungeeignet Inhalt?"     , "Suche abgeschlossen" , "Post löschen?"      ]
+                                  , [ "Remover post?"      , "Mover para CHATS?"  , "Conteúdo inapropriado?" , "Busca concluida"     , "Remover post?"      ]
+                                  , [ "Supprimer le post?" , "Passer à CHATS?"    , "Contenu inapproprié?"   , "Recherche terminée"  , "Supprimer le post?" ]
+                                  , [ "Remove post?"       , "Move to chats?"     , "Inappropriate content?" , "Search finished"     , "Remove post?"       ]
+                                  ]
+, "dialogBodies":                 [ [ "Das Post wird endgültig gelöscht."     , "Das Post wird zu CHATS geschoben damit ihr eine Geschpräch anfangen könnt."           , "Das Post wird gelöscht und einen Bericht wird erstellt." , "Suchkriterien gespeichert. Neue Posts werden ihnen automatisch zugesendet."           , "Das Post wird endgültig gelöscht."     ]
+                                  , [ "O post será removido definitivamente." , "O post será movido para CHATS para que vocês possam iniciar uma conversa."            , "O post será removido e uma denúncia será criada."        , "Critérios de buscas salvos. Novos posts lhe serão enviados automaticamente."          , "O post será removido definitivamente." ]
+                                  , [ "Le post sera définitivement supprimé." , "Le message sera déplacé vers CHATS afin que vous puissiez démarrer une conversation." , "Le message sera supprimé et un rapport sera créé."       , "Critères de recherche enregistrés. Les nouveaux post seront automatiquement envoyés." , "Le post sera définitivement supprimé." ]
+                                  , [ "The post will be permanently deleted." , "The post will be moved to CHATS where you can start a conversation."                  , "The post will be deleted and a report will be created."  , "Search criteria saved. New posts will be sent to you automatically."                  , "The post will be permanently deleted." ]
+                                  ]
+, "postValueTitles":              [ [ "Preis" , "Erstzulassung" , "Kilometerstand" ]
+                                  , [ "Preço" , "Ano"           , "Kilometragem"   ]
+                                  , [ "Prix"  , "Année"         , "Kilométrage"    ]
+                                  , [ "Price" , "Year"          , "Mileage"        ]
+                                  ]
+, "postSearchValueTitles":        [ [ "Max Preis"    , "Erstzulassung Minimun" , "Max Kilometerstand"  ]
+                                  , [ "Preço máximo" , "Ano mínimo"            , "Kilometragem máxima" ]
+                                  , [ "Prix maximum" , "Année"                 , "Kilométrage maximum" ]
+                                  , [ "Max price"    , "Min Year"              , "Max mileage"         ]
+                                  ]
+, "rangeUnits":                   [ [ "€ " , "" , "" , "" , "" , "km" ]
+                                  , [ "€ " , "" , "" , "" , "" , "km" ]
+                                  , [ "€ " , "" , "" , "" , "" , "km" ]
+                                  , [ "€ " , "" , "" , "" , "" , "km" ]
+                                  ]
+, "newPostErrorTitles":           [ [ "Fehler aufgetreten" , "Post gesendet"  ]
+                                  , [ "Ocorreu um erro"    , "Post enviado"   ]
+                                  , [ "Erreur"             , "Message envoyé" ]
+                                  , [ "Error"              , "Post sent" ]
+                                  ]
+, "newPostErrorBodies":           [ [ "Fehler aufgetreten. Sellen Sie sicher, dass sie eine Internet Verbindung haben." , "Nach der Bestätigung finden Sie ihr Post im POSTS Bildschirm." ]
+                                  , [ "Ocorreu um error. Certifique-se que você está conectado a internet."             , "Após confirmação o post se encontrará na tela POSTS."          ]
+                                  , [ "Erreur. Assurez-vous que vous êtes connecté à Internet."                         , "Après confirmation, le message sera sur l'écran POSTS."        ]
+                                  , [ "An error occurred. Make sure you have an internet connection"                    , "Your post can now be found in the POST screen."                ]
+                                  ]
+, "usefulWords":                  [ [ "Zurück"  , "Alle"  , "Suchen"     ]
+                                  , [ "Voltar"  , "Todos" , "Buscar"     ]
+                                  , [ "Reviens" , "Tout"  , "Rechercher" ]
+                                  , [ "Back"    , "All"   , "Search"     ]
+                                  ]
+, "statsTitleAndFields":          [ [ "Post Statistik"       , "Sucherscheinungen"      , "Gesehen"        , "Clicks"]
+                                  , [ "Estatísticas do post" , "Ocorrência em buscas"   , "Visualisações"  , "Cliques"]
+                                  , [ "Post statistique"     , "Occurrence on searches" , "Visualizations" , "Occurrence on searches"]
+                                  , [ "Post statistics"      , "Clicks"                 , "Visualizations" , "Clicks"]
+                                  ]
+, "ntfTitleDesc":                 [ [ "Chats"        , "Benachrichtigung von neuen Nachrichten empfangen wenn das app ausgeschaltet ist."     , "Posts" , "xxxxxxxxx Change this" ]
+                                  , [ "Conversas"    , "Receber notificações de novas mensagens de chat quando a app estiver offline."        , "Posts" , "xxxxxxxxx Change this" ]
+                                  , [ "Conversation" , "Recevez des notifications de nouveaux messages lorsque l'application est hors ligne." , "Posts" , "xxxxxxxxx Change this" ]
+                                  , [ "Conversation" , "Receive notification of new messages when the app is turned off."                     , "Posts" , "xxxxxxxxx Change this" ]
+                                  ]
+, "locationTreeDepthNames":       [ [ "Region" , "Land"    , "Bundesland" , "Bezirk"      , "Landkreis"  , "Stadt"  , "Gemeinde"]
+                                  , [ "Região" , "País"    , "Estado"     , "Sub-região"  , "Sub-região" , "Cidade" , "Bairro"]
+                                  , [ "Région" , "Pays"    , "Région"     , "Département" , "Commune"    , "Ville"  , "Ville"]
+                                  , [ "Region" , "Country" , "State"      , "Sub-region"  , "Sub-region" , "City"   , "Town"]
+                                  ]
+, "productTreeDepthNames":        [ [ "Fahrzeugtyp"  , "Marke"  , "Modell" , "Submodell"   , "b" , "c" , "d"]
+                                  , [ "Veículo"      , "Marca"  , "Modelo" , "Submodelo"   , "b" , "c" , "d"]
+                                  , [ "Véhicule"     , "Marque" , "Modèle" , "Sous-modèle" , "b" , "c" , "d"]
+                                  , [ "Vehicle type" , "Brand"  , "Model"  , "Sub-model"   , "b" , "c" , "d"]
+                                  ]
+, "paymentValues":                [ " 0€" , "20€" , "30€"]
+, "paymentValueTitles":           [ ["Kostenlos" , "Standard" , "Premium"]
+                                  , ["Grátis"    , "Standard" , "Premium"]
+                                  , ["Gratuit"   , "Standard" , "Premium"]
+                                  , ["Free"      , "Standard" , "Premium"]
+                                  ]
+, "paymentValueSubtitles":        [ [ "Keine Einschränkung."               , "Vorzug auf kostelose Anzeige in den Suchen."     , "Vorzug auf alle andere in Suchen." ]
+                                  , [ "Possibiliade de upgrade posterior." , "Prioridade sobre os anúncios grátis nas buscas." , "Prioridade máxima nas buscas. Para quem nao tem tempo a perder."]
+                                  , [ "Pas de réstriction."                , "Pas de réstriction."                             , "Pas de réstriction." ]
+                                  , [ "No restriction."                    , "No restriction."                                 , "No restriction."      ]
+                                  ]
+, "rangesMinMax":                 [ 0 , 100000 , 1980 , 2033 , 0 , 300000 ]
+, "rangeDivs":                    [ 100 , 53 , 300]
+}
+

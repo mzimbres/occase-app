@@ -1,0 +1,6486 @@
+0	Config
+1	Orten:Localizações:Emplacements:Locations
+2	Belgien:Bélgica:Belgique:Belgium
+3	Brüssel-Hauptstadt:Bruxelas capital: Bruxelles capitale
+4	Brüssel-Hauptstadt:Bruxelas capital: Bruxelles capitale
+3	Flandern
+4	Antwerpen
+4	Flämisch-Brabant
+4	Limburg
+4	Ostflandern:Flandres oriental:Flandre orientale
+4	Westflandern:Flanders ocidental:Flandre Occidentale
+3	Wallonien
+4	Hennegau
+4	Luxemburg
+4	Lüttich
+4	Namur
+4	Wallonisch-Brabant
+2	Deutschland:Alemanha:Allemagne:Germany
+3	Baden-Württemberg
+4	Freiburg
+5	Breisgau-Hochschwarzwald
+6	Bad Krozingen
+6	Breisach am Rhein
+6	Bötzingen
+6	Ehrenkirchen
+6	Gundelfingen
+6	Heitersheim
+6	Ihringen
+6	Kirchzarten
+6	Lenzkirch
+6	Löffingen
+6	March
+6	Merzhausen
+6	Müllheim
+6	Münstertal/Schwarzwald
+6	Neuenburg am Rhein
+6	Schallstadt
+6	Staufen im Breisgau
+6	Titisee-Neustadt
+6	Umkirch
+6	Vogtsburg im Kaiserstuhl
+5	Emmendingen
+6	Denzlingen
+6	Elzach
+6	Emmendingen
+6	Endingen am Kaiserstuhl
+6	Herbolzheim
+6	Kenzingen
+6	Teningen
+6	Waldkirch
+5	Freiburg im Breisgau
+6	Freiburg im Breisgau
+5	Konstanz
+6	Allensbach
+6	Engen
+6	Gottmadingen
+6	Hilzingen
+6	Konstanz, Universitätsstadt
+6	Radolfzell am Bodensee
+6	Reichenau
+6	Rielasingen-Worblingen
+6	Singen (Hohentwiel)
+6	Stockach
+5	Lörrach
+6	Efringen-Kirchen
+6	Grenzach-Wyhlen
+6	Kandern
+6	Lörrach
+6	Rheinfelden (Baden)
+6	Schliengen
+6	Schopfheim
+6	Steinen
+6	Weil am Rhein
+6	Zell im Wiesental
+5	Ortenaukreis
+6	Achern
+6	Appenweier
+6	Ettenheim
+6	Friesenheim
+6	Gengenbach
+6	Haslach im Kinzigtal
+6	Hausach
+6	Hohberg
+6	Kappel-Grafenhausen
+6	Kappelrodeck
+6	Kehl
+6	Kippenheim
+6	Lahr/Schwarzwald
+6	Mahlberg
+6	Neuried
+6	Oberkirch
+6	Offenburg
+6	Renchen
+6	Rheinau
+6	Sasbach
+6	Schutterwald
+6	Schwanau
+6	Willstätt
+6	Wolfach
+6	Zell am Harmersbach
+5	Rottweil
+6	Deißlingen
+6	Dornhan
+6	Dunningen
+6	Oberndorf am Neckar
+6	Rottweil
+6	Schramberg
+6	Sulz am Neckar
+6	Zimmern ob Rottweil
+5	Schwarzwald-Baar-Kreis
+6	Bad Dürrheim
+6	Blumberg
+6	Brigachtal
+6	Bräunlingen
+6	Donaueschingen
+6	Furtwangen im Schwarzwald
+6	Hüfingen
+6	Königsfeld im Schwarzwald
+6	Niedereschach
+6	St. Georgen im Schwarzwald
+6	Villingen-Schwenningen
+5	Tuttlingen
+6	Aldingen
+6	Geisingen
+6	Immendingen
+6	Spaichingen
+6	Trossingen
+6	Tuttlingen
+5	Waldshut
+6	Albbruck
+6	Bad Säckingen
+6	Bonndorf im Schwarzwald
+6	Jestetten
+6	Klettgau
+6	Küssaberg
+6	Lauchringen
+6	Laufenburg (Baden)
+6	Murg
+6	Stühlingen
+6	Waldshut-Tiengen
+6	Wehr
+6	Wutöschingen
+6	Ühlingen-Birkendorf
+4	Karlsruhe
+5	Baden-Baden
+6	Baden-Baden
+5	Calw
+6	Altensteig
+6	Althengstett
+6	Bad Herrenalb
+6	Bad Liebenzell
+6	Bad Wildbad
+6	Calw
+6	Haiterbach
+6	Nagold
+6	Neubulach
+6	Schömberg
+6	Wildberg
+5	Enzkreis
+6	Birkenfeld
+6	Heimsheim
+6	Illingen
+6	Ispringen
+6	Keltern
+6	Knittlingen
+6	Kämpfelbach
+6	Königsbach-Stein
+6	Maulbronn
+6	Mühlacker
+6	Neuenbürg
+6	Neuhausen
+6	Neulingen
+6	Niefern-Öschelbronn
+6	Remchingen
+6	Straubenhardt
+6	Tiefenbronn
+6	Wiernsheim
+5	Freudenstadt
+6	Alpirsbach
+6	Baiersbronn
+6	Dornstetten
+6	Eutingen im Gäu
+6	Freudenstadt
+6	Horb am Neckar
+6	Loßburg
+6	Pfalzgrafenweiler
+6	Waldachtal
+5	Heidelberg
+6	Heidelberg
+5	Karlsruhe
+6	Bad Schönborn
+6	Bretten
+6	Bruchsal
+6	Dettenheim
+6	Eggenstein-Leopoldshafen
+6	Ettlingen
+6	Forst
+6	Graben-Neudorf
+6	Hambrücken
+6	Karlsbad
+6	Karlsdorf-Neuthard
+6	Karlsruhe
+6	Kraichtal
+6	Kronau
+6	Linkenheim-Hochstetten
+6	Malsch
+6	Oberderdingen
+6	Oberhausen-Rheinhausen
+6	Pfinztal
+6	Philippsburg
+6	Rheinstetten
+6	Stutensee
+6	Ubstadt-Weiher
+6	Waghäusel
+6	Waldbronn
+6	Walzbachtal
+6	Weingarten (Baden)
+6	Östringen
+5	Mannheim
+6	Mannheim, Universitätsstadt
+5	Neckar-Odenwald-Kreis
+6	Billigheim
+6	Buchen (Odenwald)
+6	Elztal
+6	Hardheim
+6	Mosbach
+6	Obrigheim
+6	Osterburken
+6	Walldürn
+5	Pforzheim
+6	Pforzheim
+5	Rastatt
+6	Bietigheim
+6	Bühl
+6	Bühlertal
+6	Durmersheim
+6	Gaggenau
+6	Gernsbach
+6	Hügelsheim
+6	Iffezheim
+6	Kuppenheim
+6	Muggensturm
+6	Ottersweier
+6	Rastatt
+6	Rheinmünster
+6	Sinzheim
+5	Rhein-Neckar-Kreis
+6	Altlußheim
+6	Angelbachtal
+6	Bammental
+6	Brühl
+6	Dielheim
+6	Dossenheim
+6	Eberbach
+6	Edingen-Neckarhausen
+6	Eppelheim
+6	Heddesheim
+6	Hemsbach
+6	Hirschberg an der Bergstraße
+6	Hockenheim
+6	Ilvesheim
+6	Ketsch
+6	Ladenburg
+6	Laudenbach
+6	Leimen
+6	Meckesheim
+6	Mühlhausen
+6	Neckargemünd
+6	Neulußheim
+6	Nußloch
+6	Oftersheim
+6	Plankstadt
+6	Rauenberg
+6	Reilingen
+6	Sandhausen
+6	Schriesheim
+6	Schwetzingen
+6	Sinsheim
+6	St. Leon-Rot
+6	Waibstadt
+6	Walldorf
+6	Weinheim
+6	Wiesloch
+4	Stuttgart
+5	Böblingen
+6	Aidlingen
+6	Bondorf
+6	Böblingen
+6	Ehningen
+6	Grafenau
+6	Gärtringen
+6	Gäufelden
+6	Herrenberg
+6	Holzgerlingen
+6	Jettingen
+6	Leonberg
+6	Magstadt
+6	Nufringen
+6	Renningen
+6	Rutesheim
+6	Schönaich
+6	Sindelfingen
+6	Steinenbronn
+6	Waldenbuch
+6	Weil der Stadt
+6	Weil im Schönbuch
+6	Weissach
+5	Esslingen
+6	Aichtal
+6	Aichwald
+6	Altbach
+6	Baltmannsweiler
+6	Deizisau
+6	Denkendorf
+6	Dettingen unter Teck
+6	Esslingen am Neckar
+6	Filderstadt
+6	Frickenhausen
+6	Kirchheim unter Teck
+6	Köngen
+6	Leinfelden-Echterdingen
+6	Lenningen
+6	Neckartenzlingen
+6	Neuffen
+6	Neuhausen auf den Fildern
+6	Nürtingen
+6	Oberboihingen
+6	Ostfildern
+6	Plochingen
+6	Reichenbach an der Fils
+6	Weilheim an der Teck
+6	Wendlingen am Neckar
+6	Wernau (Neckar)
+6	Wolfschlugen
+5	Göppingen
+6	Bad Boll
+6	Böhmenkirch
+6	Deggingen
+6	Donzdorf
+6	Ebersbach an der Fils
+6	Eislingen/Fils
+6	Geislingen an der Steige
+6	Göppingen
+6	Heiningen
+6	Kuchen
+6	Rechberghausen
+6	Salach
+6	Süßen
+6	Uhingen
+5	Heidenheim
+6	Gerstetten
+6	Giengen an der Brenz
+6	Heidenheim an der Brenz
+6	Herbrechtingen
+6	Königsbronn
+6	Nattheim
+6	Sontheim an der Brenz
+6	Steinheim am Albuch
+5	Heilbronn
+6	Bad Friedrichshall
+6	Bad Rappenau
+6	Bad Wimpfen
+6	Beilstein
+6	Brackenheim
+6	Eppingen
+6	Erlenbach
+6	Flein
+6	Gemmingen
+6	Gundelsheim
+6	Güglingen
+6	Heilbronn
+6	Ilsfeld
+6	Kirchardt
+6	Lauffen am Neckar
+6	Leingarten
+6	Möckmühl
+6	Neckarsulm
+6	Neudenau
+6	Neuenstadt am Kocher
+6	Nordheim
+6	Obersulm
+6	Oedheim
+6	Schwaigern
+6	Untergruppenbach
+6	Weinsberg
+6	Wüstenrot
+5	Hohenlohekreis
+6	Bretzfeld
+6	Forchtenberg
+6	Ingelfingen
+6	Kupferzell
+6	Künzelsau
+6	Neuenstein
+6	Pfedelbach
+6	Schöntal
+6	Öhringen
+5	Ludwigsburg
+6	Asperg
+6	Benningen am Neckar
+6	Besigheim
+6	Bietigheim-Bissingen
+6	Bönnigheim
+6	Ditzingen
+6	Eberdingen
+6	Erdmannhausen
+6	Freiberg am Neckar
+6	Gerlingen
+6	Großbottwar
+6	Hemmingen
+6	Ingersheim
+6	Kirchheim am Neckar
+6	Korntal-Münchingen
+6	Kornwestheim
+6	Ludwigsburg
+6	Löchgau
+6	Marbach am Neckar
+6	Markgröningen
+6	Murr
+6	Möglingen
+6	Oberstenfeld
+6	Pleidelsheim
+6	Remseck am Neckar
+6	Sachsenheim
+6	Schwieberdingen
+6	Sersheim
+6	Steinheim an der Murr
+6	Tamm
+6	Vaihingen an der Enz
+5	Main-Tauber-Kreis
+6	Bad Mergentheim
+6	Boxberg
+6	Igersheim
+6	Külsheim
+6	Lauda-Königshofen
+6	Tauberbischofsheim
+6	Weikersheim
+6	Wertheim
+5	Ostalbkreis
+6	Aalen
+6	Abtsgmünd
+6	Bopfingen
+6	Ellwangen (Jagst)
+6	Essingen
+6	Heubach
+6	Hüttlingen
+6	Lorch
+6	Mutlangen
+6	Neresheim
+6	Oberkochen
+6	Schwäbisch Gmünd
+6	Waldstetten
+6	Westhausen
+5	Rems-Murr-Kreis
+6	Alfdorf
+6	Aspach
+6	Auenwald
+6	Backnang
+6	Berglen
+6	Fellbach
+6	Kernen im Remstal
+6	Korb
+6	Leutenbach
+6	Murrhardt
+6	Plüderhausen
+6	Remshalden
+6	Rudersberg
+6	Schorndorf
+6	Schwaikheim
+6	Sulzbach an der Murr
+6	Urbach
+6	Waiblingen
+6	Weinstadt
+6	Weissach im Tal
+6	Welzheim
+6	Winnenden
+6	Winterbach
+5	Schwäbisch Hall
+6	Blaufelden
+6	Crailsheim
+6	Gaildorf
+6	Ilshofen
+6	Mainhardt
+6	Obersontheim
+6	Rosengarten
+6	Rot am See
+6	Satteldorf
+6	Schrozberg
+6	Schwäbisch Hall
+5	Stuttgart
+6	Stuttgart, Landeshauptstadt
+4	Tübingen
+5	Alb-Donau-Kreis
+6	Blaubeuren
+6	Blaustein
+6	Dietenheim
+6	Dornstadt
+6	Ehingen (Donau)
+6	Erbach
+6	Laichingen
+6	Langenau
+6	Munderkingen
+6	Schelklingen
+5	Biberach
+6	Bad Schussenried
+6	Biberach an der Riß
+6	Ertingen
+6	Laupheim
+6	Ochsenhausen
+6	Riedlingen
+6	Schemmerhofen
+6	Schwendi
+6	Warthausen
+5	Bodenseekreis
+6	Friedrichshafen
+6	Immenstaad am Bodensee
+6	Kressbronn am Bodensee
+6	Langenargen
+6	Markdorf
+6	Meckenbeuren
+6	Meersburg
+6	Salem
+6	Tettnang
+6	Uhldingen-Mühlhofen
+6	Überlingen
+5	Ravensburg
+6	Argenbühl
+6	Aulendorf
+6	Bad Waldsee
+6	Bad Wurzach
+6	Baienfurt
+6	Baindt
+6	Horgenzell
+6	Isny im Allgäu
+6	Kißlegg
+6	Leutkirch im Allgäu
+6	Ravensburg
+6	Wangen im Allgäu
+6	Weingarten
+6	Wilhelmsdorf
+5	Reutlingen
+6	Bad Urach
+6	Dettingen an der Erms
+6	Engstingen
+6	Eningen unter Achalm
+6	Lichtenstein
+6	Metzingen
+6	Münsingen
+6	Pfullingen
+6	Pliezhausen
+6	Reutlingen
+6	Sonnenbühl
+6	St. Johann
+6	Trochtelfingen
+6	Walddorfhäslach
+6	Wannweil
+5	Sigmaringen
+6	Bad Saulgau
+6	Gammertingen
+6	Krauchenwies
+6	Mengen
+6	Meßkirch
+6	Ostrach
+6	Pfullendorf
+6	Sigmaringen
+5	Tübingen
+6	Ammerbuch
+6	Bodelshausen
+6	Dettenhausen
+6	Dußlingen
+6	Gomaringen
+6	Kirchentellinsfurt
+6	Kusterdingen
+6	Mössingen
+6	Ofterdingen
+6	Rottenburg am Neckar
+6	Tübingen, Universitätsstadt
+5	Ulm, Stadtkreis
+6	Ulm, Universitätsstadt
+5	Zollernalbkreis
+6	Albstadt
+6	Balingen
+6	Bisingen
+6	Burladingen
+6	Geislingen
+6	Haigerloch
+6	Hechingen
+6	Meßstetten
+6	Rangendingen
+6	Rosenfeld
+6	Winterlingen
+3	Bayern
+4	Mittelfranken
+5	Ansbach
+6	Bechhofen
+6	Dietenhofen
+6	Dinkelsbühl, GKSt
+6	Feuchtwangen
+6	Heilsbronn
+6	Herrieden
+6	Leutershausen
+6	Neuendettelsau
+6	Rothenburg ob der Tauber, GKSt
+6	Wassertrüdingen
+6	Windsbach
+5	Ansbach, Kreisfreie Stadt
+6	Ansbach
+5	Erlangen, Kreisfreie Stadt
+6	Erlangen
+5	Erlangen-Höchstadt
+6	Adelsdorf
+6	Baiersdorf
+6	Eckental
+6	Hemhofen
+6	Heroldsberg
+6	Herzogenaurach
+6	Höchstadt a.d.Aisch
+6	Uttenreuth
+6	Weisendorf
+5	Fürth
+6	Cadolzburg
+6	Langenzenn
+6	Oberasbach
+6	Roßtal
+6	Stein
+6	Veitsbronn
+6	Wilhermsdorf
+6	Zirndorf
+5	Fürth, Kreisfreie Stadt
+6	Fürth
+5	Neustadt a.d.Aisch-Bad Windsheim
+6	Bad Windsheim
+6	Emskirchen
+6	Markt Erlbach
+6	Neustadt a.d.Aisch
+6	Uffenheim
+5	Nürnberg, Kreisfreie Stadt
+6	Nürnberg
+5	Nürnberger
+6	Altdorf b.Nürnberg
+6	Burgthann
+6	Feucht
+6	Hersbruck
+6	Lauf a.d.Pegnitz
+6	Leinburg
+6	Pommelsbrunn
+6	Röthenbach a.d.Pegnitz
+6	Schnaittach
+6	Schwaig b.Nürnberg
+6	Schwarzenbruck
+5	Roth
+6	Abenberg
+6	Allersberg
+6	Büchenbach
+6	Georgensgmünd
+6	Greding
+6	Hilpoltstein
+6	Rednitzhembach
+6	Roth
+6	Schwanstetten
+6	Spalt
+6	Thalmässing
+6	Wendelstein
+5	Schwabach, Kreisfreie Stadt
+6	Schwabach
+5	Weißenburg-Gunzenhausen
+6	Gunzenhausen
+6	Pleinfeld
+6	Treuchtlingen
+6	Weißenburg i.Bay., GKSt
+4	Niederbayern
+5	Deggendorf
+6	Deggendorf, GKSt
+6	Hengersberg
+6	Osterhofen
+6	Plattling
+5	Dingolfing-Landau
+6	Dingolfing
+6	Eichendorf
+6	Landau a.d.Isar
+6	Mengkofen
+6	Pilsting
+6	Reisbach
+6	Wallersdorf
+5	Freyung-Grafenau
+6	Freyung
+6	Grafenau
+6	Waldkirchen
+5	Kelheim
+6	Abensberg
+6	Bad Abbach
+6	Kelheim
+6	Langquaid
+6	Mainburg
+6	Neustadt a.d.Donau
+6	Riedenburg
+6	Saal a.d.Donau
+5	Landshut
+6	Altdorf
+6	Bodenkirchen
+6	Bruckberg
+6	Ergolding
+6	Ergoldsbach
+6	Essenbach
+6	Geisenhausen
+6	Kumhausen
+6	Pfeffenhausen
+6	Rottenburg a.d.Laaber
+6	Velden
+6	Vilsbiburg
+5	Landshut, Kreisfreie Stadt
+6	Landshut
+5	Passau
+6	Bad Füssing
+6	Bad Griesbach i.Rottal
+6	Fürstenzell
+6	Hauzenberg
+6	Hutthurm
+6	Ortenburg
+6	Pocking
+6	Ruhstorf a.d.Rott
+6	Salzweg
+6	Tiefenbach
+6	Untergriesbach
+6	Vilshofen an der Donau
+6	Wegscheid
+5	Passau, Kreisfreie Stadt
+6	Passau
+5	Regen
+6	Regen
+6	Viechtach
+6	Zwiesel
+5	Rottal-Inn
+6	Arnstorf
+6	Bad Birnbach
+6	Eggenfelden
+6	Gangkofen
+6	Kirchdorf a.Inn
+6	Pfarrkirchen
+6	Simbach a.Inn
+6	Triftern
+5	Straubing, Kreisfreie Stadt
+6	Straubing
+5	Straubing-Bogen
+6	Bogen
+6	Geiselhöring
+6	Mallersdorf-Pfaffenberg
+4	Oberbayern
+5	Altötting
+6	Altötting
+6	Burghausen
+6	Burgkirchen a.d.Alz
+6	Garching a.d.Alz
+6	Neuötting
+6	Töging a.Inn
+5	Bad Tölz-Wolfratshausen
+6	Bad Tölz
+6	Dietramszell
+6	Egling
+6	Geretsried
+6	Lenggries
+6	Wolfratshausen
+5	Berchtesgadener
+6	Ainring
+6	Bad Reichenhall, GKSt
+6	Berchtesgaden
+6	Bischofswiesen
+6	Freilassing
+6	Laufen
+6	Piding
+6	Saaldorf-Surheim
+6	Schönau a.Königssee
+6	Teisendorf
+5	Dachau
+6	Altomünster
+6	Bergkirchen
+6	Dachau, GKSt
+6	Erdweg
+6	Haimhausen
+6	Hebertshausen
+6	Karlsfeld
+6	Markt Indersdorf
+6	Odelzhausen
+6	Petershausen
+6	Röhrmoos
+6	Schwabhausen
+5	Ebersberg
+6	Ebersberg
+6	Glonn
+6	Grafing b.München
+6	Kirchseeon
+6	Markt Schwaben
+6	Pliening
+6	Poing
+6	Vaterstetten
+6	Zorneding
+5	Eichstätt
+6	Altmannstein
+6	Beilngries
+6	Eichstätt, GKSt
+6	Gaimersheim
+6	Großmehring
+6	Kipfenberg
+6	Kösching
+5	Erding
+6	Dorfen
+6	Erding, GKSt
+6	Isen
+6	Moosinning
+6	Oberding
+6	Taufkirchen (Vils)
+6	Wartenberg
+5	Freising
+6	Allershausen
+6	Au i.d.Hallertau
+6	Eching
+6	Fahrenzhausen
+6	Freising, GKSt
+6	Hallbergmoos
+6	Moosburg a.d.Isar
+6	Nandlstadt
+6	Neufahrn b.Freising
+5	Fürstenfeldbruck
+6	Eichenau
+6	Emmering
+6	Fürstenfeldbruck, GKSt
+6	Germering, GKSt
+6	Gröbenzell
+6	Maisach
+6	Olching
+6	Puchheim
+5	Garmisch-Partenkirchen
+6	Garmisch-Partenkirchen
+6	Mittenwald
+6	Murnau a.Staffelsee
+6	Oberammergau
+5	Ingolstadt, Kreisfreie Stadt
+6	Ingolstadt
+5	Landsberg am Lech
+6	Dießen am Ammersee
+6	Geltendorf
+6	Kaufering
+6	Landsberg am Lech, GKSt
+5	Miesbach
+6	Bad Wiessee
+6	Fischbachau
+6	Gmund a.Tegernsee
+6	Hausham
+6	Holzkirchen
+6	Miesbach
+6	Rottach-Egern
+6	Schliersee
+6	Waakirchen
+5	Mühldorf a.Inn
+6	Ampfing
+6	Haag i.OB
+6	Mühldorf a.Inn
+6	Neumarkt-Sankt Veit
+6	Waldkraiburg
+5	München
+6	Aschheim
+6	Aying
+6	Brunnthal
+6	Feldkirchen
+6	Garching b.München
+6	Grasbrunn
+6	Gräfelfing
+6	Grünwald
+6	Haar
+6	Hohenbrunn
+6	Höhenkirchen-Siegertsbrunn
+6	Ismaning
+6	Kirchheim b.München
+6	Neubiberg
+6	Neuried
+6	Oberhaching
+6	Oberschleißheim
+6	Ottobrunn
+6	Planegg
+6	Pullach i.Isartal
+6	Putzbrunn
+6	Sauerlach
+6	Schäftlarn
+6	Taufkirchen
+6	Unterföhring
+6	Unterhaching
+6	Unterschleißheim
+5	München, Landeshauptstadt
+6	München, Landeshauptstadt
+5	Neuburg-Schrobenhausen
+6	Karlshuld
+6	Neuburg a.d.Donau, GKSt
+6	Schrobenhausen
+5	Pfaffenhofen a.d.Ilm
+6	Baar-Ebenhausen
+6	Geisenfeld
+6	Manching
+6	Pfaffenhofen a.d.Ilm
+6	Reichertshofen
+6	Rohrbach
+6	Schweitenkirchen
+6	Vohburg a.d.Donau
+6	Wolnzach
+5	Rosenheim
+6	Aschau i.Chiemgau
+6	Bad Aibling
+6	Bad Endorf
+6	Bad Feilnbach
+6	Bernau a.Chiemsee
+6	Brannenburg
+6	Bruckmühl
+6	Feldkirchen-Westerham
+6	Großkarolinenfeld
+6	Kiefersfelden
+6	Kolbermoor
+6	Oberaudorf
+6	Prien a.Chiemsee
+6	Raubling
+6	Riedering
+6	Rohrdorf
+6	Stephanskirchen
+6	Tuntenhausen
+6	Wasserburg a.Inn
+5	Rosenheim, Kreisfreie Stadt
+6	Rosenheim
+5	Starnberg
+6	Berg
+6	Gauting
+6	Gilching
+6	Herrsching a.Ammersee
+6	Krailling
+6	Pöcking
+6	Seefeld
+6	Starnberg
+6	Tutzing
+6	Weßling
+6	Wörthsee
+5	Traunstein
+6	Grassau
+6	Ruhpolding
+6	Siegsdorf
+6	Tacherting
+6	Tittmoning
+6	Traunreut
+6	Traunstein, GKSt
+6	Trostberg
+6	Waging a.See
+6	Übersee
+5	Weilheim-Schongau
+6	Peiting
+6	Peißenberg
+6	Penzberg
+6	Schongau
+6	Weilheim i.OB
+4	Oberfranken
+5	Bamberg
+6	Bischberg
+6	Burgebrach
+6	Frensdorf
+6	Hallstadt
+6	Hirschaid
+6	Litzendorf
+6	Memmelsdorf
+6	Scheßlitz
+6	Schlüsselfeld
+6	Stegaurach
+6	Strullendorf
+6	Zapfendorf
+5	Bamberg, Kreisfreie Stadt
+6	Bamberg
+5	Bayreuth
+6	Bindlach
+6	Eckersdorf
+6	Hollfeld
+6	Pegnitz
+6	Pottenstein
+6	Speichersdorf
+6	Weidenberg
+5	Bayreuth, Kreisfreie Stadt
+6	Bayreuth
+5	Coburg
+6	Bad Rodach
+6	Ebersdorf b.Coburg
+6	Neustadt b.Coburg, GKSt
+6	Rödental
+6	Weitramsdorf
+5	Coburg, Kreisfreie Stadt
+6	Coburg
+5	Forchheim
+6	Ebermannstadt
+6	Eggolsheim
+6	Forchheim, GKSt
+6	Heroldsbach
+6	Igensdorf
+6	Neunkirchen a.Brand
+5	Hof
+6	Helmbrechts
+6	Münchberg
+6	Naila
+6	Oberkotzau
+6	Rehau
+6	Schwarzenbach a.d.Saale
+5	Hof, Kreisfreie Stadt
+6	Hof
+5	Kronach
+6	Kronach
+6	Küps
+5	Kulmbach
+6	Kulmbach, GKSt
+6	Mainleus
+5	Lichtenfels
+6	Altenkunstadt
+6	Bad Staffelstein
+6	Burgkunstadt
+6	Ebensfeld
+6	Lichtenfels
+6	Michelau i.OFr.
+5	Wunsiedel i.Fichtelgebirge
+6	Arzberg
+6	Marktredwitz, GKSt
+6	Selb, GKSt
+6	Wunsiedel
+4	Oberpfalz
+5	Amberg, Kreisfreie Stadt
+6	Amberg
+5	Amberg-Sulzbach
+6	Auerbach i.d.OPf.
+6	Hirschau
+6	Kümmersbruck
+6	Sulzbach-Rosenberg
+6	Vilseck
+5	Cham
+6	Bad Kötzting
+6	Cham
+6	Furth im Wald
+6	Roding
+6	Waldmünchen
+5	Neumarkt i.d.OPf.
+6	Berching
+6	Berg b.Neumarkt i.d.OPf.
+6	Dietfurt a.d.Altmühl
+6	Freystadt
+6	Mühlhausen
+6	Neumarkt i.d.OPf., GKSt
+6	Parsberg
+6	Postbauer-Heng
+6	Pyrbaum
+6	Seubersdorf i.d.OPf.
+6	Velburg
+5	Neustadt a.d.Waldnaab
+6	Grafenwöhr
+6	Neustadt a.d.Waldnaab
+6	Vohenstrauß
+5	Regensburg
+6	Barbing
+6	Beratzhausen
+6	Bernhardswald
+6	Hemau
+6	Laaber
+6	Lappersdorf
+6	Neutraubling
+6	Nittendorf
+6	Obertraubling
+6	Pentling
+6	Regenstauf
+6	Schierling
+6	Sinzing
+6	Tegernheim
+6	Wenzenbach
+6	Zeitlarn
+5	Regensburg, Kreisfreie Stadt
+6	Regensburg
+5	Schwandorf
+6	Burglengenfeld
+6	Maxhütte-Haidhof
+6	Nabburg
+6	Neunburg vorm Wald
+6	Nittenau
+6	Oberviechtach
+6	Pfreimd
+6	Schwandorf, GKSt
+6	Schwarzenfeld
+6	Teublitz
+6	Wackersdorf
+6	Wernberg-Köblitz
+5	Tirschenreuth
+6	Erbendorf
+6	Kemnath
+6	Mitterteich
+6	Tirschenreuth
+6	Waldsassen
+5	Weiden i.d.OPf., Kreisfreie Stadt
+6	Weiden i.d.OPf.
+4	Schwaben
+5	Aichach-Friedberg
+6	Affing
+6	Aichach
+6	Dasing
+6	Friedberg
+6	Kissing
+6	Mering
+6	Pöttmes
+5	Augsburg
+6	Bobingen
+6	Diedorf
+6	Dinkelscherben
+6	Gersthofen
+6	Großaitingen
+6	Königsbrunn
+6	Langweid a.Lech
+6	Meitingen
+6	Neusäß
+6	Schwabmünchen
+6	Stadtbergen
+6	Untermeitingen
+6	Zusmarshausen
+5	Augsburg, Kreisfreie Stadt
+6	Augsburg
+5	Dillingen a.d.Donau
+6	Buttenwiesen
+6	Dillingen a.d.Donau, GKSt
+6	Gundelfingen a.d.Donau
+6	Höchstädt a.d.Donau
+6	Lauingen (Donau)
+6	Wertingen
+5	Donau-Ries
+6	Donauwörth, GKSt
+6	Harburg (Schwaben)
+6	Monheim
+6	Nördlingen, GKSt
+6	Oettingen i.Bay.
+6	Rain
+6	Wemding
+5	Günzburg
+6	Burgau
+6	Günzburg, GKSt
+6	Ichenhausen
+6	Jettingen-Scheppach
+6	Krumbach (Schwaben)
+6	Leipheim
+6	Thannhausen
+5	Kaufbeuren, Kreisfreie Stadt
+6	Kaufbeuren
+5	Kempten (Allgäu), Kreisfreie Stadt
+6	Kempten (Allgäu)
+5	Lindau (Bodensee)
+6	Lindau (Bodensee), GKSt
+6	Lindenberg i.Allgäu
+6	Weiler-Simmerberg
+5	Memmingen, Kreisfreie Stadt
+6	Memmingen
+5	Neu-Ulm
+6	Altenstadt
+6	Elchingen
+6	Illertissen
+6	Nersingen
+6	Neu-Ulm, GKSt
+6	Pfaffenhofen a.d.Roth
+6	Senden
+6	Vöhringen
+6	Weißenhorn
+5	Oberallgäu
+6	Altusried
+6	Bad Hindelang
+6	Blaichach
+6	Dietmannsried
+6	Durach
+6	Immenstadt i.Allgäu
+6	Oberstaufen
+6	Oberstdorf
+6	Sonthofen
+6	Waltenhofen
+6	Weitnau
+6	Wiggensbach
+5	Ostallgäu
+6	Buchloe
+6	Füssen
+6	Marktoberdorf
+6	Obergünzburg
+6	Pfronten
+5	Unterallgäu
+6	Babenhausen
+6	Bad Grönenbach
+6	Bad Wörishofen
+6	Mindelheim
+6	Ottobeuren
+6	Türkheim
+4	Unterfranken
+5	Aschaffenburg
+6	Alzenau
+6	Bessenbach
+6	Goldbach
+6	Großostheim
+6	Haibach
+6	Hösbach
+6	Kahl a.Main
+6	Karlstein a.Main
+6	Kleinostheim
+6	Laufach
+6	Mainaschaff
+6	Mömbris
+6	Stockstadt a.Main
+5	Aschaffenburg, Kreisfreie Stadt
+6	Aschaffenburg
+5	Bad Kissingen
+6	Bad Brückenau
+6	Bad Kissingen, GKSt
+6	Burkardroth
+6	Hammelburg
+6	Münnerstadt
+6	Oberthulba
+6	Oerlenbach
+5	Haßberge
+6	Ebern
+6	Eltmann
+6	Haßfurt
+6	Hofheim i.UFr.
+6	Knetzgau
+6	Zeil a.Main
+5	Kitzingen
+6	Dettelbach
+6	Kitzingen, GKSt
+6	Volkach
+5	Main-Spessart
+6	Arnstein
+6	Gemünden a.Main
+6	Karlstadt
+6	Lohr a.Main
+6	Marktheidenfeld
+6	Zellingen
+5	Miltenberg
+6	Elsenfeld
+6	Erlenbach a.Main
+6	Großheubach
+6	Kleinwallstadt
+6	Klingenberg a.Main
+6	Miltenberg
+6	Obernburg a.Main
+6	Sulzbach a.Main
+5	Rhön-Grabfeld
+6	Bad Königshofen i.Grabfeld
+6	Bad Neustadt a.d.Saale
+6	Mellrichstadt
+5	Schweinfurt
+6	Bergrheinfeld
+6	Dittelbrunn
+6	Gerolzhofen
+6	Gochsheim
+6	Kolitzheim
+6	Niederwerrn
+6	Schonungen
+6	Werneck
+5	Schweinfurt, Kreisfreie Stadt
+6	Schweinfurt
+5	Würzburg
+6	Estenfeld
+6	Gerbrunn
+6	Giebelstadt
+6	Höchberg
+6	Ochsenfurt
+6	Rimpar
+6	Rottendorf
+6	Veitshöchheim
+5	Würzburg, Kreisfreie Stadt
+6	Würzburg
+3	Berlin
+4	Berlin
+5	Berlin
+6	Berlin
+3	Brandenburg
+4	Barnim
+5	Ahrensfelde
+5	Bernau bei Berlin
+5	Biesenthal
+5	Eberswalde
+5	Panketal
+5	Schorfheide
+5	Wandlitz
+5	Werneuchen
+4	Brandenburg an der Havel
+5	Brandenburg an der Havel
+4	Cottbus, Kreisfreie Stadt
+5	Cottbus
+4	Dahme-Spreewald
+5	Bestensee
+5	Eichwalde
+5	Heidesee
+5	Königs Wusterhausen
+5	Luckau
+5	Lübben (Spreewald)
+5	Mittenwalde
+5	Schulzendorf
+5	Schönefeld
+5	Wildau
+5	Zeuthen
+4	Elbe-Elster
+5	Bad Liebenwerda
+5	Doberlug-Kirchhain
+5	Elsterwerda
+5	Falkenberg/Elster
+5	Finsterwalde
+5	Herzberg (Elster)
+5	Uebigau-Wahrenbrück
+4	Frankfurt (Oder), Kreisfreie Stadt
+5	Frankfurt (Oder)
+4	Havelland
+5	Brieselang
+5	Dallgow-Döberitz
+5	Falkensee
+5	Ketzin/Havel
+5	Nauen
+5	Premnitz
+5	Rathenow
+5	Schönwalde-Glien
+5	Wustermark
+4	Märkisch-Oderland
+5	Altlandsberg
+5	Bad Freienwalde
+5	Fredersdorf-Vogelsdorf
+5	Hoppegarten
+5	Müncheberg
+5	Neuenhagen bei Berlin
+5	Petershagen/Eggersdorf
+5	Rehfelde
+5	Rüdersdorf bei Berlin
+5	Seelow
+5	Strausberg
+5	Wriezen
+4	Oberhavel
+5	Birkenwerder
+5	Fürstenberg/Havel
+5	Glienicke/Nordbahn
+5	Gransee
+5	Hennigsdorf
+5	Hohen Neuendorf
+5	Kremmen
+5	Leegebruch
+5	Löwenberger Land
+5	Mühlenbecker Land
+5	Oberkrämer
+5	Oranienburg
+5	Velten
+5	Zehdenick
+4	Oberspreewald-Lausitz
+5	Calau
+5	Großräschen
+5	Lauchhammer
+5	Lübbenau/Spreewald
+5	Schipkau
+5	Schwarzheide
+5	Senftenberg
+5	Vetschau/Spreewald
+4	Oder-Spree
+5	Bad Saarow
+5	Beeskow
+5	Eisenhüttenstadt
+5	Erkner
+5	Fürstenwalde/Spree
+5	Grünheide (Mark)
+5	Schöneiche bei Berlin
+5	Storkow (Mark)
+5	Woltersdorf
+4	Ostprignitz-Ruppin
+5	Fehrbellin
+5	Kyritz
+5	Neuruppin
+5	Rheinsberg
+5	Wittstock/Dosse
+5	Wusterhausen/Dosse
+4	Potsdam, Kreisfreie Stadt
+5	Potsdam
+4	Potsdam-Mittelmark
+5	Bad Belzig
+5	Beelitz
+5	Groß Kreutz (Havel)
+5	Kleinmachnow
+5	Kloster Lehnin
+5	Michendorf
+5	Nuthetal
+5	Schwielowsee
+5	Stahnsdorf
+5	Teltow
+5	Treuenbrietzen
+5	Werder (Havel)
+4	Prignitz
+5	Karstädt
+5	Perleberg
+5	Pritzwalk
+5	Wittenberge
+4	Spree-Neiße
+5	Drebkau
+5	Forst (Lausitz)
+5	Guben
+5	Kolkwitz
+5	Spremberg
+4	Teltow-Fläming
+5	Am Mellensee
+5	Blankenfelde-Mahlow
+5	Großbeeren
+5	Jüterbog
+5	Luckenwalde
+5	Ludwigsfelde
+5	Niedergörsdorf
+5	Nuthe-Urstromtal
+5	Rangsdorf
+5	Trebbin
+5	Zossen
+4	Uckermark
+5	Angermünde
+5	Prenzlau
+5	Schwedt/Oder
+5	Templin
+3	Bremen
+4	Bremen, Kreisfreie Stadt
+5	Bremen
+4	Bremerhaven, Kreisfreie Stadt
+5	Bremerhaven
+3	Hamburg
+4	Hamburg
+5	Hamburg
+6	Hamburg, Freie und Hansestadt
+3	Hessen
+4	Darmstadt
+5	Bergstraße
+6	Bensheim
+6	Biblis
+6	Birkenau
+6	Bürstadt
+6	Einhausen
+6	Fürth
+6	Heppenheim (Bergstraße), Kreisstadt
+6	Lampertheim
+6	Lautertal (Odenwald)
+6	Lindenfels
+6	Lorsch, Karolingerstadt
+6	Mörlenbach
+6	Rimbach
+6	Viernheim
+6	Wald-Michelbach
+6	Zwingenberg
+5	Darmstadt
+6	Darmstadt, Wissenschaftsstadt
+5	Darmstadt-Dieburg
+6	Alsbach-Hähnlein
+6	Babenhausen
+6	Bickenbach
+6	Dieburg
+6	Eppertshausen
+6	Erzhausen
+6	Griesheim
+6	Groß-Umstadt
+6	Groß-Zimmern
+6	Modautal
+6	Mühltal
+6	Münster (Hessen)
+6	Ober-Ramstadt
+6	Otzberg
+6	Pfungstadt
+6	Reinheim
+6	Roßdorf
+6	Schaafheim
+6	Seeheim-Jugenheim
+6	Weiterstadt
+5	Frankfurt am Main
+6	Frankfurt am Main
+5	Groß-Gerau
+6	Biebesheim am Rhein
+6	Bischofsheim
+6	Büttelborn
+6	Gernsheim, Schöfferstadt
+6	Ginsheim-Gustavsburg
+6	Groß-Gerau
+6	Kelsterbach
+6	Mörfelden-Walldorf
+6	Nauheim
+6	Raunheim
+6	Riedstadt
+6	Rüsselsheim am Main
+6	Stockstadt am Rhein
+6	Trebur
+5	Hochtaunuskreis
+6	Bad Homburg v. d. Höhe
+6	Friedrichsdorf
+6	Glashütten
+6	Grävenwiesbach
+6	Kronberg im Taunus
+6	Königstein im Taunus
+6	Neu-Anspach
+6	Oberursel (Taunus)
+6	Schmitten
+6	Steinbach (Taunus)
+6	Usingen
+6	Wehrheim
+6	Weilrod
+5	Main-Kinzig-Kreis
+6	Bad Orb
+6	Bad Soden-Salmünster
+6	Biebergemünd
+6	Birstein
+6	Brachttal
+6	Bruchköbel
+6	Erlensee
+6	Freigericht
+6	Gelnhausen, Barbarossast., Krst.
+6	Großkrotzenburg
+6	Gründau
+6	Hanau, Brüder-Grimm-Stadt
+6	Hasselroth
+6	Langenselbold
+6	Linsengericht
+6	Maintal
+6	Neuberg
+6	Nidderau
+6	Rodenbach
+6	Schlüchtern
+6	Schöneck
+6	Sinntal
+6	Steinau an der Straße, Brüder-Grimm-Stadt
+6	Wächtersbach
+5	Main-Taunus-Kreis
+6	Bad Soden am Taunus
+6	Eppstein
+6	Eschborn
+6	Flörsheim am Main
+6	Hattersheim am Main
+6	Hochheim am Main
+6	Hofheim am Taunus, Kreisstadt
+6	Kelkheim (Taunus)
+6	Kriftel
+6	Liederbach am Taunus
+6	Schwalbach am Taunus
+6	Sulzbach (Taunus)
+5	Odenwaldkreis
+6	Bad König
+6	Brensbach
+6	Breuberg
+6	Erbach, Kreisstadt
+6	Höchst i. Odw.
+6	Lützelbach
+6	Michelstadt
+6	Oberzent
+6	Reichelsheim (Odenwald)
+5	Offenbach
+6	Dietzenbach, Kreisstadt
+6	Dreieich
+6	Egelsbach
+6	Hainburg
+6	Heusenstamm
+6	Langen (Hessen)
+6	Mainhausen
+6	Mühlheim am Main
+6	Neu-Isenburg
+6	Obertshausen
+6	Rodgau
+6	Rödermark
+6	Seligenstadt
+5	Offenbach am Main
+6	Offenbach am Main
+5	Rheingau-Taunus-Kreis
+6	Aarbergen
+6	Bad Schwalbach, Kreisstadt
+6	Eltville am Rhein
+6	Geisenheim, Hochschulstadt
+6	Heidenrod
+6	Hohenstein
+6	Hünstetten
+6	Idstein, Hochschulstadt
+6	Niedernhausen
+6	Oestrich-Winkel
+6	Rüdesheim am Rhein
+6	Schlangenbad
+6	Taunusstein
+6	Waldems
+6	Walluf
+5	Wetteraukreis
+6	Altenstadt
+6	Bad Nauheim
+6	Bad Vilbel
+6	Butzbach, Friedrich-Ludwig-Weidig-Stadt
+6	Büdingen
+6	Echzell
+6	Florstadt
+6	Friedberg (Hessen), Kreisstadt
+6	Gedern
+6	Karben
+6	Limeshain
+6	Münzenberg
+6	Nidda
+6	Niddatal
+6	Ober-Mörlen
+6	Ortenberg
+6	Ranstadt
+6	Reichelsheim (Wetterau)
+6	Rosbach v. d. Höhe
+6	Wölfersheim
+6	Wöllstadt
+5	Wiesbaden
+6	Wiesbaden, Landeshauptstadt
+4	Gießen
+5	Gießen
+6	Biebertal
+6	Buseck
+6	Fernwald
+6	Gießen, Universitätsstadt
+6	Grünberg
+6	Heuchelheim
+6	Hungen
+6	Langgöns
+6	Laubach
+6	Lich
+6	Linden
+6	Lollar
+6	Pohlheim
+6	Rabenau
+6	Reiskirchen
+6	Staufenberg
+6	Wettenberg
+5	Lahn-Dill-Kreis
+6	Aßlar
+6	Braunfels
+6	Dietzhölztal
+6	Dillenburg, Oranienstadt
+6	Driedorf
+6	Ehringshausen
+6	Eschenburg
+6	Greifenstein
+6	Haiger
+6	Herborn
+6	Hüttenberg
+6	Lahnau
+6	Leun
+6	Schöffengrund
+6	Sinn
+6	Solms
+6	Wetzlar
+5	Limburg-Weilburg
+6	Bad Camberg
+6	Beselich
+6	Brechen
+6	Dornburg
+6	Elz
+6	Hadamar
+6	Hünfelden
+6	Limburg a.d. Lahn, Kreisstadt
+6	Mengerskirchen, Marktflecken
+6	Runkel
+6	Selters (Taunus)
+6	Villmar, Marktflecken
+6	Waldbrunn (Westerwald)
+6	Weilburg
+6	Weilmünster, Marktflecken
+5	Marburg-Biedenkopf
+6	Amöneburg
+6	Bad Endbach
+6	Biedenkopf
+6	Breidenbach
+6	Cölbe
+6	Dautphetal
+6	Ebsdorfergrund
+6	Gladenbach
+6	Kirchhain
+6	Lahntal
+6	Lohra
+6	Marburg, Universitätsstadt
+6	Neustadt (Hessen)
+6	Stadtallendorf
+6	Weimar (Lahn)
+6	Wetter (Hessen)
+5	Vogelsbergkreis
+6	Alsfeld
+6	Homberg (Ohm)
+6	Lauterbach (Hessen), Kreisstadt
+6	Mücke
+6	Schlitz
+6	Schotten
+4	Kassel
+5	Fulda
+6	Burghaun, Marktgemeinde
+6	Eichenzell
+6	Eiterfeld, Marktgemeinde
+6	Flieden
+6	Fulda
+6	Gersfeld (Rhön)
+6	Großenlüder
+6	Hofbieber
+6	Hünfeld, Konrad-Zuse-Stadt
+6	Kalbach
+6	Künzell
+6	Neuhof
+6	Petersberg
+5	Hersfeld-Rotenburg
+6	Bad Hersfeld, Kreisstadt
+6	Bebra
+6	Heringen (Werra)
+6	Ludwigsau
+6	Niederaula, Marktgemeinde
+6	Rotenburg a. d. Fulda
+6	Wildeck
+5	Kassel
+6	Ahnatal
+6	Bad Emstal
+6	Baunatal
+6	Calden
+6	Espenau
+6	Fuldabrück
+6	Fuldatal
+6	Grebenstein
+6	Habichtswald
+6	Helsa
+6	Hofgeismar
+6	Immenhausen
+6	Kaufungen
+6	Lohfelden
+6	Naumburg
+6	Niestetal
+6	Schauenburg
+6	Vellmar
+6	Wolfhagen
+6	Zierenberg
+5	Kassel, Kreisfreie Stadt
+6	Kassel, documenta-Stadt
+5	Schwalm-Eder-Kreis
+6	Borken (Hessen)
+6	Edermünde
+6	Felsberg
+6	Frielendorf
+6	Fritzlar, Dom- und Kaiserstadt
+6	Gudensberg
+6	Guxhagen
+6	Homberg (Efze), Reformationsstadt, Kreisstadt
+6	Melsungen
+6	Neukirchen
+6	Niedenstein
+6	Schwalmstadt, Konfirmationsstadt
+6	Spangenberg, Liebenbachstadt
+6	Wabern
+5	Waldeck-Frankenberg
+6	Allendorf (Eder)
+6	Bad Arolsen
+6	Bad Wildungen
+6	Battenberg (Eder)
+6	Diemelstadt
+6	Edertal
+6	Frankenberg (Eder), Philipp-Soldan-Stadt
+6	Korbach, Hansestadt, Kreisstadt
+6	Volkmarsen
+6	Vöhl
+6	Waldeck
+6	Willingen (Upland)
+5	Werra-Meißner-Kreis
+6	Bad Sooden-Allendorf
+6	Eschwege, Kreisstadt
+6	Großalmerode
+6	Hessisch Lichtenau
+6	Sontra
+6	Wehretal
+6	Witzenhausen
+3	Mecklenburg-Vorpommern
+4	Landkreis Rostock
+5	Bad Doberan
+5	Bützow
+5	Dummerstorf
+5	Güstrow
+5	Kühlungsborn
+5	Laage
+5	Sanitz
+5	Satow
+5	Schwaan
+5	Teterow
+4	Ludwigslust-Parchim
+5	Boizenburg/ Elbe
+5	Grabow
+5	Hagenow
+5	Ludwigslust
+5	Lübz
+5	Neustadt-Glewe
+5	Parchim
+5	Plau am See
+5	Wittenburg
+5	Zarrentin am Schaalsee
+4	Mecklenburgische Seenplatte
+5	Altentreptow
+5	Burg Stargard
+5	Demmin, Hansestadt
+5	Friedland
+5	Malchin
+5	Malchow
+5	Neubrandenburg
+5	Neustrelitz
+5	Röbel/Müritz
+5	Stavenhagen, Reuterstadt
+5	Waren (Müritz)
+4	Nordwestmecklenburg
+5	Gadebusch
+5	Grevesmühlen
+5	Lüdersdorf
+5	Wismar, Hansestadt
+4	Rostock
+5	Rostock, Hansestadt
+4	Schwerin
+5	Schwerin, Landeshauptstadt
+4	Vorpommern-Greifswald
+5	Anklam
+5	Greifswald, Hansestadt
+5	Heringsdorf
+5	Pasewalk
+5	Torgelow
+5	Ueckermünde
+5	Wolgast
+4	Vorpommern-Rügen
+5	Barth
+5	Bergen auf Rügen
+5	Binz
+5	Grimmen
+5	Ribnitz-Damgarten
+5	Sassnitz
+5	Stralsund, Hansestadt
+5	Sundhagen
+3	Niedersachsen
+4	Braunschweig
+5	Braunschweig
+6	Braunschweig
+5	Gifhorn
+6	Calberlah
+6	Gifhorn
+6	Isenbüttel
+6	Meine
+6	Meinersen
+6	Müden (Aller)
+6	Rühen
+6	Sassenburg
+6	Schwülper
+6	Wesendorf
+6	Wittingen
+5	Goslar
+6	Bad Harzburg
+6	Braunlage
+6	Clausthal-Zellerfeld, Berg- und Universitätsstadt
+6	Goslar
+6	Langelsheim
+6	Liebenburg
+6	Seesen
+5	Göttingen
+6	Adelebsen, Flecken
+6	Bad Grund (Harz)
+6	Bad Lauterberg im Harz
+6	Bad Sachsa
+6	Bovenden, Flecken
+6	Duderstadt
+6	Friedland
+6	Gleichen
+6	Göttingen
+6	Hann. Münden
+6	Herzberg am Harz
+6	Osterode am Harz
+6	Rosdorf
+6	Staufenberg
+5	Helmstedt
+6	Helmstedt
+6	Königslutter am Elm
+6	Lehre
+6	Schöningen
+5	Northeim
+6	Bad Gandersheim
+6	Dassel
+6	Einbeck
+6	Hardegsen
+6	Kalefeld
+6	Katlenburg-Lindau
+6	Moringen
+6	Northeim
+6	Nörten-Hardenberg, Flecken
+6	Uslar
+5	Peine
+6	Edemissen
+6	Hohenhameln
+6	Ilsede
+6	Lengede
+6	Peine
+6	Vechelde
+6	Wendeburg
+5	Salzgitter
+6	Salzgitter
+5	Wolfenbüttel
+6	Cremlingen
+6	Schladen-Werla
+6	Schöppenstedt
+6	Sickte
+6	Wolfenbüttel
+5	Wolfsburg
+6	Wolfsburg
+4	Hannover
+5	Diepholz
+6	Barnstorf, Flecken
+6	Bassum
+6	Bruchhausen-Vilsen, Flecken
+6	Diepholz
+6	Stuhr
+6	Sulingen
+6	Syke
+6	Twistringen
+6	Wagenfeld
+6	Weyhe
+5	Hameln-Pyrmont
+6	Aerzen, Flecken
+6	Bad Münder am Deister
+6	Bad Pyrmont
+6	Coppenbrügge, Flecken
+6	Emmerthal
+6	Hameln
+6	Hessisch Oldendorf
+6	Salzhemmendorf, Flecken
+5	Hildesheim
+6	Alfeld (Leine)
+6	Algermissen
+6	Bad Salzdetfurth
+6	Bockenem
+6	Diekholzen
+6	Elze
+6	Giesen
+6	Gronau (Leine)
+6	Harsum
+6	Hildesheim
+6	Holle
+6	Lamspringe
+6	Nordstemmen
+6	Sarstedt
+6	Schellerten
+6	Sibbesse
+6	Söhlde
+5	Holzminden
+6	Bodenwerder, Münchhausenstadt
+6	Delligsen, Flecken
+6	Holzminden
+6	Stadtoldendorf
+5	Nienburg
+6	Nienburg (Weser)
+6	Rehburg-Loccum
+6	Steyerberg, Flecken
+6	Stolzenau
+5	Region Hannover
+6	Barsinghausen
+6	Burgdorf
+6	Burgwedel
+6	Garbsen
+6	Gehrden
+6	Hannover, Landeshauptstadt
+6	Hemmingen
+6	Isernhagen
+6	Laatzen
+6	Langenhagen
+6	Lehrte
+6	Neustadt am Rübenberge
+6	Pattensen
+6	Ronnenberg
+6	Seelze
+6	Sehnde
+6	Springe
+6	Uetze
+6	Wedemark
+6	Wennigsen (Deister)
+6	Wunstorf
+5	Schaumburg
+6	Auetal
+6	Bad Nenndorf
+6	Bückeburg
+6	Obernkirchen
+6	Rinteln
+6	Rodenberg
+6	Stadthagen
+4	Lüneburg
+5	Celle
+6	Bergen
+6	Celle
+6	Eschede
+6	Faßberg
+6	Hambühren
+6	Lachendorf
+6	Nienhagen
+6	Südheide
+6	Wathlingen
+6	Wietze
+6	Winsen (Aller)
+5	Cuxhaven
+6	Beverstedt
+6	Cuxhaven
+6	Geestland
+6	Hagen im Bremischen
+6	Hemmoor
+6	Loxstedt
+6	Otterndorf
+6	Schiffdorf
+6	Wurster Nordseeküste
+5	Harburg
+6	Buchholz in der Nordheide
+6	Hanstedt
+6	Jesteburg
+6	Neu Wulmstorf
+6	Rosengarten
+6	Seevetal
+6	Stelle
+6	Tostedt
+6	Winsen (Luhe)
+5	Heidekreis
+6	Bad Fallingbostel
+6	Bispingen
+6	Bomlitz
+6	Munster
+6	Neuenkirchen
+6	Schneverdingen
+6	Schwarmstedt
+6	Soltau
+6	Walsrode
+5	Lüchow-Dannenberg
+6	Dannenberg (Elbe)
+6	Lüchow (Wendland)
+5	Lüneburg
+6	Adendorf
+6	Amt Neuhaus
+6	Bardowick, Flecken
+6	Bleckede
+6	Lüneburg, Hansestadt
+6	Reppenstedt
+5	Osterholz
+6	Grasberg
+6	Hambergen
+6	Lilienthal
+6	Osterholz-Scharmbeck
+6	Ritterhude
+6	Schwanewede
+6	Worpswede
+5	Rotenburg (Wümme)
+6	Bremervörde
+6	Gnarrenburg
+6	Rotenburg (Wümme)
+6	Scheeßel
+6	Sittensen
+6	Sottrum
+6	Visselhövede
+6	Zeven
+5	Stade
+6	Ahlerstedt
+6	Buxtehude, Hansestadt
+6	Drochtersen
+6	Fredenbeck
+6	Harsefeld, Flecken
+6	Himmelpforten
+6	Horneburg, Flecken
+6	Jork
+6	Stade, Hansestadt
+5	Uelzen
+6	Bad Bevensen
+6	Bienenbüttel
+6	Ebstorf,Klosterflecken
+6	Uelzen, Hansestadt
+6	Wrestedt
+5	Verden
+6	Achim
+6	Dörverden
+6	Kirchlinteln
+6	Langwedel, Flecken
+6	Ottersberg, Flecken
+6	Oyten
+6	Thedinghausen
+6	Verden (Aller)
+4	Weser-Ems
+5	Ammerland
+6	Apen
+6	Bad Zwischenahn
+6	Edewecht
+6	Rastede
+6	Westerstede
+6	Wiefelstede
+5	Aurich
+6	Aurich
+6	Großefehn
+6	Großheide
+6	Hage, Flecken
+6	Hinte
+6	Ihlow
+6	Krummhörn
+6	Norden
+6	Norderney
+6	Südbrookmerland
+6	Wiesmoor
+5	Cloppenburg
+6	Barßel
+6	Bösel
+6	Cappeln (Oldenburg)
+6	Cloppenburg
+6	Emstek
+6	Essen (Oldenburg)
+6	Friesoythe
+6	Garrel
+6	Lastrup
+6	Löningen
+6	Molbergen
+6	Saterland
+5	Delmenhorst, Kreisfreie Stadt
+6	Delmenhorst
+5	Emden, Kreisfreie Stadt
+6	Emden
+5	Emsland
+6	Dörpen
+6	Emsbüren
+6	Esterwegen
+6	Freren
+6	Geeste
+6	Haren (Ems)
+6	Haselünne
+6	Lathen
+6	Lingen (Ems)
+6	Meppen
+6	Papenburg
+6	Salzbergen
+6	Spelle
+6	Sögel
+6	Twist
+6	Werlte
+5	Friesland
+6	Bockhorn
+6	Jever
+6	Sande
+6	Schortens
+6	Varel
+6	Wangerland
+6	Zetel
+5	Grafschaft Bentheim
+6	Bad Bentheim
+6	Emlichheim
+6	Neuenhaus
+6	Nordhorn
+6	Schüttorf
+6	Uelsen
+6	Wietmarschen
+5	Leer
+6	Borkum
+6	Bunde
+6	Leer (Ostfriesland)
+6	Moormerland
+6	Ostrhauderfehn
+6	Rhauderfehn
+6	Uplengen
+6	Weener
+6	Westoverledingen
+5	Oldenburg
+6	Dötlingen
+6	Ganderkesee
+6	Großenkneten
+6	Hatten
+6	Hude (Oldb)
+6	Wardenburg
+6	Wildeshausen
+5	Oldenburg, Kreisfreie Stadt
+6	Oldenburg
+5	Osnabrück
+6	Ankum
+6	Bad Essen
+6	Bad Iburg
+6	Bad Laer
+6	Bad Rothenfelde
+6	Belm
+6	Bersenbrück
+6	Bissendorf
+6	Bohmte
+6	Bramsche
+6	Dissen am Teutoburger Wald
+6	Fürstenau
+6	Georgsmarienhütte
+6	Glandorf
+6	Hagen am Teutoburger Wald
+6	Hasbergen
+6	Hilter am Teutoburger Wald
+6	Melle
+6	Ostercappeln
+6	Quakenbrück
+6	Wallenhorst
+5	Osnabrück, Kreisfreie Stadt
+6	Osnabrück
+5	Vechta
+6	Bakum
+6	Damme
+6	Dinklage
+6	Goldenstedt
+6	Holdorf
+6	Lohne (Oldenburg)
+6	Neuenkirchen-Vörden
+6	Steinfeld (Oldenburg)
+6	Vechta
+6	Visbek
+5	Wesermarsch
+6	Berne
+6	Brake (Unterweser)
+6	Butjadingen
+6	Elsfleth
+6	Jade
+6	Lemwerder
+6	Nordenham
+6	Ovelgönne
+6	Stadland
+5	Wilhelmshaven, Kreisfreie Stadt
+6	Wilhelmshaven
+5	Wittmund
+6	Esens
+6	Friedeburg
+6	Wittmund
+3	Nordrhein-Westfalen
+4	Arnsberg
+5	Bochum, Kreisfreie Stadt
+6	Bochum
+5	Dortmund, Kreisfreie Stadt
+6	Dortmund
+5	Ennepe-Ruhr-Kreis
+6	Breckerfeld, Hansestadt
+6	Ennepetal der Kluterthöhle
+6	Gevelsberg
+6	Hattingen
+6	Herdecke
+6	Schwelm
+6	Sprockhövel
+6	Wetter (Ruhr)
+6	Witten
+5	Hagen der FernUniversität
+6	Hagen der FernUniversität
+5	Hamm, Kreisfreie Stadt
+6	Hamm
+5	Herne, Kreisfreie Stadt
+6	Herne
+5	Hochsauerlandkreis
+6	Arnsberg
+6	Bestwig
+6	Brilon
+6	Eslohe (Sauerland)
+6	Marsberg
+6	Medebach, Hansestadt
+6	Meschede, Kreis- und  Hochschulstadt
+6	Olsberg
+6	Schmallenberg
+6	Sundern (Sauerland)
+6	Winterberg
+5	Märkischer Kreis
+6	Altena
+6	Balve
+6	Halver
+6	Hemer
+6	Herscheid
+6	Iserlohn
+6	Kierspe
+6	Lüdenscheid
+6	Meinerzhagen
+6	Menden (Sauerland)
+6	Nachrodt-Wiblingwerde
+6	Neuenrade
+6	Plettenberg
+6	Schalksmühle
+6	Werdohl
+5	Olpe
+6	Attendorn, Hansestadt
+6	Drolshagen
+6	Finnentrop
+6	Kirchhundem
+6	Lennestadt
+6	Olpe
+6	Wenden
+5	Siegen-Wittgenstein
+6	Bad Berleburg
+6	Bad Laasphe
+6	Burbach
+6	Erndtebrück
+6	Freudenberg
+6	Hilchenbach
+6	Kreuztal
+6	Netphen
+6	Neunkirchen
+6	Siegen, Universitätsstadt
+6	Wilnsdorf
+5	Soest
+6	Anröchte
+6	Bad Sassendorf
+6	Ense
+6	Erwitte
+6	Geseke
+6	Lippetal
+6	Lippstadt
+6	Möhnesee
+6	Rüthen
+6	Soest
+6	Warstein
+6	Welver
+6	Werl
+6	Wickede (Ruhr)
+5	Unna
+6	Bergkamen
+6	Bönen
+6	Fröndenberg/Ruhr
+6	Holzwickede
+6	Kamen
+6	Lünen
+6	Schwerte, Hansestadt an der Ruhr
+6	Selm
+6	Unna
+6	Werne
+4	Detmold
+5	Bielefeld, Kreisfreie Stadt
+6	Bielefeld
+5	Gütersloh
+6	Borgholzhausen
+6	Gütersloh
+6	Halle (Westf.)
+6	Harsewinkel, Die Mähdrescherstadt
+6	Herzebrock-Clarholz
+6	Langenberg
+6	Rheda-Wiedenbrück
+6	Rietberg
+6	Schloß Holte-Stukenbrock
+6	Steinhagen
+6	Verl
+6	Versmold
+6	Werther (Westf.)
+5	Herford
+6	Bünde
+6	Enger, Widukindstadt
+6	Herford, Hansestadt
+6	Hiddenhausen
+6	Kirchlengern
+6	Löhne
+6	Rödinghausen
+6	Spenge
+6	Vlotho
+5	Höxter
+6	Bad Driburg
+6	Beverungen
+6	Borgentreich, Orgelstadt
+6	Brakel
+6	Höxter
+6	Nieheim
+6	Steinheim
+6	Warburg, Hansestadt
+6	Willebadessen
+5	Lippe
+6	Augustdorf
+6	Bad Salzuflen
+6	Barntrup
+6	Blomberg
+6	Detmold
+6	Dörentrup
+6	Extertal
+6	Horn-Bad Meinberg
+6	Kalletal
+6	Lage
+6	Lemgo
+6	Leopoldshöhe
+6	Lügde der Osterräder
+6	Oerlinghausen
+6	Schieder-Schwalenberg
+6	Schlangen
+5	Minden-Lübbecke
+6	Bad Oeynhausen
+6	Espelkamp
+6	Hille
+6	Hüllhorst
+6	Lübbecke
+6	Minden
+6	Petershagen
+6	Porta Westfalica
+6	Preußisch Oldendorf
+6	Rahden
+6	Stemwede
+5	Paderborn
+6	Altenbeken
+6	Bad Lippspringe
+6	Bad Wünnenberg
+6	Borchen
+6	Büren
+6	Delbrück
+6	Hövelhof, Sennegemeinde
+6	Lichtenau
+6	Paderborn
+6	Salzkotten
+4	Düsseldorf
+5	Duisburg
+6	Duisburg
+5	Düsseldorf
+6	Düsseldorf
+5	Essen, Kreisfreie Stadt
+6	Essen
+5	Kleve
+6	Bedburg-Hau
+6	Emmerich am Rhein
+6	Geldern
+6	Goch
+6	Issum
+6	Kalkar
+6	Kerken
+6	Kevelaer
+6	Kleve
+6	Kranenburg
+6	Rees
+6	Rheurdt
+6	Straelen
+6	Uedem
+6	Wachtendonk
+6	Weeze
+5	Krefeld
+6	Krefeld
+5	Mettmann
+6	Erkrath, Fundort des Neanderthalers
+6	Haan
+6	Heiligenhaus
+6	Hilden
+6	Langenfeld (Rheinland)
+6	Mettmann
+6	Monheim am Rhein
+6	Ratingen
+6	Velbert
+6	Wülfrath
+5	Mönchengladbach
+6	Mönchengladbach
+5	Mülheim an der Ruhr
+6	Mülheim an der Ruhr
+5	Oberhausen
+6	Oberhausen
+5	Remscheid
+6	Remscheid
+5	Rhein-Kreis Neuss
+6	Dormagen
+6	Grevenbroich
+6	Jüchen
+6	Kaarst
+6	Korschenbroich
+6	Meerbusch
+6	Neuss
+6	Rommerskirchen
+5	Solingen
+6	Solingen, Klingenstadt
+5	Viersen
+6	Brüggen, Burggemeinde
+6	Grefrath, Sport- und Freizeitgemeinde
+6	Kempen
+6	Nettetal
+6	Niederkrüchten
+6	Schwalmtal
+6	Tönisvorst
+6	Viersen
+6	Willich
+5	Wesel
+6	Alpen
+6	Dinslaken
+6	Hamminkeln
+6	Hünxe
+6	Kamp-Lintfort
+6	Moers
+6	Neukirchen-Vluyn
+6	Rheinberg
+6	Schermbeck
+6	Sonsbeck
+6	Voerde (Niederrhein)
+6	Wesel
+6	Xanten
+5	Wuppertal
+6	Wuppertal
+4	Köln
+5	Bonn
+6	Bonn
+5	Düren
+6	Aldenhoven
+6	Düren
+6	Hürtgenwald
+6	Inden
+6	Jülich
+6	Kreuzau
+6	Langerwehe
+6	Linnich
+6	Merzenich
+6	Nideggen
+6	Niederzier
+6	Nörvenich
+6	Titz
+6	Vettweiß
+5	Euskirchen
+6	Bad Münstereifel
+6	Blankenheim
+6	Euskirchen
+6	Hellenthal
+6	Kall
+6	Mechernich
+6	Nettersheim
+6	Schleiden
+6	Weilerswist
+6	Zülpich
+5	Heinsberg
+6	Erkelenz
+6	Gangelt
+6	Geilenkirchen
+6	Heinsberg
+6	Hückelhoven
+6	Selfkant
+6	Waldfeucht
+6	Wassenberg
+6	Wegberg
+6	Übach-Palenberg
+5	Köln
+6	Köln
+5	Leverkusen
+6	Leverkusen
+5	Oberbergischer Kreis
+6	Bergneustadt
+6	Engelskirchen
+6	Gummersbach
+6	Hückeswagen, Schloss-Stadt
+6	Lindlar
+6	Marienheide
+6	Morsbach
+6	Nümbrecht
+6	Radevormwald auf der Höhe
+6	Reichshof
+6	Waldbröl
+6	Wiehl
+6	Wipperfürth, Hansestadt
+5	Rhein-Erft-Kreis
+6	Bedburg
+6	Bergheim
+6	Brühl
+6	Elsdorf
+6	Erftstadt
+6	Frechen
+6	Hürth
+6	Kerpen, Kolpingstadt
+6	Pulheim
+6	Wesseling
+5	Rhein-Sieg-Kreis
+6	Alfter
+6	Bad Honnef
+6	Bornheim
+6	Eitorf
+6	Hennef (Sieg)
+6	Königswinter
+6	Lohmar
+6	Meckenheim
+6	Much
+6	Neunkirchen-Seelscheid
+6	Niederkassel
+6	Rheinbach
+6	Ruppichteroth
+6	Sankt Augustin
+6	Siegburg
+6	Swisttal
+6	Troisdorf
+6	Wachtberg
+6	Windeck
+5	Rheinisch-Bergischer Kreis
+6	Bergisch Gladbach
+6	Burscheid
+6	Kürten
+6	Leichlingen (Rheinland), Blütenstadt
+6	Odenthal
+6	Overath
+6	Rösrath
+6	Wermelskirchen
+5	Städteregion Aachen
+6	Aachen
+6	Alsdorf
+6	Baesweiler
+6	Eschweiler
+6	Herzogenrath
+6	Monschau
+6	Roetgen, Tor zur Eifel
+6	Simmerath
+6	Stolberg (Rhld.), Kupferstadt
+6	Würselen
+4	Münster
+5	Borken
+6	Ahaus
+6	Bocholt
+6	Borken
+6	Gescher, Glockenstadt
+6	Gronau (Westf.)
+6	Heek
+6	Heiden
+6	Isselburg
+6	Legden
+6	Raesfeld
+6	Reken
+6	Rhede
+6	Schöppingen
+6	Stadtlohn
+6	Südlohn
+6	Velen
+6	Vreden
+5	Bottrop
+6	Bottrop
+5	Coesfeld
+6	Ascheberg
+6	Billerbeck
+6	Coesfeld
+6	Dülmen
+6	Havixbeck
+6	Lüdinghausen
+6	Nordkirchen
+6	Nottuln
+6	Olfen
+6	Rosendahl
+6	Senden
+5	Gelsenkirchen
+6	Gelsenkirchen
+5	Münster
+6	Münster
+5	Recklinghausen
+6	Castrop-Rauxel
+6	Datteln
+6	Dorsten
+6	Gladbeck
+6	Haltern am See
+6	Herten
+6	Marl
+6	Oer-Erkenschwick
+6	Recklinghausen
+6	Waltrop
+5	Steinfurt
+6	Altenberge
+6	Emsdetten
+6	Greven
+6	Hopsten
+6	Horstmar der Burgmannshöfe
+6	Hörstel
+6	Ibbenbüren
+6	Ladbergen
+6	Laer
+6	Lengerich
+6	Lienen
+6	Lotte
+6	Metelen
+6	Mettingen
+6	Neuenkirchen
+6	Nordwalde
+6	Ochtrup
+6	Recke
+6	Rheine
+6	Saerbeck, NRW-Klimakommune
+6	Steinfurt
+6	Tecklenburg
+6	Westerkappeln
+6	Wettringen
+5	Warendorf
+6	Ahlen
+6	Beckum
+6	Beelen
+6	Drensteinfurt
+6	Ennigerloh
+6	Everswinkel
+6	Oelde
+6	Ostbevern
+6	Sassenberg
+6	Sendenhorst
+6	Telgte
+6	Wadersloh
+6	Warendorf
+3	Rheinland-Pfalz
+4	Koblenz
+5	Ahrweiler
+6	Bad Breisig
+6	Bad Neuenahr-Ahrweiler
+6	Grafschaft
+6	Remagen
+6	Sinzig
+5	Altenkirchen
+6	Altenkirchen (Westerwald)
+6	Betzdorf
+6	Herdorf
+6	Kirchen (Sieg)
+6	Mudersbach
+6	Wissen
+5	Bad Kreuznach
+6	Bad Kreuznach
+6	Bad Sobernheim
+6	Kirn
+5	Birkenfeld
+6	Birkenfeld
+6	Idar-Oberstein
+5	Cochem-Zell
+6	Cochem
+5	Koblenz
+6	Koblenz
+5	Mayen-Koblenz
+6	Andernach
+6	Bendorf
+6	Mayen
+6	Mendig
+6	Mülheim-Kärlich
+6	Ochtendung
+6	Plaidt
+6	Polch
+6	Vallendar
+6	Weißenthurm
+5	Neuwied
+6	Asbach
+6	Bad Hönningen
+6	Dierdorf
+6	Linz am Rhein
+6	Neustadt (Wied)
+6	Neuwied
+6	Unkel
+5	Rhein-Hunsrück-Kreis
+6	Boppard
+6	Kastellaun
+6	Simmern/ Hunsrück
+5	Rhein-Lahn-Kreis
+6	Bad Ems
+6	Diez
+6	Lahnstein
+5	Westerwaldkreis
+6	Bad Marienberg (Westerwald)
+6	Hachenburg
+6	Höhr-Grenzhausen
+6	Montabaur
+6	Ransbach-Baumbach
+6	Westerburg
+6	Wirges
+4	Rheinhessen-Pfalz
+5	Alzey-Worms
+6	Alzey
+6	Osthofen
+6	Saulheim
+6	Wörrstadt
+5	Bad Dürkheim
+6	Bad Dürkheim
+6	Grünstadt
+6	Haßloch
+5	Donnersbergkreis
+6	Eisenberg (Pfalz)
+6	Kirchheimbolanden
+6	Rockenhausen
+5	Frankenthal, Kreisfreie Stadt
+6	Frankenthal (Pfalz)
+5	Germersheim
+6	Bellheim
+6	Germersheim
+6	Hagenbach
+6	Jockgrim
+6	Kandel
+6	Lingenfeld
+6	Rheinzabern
+6	Rülzheim
+6	Wörth am Rhein
+5	Kaiserslautern
+6	Bruchmühlbach-Miesau
+6	Enkenbach-Alsenborn
+6	Landstuhl, Sickingenstadt
+6	Otterberg
+6	Ramstein-Miesenbach
+5	Kaiserslautern, Kreisfreie Stadt
+6	Kaiserslautern
+5	Kusel
+6	Kusel
+6	Schönenberg-Kübelberg
+6	Waldmohr
+5	Landau in der Pfalz, Kreisfreie Stadt
+6	Landau in der Pfalz
+5	Ludwigshafen am Rhein, Kreisfreie Stadt
+6	Ludwigshafen am Rhein
+5	Mainz, Kreisfreie Stadt
+6	Mainz
+5	Mainz-Bingen
+6	Bingen am Rhein
+6	Bodenheim
+6	Budenheim
+6	Gau-Algesheim
+6	Heidesheim am Rhein
+6	Ingelheim am Rhein
+6	Nackenheim
+6	Nieder-Olm
+6	Nierstein
+6	Oppenheim
+5	Neustadt an der Weinstraße
+6	Neustadt an der Weinstraße
+5	Pirmasens
+6	Pirmasens
+5	Rhein-Pfalz-Kreis
+6	Altrip
+6	Bobenheim-Roxheim
+6	Böhl-Iggelheim
+6	Dannstadt-Schauernheim
+6	Dudenhofen
+6	Lambsheim
+6	Limburgerhof
+6	Maxdorf
+6	Mutterstadt
+6	Neuhofen
+6	Römerberg
+6	Schifferstadt
+6	Waldsee
+5	Speyer
+6	Speyer
+5	Südliche Weinstraße
+6	Annweiler am Trifels
+6	Bad Bergzabern
+6	Edenkoben
+6	Herxheim bei Landau/ Pfalz
+6	Offenbach an der Queich
+5	Südwestpfalz
+6	Rodalben
+5	Worms
+6	Worms
+5	Zweibrücken
+6	Zweibrücken
+4	Trier
+5	Bernkastel-Wittlich
+6	Bernkastel-Kues
+6	Morbach
+6	Traben-Trarbach
+6	Wittlich
+5	Eifelkreis Bitburg-Prüm
+6	Bitburg
+6	Prüm
+5	Trier
+6	Trier
+5	Trier-Saarburg
+6	Hermeskeil
+6	Konz
+6	Saarburg
+6	Schweich
+5	Vulkaneifel
+6	Daun
+6	Gerolstein
+3	Saarland
+4	Merzig-Wadern
+5	Beckingen
+5	Losheim am See
+5	Merzig, Kreisstadt
+5	Mettlach
+5	Perl
+5	Wadern
+5	Weiskirchen
+4	Neunkirchen
+5	Eppelborn
+5	Illingen
+5	Merchweiler
+5	Neunkirchen, Kreisstadt
+5	Ottweiler
+5	Schiffweiler
+5	Spiesen-Elversberg
+4	Regionalverband Saarbrücken
+5	Friedrichsthal
+5	Großrosseln
+5	Heusweiler
+5	Kleinblittersdorf
+5	Püttlingen
+5	Quierschied
+5	Riegelsberg
+5	Saarbrücken, Landeshauptstadt
+5	Sulzbach/ Saar
+5	Völklingen
+4	Saarlouis
+5	Bous
+5	Dillingen/ Saar
+5	Ensdorf
+5	Lebach
+5	Nalbach
+5	Rehlingen-Siersburg
+5	Saarlouis, Kreisstadt
+5	Saarwellingen
+5	Schmelz
+5	Schwalbach
+5	Wadgassen
+5	Wallerfangen
+5	Überherrn
+4	Saarpfalz-Kreis
+5	Bexbach
+5	Blieskastel
+5	Gersheim
+5	Homburg, Kreisstadt
+5	Kirkel
+5	Mandelbachtal
+5	St. Ingbert
+4	St. Wendel
+5	Freisen
+5	Marpingen
+5	Namborn
+5	Nohfelden
+5	Nonnweiler
+5	Oberthal
+5	St. Wendel, Kreisstadt
+5	Tholey
+3	Sachsen
+4	Chemnitz
+5	Chemnitz
+6	Chemnitz
+5	Erzgebirgskreis
+6	Annaberg-Buchholz
+6	Aue
+6	Breitenbrunn/Erzgeb.
+6	Burkhardtsdorf
+6	Drebach
+6	Eibenstock
+6	Grünhain-Beierfeld
+6	Jahnsdorf/Erzgeb.
+6	Lauter-Bernsbach
+6	Lugau/Erzgeb.
+6	Lößnitz
+6	Marienberg
+6	Neukirchen/Erzgeb.
+6	Oelsnitz/Erzgeb.
+6	Olbernhau
+6	Pockau-Lengefeld
+6	Raschau-Markersbach
+6	Schneeberg
+6	Schwarzenberg/Erzgeb.
+6	Sehmatal
+6	Stollberg/Erzgeb.
+6	Thalheim/Erzgeb.
+6	Thum
+6	Zschopau
+6	Zschorlau
+6	Zwönitz
+5	Mittelsachsen
+6	Bobritzsch-Hilbersdorf
+6	Brand-Erbisdorf
+6	Burgstädt
+6	Döbeln
+6	Flöha
+6	Frankenberg/Sa.
+6	Freiberg, Universitätsstadt
+6	Großschirma
+6	Hainichen
+6	Halsbrücke
+6	Hartha
+6	Leisnig
+6	Lichtenau
+6	Mittweida, Hochschulstadt
+6	Oederan
+6	Penig
+6	Rochlitz
+6	Roßwein
+6	Waldheim
+5	Vogtlandkreis
+6	Auerbach/Vogtl.
+6	Falkenstein/Vogtl.
+6	Klingenthal
+6	Lengenfeld
+6	Markneukirchen
+6	Oelsnitz/Vogtl.
+6	Plauen
+6	Reichenbach im Vogtland
+6	Rodewisch
+6	Treuen
+6	Weischlitz
+5	Zwickau
+6	Crimmitschau
+6	Fraureuth
+6	Glauchau
+6	Hohenstein-Ernstthal
+6	Kirchberg
+6	Lichtenstein/Sa.
+6	Lichtentanne
+6	Limbach-Oberfrohna
+6	Meerane
+6	Mülsen
+6	Oberlungwitz
+6	Reinsdorf
+6	Werdau
+6	Wilkau-Haßlau
+6	Zwickau
+4	Dresden
+5	Bautzen
+6	Bautzen
+6	Bernsdorf
+6	Bischofswerda
+6	Großröhrsdorf
+6	Hoyerswerda
+6	Kamenz
+6	Lauta
+6	Lohsa
+6	Ottendorf-Okrilla
+6	Pulsnitz
+6	Radeberg
+6	Schirgiswalde-Kirschau
+6	Sohland a. d. Spree
+6	Wittichenau
+5	Dresden
+6	Dresden
+5	Görlitz
+6	Ebersbach-Neugersdorf
+6	Großschönau
+6	Görlitz
+6	Herrnhut
+6	Kottmar
+6	Löbau
+6	Niesky
+6	Oderwitz
+6	Weißwasser/O.L.
+6	Zittau
+5	Meißen
+6	Coswig
+6	Großenhain
+6	Gröditz
+6	Klipphausen
+6	Meißen
+6	Moritzburg
+6	Nossen
+6	Nünchritz
+6	Radebeul
+6	Radeburg
+6	Riesa
+6	Weinböhla
+6	Zeithain
+5	Sächsische Schweiz-Osterzgebirge
+6	Altenberg
+6	Bad Gottleuba-Berggießhübel
+6	Bannewitz
+6	Dippoldiswalde
+6	Dohna
+6	Freital
+6	Glashütte
+6	Heidenau
+6	Klingenberg
+6	Neustadt in Sachsen
+6	Pirna
+6	Sebnitz
+6	Stolpen
+6	Tharandt
+6	Wilsdruff
+4	Leipzig
+5	Leipzig
+6	Bad Lausick
+6	Borna
+6	Borsdorf
+6	Brandis
+6	Böhlen
+6	Colditz
+6	Frohburg
+6	Geithain
+6	Grimma
+6	Groitzsch
+6	Großpösna
+6	Lossatal
+6	Machern
+6	Markkleeberg
+6	Markranstädt
+6	Naunhof
+6	Neukieritzsch
+6	Pegau
+6	Rötha
+6	Wurzen
+6	Zwenkau
+5	Leipzig, Kreisfreie Stadt
+6	Leipzig
+5	Nordsachsen
+6	Bad Düben
+6	Belgern-Schildau
+6	Delitzsch
+6	Eilenburg
+6	Mockrehna
+6	Mügeln
+6	Oschatz
+6	Rackwitz
+6	Schkeuditz
+6	Taucha
+6	Torgau
+6	Wermsdorf
+6	Wiedemar
+3	Sachsen-Anhalt
+4	Altmarkkreis Salzwedel
+5	Arendsee (Altmark)
+5	Gardelegen, Hansestadt
+5	Kalbe (Milde)
+5	Klötze
+5	Salzwedel, Hansestadt
+4	Anhalt-Bitterfeld
+5	Aken (Elbe)
+5	Bitterfeld-Wolfen
+5	Köthen (Anhalt)
+5	Muldestausee
+5	Osternienburger Land
+5	Raguhn-Jeßnitz
+5	Sandersdorf-Brehna
+5	Südliches Anhalt
+5	Zerbst/Anhalt
+5	Zörbig
+4	Burgenlandkreis
+5	Elsteraue
+5	Hohenmölsen
+5	Lützen
+5	Naumburg (Saale)
+5	Teuchern
+5	Weißenfels
+5	Zeitz
+4	Börde
+5	Barleben
+5	Haldensleben
+5	Hohe Börde
+5	Niedere Börde
+5	Oebisfelde-Weferlingen
+5	Oschersleben (Bode)
+5	Sülzetal
+5	Wanzleben-Börde
+5	Wolmirstedt
+4	Dessau-Roßlau
+5	Dessau-Roßlau
+4	Halle (Saale)
+4	Harz
+5	Ballenstedt
+5	Blankenburg (Harz)
+5	Falkenstein/Harz
+5	Halberstadt
+5	Harzgerode
+5	Huy
+5	Ilsenburg (Harz)
+5	Nordharz
+5	Oberharz am Brocken
+5	Osterwieck
+5	Quedlinburg, Welterbestadt
+5	Thale
+5	Wernigerode
+4	Jerichower Land
+5	Biederitz
+5	Burg
+5	Elbe-Parey
+5	Genthin
+5	Gommern
+5	Jerichow
+5	Möckern
+5	Möser
+4	Magdeburg, Landeshauptstadt
+4	Mansfeld-Südharz
+5	Allstedt
+5	Arnstein
+5	Eisleben, Lutherstadt
+5	Gerbstedt
+5	Hettstedt
+5	Mansfeld
+5	Sangerhausen
+5	Seegebiet Mansfelder Land
+5	Südharz
+4	Saalekreis
+5	Bad Dürrenberg
+5	Bad Lauchstädt, Goethestadt
+5	Braunsbedra
+5	Kabelsketal
+5	Landsberg
+5	Leuna
+5	Merseburg
+5	Mücheln (Geiseltal)
+5	Petersberg
+5	Querfurt
+5	Salzatal
+5	Schkopau
+5	Teutschenthal
+5	Wettin-Löbejün
+4	Salzlandkreis
+5	Aschersleben
+5	Barby
+5	Bernburg (Saale)
+5	Bördeland
+5	Calbe (Saale)
+5	Hecklingen
+5	Könnern
+5	Nienburg (Saale)
+5	Schönebeck (Elbe)
+5	Seeland
+5	Staßfurt
+4	Stendal
+5	Bismark (Altmark)
+5	Havelberg, Hansestadt
+5	Osterburg (Altmark), Hansestadt
+5	Stendal, Hansestadt
+5	Tangerhütte
+5	Tangermünde
+4	Wittenberg
+5	Annaburg
+5	Bad Schmiedeberg
+5	Coswig (Anhalt)
+5	Gräfenhainichen
+5	Jessen (Elster)
+5	Kemberg
+5	Oranienbaum-Wörlitz
+5	Wittenberg, Lutherstadt
+5	Zahna-Elster
+3	Schleswig-Holstein
+4	Dithmarschen
+5	Brunsbüttel
+5	Heide
+5	Marne
+5	Meldorf
+4	Flensburg, Kreisfreie Stadt
+4	Herzogtum Lauenburg
+5	Büchen
+5	Geesthacht
+5	Lauenburg/ Elbe
+5	Mölln
+5	Ratzeburg
+5	Schwarzenbek
+5	Wentorf bei Hamburg
+4	Kiel, Landeshauptstadt
+4	Lübeck, Hansestadt, Kreisfreie Stadt
+4	Neumünster, Kreisfreie Stadt
+4	Nordfriesland
+5	Bredstedt
+5	Husum
+5	Leck
+5	Niebüll
+5	Sylt
+4	Ostholstein
+5	Ahrensbök
+5	Bad Schwartau
+5	Eutin
+5	Fehmarn
+5	Grömitz
+5	Heiligenhafen
+5	Malente
+5	Neustadt in Holstein
+5	Oldenburg in Holstein
+5	Ratekau
+5	Scharbeutz
+5	Stockelsdorf
+5	Süsel
+5	Timmendorfer Strand
+4	Pinneberg
+5	Barmstedt
+5	Elmshorn
+5	Halstenbek
+5	Pinneberg
+5	Quickborn
+5	Rellingen
+5	Schenefeld
+5	Tornesch
+5	Uetersen
+5	Wedel
+4	Plön
+5	Heikendorf
+5	Lütjenburg
+5	Plön
+5	Preetz
+5	Schwentinental
+5	Schönberg (Holstein)
+5	Schönkirchen
+4	Rendsburg-Eckernförde
+5	Altenholz
+5	Bordesholm
+5	Büdelsdorf
+5	Eckernförde
+5	Flintbek
+5	Fockbek
+5	Gettorf
+5	Hohenwestedt
+5	Kronshagen
+5	Nortorf
+5	Osterrönfeld
+5	Rendsburg
+4	Schleswig-Flensburg
+5	Glücksburg (Ostsee)
+5	Handewitt
+5	Harrislee
+5	Kappeln
+5	Kropp
+5	Mittelangeln
+5	Schleswig
+5	Süderbrarup
+5	Tarp
+4	Segeberg
+5	Bad Bramstedt
+5	Bad Segeberg
+5	Boostedt
+5	Ellerau
+5	Henstedt-Ulzburg
+5	Kaltenkirchen
+5	Norderstedt
+5	Trappenkamp
+5	Wahlstedt
+4	Steinburg
+5	Glückstadt
+5	Hohenlockstedt
+5	Horst (Holstein)
+5	Itzehoe
+5	Kellinghusen
+4	Stormarn
+5	Ahrensburg
+5	Ammersbek
+5	Bad Oldesloe
+5	Bargteheide
+5	Barsbüttel
+5	Glinde
+5	Großhansdorf
+5	Oststeinbek
+5	Reinbek
+5	Reinfeld (Holstein)
+5	Tangstedt
+5	Trittau
+3	Thüringen
+4	Altenburger Land
+5	Altenburg
+5	Meuselwitz
+5	Nobitz
+5	Schmölln
+4	Eichsfeld
+5	Heilbad Heiligenstadt
+5	Leinefelde-Worbis
+4	Eisenach
+4	Erfurt
+4	Gera
+4	Gotha
+5	Drei Gleichen
+5	Friedrichroda
+5	Gotha
+5	Nesse-Apfelstädt
+5	Ohrdruf
+5	Waltershausen
+4	Greiz
+5	Greiz
+5	Ronneburg
+5	Weida
+5	Zeulenroda-Triebes
+4	Hildburghausen
+5	Eisfeld
+5	Hildburghausen
+5	Römhild
+5	Schleusingen
+4	Ilm-Kreis
+5	Amt Wachsenburg
+5	Arnstadt
+5	Ilmenau
+5	Stadtilm
+4	Jena
+4	Kyffhäuserkreis
+5	Artern/Unstrut
+5	Bad Frankenhausen/Kyffhäuser
+5	Sondershausen
+4	Nordhausen
+5	Bleicherode
+5	Ellrich
+5	Harztor
+5	Nordhausen
+4	Saale-Holzland-Kreis
+5	Dornburg-Camburg
+5	Eisenberg
+5	Hermsdorf
+5	Kahla
+5	Stadtroda
+4	Saale-Orla-Kreis
+5	Bad Lobenstein
+5	Neustadt an der Orla
+5	Pößneck
+5	Schleiz
+4	Saalfeld-Rudolstadt
+5	Bad Blankenburg
+5	Königsee-Rottenbach
+5	Rudolstadt
+5	Saalfeld/Saale
+5	Uhlstädt-Kirchhasel
+5	Unterwellenborn
+4	Schmalkalden-Meiningen
+5	Brotterode-Trusetal
+5	Floh-Seligenthal
+5	Grabfeld
+5	Meiningen
+5	Schmalkalden, Kurort
+5	Zella-Mehlis
+4	Sonneberg
+5	Frankenblick
+5	Föritztal
+5	Neuhaus am Rennweg
+5	Sonneberg
+4	Suhl
+4	Sömmerda
+5	Kölleda
+5	Sömmerda
+4	Unstrut-Hainich-Kreis
+5	Bad Langensalza
+5	Mühlhausen/Thüringen
+5	Südeichsfeld
+4	Wartburgkreis
+5	Bad Liebenstein
+5	Bad Salzungen
+5	Gerstungen
+5	Hörselberg-Hainich
+5	Krayenberggemeinde
+5	Ruhla
+5	Vacha
+5	Wutha-Farnroda
+4	Weimar
+4	Weimarer Land
+5	Apolda
+5	Bad Berka
+5	Blankenhain
+2	Frankreich:França:France:France
+3	Auvergne-Rhône-Alpes
+4	Ain
+4	Allier
+4	Cantal
+4	Drôme
+4	Haute-Savoie
+4	Isère
+4	Loire
+4	Puy-de-Dôme
+4	Rhône
+4	Savoie
+3	Bourgogne-Franche-Comté
+4	Côte-d'Or
+4	Doubs
+4	Jura
+4	Nièvre
+4	Saône-et-Loire
+4	Territoire de Belfort
+4	Yonne
+3	Brittany
+4	Côtes-d'Armor
+4	Finistère
+4	Ille-et-Vilaine
+4	Morbihan
+3	Centre-Val de Loire
+4	Cher
+4	Eure-et-Loir
+4	Indre
+4	Indre-et-Loire
+4	Loir-et-Cher
+4	Loiret
+3	Corsica
+4	Corse-du-Sud
+4	Haute-Corse
+3	French Guiana
+4	Guyane
+3	Grand Est
+4	Ardennes
+4	Aube
+4	Bas-Rhin
+4	Haut-Rhin
+4	Haute-Marne
+4	Marne
+4	Meurthe-et-Moselle
+4	Moselle
+4	Vosges
+3	Guadeloupe
+4	Guadeloupe
+3	Hauts-de-France
+4	Aisne
+4	Nord
+4	Oise
+4	Pas-de-Calais
+4	Somme
+3	Île-de-France
+4	Essonne
+4	Hauts-de-Seine
+4	Paris
+4	Seine-Saint-Denis
+4	Seine-et-Marne
+4	Val-d'Oise
+4	Val-de-Marne
+4	Yvelines
+3	Martinique
+4	Martinique
+3	Normandy:Normandia:Normandie
+4	Calvados
+4	Eure
+4	Manche
+4	Orne
+4	Seine-Maritime
+3	Nouvelle-Aquitaine
+4	Charente
+4	Charente-Maritime
+4	Corrèze
+4	Deux-Sèvres
+4	Dordogne
+4	Gironde
+4	Haute-Vienne
+4	Landes
+4	Lot-et-Garonne
+4	Pyrénées-Atlantiques
+4	Vienne
+3	Occitanie
+4	Aude
+4	Aveyron
+4	Gard
+4	Gers
+4	Haute-Garonne
+4	Hautes-Pyrénées
+4	Hérault
+4	Pyrénées-Orientales
+4	Tarn
+4	Tarn-et-Garonne
+3	Pays de la Loire
+4	Loire-Atlantique
+4	Maine-et-Loire
+4	Mayenne
+4	Sarthe
+4	Vendée
+3	Provence-Alpes-Côte d'Azur
+4	Alpes-Maritimes
+4	Alpes-de-Haute-Provence
+4	Bouches-du-Rhône
+4	Hautes-Alpes
+4	Var
+4	Vaucluse
+3	Réunion
+4	Réunion
+2	Österreich:Austria:Autriche:Austria
+3	Burgenland
+3	Kärnten
+4	1
+4	Feldkirchen
+4	Hermagor
+4	Klagenfurt-Land
+4	Spittal an der Drau
+4	St. Veit an der Glan
+4	Völkermarkt
+4	Wolfsberg
+3	Niederösterreich
+4	1
+4	Amstetten
+4	Baden
+4	Bruck an der Leitha
+4	Gmünd
+4	Gänserndorf
+4	Hollabrunn
+4	Horn
+4	Korneuburg
+4	Krems
+4	Lilienfeld
+4	Melk
+4	Mistelbach
+4	Mödling
+4	Neunkirchen
+4	Scheibbs
+4	St. Pölten
+4	Tulln
+4	Waidhofen an der Thaya
+4	Wiener Neustadt
+4	Zwettl
+3	Oberösterreich
+4	1
+4	Braunau am Inn
+4	Eferding
+4	Freistadt
+4	Gmunden
+4	Grieskirchen
+4	Kirchdorf an der Krems
+4	Linz-Land
+4	Perg
+4	Ried im Innkreis
+4	Rohrbach
+4	Schärding
+4	Steyr-Land
+4	Urfahr-Umgebung
+4	Vöcklabruck
+4	Wels-Land
+3	Salzburg
+4	1
+4	Hallein
+4	Salzburg-Umgebung
+4	St. Johann im Pongau
+4	Zell am See
+3	Steiermark
+4	1
+4	Bruck-Mürzzuschlag
+4	Deutschlandsberg
+4	Graz-Umgebung
+4	Hartberg-Fürstenfeld
+4	Leibnitz
+4	Leoben
+4	Liezen
+4	Liezen (Expositur Gröbming)
+4	Murau
+4	Murtal
+4	Südoststeiermark
+4	Voitsberg
+4	Weiz
+3	Tirol
+4	1
+4	Imst
+4	Innsbruck-Land
+4	Kitzbühel
+4	Kufstein
+4	Landeck
+4	Lienz
+4	Reutte
+4	Schwaz
+3	Vorarlberg
+4	Bludenz
+4	Bregenz
+4	Dornbirn
+4	Feldkirch
+3	Wien
+4	1
+2	Schweitz:Suíça:Suisse:Swiss
+3	Aargau
+3	Appenzell Ausserrhoden
+3	Appenzell Innerrhoden
+3	Basel-Landschaft
+3	Basel-Stadt
+3	Bern:Berna:Berne
+3	Fribourg
+3	Genève
+3	Glarus
+3	Graubünden
+3	Jura
+3	Luzern
+3	Neuchâtel
+3	Nidwalden
+3	Obwalden
+3	Schaffhausen
+3	Schwyz
+3	Solothurn
+3	St. Gallen
+3	Thurgau
+3	Ticino
+3	Uri
+3	Valais
+3	Vaud
+3	Zug
+3	Zürich
+1	Fahrzeug:Veículos:Véhicules:Vehicles
+2	Autos:Carros:Voiture:Cars
+3	Abarth
+4	124 Spider
+4	500
+4	500C
+4	595
+4	595C
+4	595 Competizione
+4	595 Turismo
+4	695
+4	695C
+4	Grande Punto
+4	Punto Evo
+4	Andere:Outro:Autre:Other
+3	AC
+4	Andere:Outro:Autre:Other
+3	Acura
+4	MDX
+4	NSX
+4	RL
+4	RSX
+4	TL
+4	TSX
+4	Andere:Outro:Autre:Other
+3	Aixam
+4	City
+4	Crossline
+4	Roadline
+4	Scouty R
+4	Andere:Outro:Autre:Other
+3	AlfaRomeo
+4	4C
+4	8C
+4	Alfa 145
+4	Alfa 146
+4	Alfa 147
+4	Alfa 155
+4	Alfa 156
+4	Alfa 159
+4	Alfa 164
+4	Alfa 166
+4	Alfa 33
+4	Alfa 75
+4	Alfa 90
+4	Alfasud
+4	Alfetta
+4	Brera
+4	Crosswagon
+4	Giulia
+4	Giulietta
+4	GT
+4	GTV
+4	Junior
+4	MiTo
+4	Spider
+4	Sprint
+4	Stelvio
+4	Andere:Outro:Autre:Other
+3	ALPINA
+4	B3
+4	B4
+4	B5
+4	B6
+4	B7
+4	B8
+4	B10
+4	B12
+4	D10
+4	D3
+4	D4
+4	D5
+4	Roadster S
+4	XD3
+4	XD4
+4	Andere:Outro:Autre:Other
+3	Artega
+4	GT
+4	Andere:Outro:Autre:Other
+3	AsiaMotors
+4	Rocsta
+4	Andere:Outro:Autre:Other
+3	AstonMartin
+4	AR1
+4	Cygnet
+4	DB
+4	DB11
+4	DB7
+4	DB9
+4	DBS
+4	Lagonda
+4	Rapide
+4	V12 Vantage
+4	V8 Vantage
+4	Vanquish
+4	Virage
+4	Andere:Outro:Autre:Other
+3	Audi
+4	100
+4	200
+4	80
+4	90
+4	A1
+4	A2
+4	A3
+4	A4
+4	A4 Allroad
+4	A5
+4	A6
+4	A6 Allroad
+4	A7
+4	A8
+4	Cabriolet
+4	Coupé
+4	e-tron
+4	Q1
+4	Q2
+4	Q3
+4	Q5
+4	Q7
+4	Q8
+4	quattro
+4	R8
+4	RS2
+4	RS3
+4	RS4
+4	RS5
+4	RS6
+4	RS7
+4	RSQ3
+4	S1
+4	S2
+4	S3
+4	S4
+4	S5
+4	S6
+4	S7
+4	S8
+4	SQ2
+4	SQ5
+4	SQ7
+4	SQ8
+4	TT
+5	TT
+5	TT RS
+5	TTS
+4	V8
+4	Andere:Outro:Autre:Other
+3	Austin
+4	Andere:Outro:Autre:Other
+3	AustinHealey
+4	Andere:Outro:Autre:Other
+3	Bentley
+4	Arnage
+4	Azure
+4	Bentayga
+4	Brooklands
+4	Continental Flying Spur
+4	Continental GT
+4	Continental GTC
+4	Continental Supersports
+4	Eight
+4	Flying Spur
+4	Mulsanne
+4	Turbo R
+4	Turbo RT
+4	Turbo S
+4	Andere:Outro:Autre:Other
+3	BMW
+4	1er Reihe:Série 1:Rangée 1
+5	114
+5	116
+5	118
+5	120
+5	123
+5	125
+5	130
+5	135
+5	1er M Coupé
+4	2002
+4	2er Reihe:Série 2:Rangée 2
+5	214 Active Tourer
+5	214 Gran Tourer
+5	216
+5	216 Active Tourer
+5	216 Gran Tourer
+5	218
+5	218 Active Tourer
+5	218 Gran Tourer
+5	220
+5	220 Active Tourer
+5	220 Gran Tourer
+5	225
+5	225 Active Tourer
+5	228
+5	230
+4	3er Reihe:Série 3:Rangée 3
+5	315
+5	316
+5	318
+5	318 Gran Turismo
+5	320
+5	320 Gran Turismo
+5	323
+5	324
+5	325
+5	325 Gran Turismo
+5	328
+5	328 Gran Turismo
+5	330
+5	330 Gran Turismo
+5	335
+5	335 Gran Turismo
+5	340
+5	340 Gran Turismo
+5	ActiveHybrid 3
+4	4er Reihe:Série 4:Rangée 4
+5	418
+5	418 Gran Coupé
+5	420
+5	420 Gran Coupé
+5	425
+5	425 Gran Coupé
+5	428
+5	428 Gran Coupé
+5	430
+5	430 Gran Coupé
+5	435
+5	435 Gran Coupé
+5	440
+5	440 Gran Coupé
+4	5er Reihe:Série 5:Rangée 5
+5	518
+5	520
+5	520 Gran Turismo
+5	523
+5	524
+5	525
+5	528
+5	530
+5	530 Gran Turismo
+5	535
+5	535 Gran Turismo
+5	540
+5	545
+5	550
+5	550 Gran Turismo
+5	ActiveHybrid 5
+4	6er Reihe:Série 6:Rangée 6
+5	620 Gran Turismo
+5	628
+5	630
+5	630 Gran Turismo
+5	633
+5	635
+5	640
+5	640 Gran Coupé
+5	640 Gran Turismo
+5	645
+5	650
+5	650 Gran Coupé
+4	7er Reihe:Série 7:Rangée 7
+5	725
+5	728
+5	730
+5	732
+5	735
+5	740
+5	745
+5	750
+5	760
+5	ActiveHybrid 7
+4	840
+4	850
+4	i3
+4	i8
+4	M-Modelle:Modelos-M:M-Modèles
+5	M135
+5	M140i
+5	M2
+5	M235
+5	M240i
+5	M3
+5	M340i
+5	M4
+5	M5
+5	M550
+5	M6
+5	M760
+5	M850
+4	X-Reihe:Série X:Rangée X
+5	X1
+5	X2
+5	X3
+5	X3 M
+5	X3 M40
+5	X4
+5	X4 M
+5	X4 M40
+5	X5
+5	X5 M
+5	X5 M50
+5	X6
+5	X6 M
+5	X6 M50
+5	X7
+5	ActiveHybrid X6
+4	Z-Reihe:Série Z:Rangée Z
+5	Z1
+5	Z3
+5	Z3 M
+5	Z4
+5	Z4 M
+5	Z8
+4	Andere:Outro:Autre:Other
+3	Borgward
+4	Andere:Outro:Autre:Other
+3	Brilliance
+4	BC3
+4	BS2
+4	BS4
+4	BS6
+4	Andere:Outro:Autre:Other
+3	Bugatti
+4	Chiron
+4	EB 110
+4	Eyron
+4	Andere:Outro:Autre:Other
+3	Buick
+4	Century
+4	Electra
+4	Enclave
+4	La Crosse
+4	Le Sabre
+4	Park Avenue
+4	Regal
+4	Riviera
+4	Roadmaster
+4	Skylark
+4	Andere:Outro:Autre:Other
+3	Cadillac
+4	Allante
+4	ATS
+4	BLS
+4	CT6
+4	CTS
+4	Deville
+4	Eldorado
+4	Escalade
+4	fleetwood
+4	Serville
+4	SRX
+4	STS
+4	XRS
+4	XT5
+4	Andere:Outro:Autre:Other
+3	Casalini
+4	Andere:Outro:Autre:Other
+3	Caterham
+4	Andere:Outro:Autre:Other
+3	Chatenet
+4	Andere:Outro:Autre:Other
+3	Chevrolet
+4	2500
+4	Alero
+4	Astro
+4	Avalanche
+4	Aveo
+4	Beretta
+4	Blazer
+4	C1500
+4	Camaro
+4	Caprice
+4	Captiva
+4	Cavalier
+4	Chevelle
+4	Chevy Van
+4	Citation
+4	Colorado
+4	Corsica
+4	Cruze
+4	El Camino
+4	Epica
+4	Evanda
+4	Express
+4	G
+4	HHR
+4	Impala
+4	K1500
+4	K30
+4	Kalos
+4	Lacetti
+4	Lumina
+4	Malibu
+4	Matiz
+4	Niva
+4	Nubira
+4	Orlando
+4	Rezzo
+4	S-10
+4	Silverado
+4	Spark
+4	SSR
+4	Suburban
+4	Tahoe
+4	Trailblazer
+4	Trans Sport
+4	Traverse
+4	Trax
+4	Venture
+4	Volt
+4	Andere:Outro:Autre:Other
+3	Chrysler
+4	200
+4	300C
+4	300 M
+4	Aspen
+4	Crossfire
+4	Daytona
+4	ES
+4	Grand Voyager
+4	GS
+4	GTS
+4	Imperial
+4	Le Baron
+4	Neon
+4	New Yorker
+4	Pacifica
+4	PT Cruiser
+4	Saratoga
+4	Sebring
+4	Stratus
+4	Valiant
+4	Viper
+4	Vision
+4	Voyager
+4	Andere:Outro:Autre:Other
+3	Citroën
+4	2 CV
+4	AX
+4	Berlingo
+4	BX
+4	C1
+4	C2
+4	C3
+4	C3 Aircross
+4	C3 Picasso
+4	C4
+4	C4 Aircross
+4	C4 Cactus
+4	C4 Picasso
+4	C4 SpaceTourer
+4	C5
+4	C5 Aircross
+4	C6
+4	C8
+4	C-Crosser
+4	C-Elysée
+4	CX
+4	C-Zero
+4	DS
+4	DS3
+4	DS4
+4	DS4 Crossback
+4	DS5
+4	E-MEHARI
+4	Evasion
+4	Grand C4 Picasso / SpaceTourer
+4	GSA
+4	Jumper
+4	Jumpy
+4	Nemo
+4	SAXO
+4	SM
+4	SpaceTourer
+4	Visa
+4	Xantia
+4	XM
+4	Xsara
+4	Xsara Picasso
+4	ZX
+4	Andere:Outro:Autre:Other
+3	Cobra
+4	Andere:Outro:Autre:Other
+3	Corvette
+4	C1
+4	C2
+4	C3
+4	C4
+4	C5
+4	C6
+4	C7
+4	C8
+4	Z06
+4	ZR 1
+4	Andere:Outro:Autre:Other
+3	Cupra
+4	Arona
+4	Ateca
+4	Ibiza
+4	Andere:Outro:Autre:Other
+3	Dacia
+4	Dokker
+4	Duster
+4	Lodgy
+4	Logan
+4	Logan Pick-Up
+4	Pick Up
+4	Sandero
+4	Andere:Outro:Autre:Other
+3	Daewoo
+4	Espero
+4	Evanda
+4	Kalos
+4	Korando
+4	Lacetti
+4	Lanos
+4	Leganza
+4	Matiz
+4	Musso
+4	Nexia
+4	Nubira
+4	Rezzo
+4	Tacuma
+4	Andere:Outro:Autre:Other
+3	Daihatsu
+4	Applause
+4	Charade
+4	Charmant
+4	Copen
+4	Cuore
+4	Feroza/Sportrak
+4	Freeclimber
+4	Gran Move
+4	Hijet
+4	MATERIA
+4	Move
+4	Rocky/Fourtrak
+4	Sirion
+4	Terios
+4	TREVIS
+4	YRV
+4	Andere:Outro:Autre:Other
+3	DeTomaso
+4	Guarà
+4	Pantera
+4	Andere:Outro:Autre:Other
+3	Dodge
+4	Avenger
+4	Calliber
+4	Chalenger
+4	Charger
+4	Dakota
+4	Dart
+4	Demon
+4	Durango
+4	Grand Caravan
+4	Hornet
+4	Journey
+4	Magnum
+4	Neon
+4	Nitro
+4	RAM
+4	Stealth
+4	Viper
+4	Andere:Outro:Autre:Other
+3	Donkervoort
+4	D8
+4	S7
+4	S8
+4	Andere:Outro:Autre:Other
+3	DSAutomobiles
+4	DS3
+4	DS3 Crossback
+4	DS4
+4	DS4 Crossback
+4	DS5
+4	DS7 Crossback
+4	Andere:Outro:Autre:Other
+3	Ferrari
+4	208
+4	246
+4	250
+4	275
+4	288
+4	308
+4	328
+4	330
+4	348
+4	360
+4	365
+4	400
+4	412
+4	456
+4	458
+4	488 GTB
+4	488 Pista
+4	488 Spider
+4	512
+4	550
+4	575
+4	599 GTB
+4	599 GTO
+4	599 SA Aperta
+4	612
+4	750
+4	812
+4	California
+4	Daytona
+4	Dino GT4
+4	Enzo Ferrari
+4	F12
+4	F355
+4	F40
+4	F430
+4	F50
+4	FF
+4	GTC4Lusso
+4	LaFerrari
+4	Mondial
+4	Portofino
+4	Superamerica
+4	Testarossa
+4	Andere:Outro:Autre:Other
+3	Fiat
+4	124
+4	124 Spider
+4	126
+4	127
+4	130
+4	131
+4	500
+4	500C
+4	500L
+4	500L Cross
+4	500L Living
+4	500L Trekking
+4	500L Urban
+4	500L Wagon
+4	500S
+4	500X
+4	Albea
+4	Barchetta
+4	Brava
+4	Bravo
+4	Cinquecento
+4	Coupe
+4	Croma
+4	Dino
+4	Doblo
+4	Ducato
+4	Fiorino
+4	Freemont
+4	Fullback
+4	Grande Punto
+4	Idea
+4	Linea
+4	Marea
+4	Marengo
+4	Multipla
+4	New Panda
+4	Palio
+4	Panda
+4	Punto
+4	Punto Evo
+4	Qubo
+4	Regata
+4	Ritmo
+4	Scudo
+4	Sedici
+4	Seicento
+4	Siena
+4	Spider Europa
+4	Stilo
+4	Strada
+4	Talento
+4	Tempra
+4	Tipo
+4	Ulysse
+4	Uno
+4	X 1/9
+4	Andere:Outro:Autre:Other
+3	Fisker
+4	Karma
+4	Andere:Outro:Autre:Other
+3	Ford
+4	Aerostar
+4	B-Max
+4	Bronco
+4	Capri
+4	C-Max
+4	Cougar
+4	Courier
+4	Crown
+4	Econoline
+4	Econovan
+4	EcoSport
+4	Edge
+4	Escape
+4	Escort
+4	Excursion
+4	Expedition
+4	Explorer
+4	Express
+4	F 100
+4	F 150
+4	F 250
+4	F 350
+4	Fairlane
+4	Falcon
+4	Fiesta
+4	Flex
+4	Focus
+4	Fusion
+4	Galaxy
+4	Granada
+4	Grand C-Max
+4	Grand Tourneo
+4	GT
+4	Ka/Ka+
+4	Kuga
+4	Maverick
+4	Mercury
+4	Mondeo
+4	Mustang
+4	Orion
+4	Probe
+4	Puma
+4	Ranger
+4	Raptor
+4	Scorpio
+4	Sierra
+4	S-Max
+4	Sportka
+4	Streetka
+4	Taunus
+4	Taurus
+4	Thunderbird
+4	Tourneo
+5	Tourneo
+5	Tourneo Connect
+5	Tourneo Courier
+5	Tourneo Custom
+4	Transit
+5	Transit
+5	Transit Connect
+5	Transit Courier
+5	Transit Custom
+4	Windstar
+4	Andere:Outro:Autre:Other
+3	GACGonow
+4	Andere:Outro:Autre:Other
+3	Gemballa
+4	Andere:Outro:Autre:Other
+3	GMC
+4	Acadia
+4	Envoy
+4	Safari
+4	Savana
+4	Sierra
+4	Sonoma
+4	Syclone
+4	Terrain
+4	Typhoon
+4	Vandura
+4	Yukon
+4	Andere:Outro:Autre:Other
+3	Grecav
+4	Sonique
+4	Andere:Outro:Autre:Other
+3	Hamann
+4	Andere:Outro:Autre:Other
+3	Holden
+4	Andere:Outro:Autre:Other
+3	Honda
+4	Accord
+4	Aerodeck
+4	City
+4	Civic
+4	Clarity
+4	Concerto
+4	CR-V
+4	CRX
+4	CR-Z
+4	e
+4	Element
+4	FR-V
+4	HR-V
+4	Insight
+4	Integra
+4	Jazz
+4	Legend
+4	Logo
+4	NSX
+4	Odyssey
+4	Pilot
+4	Prelude
+4	Ridgeline
+4	S2000
+4	Shuttle
+4	Stream
+4	Andere:Outro:Autre:Other
+3	Hummer
+4	H1
+4	H2
+4	H3
+4	Andere:Outro:Autre:Other
+3	Hyundai
+4	Accent
+4	Atos
+4	Azera
+4	Coupe
+4	Elantra
+4	Excel
+4	Galloper
+4	Genesis
+4	Getz
+4	Grandeur
+4	Grand Santa Fe
+4	H-1
+4	H 100
+4	H-1 Starex
+4	H 200
+4	H350
+4	i10
+4	i20
+4	i30
+4	i40
+4	i50
+4	IONIQ
+4	ix20
+4	ix35
+4	ix55
+4	Kona
+4	Lantra
+4	Matrix
+4	Nexo
+4	Pony
+4	Santa Fe
+4	Santamo
+4	S-Coupe
+4	Sonata
+4	Terracan
+4	Trajet
+4	Tucson
+4	Veloster
+4	Veracruz
+4	XG 30
+4	XG 350
+4	Andere:Outro:Autre:Other
+3	Infiniti
+4	EX30
+4	EX35
+4	EX37
+4	FX
+4	G35
+4	G37
+4	M30
+4	M35
+4	M37
+4	Q30
+4	Q45
+4	Q50
+4	Q60
+4	Q70
+4	QX30
+4	QX50
+4	QX56
+4	QX70
+4	Andere:Outro:Autre:Other
+3	Isuzu
+4	Campo
+4	D-Max
+4	Gemini
+4	Midi
+4	PICK UP
+4	Trooper
+4	Andere:Outro:Autre:Other
+3	Iveco
+4	Massif
+4	Andere:Outro:Autre:Other
+3	Jaguar
+4	Daimler
+4	E-Pace
+4	E-Type
+4	F-Pace
+4	F-Type
+4	I-Pace
+4	MK II
+4	S-Type
+4	XE
+4	XF
+4	XJ
+4	XJ12
+4	XJ40
+4	XJ6
+4	XJ8
+4	XJR
+4	XJS
+4	XJSC
+4	XK
+4	XK8
+4	XKR
+4	X-Type
+4	Andere:Outro:Autre:Other
+3	Jeep
+4	Cherokee
+4	CJ
+4	Comanche
+4	Commander
+4	Compass
+4	Grand Cherokee
+4	Patriot
+4	Renegade
+4	Vagoneer
+4	Willys
+4	Wrangler
+4	Andere:Outro:Autre:Other
+3	Kia
+4	Besta
+4	Borrego
+4	Carens
+4	Carnival
+4	cee'd / Ceed
+4	cee'd Sportswagon
+4	Cerato
+4	Clarus
+4	Elan
+4	Joice
+4	K2500
+4	K2700
+4	Leo
+4	Magentis
+4	Mentor
+4	Mini
+4	Niro
+4	Opirus
+4	Optima
+4	Picanto
+4	Pregio
+4	Pride
+4	pro_cee'd / ProCeed
+4	Retona
+4	Rio
+4	Roadster
+4	Rocsta
+4	Sephia
+4	Shuma
+4	Sorento
+4	Soul
+4	Sportage
+4	Stinger
+4	Stonic
+4	Venga
+4	XCeed
+4	Andere:Outro:Autre:Other
+3	Koenigsegg
+4	Agera
+4	CCR
+4	CCXR
+4	Andere:Outro:Autre:Other
+3	KTM
+4	X-BOW
+4	Andere:Outro:Autre:Other
+3	Lada
+4	110
+4	111
+4	112
+4	1200
+4	2107
+4	2110
+4	2111
+4	2112
+4	Aleko
+4	Forma
+4	Granta
+4	Kalina
+4	Niva
+4	Nova
+4	Priora
+4	Samara
+4	Taiga
+4	Urban
+4	Vesta
+4	X-Ray
+4	Andere:Outro:Autre:Other
+3	Lamborghini
+4	Aventador
+4	Countach
+4	Diablo
+4	Espada
+4	Gallardo
+4	Huracán
+4	Jalpa
+4	LM
+4	Miúra
+4	Muriciélago
+4	Urraco
+4	Urus
+4	Andere:Outro:Autre:Other
+3	Lancia
+4	Beta
+4	Dedra
+4	Delta
+4	Flaminia
+4	Flavia
+4	Fulvia
+4	gamma
+4	Kappa
+4	Libra
+4	MUSA
+4	Phedra
+4	Prisma
+4	Stratos
+4	Thema
+4	Thesis
+4	Voyager
+4	Ypsilon
+4	Zeta
+4	Andere:Outro:Autre:Other
+3	LandRover
+4	Defender
+4	Discovery
+4	Discovery Sport
+4	Freelander
+4	Range Rover
+4	Range Rover Evoque
+4	Range Rover Sport
+4	Range Rover Velar
+4	Serie I
+4	Serie II
+4	Serie III
+4	Andere:Outro:Autre:Other
+3	Landwind
+4	CV-9
+4	S
+4	SC2
+4	SC4
+4	Andere:Outro:Autre:Other
+3	Lexus
+4	CT 200h
+4	ES-Serie:Série ES:Séries ES
+5	ES 300
+5	ES 330
+5	ES 350
+4	GS-Serie:Série GS:Séries GS
+5	GS 250
+5	GS 300
+5	GS 350
+5	GS 430
+5	GS 450
+5	GS 460
+5	GS F
+5	GX 470
+4	IS-Serie:Série IS:Séries IS
+5	IS 200
+5	IS 220
+5	IS 250
+5	IS 300
+5	IS 350
+5	IS-F
+4	LS-Serie:Série LS:Séries LS
+5	LC 500
+5	LC 500h
+5	LFA
+5	LS 400
+5	LS 430
+5	LS 460
+5	LS 500
+5	LS 600
+4	LX-Serie:Série LX:Séries LX
+5	LX 470
+5	LX 570
+4	NX-Serie:Série NX:Séries NX
+5	NX 200
+5	NX 300
+4	RC-Serie:Série RC:Séries RC
+5	RC 200
+5	RC 300
+5	RC 350
+5	RC F
+4	RX-Serie:Série RX:Séries RX
+5	RX 200
+5	RX 300
+5	RX 330
+5	RX 350
+5	RX 400
+5	RX 450
+4	SC 400
+4	SC 430
+4	UX
+4	Andere:Outro:Autre:Other
+3	Ligier
+4	Ambra
+4	Be Sun
+4	JS 50
+4	JS 50 L
+4	RC
+4	Nova
+4	Optima
+4	X-Too
+4	Andere:Outro:Autre:Other
+3	Lincoln
+4	Aviator
+4	Continental
+4	LS
+4	Mark
+4	Navigator
+4	Town Car
+4	Andere:Outro:Autre:Other
+3	Lotus
+4	340 R
+4	Cortina
+4	Elan
+4	Elise
+4	elite
+4	Esprit
+4	Europa
+4	Evora
+4	Excel
+4	Exige
+4	Super Seven
+4	Andere:Outro:Autre:Other
+3	Mahindra
+4	Andere:Outro:Autre:Other
+3	Maserati
+4	Andere:Outro:Autre:Other
+3	Maybach
+4	222
+4	224
+4	228
+4	3200
+4	418
+4	420
+4	4200
+4	422
+4	424
+4	430
+4	Biturbo
+4	Ghibli
+4	GranCabrio
+4	Gransport
+4	Granturismo
+4	Indy
+4	Karif
+4	Levante
+4	MC12
+4	Merak
+4	Quattroporte
+4	Shamal
+4	Spyder
+4	Andere:Outro:Autre:Other
+3	Mazda
+4	121
+4	2
+4	3
+4	323
+4	5
+4	6
+4	626
+4	929
+4	Bongo
+4	B series
+4	BT-50
+4	CX-3
+4	CX-30
+4	CX-5
+4	CX-7
+4	CX-9
+4	Demio
+4	E series
+4	Millenia
+4	MPV
+4	MX-3
+4	MX-5
+4	MX-6
+4	Premacy
+4	Protege
+4	RX-6
+4	RX-7
+4	RX-8
+4	Tribute
+4	Xedos
+4	Andere:Outro:Autre:Other
+3	McLaren
+4	540C
+4	570GT
+4	570S
+4	650S
+4	650S Coupé
+4	650S Spider
+4	675LT
+4	675LT Spider
+4	720S GT
+4	MP4-12C
+4	P1
+4	Andere:Outro:Autre:Other
+3	Mercedes-Benz
+4	190
+4	200
+4	220
+4	230
+4	240
+4	250
+4	260
+4	270
+4	280
+4	290
+4	300
+4	320
+4	350
+4	380
+4	400
+4	416
+4	420
+4	450
+4	500
+4	560
+4	600
+4	A-Klasse:Classe-A:Classe A
+5	A 140
+5	A 150
+5	A 160
+5	A 170
+5	A 180
+5	A 190
+5	A 200
+5	A 210
+5	A 220
+5	A 250
+5	A 35 AMG
+5	A 45 AMG
+4	B-Klasse:Classe-B:Classe B
+5	B 150
+5	B 160
+5	B 170
+5	B 180
+5	B 200
+5	B 220
+5	B 250
+5	B Electric Drive
+4	CE-Klasse:Classe-CE:Classe CE
+5	CE 200
+5	CE 220
+5	CE 230
+5	CE 280
+5	CE 300
+5	CE 320
+4	Citan
+4	C-Klasse:Classe-C:Classe C
+5	C 160
+5	C 180
+5	C 200
+5	C 220
+5	C 230
+5	C 240
+5	C 250
+5	C 270
+5	C 280
+5	C 300
+5	C 30 AMG
+5	C 320
+5	C 32 AMG
+5	C 350
+5	C 36 AMG
+5	C 400
+5	C 43 AMG
+5	C 450 AMG
+5	C 55 AMG
+5	C 63 AMG
+4	CLA-Klasse:Classe-CLA:Classe CLA
+5	CLA 180
+5	CLA 180 Shooting Brake
+5	CLA 200
+5	CLA 200 Shooting Brake
+5	CLA 220
+5	CLA 220 Shooting Brake
+5	CLA 250
+5	CLA 250 Shooting Brake
+5	CLA 35 AMG
+5	CLA 45 AMG
+5	CLA 45 AMG Shooting Brake
+5	CLA Shooting Brake
+4	CLC-Klasse:Classe-CLC:Classe CLC
+5	CLC 160
+5	CLC 180
+5	CLC 200
+5	CLC 220
+5	CLC 230
+5	CLC 250
+5	CLC 350
+5	CLK 200
+5	CLK 220
+5	CLK 230
+5	CLK 240
+5	CLK 270
+5	CLK 280
+5	CLK 320
+5	CLK 350
+5	CLK 430
+5	CLK 500
+5	CLK 55 AMG
+5	CLK 63 AMG
+4	CL-Klasse:Classe-CL:Classe CL
+5	CL 160
+5	CL 180
+5	CL 200
+5	CL 220
+5	CL 230
+5	CL 320
+5	CL 420
+5	CL 500
+5	CL 55 AMG
+5	CL 600
+5	CL 63 AMG
+5	CL 65 AMG
+4	CLS-Klasse:Classe-CLS:Classe CLS
+5	CLS 220
+5	CLS 220 Shooting Brake
+5	CLS 250
+5	CLS 250 Shooting Brake
+5	CLS 280
+5	CLS 300
+5	CLS 320
+5	CLS 350
+5	CLS 350 Shooting Brake
+5	CLS 400
+5	CLS 400 Shooting Brake
+5	CLS 450
+5	CLS 500
+5	CLS 500 Shooting Brake
+5	CLS 53 AMG
+5	CLS 55 AMG
+5	CLS 63 AMG
+5	CLS 63 AMG Shooting Brake
+5	CLS Shooting Brake
+4	E-Klasse:Classe-E:Classe E
+5	E 200
+5	E 220
+5	E 230
+5	E 240
+5	E 250
+5	E 260
+5	E 270
+5	E 280
+5	E 290
+5	E 300
+5	E 320
+5	E 350
+5	E 36 AMG
+5	E 400
+5	E 420
+5	E 430
+5	E 43 AMG
+5	E 450
+5	E 50
+5	E 500
+5	E 53 AMG
+5	E 55 AMG
+5	E 60 AMG
+5	E 63 AMG
+4	EQC
+4	G-Klasse:Classe-G:Classe G
+5	G 230
+5	G 240
+5	G 250
+5	G 270
+5	G 280
+5	G 290
+5	G 300
+5	G 320
+5	G 350
+5	G 400
+5	G 500
+5	G 55 AMG
+5	G 63 AMG
+5	G 65 AMG
+4	GLA-Klasse:Classe-GLA:Classe GLA
+5	GLA 180
+5	GLA 200
+5	GLA 220
+5	GLA 250
+5	GLA 45 AMG
+4	GLB-Klasse:Classe-GLB:Classe GLB
+5	GLB 180
+5	GLB 200
+5	GLB 220
+5	GLB 250
+4	GLC-Klasse:Classe-GLC:Classe GLC
+5	GLC 200
+5	GLC 220
+5	GLC 250
+5	GLC 300
+5	GLC 350
+5	GLC 400
+5	GLC 43 AMG
+5	GLC 63 AMG
+4	GLE-Klasse:Classe-GLE:Classe GLE
+5	GLE 250
+5	GLE 300
+5	GLE 350
+5	GLE 400
+5	GLE 43 AMG
+5	GLE 450
+5	GLE 500
+5	GLE 53 AMG
+5	GLE 63 AMG
+4	GLK-Klasse:Classe-GLK:Classe GLK
+5	GLK 200
+5	GLK 220
+5	GLK 250
+5	GLK 280
+5	GLK 300
+5	GLK 320
+5	GLK 350
+4	GL-Klasse:Classe-GL:Classe GL
+5	GL 320
+5	GL 350
+5	GL 400
+5	GL 420
+5	GL 450
+5	GL 500
+5	GL 55 AMG
+5	GL 63 AMG
+4	GLS-Klasse:Classe-GLS:Classe GLS
+5	GLS 350
+5	GLS 400
+5	GLS 500
+5	GLS 63
+4	GT-Klasse:Classe-GT:Classe GT
+5	AMG GT
+5	AMG GT C
+5	AMG GT R
+5	AMG GT S
+4	MB 100
+4	ML-Klasse:Classe-ML:Classe ML
+5	ML 230
+5	ML 250
+5	ML 270
+5	ML 280
+5	ML 300
+5	ML 320
+5	ML 350
+5	ML 400
+5	ML 420
+5	ML 430
+5	ML 450
+5	ML 500
+5	ML 55 AMG
+5	ML 63 AMG
+4	R-Klasse:Classe-R:Classe R
+5	R 280
+5	R 300
+5	R 320
+5	R 350
+5	R 500
+5	R 63 AMG
+4	S-Klasse:Classe-S:Classe S
+5	S 250
+5	S 260
+5	S 280
+5	S 300
+5	S 320
+5	S 350
+5	S 400
+5	S 420
+5	S 430
+5	S 450
+5	S 500
+5	S 55
+5	S 550
+5	S 560
+5	S 600
+5	S 63 AMG
+5	S 650
+5	S 65 AMG
+4	SLC-Klasse:Classe-SLC:Classe SLC
+5	SLC 180
+5	SLC 200
+5	SLC 250
+5	SLC 280
+5	SLC 300
+5	SLC 43 AMG
+4	SLK-Klasse:Classe-SLK:Classe SLK
+5	SLK 200
+5	SLK 230
+5	SLK 250
+5	SLK 280
+5	SLK 300
+5	SLK 320
+5	SLK 32 AMG
+5	SLK 350
+5	SLK 55 AMG
+4	SL-Klasse:Classe-SL:Classe SL
+5	SL 280
+5	SL 300
+5	SL 320
+5	SL 350
+5	SL 380
+5	SL 400
+5	SL 420
+5	SL 450
+5	SL 500
+5	SL 55 AMG
+5	SL 560
+5	SL 600
+5	SL 60 AMG
+5	SL 63 AMG
+5	SL 65 AMG
+5	SL 70 AMG
+5	SL 73 AMG
+4	SLR
+4	SLS AMG
+4	Sprinter
+4	Vaneo
+4	Vario
+4	Viano
+4	Vito
+4	V-Klasse:Classe-V:Classe V
+5	V 200
+5	V 220
+5	V 230
+5	V 250
+5	V 280
+5	V 300
+5	X 220
+5	X 250
+5	X 350
+4	Andere:Outro:Autre:Other
+3	MG
+4	MGA
+4	MGB
+4	MGF
+4	Mifget
+4	Montego
+4	TD
+4	TF
+4	ZR
+4	ZS
+4	ZT
+4	Andere:Outro:Autre:Other
+3	Microcar
+4	Duè
+4	Flex
+4	M.Go
+4	Andere:Outro:Autre:Other
+4	M-8
+4	MC1
+4	MC2
+4	Virgo
+3	MINI
+4	Cabrio Serie:Série Cabrio:Séries Cabrio
+5	Cooper Cabrio
+5	Cooper D Cabrio
+5	Cooper S Cabrio
+5	Cooper SD Cabrio
+5	John Cooper Works Cabrio
+5	One Cabrio
+4	Clubman Serie:Série Clubman:Séries Clubman
+5	Cooper Clubman
+5	Cooper D Clubman
+5	Cooper S Clubman
+5	Cooper SD Clubman
+5	John Cooper Works Clubman
+5	One Clubman
+5	One D Clubman
+4	Clubvan
+4	Countryman Serie:Série Countryman:Séries Countryman
+5	Cooper Countryman
+5	Cooper D Countryman
+5	Cooper S Countryman
+5	Cooper SD Countryman
+5	John Cooper Works Countryman
+5	One Countryman
+5	One D Countryman
+4	Cooper Coupé
+4	Cooper S Coupé
+4	Cooper SD Coupé
+4	John Cooper Works Coupé
+4	MINI Serie:Série MINI:Séries MINI
+5	MINI 1000
+5	MINI 1300
+5	MINI Cooper
+5	MINI Cooper D
+5	MINI Cooper S
+5	MINI Cooper SD
+5	MINI John Cooper Works
+5	MINI ONE
+5	MINI One D
+5	MINI One First
+4	Paceman Serie:Série Paceman:Séries Paceman
+5	Cooper D Paceman
+5	Cooper Paceman
+5	Cooper SD Paceman
+5	Cooper S Paceman
+5	John Cooper Works Paceman
+4	Roadster Serie:Série Roadster:Séries Roadster
+5	Cooper Roadster
+5	Cooper SD Roadster
+5	Cooper S Roadster
+5	John Cooper Works Roadster
+4	Andere:Outro:Autre:Other
+3	Mitsubishi
+4	3000 GT
+4	ASX
+4	Canter
+4	Carisma
+4	Colt
+4	Cordia
+4	Cosmos
+4	Diamante
+4	Eclipse
+4	Eclipse Cross
+4	Galant
+4	Galloper
+4	Grandis
+4	i-MiEV
+4	L200
+4	L300
+4	L400
+4	Lancer
+4	Mirage
+4	Montero
+4	Outlander
+4	Pajero
+4	Pajero Pinin
+4	Pick-up
+4	Plug-in Hybrid Outlander
+4	Santamo
+4	Sapporo
+4	Sigma
+4	Space Gear
+4	Space Runner
+4	Space Star
+4	Space Wagon
+4	Starion
+4	Tredia
+4	Andere:Outro:Autre:Other
+3	Morgan
+4	3 Wheeler
+4	4/4
+4	Aero 8
+4	Plus 4
+4	Plus 8
+4	Roadster
+4	Andere:Outro:Autre:Other
+3	Nissan
+4	100 NX
+4	200 SX
+4	240 SX
+4	280 ZX
+4	300 ZX
+4	350Z
+4	370Z
+4	Almera
+4	Almera Tino
+4	Altima
+4	Armada
+4	Bluebird
+4	Cabstar
+4	Cargo
+4	Cherry
+4	Cube
+4	e-NV200
+4	Evalia
+4	Frontier
+4	GT-R
+4	Interstar
+4	Juke
+4	King Cab
+4	Kubistar
+4	Laurel
+4	Leaf
+4	Maxima
+4	Micra
+4	Murano
+4	Navara
+4	Note
+4	NP 300
+4	NV200
+4	NV250
+4	NV300
+4	NV400
+4	Pathfinder
+4	Patrol
+4	PickUp
+4	Pixo
+4	Prairie
+4	Primastar
+4	Primera
+4	Pulsar
+4	Qashqai
+4	Qashqai+2
+4	Quest
+4	Sentra
+4	Serena
+4	Silvia
+4	Skyline
+4	Sunny
+4	Terrano
+4	Tiida
+4	Titan
+4	Trade
+4	Urvan
+4	Vanette
+4	X-Trail
+4	Andere:Outro:Autre:Other
+3	NSU
+4	Andere:Outro:Autre:Other
+3	Oldsmobile
+4	Bravada
+4	Custom Cruiser
+4	Cutlass
+4	Delta 88
+4	Silhouette
+4	Supreme
+4	Toronado
+4	Andere:Outro:Autre:Other
+3	Opel
+4	Adam
+4	Agila
+4	Ampera
+4	Ampera-e
+4	Antara
+4	Arena
+4	Ascona
+4	Astra
+4	Calibra
+4	Campo
+4	Cascada
+4	Cavalier
+4	Combo
+4	Commodore
+4	Corsa
+4	Crossland X
+4	Diplomat
+4	Frontera
+4	Grandland X
+4	GT
+4	Insignia
+4	Insignia CT
+4	Kadett
+4	Karl
+4	Manta
+4	Meriva
+4	Mokka
+4	Mokka X
+4	Monterey
+4	Monza
+4	Movano
+4	Nova
+4	Omega
+4	Pick Up Sportscap
+4	Rekord
+4	Senator
+4	Signum
+4	Sintra
+4	Speedster
+4	Tigra
+4	Vectra
+4	Vivaro
+4	Zafira
+4	Zafira Life
+4	Zafira Tourer
+4	Andere:Outro:Autre:Other
+3	Pagani
+4	Huayra
+4	Zonda
+4	Andere:Outro:Autre:Other
+3	Peugeot
+4	1007
+4	104
+4	106
+4	107
+4	108
+4	2008
+4	204
+4	205
+4	206
+4	207
+4	208
+4	3008
+4	301
+4	304
+4	305
+4	306
+4	307
+4	308
+4	309
+4	4007
+4	4008
+4	404
+4	405
+4	406
+4	407
+4	5008
+4	504
+4	505
+4	508
+4	604
+4	605
+4	607
+4	806
+4	807
+4	Bipper
+4	Bipper Tepee
+4	Boxer
+4	Expert
+4	Expert Tepee
+4	iOn
+4	J5
+4	Partner
+4	Partner Tepee
+4	RCZ
+4	Rifter
+4	TePee
+4	Traveller
+4	Andere:Outro:Autre:Other
+3	Piaggio
+4	APE
+4	APE TM
+4	Porter
+4	Andere:Outro:Autre:Other
+3	Plymouth
+4	Prowler
+4	Andere:Outro:Autre:Other
+3	Polestar
+4	1
+4	2
+4	Andere:Outro:Autre:Other
+3	Pontiac
+4	6000
+4	Bonneville
+4	Fiero
+4	Firebird
+4	G6
+4	Grand-Am
+4	Grand-Prix
+4	GTO
+4	Montana
+4	Solstice
+4	Sunbird
+4	Sunfire
+4	Targa
+4	Trans Am
+4	Trans Sport
+4	Vibe
+4	Andere:Outro:Autre:Other
+3	Porsche
+4	356
+4	911er Reihe
+4	911 Urmodell
+4	912
+4	914
+4	918
+4	924
+4	928
+4	930
+4	944
+4	959
+4	962
+4	964
+4	968
+4	991
+4	992
+4	993
+4	996
+4	997
+4	Boxster
+4	Carrera GT
+4	Cayenne
+4	Cayman
+4	Macan
+4	Panamera
+4	Taycan
+4	Andere:Outro:Autre:Other
+3	Proton
+4	300 Serie
+4	400 Serie
+4	Andere:Outro:Autre:Other
+3	Renault
+4	Alaskan
+4	Alpine A110
+4	Alpine A310
+4	Alpine V6
+4	Avantime
+4	Captur
+4	Clio
+4	Coupe
+4	Espace
+4	Express
+4	Fluence
+4	Fuego
+4	Grand Espace
+4	Grand Modus
+4	Grand Scenic
+4	Kadjar
+4	Kangoo
+4	Koleos
+4	Laguna
+4	Latitude
+4	Mascott
+4	Master
+4	Megane
+4	Modus
+4	P 1400
+4	R 11
+4	R 14
+4	R 18
+4	R 19
+4	R 20
+4	R 21
+4	R 25
+4	R 30
+4	R 4
+4	R 5
+4	R 6
+4	R 9
+4	Rapid
+4	Safrane
+4	Scenic
+4	Spider
+4	Talisman
+4	Trafic
+4	Twingo
+4	Twizy
+4	Vel Satis
+4	Wind
+4	ZOE
+4	Andere:Outro:Autre:Other
+3	Rolls-Royce
+4	Corniche
+4	Cullinan
+4	Dawn
+4	Flying Spur
+4	Ghost
+4	Park Ward
+4	Phanton
+4	Silver Cloud
+4	Silver Dawn
+4	Silver Seraph
+4	Silver Cloud
+4	Silver Shadow
+4	Silver Spirit
+4	Silver Spur
+4	Wraith
+4	Andere:Outro:Autre:Other
+3	Rover
+4	100
+4	111
+4	114
+4	115
+4	200
+4	213
+4	214
+4	216
+4	218
+4	220
+4	25
+4	400
+4	414
+4	416
+4	418
+4	420
+4	45
+4	600
+4	618
+4	620
+4	623
+4	75
+4	800
+4	820
+4	825
+4	827
+4	City Rover
+4	Metro
+4	Montego
+4	SD
+4	Streetwise
+4	Andere:Outro:Autre:Other
+3	Ruf
+4	Andere:Outro:Autre:Other
+3	Saab
+4	90
+4	900
+4	9000
+4	9-3
+4	9-4X
+4	9-5
+4	96
+4	9-7X
+4	99
+4	Andere:Outro:Autre:Other
+3	Santana
+4	Andere:Outro:Autre:Other
+3	Seat
+4	Alhambra
+4	Altea
+4	Arona
+4	Arosa
+4	Ateca
+4	Cordoba
+4	Exeo
+4	Ibiza
+4	Inca
+4	Leon
+4	Malaga
+4	Marbella
+4	Mii
+4	Tarraco
+4	Terra
+4	Toledo
+4	Andere:Outro:Autre:Other
+3	Skoda
+4	105
+4	120
+4	130
+4	135
+4	Citigo
+4	Fabia
+4	Favorit
+4	Felicia
+4	Forman
+4	Kamiq
+4	Karoq
+4	Kodiaq
+4	Octavia
+4	Pick-up
+4	Praktik
+4	Rapid
+4	Roomster
+4	Scala
+4	Superb
+4	Yeti
+4	Andere:Outro:Autre:Other
+3	Smart
+4	Crossblade
+4	ForFour
+4	ForTwo
+4	Roadster
+4	Andere:Outro:Autre:Other
+3	speedART
+4	Andere:Outro:Autre:Other
+3	Spyker
+4	C8
+4	C8 AILERON
+4	C8 DOUBLE 12 S
+4	C8 LAVIOLETTE SWD
+4	C8 SPYDER SWD
+4	Andere:Outro:Autre:Other
+3	Ssangyong
+4	Actyon
+4	Family
+4	Korando
+4	Kyron
+4	Musso
+4	Rexton
+4	Rodius
+4	Tivoli
+4	XLV
+4	Andere:Outro:Autre:Other
+3	Subaru
+4	B9 Tribeca
+4	Baja
+4	BRZ
+4	Forester
+4	Impreza
+4	Justy
+4	Legacy
+4	Levorg
+4	Libero
+4	Outback
+4	SVX
+4	Trezia
+4	Tribeca
+4	Vivio
+4	WRX STI
+4	XT
+4	XV
+4	Andere:Outro:Autre:Other
+3	Suzuki
+4	Alto
+4	Baleno
+4	Cappuccino
+4	Carry
+4	Celerio
+4	Grand Vitara
+4	Ignis
+4	iK-2
+4	Jimny
+4	Kizashi
+4	Liana
+4	LJ
+4	SJ Samurai
+4	Splash
+4	Super-Carry
+4	Swift
+4	SX4
+4	SX4 S-Cross
+4	Vitara
+4	Wagon R+
+4	X-90
+4	Andere:Outro:Autre:Other
+3	Talbot
+4	Horizon
+4	Samba
+4	Andere:Outro:Autre:Other
+3	Tata
+4	Indica
+4	Indigo
+4	Nano
+4	Safari
+4	Sumo
+4	Telcoline
+4	Telcosport
+4	Xenon
+4	Andere:Outro:Autre:Other
+3	TECHART
+4	Andere:Outro:Autre:Other
+3	Tesla
+4	Model 3
+4	Model S
+4	Model X
+4	Roadster
+4	Andere:Outro:Autre:Other
+3	Toyota
+4	4-Runner
+4	Alphard
+4	Auris
+4	Auris Touring Sports
+4	Avalon
+4	Avensis
+4	Avensis Verso
+4	Aygo
+4	Camry
+4	Carina
+4	Celica
+4	C-HR
+4	Corolla
+4	Corolla Verso
+4	Cressida
+4	Crown
+4	Dyna
+4	FCV
+4	FJ
+4	Fortuner
+4	GT86
+4	Hiace
+4	Highlander
+4	Hilux
+4	IQ
+4	Land Cruiser
+4	Lite-Ace
+4	Matrix
+4	Mirai
+4	MR 2
+4	Paseo
+4	Picnic
+4	Previa
+4	Prius
+4	Prius+
+4	Proace (Verso)
+4	RAV 4
+4	Sequoia
+4	Sienna
+4	Starlet
+4	Supra
+4	Tacoma
+4	Tercel
+4	Tundra
+4	Urban Cruiser
+4	Verso
+4	Verso-S
+4	Yaris
+4	Andere:Outro:Autre:Other
+3	Trabant
+4	601
+4	Andere:Outro:Autre:Other
+3	Triumph
+4	Dolomite
+4	Moss
+4	Spitfire
+4	TR3
+4	TR4
+4	TR5
+4	TR6
+4	TR7
+4	TR8
+4	Andere:Outro:Autre:Other
+3	TVR
+4	Chimaera
+4	Griffith
+4	Tuscan
+4	Andere:Outro:Autre:Other
+3	Volkswagen
+4	181
+4	Amarok
+4	Arteon
+4	Beetle
+4	Bora
+4	Buggy
+4	Caddy
+4	CC
+4	Corrado
+4	Crafter
+4	Eos
+4	Fox
+4	Golf
+5	Golf
+5	Golf Plus
+5	Golf Sportsvan
+4	Iltis
+4	Jetta
+4	Käfer
+4	Karmann Ghia
+4	LT
+4	Lupo
+4	New Beetle
+4	Passat
+5	Passat
+5	Passat Alltrack
+5	Passat CC
+5	Passat Variant
+4	Phaeton
+4	Polo
+4	Routan
+4	Santana
+4	Scirocco
+4	Sharan
+4	T1
+4	T2
+4	T3
+5	T3 Caravelle
+5	T3 Kombi
+5	T3 Multivan
+4	T4
+5	T4 Andere:T4 Outro
+5	T4 California
+5	T4 Caravelle
+5	T4 Kombi
+5	T4 Multivan
+4	T5
+5	T5 Andere:T5 Outro
+5	T5 California
+5	T5 Caravelle
+5	T5 Kombi
+5	T5 Multivan
+5	T5 Shuttle
+5	T5 Transporter
+4	T6
+5	T6 Andere:T6 Outro
+5	T6 California
+5	T6 Caravelle
+5	T6 Kombi
+5	T6 Multivan
+5	T6 Transporter
+4	Taro
+4	T-Cross
+4	Tiguan
+4	Tiguan Allspace
+4	Touareg
+4	Touran
+4	T-Roc
+4	up!
+4	Vento
+4	XL1
+4	Andere:Outro:Autre:Other
+3	Volvo
+4	240
+4	244
+4	245
+4	262
+4	264
+4	340
+4	360
+4	440
+4	460
+4	480
+4	740
+4	744
+4	745
+4	760
+4	780
+4	850
+4	855
+4	940
+4	944
+4	945
+4	960
+4	965
+4	Amazon
+4	C30
+4	C70
+4	Polar
+4	S40
+4	S60
+4	S60 Cross Country
+4	S70
+4	S80
+4	S90
+4	V40
+4	V40 Cross Country
+4	V50
+4	V60
+4	V60 Cross Country
+4	V70
+4	V90
+4	V90 Cross Country
+4	XC40
+4	XC60
+4	XC70
+4	XC90
+4	Andere:Outro:Autre:Other
+3	Wartburg
+4	311
+4	353
+4	Andere:Outro:Autre:Other
+3	Westfield
+4	Andere:Outro:Autre:Other
+3	Wiesmann
+4	MF 25
+4	MF 28
+4	MF 3
+4	MF 30
+4	MF 35
+4	MF 4
+4	MF 5
+4	Andere:Outro:Autre:Other
+3	Andere:Outro:Autre:Other
+4	Andere:Outro:Autre:Other
+2	Motorräder:Motocicletas:Motos:Motorcycles
+3	Access Motor
+4	Andere:Outro:Autre:Other
+3	Adly
+4	Andere:Outro:Autre:Other
+3	Aeon
+4	Andere:Outro:Autre:Other
+3	AGM MOTORS
+4	Andere:Outro:Autre:Other
+3	Aixam
+4	Andere:Outro:Autre:Other
+3	American Ironhorse
+4	Andere:Outro:Autre:Other
+3	Aprilia
+4	Andere:Outro:Autre:Other
+3	Arctic Cat
+4	Andere:Outro:Autre:Other
+3	Baotian
+4	Andere:Outro:Autre:Other
+3	Barossa
+4	Andere:Outro:Autre:Other
+3	Bashan
+4	Andere:Outro:Autre:Other
+3	Beeline
+4	Andere:Outro:Autre:Other
+3	Benelli
+4	Andere:Outro:Autre:Other
+3	Beta
+4	Andere:Outro:Autre:Other
+3	Big Dog Motorcycles
+4	Andere:Outro:Autre:Other
+3	Bimota
+4	Andere:Outro:Autre:Other
+3	Blata
+4	Andere:Outro:Autre:Other
+3	BMW
+4	Andere:Outro:Autre:Other
+3	Bombardier
+4	Andere:Outro:Autre:Other
+3	Boom
+4	Andere:Outro:Autre:Other
+3	Brixton
+4	Andere:Outro:Autre:Other
+3	BRP
+4	Andere:Outro:Autre:Other
+3	BSA
+4	Andere:Outro:Autre:Other
+3	Buell
+4	Andere:Outro:Autre:Other
+3	Burelli
+4	Andere:Outro:Autre:Other
+3	Cagiva
+4	Andere:Outro:Autre:Other
+3	Can Am
+4	Andere:Outro:Autre:Other
+3	Cectek
+4	Andere:Outro:Autre:Other
+3	CFMOTO
+4	Andere:Outro:Autre:Other
+3	CPI
+4	Andere:Outro:Autre:Other
+3	Daelim
+4	Andere:Outro:Autre:Other
+3	Derbi
+4	Andere:Outro:Autre:Other
+3	Dinli
+4	Andere:Outro:Autre:Other
+3	DKW
+4	Andere:Outro:Autre:Other
+3	Ducati
+4	Andere:Outro:Autre:Other
+3	e-max
+4	Andere:Outro:Autre:Other
+3	emco
+4	Andere:Outro:Autre:Other
+3	E-Ton
+4	Andere:Outro:Autre:Other
+3	Explorer
+4	Andere:Outro:Autre:Other
+3	Fantic
+4	Andere:Outro:Autre:Other
+3	FB Mondial
+4	Andere:Outro:Autre:Other
+3	Gasgas
+4	Andere:Outro:Autre:Other
+3	Generic
+4	Andere:Outro:Autre:Other
+3	GG Motorradtechnik
+4	Andere:Outro:Autre:Other
+3	Gilera
+4	Andere:Outro:Autre:Other
+3	GOES
+4	Andere:Outro:Autre:Other
+3	Gorilla
+4	Andere:Outro:Autre:Other
+3	Harley-Davidson
+4	Andere:Outro:Autre:Other
+3	Hercules
+4	Andere:Outro:Autre:Other
+3	Herkules
+4	Andere:Outro:Autre:Other
+3	Honda
+4	Andere:Outro:Autre:Other
+3	Horex
+4	Andere:Outro:Autre:Other
+3	Husaberg
+4	Andere:Outro:Autre:Other
+3	Husqvarna
+4	Andere:Outro:Autre:Other
+3	Hyosung
+4	Andere:Outro:Autre:Other
+3	Indian
+4	Andere:Outro:Autre:Other
+3	Italjet
+4	Andere:Outro:Autre:Other
+3	Jawa
+4	Andere:Outro:Autre:Other
+3	Jinling
+4	Andere:Outro:Autre:Other
+3	Kawasaki
+4	Andere:Outro:Autre:Other
+3	Keeway
+4	Andere:Outro:Autre:Other
+3	Kimi
+4	Andere:Outro:Autre:Other
+3	Knievel
+4	Andere:Outro:Autre:Other
+3	Kreidler
+4	Andere:Outro:Autre:Other
+3	KSR
+4	Andere:Outro:Autre:Other
+3	KTM
+4	Andere:Outro:Autre:Other
+3	Kumpan
+4	Andere:Outro:Autre:Other
+3	Kymco
+4	Andere:Outro:Autre:Other
+3	Lambretta
+4	Andere:Outro:Autre:Other
+3	Laverda
+4	Andere:Outro:Autre:Other
+3	Lifan
+4	Andere:Outro:Autre:Other
+3	Linhai
+4	Andere:Outro:Autre:Other
+3	LML
+4	Andere:Outro:Autre:Other
+3	Luxxon
+4	Andere:Outro:Autre:Other
+3	Maico
+4	Andere:Outro:Autre:Other
+3	Malaguti
+4	Andere:Outro:Autre:Other
+3	Mash
+4	Andere:Outro:Autre:Other
+3	MBK
+4	Andere:Outro:Autre:Other
+3	Megelli
+4	Andere:Outro:Autre:Other
+3	Motobi
+4	Andere:Outro:Autre:Other
+3	Moto Guzzi
+4	Andere:Outro:Autre:Other
+3	Moto Morini
+4	Andere:Outro:Autre:Other
+3	Motowell
+4	Andere:Outro:Autre:Other
+3	MV Agusta
+4	Andere:Outro:Autre:Other
+3	Mz
+4	Andere:Outro:Autre:Other
+3	NIU
+4	Andere:Outro:Autre:Other
+3	Norton
+4	Andere:Outro:Autre:Other
+3	NSU
+4	Andere:Outro:Autre:Other
+3	Online
+4	Andere:Outro:Autre:Other
+3	Pegasus
+4	Andere:Outro:Autre:Other
+3	Peugeot
+4	Andere:Outro:Autre:Other
+3	PGO
+4	Andere:Outro:Autre:Other
+3	Piaggio
+4	Andere:Outro:Autre:Other
+3	Polaris
+4	Andere:Outro:Autre:Other
+3	Puch
+4	Andere:Outro:Autre:Other
+3	Quadix
+4	Andere:Outro:Autre:Other
+3	Quadro
+4	Andere:Outro:Autre:Other
+3	Rewaco
+4	Andere:Outro:Autre:Other
+3	Rieju
+4	Andere:Outro:Autre:Other
+3	Rivero
+4	Andere:Outro:Autre:Other
+3	Royal Enfield
+4	Andere:Outro:Autre:Other
+3	Sachs
+4	Andere:Outro:Autre:Other
+3	Seikel
+4	Andere:Outro:Autre:Other
+3	Sherco
+4	Andere:Outro:Autre:Other
+3	Shineray
+4	Andere:Outro:Autre:Other
+3	Simson
+4	Andere:Outro:Autre:Other
+3	Skyteam
+4	Andere:Outro:Autre:Other
+3	SMC
+4	Andere:Outro:Autre:Other
+3	Suzuki
+4	Andere:Outro:Autre:Other
+3	SWM
+4	Andere:Outro:Autre:Other
+3	SYM
+4	Andere:Outro:Autre:Other
+3	Tauris
+4	Andere:Outro:Autre:Other
+3	TGB
+4	Andere:Outro:Autre:Other
+3	Thunderbike
+4	Andere:Outro:Autre:Other
+3	TM
+4	Andere:Outro:Autre:Other
+3	Triton
+4	Andere:Outro:Autre:Other
+3	Triumph
+4	Andere:Outro:Autre:Other
+3	Ural
+4	Andere:Outro:Autre:Other
+3	Vespa
+4	Andere:Outro:Autre:Other
+3	VICTORY
+4	Andere:Outro:Autre:Other
+3	Voxan
+4	Andere:Outro:Autre:Other
+3	WMI
+4	Andere:Outro:Autre:Other
+3	Yamaha
+4	Andere:Outro:Autre:Other
+3	Zero
+4	Andere:Outro:Autre:Other
+3	Zhongyu
+4	Andere:Outro:Autre:Other
+3	Zündapp
+4	Andere:Outro:Autre:Other
+3	Andere:Outro:Autre:Other
+4	Andere:Outro:Autre:Other
+1	Exclusive details
+2	Autos:Carros:Voiture:Cars
+3	Fahrzeugzustand:Condição do veículo:État du véhicule
+4	Neu:Novo:Neuf
+4	Gebraucht:Usado:Occasion
+3	Anbieter:Vendedor:Vendeur
+4	Privatanbieter:Particular:Particulier
+4	Händler:Profissional:Profissionnel
+4	Firmenfahrzeuge:Veículo de empresa:Véhicule de société
+3	Anzahl Sitzplätze:Número de assentos:Nombre de places
+4	2
+4	3
+4	4
+4	5
+4	6
+4	7
+4	8
+4	9
+3	Anzahl Türen:Número de portas:Nombre de portes
+4	1
+4	2
+4	3
+4	4
+4	5
+3	Getriebe:Câmbio:Transmission
+4	Schaltgetriebe:Manual:Boîte manuelle
+4	Halbautomatik:Semi-automático:Semi-automatique
+4	Automatik:Automático:Automatique
+3	Außenfarbe:Cor exterior:Couleur extérieure
+4	Beige:Bege:Beige
+4	Schwarz:Preto:Noir
+4	Blau:Azul:Bleu
+4	Braun:Marrom:Marron
+4	Gold:Ouro:Or
+4	Grün:Verde:Vert
+4	Grau:Cinza:Gris
+4	Orange:Lanranja:Orange
+4	Violett:Violeta:Violet
+4	Rot:Vermelho:Rouge
+4	Silber:Prata:Gris métal 
+4	Weiß:Branco:Blanc
+4	Gelb:Amarelo:Jaune
+4	Metallic:Metálica:Métal
+3	Tempomat
+4	Tempomat
+4	Abstand:Distância:Distance
+3	Radio
+4	Tuner/Radio
+4	Radio/DAB
+3	Scheinwerfer:Faróis:Phares
+4	Xenonscheinwerfer:Faróis de xénon:Phares au xénon
+4	Bi-Xenon:Bi-xénon:Bi-xénon
+4	LED
+4	Laser
+3	Tagfahrlicht:Faról diurno:Feux de jour
+4	Normal
+4	LED
+3	Kurvenlicht
+4	Normal
+4	Adaptative:Adaptativo:Adaptatif
+3	Schadstoffklasse:Categoria de emissões:Catégorie d 'émission
+4	Euro1
+4	Euro2
+4	Euro3
+4	Euro4
+4	Euro5
+4	Euro6
+3	Umweltplakette:Bandeira ecológica:Vignette crit'air
+4	1 (Keine):1 (nenhuma):1 (aucune)
+4	2 (Rot):2 (vermelha):2 (rouge)
+4	3 (Gelb):3 (amarela):3 (jaune)
+4	4 (Grün):4 (verde):4 (vert)
+3	Hubraum:Cilindradas:Cylindres
+4	1000 cm³
+4	1200 cm³
+4	1400 cm³
+4	1600 cm³
+4	1800 cm³
+4	2000 cm³
+4	2600 cm³
+4	3000 cm³
+4	5000 cm³
+4	7500 cm³
+4	8000 cm³
+4	9000 cm³
+2	Motorräder:Motocicletas:Motos
+3	Fahrzeugzustand:Condição do veículo:État du véhicule
+4	Neu:Novo:Neuf
+4	Gebraucht:Usado:Occasion
+3	Anbieter:Vendedor:Vendeur
+4	Privatanbieter:Particular:Particulier
+4	Händler:Profissional:Profissionnel
+4	Firmenfahrzeuge:Veículo de empresa:Véhicule de société
+3	Antriebsart:Tração:Traction
+4	Kardan:Cardan:Cardan
+4	Kette:Corrente:Chaîne
+4	Riemen:Correia:Ceinture
+3	Getriebe:Câmbio:Transmission
+4	Schaltgetriebe:Manual:Boîte manuelle
+4	Halbautomatik:Semi-automático:Semi-automatique
+4	Automatik:Automático:Automatique
+3	Hubraum:Cilindradas:Cylindres
+4	50 cm³
+4	80 cm³
+4	125 cm³
+4	250 cm³
+4	500 cm³
+4	750 cm³
+4	1000 cm³
+4	1500 cm³
+1	Inclusive details
+2	Autos:Carros:Voiture:Cars
+3	Fahrzeugtyp:Tipo:Type
+4	Cabrio / Roadster:Conversível:Cabriolet
+4	Kleinwagen:Carro pequeno:Petite voiture
+4	Kombi:Break:Break
+4	Limousine
+4	Coupé
+4	Sportwagen:Esportivo:Sport
+4	SUV / Geländewagen / Pickup:SUV:SUV
+4	Van / Minibus:Van:Van
+3	Kraftstoffart:Combustível:Carburant
+4	Benzin:Gasolina:Essence
+4	Diesel
+4	Elektro:Elétrico:Électrique
+4	Ethanol (FFV, E85 etc.):Etanol:Éthanol
+4	Autogas (LPG):LPG:GPL
+4	Erdgas (CNG):Gás natural:Gaz naturel
+4	Wasserstoff:Hidrogênio:Hydrogène
+4	Andere:Outro:Autre:Other
+3	Anhängerkupplung:Engate de reboque:Attelage de remorque 
+4	Fest:Fixo:Fixe
+4	Abnehmbar:Removível:amovible
+4	Schwenkbar:Giratório:Pivotement
+3	Innenausstattung:Equipamento interior:Équipement d'intérieurs
+4	Ambiente-Beleuchtung:Luz ambiente:L'éclairage ambiant
+4	Android Auto
+4	Apple CarPlay
+4	Armlehne:Apoio de braço:Accoudoir
+4	Beheizbare Frontscheibe:Pára-brisas aquecido:Pare-brise chauffant
+4	Beheizbares Lenkrad:Volante aquecido:Volant chauffant
+4	Bluetooth
+4	Bordcomputer:Computador de bordo:Ordinateur de bord
+4	CD-Spieler:CD player:CD player
+4	Elektr. Fensterheber:Vidro elétrico:Lève-vitres électroniques
+4	Elektr. Seitenspiegel:Retrovisor elétrico:Rétroviseur électrique
+4	Elektr. Sitzeinstellung:Ajuste elétrico do assento:Réglage électrique du siège
+4	Elektr. Sitzeinstellung, hinten:Ajuste elétrico do assento traseiro:Réglage électrique du siège arrière
+4	Freisprecheinrichtung:Speakerphone:Haut-parleur
+4	Head-Up Display
+4	Induktionsladen für Smartphones:Tomada de indução para smartphones:Charge par induction pour smartphones
+4	Lederlenkrad:Volante de couro:Volant en cuir
+4	Lordosenstütze:Suporte lombar:Support lombaire
+4	Massagesitze:Assento com massagem:Sièges de massage
+4	Multifunktionslenkrad:Volante multifunções:Volant multifonction
+4	Musikstreaming integriert:Stream de música integrado:Streaming de musique intégré
+4	Navigationssystem:Sistema de navegação:Système de navigation
+4	Raucherpaket:Pacote para fumantes:Forfait fumeur
+4	Regensensor:Sensor de chuva:Capteur de pluie
+4	Schaltwippen:Pás de mudança de marchas:Palettes de changement de vitesse
+4	Servolenkung:Direção assistida:Direction assistée
+4	Sitzbelüftung:Ventilação de assento:Ventilation du siège
+4	Sitzheizung:Assentos com aquecimento:Sièges chauffants
+4	Sitzheizung hinten:Assentos traseiros com aquecimento:Chauffage des sièges arrière
+4	Skisack:Bolsa de esqui:Sac de ski
+4	Soundsystem:Sistema de som:Sonorisation
+4	Sprachsteuerung:Controle de voz:Commande vocale
+4	Standheizung:Aquecimento:Chauffage
+4	Start/Stopp-Automatik:Partida / parada automática:Démarrage / arrêt automatique
+4	Touchscreen
+4	TV
+4	Umklappbarer Beifahrersitz:Assento de passageiro reclinavel:Siège passager rabattable
+4	USB
+4	Volldigitales Kombiinstrument:Instrumentos totalmente digitais:Groupe d'instruments entièrement numérique
+4	Winterpaket:Pacote de inverno:Forfait hiver
+4	WLAN / Wifi Hotspot
+4	Zentralverriegelung:Fecho central:Verrouillage centralisé
+3	Sicherheit:Segurança:Sécurité
+4	ABS
+4	Abstandswarner:Aviso de distância:Avertissement de distance
+4	Alarmanlage:Sistema de alarme:Système d'alarme
+4	Allradantrieb:Tração em todas as rodas:Toutes roues motrices
+4	Blendfreies Fernlicht:Farol alto sem brilho:Feu de route sans éblouissement
+4	Elektr. Wegfahrsperre:Imobilizador elétrico:Immobilisateur électrique
+4	ESP
+4	Fernlichtassistent:Assistente de farol alto:Assistant feux de route
+4	Gepäckraumabtrennung:Divisória do compartimento de bagagem:Cloison de coffre à bagages
+4	Geschwindigkeits- begrenzungsanlage:Sistema de limite de velocidade:Système de limitation de vitesse
+4	Innenspiegel autom. abblendend:Espelho interior com escurecimento automático:Rétroviseur intérieur autom. gradation
+4	Isofix
+4	Isofix Beifahrersitz:Banco de passageiro Isofix:Siège passager Isofix
+4	Lichtsensor:Sensor de luz:Capteur de lumière
+4	Müdigkeitswarner:Aviso de fadiga:Avertissement de fatigue
+4	Nachtsicht-Assistent:Assistente de visão noturna:Assistant vision nocturne
+4	Nebelscheinwerfer:Faróis de milha:Phares antibrouillard
+4	Notbremsassistent:Assistente de freio de emergência:Assistant de freinage d'urgence
+4	Notrufsystem:Sistema de chamada de emergência:Système d'appel d'urgence
+4	Reifendruckkontrolle:Controle de pressão dos pneus:Contrôle de la pression des pneus
+4	Scheinwerferreinigung:Limpeza dos faróis:Nettoyage des phares
+4	Schlüssellose Zentralverriegelung:Sistema de entrada sem chave:Système d'entrée sans clé
+4	Spurhalteassistent:Lane Keeping Assist:Assistance au maintien de voie
+4	Totwinkel-Assistent:Assistente de ponto cego:Assistant d'angle mort
+4	Traktionskontrolle:Controle de tração:Contrôle de traction
+4	Verkehrszeichenerkennung:Reconhecimento de sinais de trânsito:Reconnaissance des panneaux de signalisation
+3	Airbags
+4	Fahrer:Motorista:chauffeur
+4	Front:Frente:Devant
+4	Seiten:Laterais:Latérales
+4	Weiteren:Outros:Autre:Other
+3	Räder und Reifen:Rodas e pneus:Roues et pneus
+4	Allwetterreifen:Pneus todo tempo:Pneus tout temps
+4	Leichtmetallfelgen:Jantes de liga leve:Jantes en alliage
+4	Sommerreifen:Pneus de verão:Pneus d'été
+4	Stahlfelgen:Jantes de aço:Jantes en acier
+4	Winterreifen:Pneus de inverno:pneus d'hiver
+3	Pannenhilfe:Assistencia de pane:Assistance routière
+4	Reserverad:Roda de reposição:Roue de secours
+4	Notrad:Roda de emergência:Roue d'urgence
+4	Pannenkit:Kit de pane:Kit de panne
+3	Einparkehilfe:Assistente para estacionar:Aide au stationnement
+4	Hinten:Atrás:Derrière
+4	Vorne:Na frente:Devant
+4	Kamera:Camera:Camera
+4	360-Grad Kamera:Câmera de 360 graus:Caméra à 360 degrés
+4	Selbstlenkende Systeme:Sistemas de direção automática:Systèmes d'auto-direction
+3	Sport
+4	Sportfahrwerk:Suspensão esportiva:Suspension sport
+4	Sportpaket:Pacote de esportes:Forfait sport
+4	Sportsitze:Assentos esportivos:Sièges sport
+3	Extras
+4	Behindertengerecht:Acesso cadeira de rodas:Accessible aux fauteuils roulants
+4	Berganfahrassistent:Assistente de montanha:Assistant de démarrage en côte
+4	Dachreling:Barras de tejadilho:Barres de toit
+4	Elektr. Heckklappe:Porta traseira elétrica:Hayon électrique
+4	Luftfederung:Suspensão a ar:Suspension pneumatique
+4	Panorama-Dach:Telhado panorâmico:Toit panoramique
+4	Schiebedach:Teto solar:Toit ouvrant
+4	Taxi
+3	Material der Innenausstattung:Material interior:Matériau intérieur
+4	Vollleder:Couro:Cuir
+4	Teilleder:Couro parcial:Cuir partiel
+4	Stoff:Tecido:Tissu
+4	Velours:Veludo:Velours
+4	Alcantara:Alcântara:Alcantara
+4	Andere:Outro:Autre:Other
+3	Farbe der Innenausstattung:Cor interior:Couleur intérieure
+4	Schwarz:Preto:Noir
+4	Grau:Cinza:Gris
+4	Beige:Bege:Beige
+4	Braun:Marrom:Marron
+4	Andere:Outra:Autre:Other
+3	Klimatisierung:Ar condicionado:Climatisation
+4	Automatik:Automático:Automatique
+4	2-Zonen-Automatik:2-Zonen-Automático:2-Zonen-Automatique
+4	3-Zonen-Automatik:3-Zonen-Automático:3-Zonen-Automatique
+4	4-Zonen-Automatik:4-Zonen-Automático:4-Zonen-Automatique
+3	Schiebtür:Porta corrediça:Porte coulissante
+4	Rechts:Direita:À droite
+4	Links:Esquerda:À gauche
+2	Motorräder:Motocicletas:Motos
+3	Fahrzeugtyp:Tipo:Type
+4	Chopper/Cruiser:Chopper/cruzador:Chopper/cruiser
+4	Dirt Bike
+4	Enduro
+4	Gespann/Seitenwagen:Equipe/side-car:Équipe/side-car
+4	Klein/Leichtkraftrad:Motocicleta pequena/leve:Petite / moto légère
+4	Mofa/Mokick/Moped
+4	Motorrad:Motocicleta:Moto
+4	Naked Bike
+4	Pocket Bike
+4	Quad
+4	Rallye/Cross
+4	Rennsport:Corrida:Course
+4	Roller/Scooter
+4	Sportler/Supersportler:Atletas/super atletas:Athlètes/super athlètes
+4	Sporttourer:Sports tour:Sport tour
+4	Streetfighter
+4	Super Moto
+4	Tourer:Tour:Tour
+4	Trike
+4	Andere:Autra:Autre:Other
+3	Kraftstoffart:Combustível:Carburant
+4	Benzin:Gasolina:Essence
+4	Diesel
+4	Elektro:Elétrico:Électrique
+4	Andere:Outro:Autre:Other
+3	Ausstattung:Equipamento:Équipement
+4	ABS
+4	Elektrostarter:Partida elétrica:Démarreur électrique
+4	Katalysator:Catalisador:Catalyseur
+4	Kickstarter:Partida no pedal:Kickstarter
+4	Koffer:Mala:Valise
+4	Scheibe:Disco:Disque
+4	Sturzbügel:Barras de segurança:Barres de protection
