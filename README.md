@@ -1,4 +1,4 @@
-![alt text](https://github.com/mzimbres/occase-app/blob/master/graphic_feature.jpg?raw=true)
+![alt text](https://github.com/mzimbres/occase-app/blob/master/data/graphic_feature.jpg?raw=true)
 
 # Build instructions
 
