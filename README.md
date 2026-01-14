@@ -1,3 +1,7 @@
+![alt text](https://github.com/mzimbres/occase-app/blob/master/graphic_feature.jpg?raw=true)
+
+# Build instructions
+
 To run the emulator
 
    flutter emulators --launch Nexus_5X_API_28
